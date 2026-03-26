@@ -20,7 +20,7 @@ export default function About() {
         {/* Left - Portrait */}
         <div className="lg:w-1/2 relative min-h-[50vh] lg:min-h-screen lg:sticky lg:top-0">
           <img
-            src="/__generating__/img_e811dd66ffb2.png"
+            src="https://media.base44.com/images/public/69c5b5d191713cd7fb96d543/1802000a4_generated_6a68b103.png"
             alt="Enor Lefoulon Meyer — Fondateur"
             className="w-full h-full object-cover"
           />

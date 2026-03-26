@@ -25,7 +25,7 @@ export default function Home() {
       <section className="relative min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="/__generating__/img_dcd4614f86ce.png"
+            src="https://media.base44.com/images/public/69c5b5d191713cd7fb96d543/188baa8c5_generated_14eedde5.png"
             alt="Precision engineering"
             className="w-full h-full object-cover opacity-30"
           />
@@ -134,7 +134,7 @@ export default function Home() {
             className="relative rounded-2xl overflow-hidden bg-card border border-border p-12 lg:p-20 text-center"
           >
             <div className="absolute inset-0 opacity-5">
-              <img src="/__generating__/img_341a1a54daf3.png" alt="" className="w-full h-full object-cover" />
+              <img src="https://media.base44.com/images/public/69c5b5d191713cd7fb96d543/81a3a11c3_generated_f5d1995c.png" alt="" className="w-full h-full object-cover" />
             </div>
             <div className="relative">
               <h2 className="font-syne font-extrabold text-3xl sm:text-5xl mb-4">

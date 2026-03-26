@@ -52,7 +52,7 @@ export default function Services() {
       {/* Hero */}
       <section className="relative py-32 px-6 lg:px-20 overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/__generating__/img_f04765a1f739.png" alt="" className="w-full h-full object-cover opacity-20" />
+          <img src="https://media.base44.com/images/public/69c5b5d191713cd7fb96d543/28718c038_generated_e959ab6e.png" alt="" className="w-full h-full object-cover opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
         </div>
         <div className="relative max-w-7xl mx-auto">

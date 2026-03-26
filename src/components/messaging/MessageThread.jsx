@@ -18,7 +18,9 @@ export default function MessageThread({ user, conv, onBack }) {
   const [text, setText] = useState('');
   const [reportMsg, setReportMsg] = useState(null);
   const bottomRef = useRef(null);
+  const scrollAreaRef = useRef(null);
   const queryClient = useQueryClient();
+  const prevCountRef = useRef(0);
 
   const convId = conv.convId || getConversationId(user.email, conv.email);
 
@@ -52,9 +54,17 @@ export default function MessageThread({ user, conv, onBack }) {
       .forEach(m => base44.entities.ChatMessage.update(m.id, { is_read: true }));
   }, [messages, user.email]);
 
-  // Scroll to bottom
+  // Scroll to bottom only when new messages arrive or conversation changes
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!scrollAreaRef.current) return;
+    const el = scrollAreaRef.current;
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    const isNewMessage = messages.length > prevCountRef.current;
+    prevCountRef.current = messages.length;
+    // On first load or if we were near bottom, scroll down
+    if (isNewMessage || isAtBottom) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   const sendRequest = useMutation({
@@ -164,7 +174,7 @@ export default function MessageThread({ user, conv, onBack }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto p-4 space-y-3">
         {/* Pending request banner (for recipient) */}
         {pendingRequest && (
           <motion.div

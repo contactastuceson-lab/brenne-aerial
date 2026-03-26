@@ -1,0 +1,231 @@
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Megaphone, Plus, Trash2, Edit, Eye, EyeOff, Info, AlertTriangle, CheckCircle, AlertCircle, Save, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
+const TYPE_OPTS = [
+  { value: 'info',    label: 'Info',    icon: Info,          color: 'text-primary' },
+  { value: 'warning', label: 'Alerte',  icon: AlertTriangle, color: 'text-yellow-400' },
+  { value: 'success', label: 'Succès',  icon: CheckCircle,   color: 'text-green-400' },
+  { value: 'error',   label: 'Erreur',  icon: AlertCircle,   color: 'text-destructive' },
+];
+
+const DISPLAY_OPTS = [
+  { value: 'banner', label: 'Bandeau en haut' },
+  { value: 'popup',  label: 'Popup' },
+  { value: 'both',   label: 'Bandeau + Popup' },
+];
+
+const TARGET_OPTS = [
+  { value: 'all',            label: 'Tout le monde' },
+  { value: 'users_only',    label: 'Membres connectés' },
+  { value: 'visitors_only', label: 'Visiteurs uniquement' },
+];
+
+const EMPTY = { title: '', content: '', type: 'info', display_mode: 'banner', is_active: true, target: 'all', dismissible: true, expires_at: '' };
+
+export default function AdminAnnouncements() {
+  const qc = useQueryClient();
+  const [form, setForm] = useState(null); // null = no form, EMPTY = new, {...} = edit
+  const [editId, setEditId] = useState(null);
+
+  const { data: announcements = [], isLoading } = useQuery({
+    queryKey: ['announcements-admin'],
+    queryFn: () => base44.entities.Announcement.list('-created_date'),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async (data) => {
+      if (editId) {
+        await base44.entities.Announcement.update(editId, data);
+      } else {
+        await base44.entities.Announcement.create(data);
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['announcements-admin'] });
+      qc.invalidateQueries({ queryKey: ['announcements-banner'] });
+      qc.invalidateQueries({ queryKey: ['announcements-popup'] });
+      toast.success(editId ? 'Annonce modifiée' : 'Annonce créée');
+      setForm(null);
+      setEditId(null);
+    },
+  });
+
+  const toggleActive = useMutation({
+    mutationFn: ({ id, val }) => base44.entities.Announcement.update(id, { is_active: val }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['announcements-admin'] });
+      qc.invalidateQueries({ queryKey: ['announcements-banner'] });
+      qc.invalidateQueries({ queryKey: ['announcements-popup'] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.Announcement.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['announcements-admin'] });
+      toast.success('Annonce supprimée');
+    },
+  });
+
+  const openEdit = (a) => {
+    setEditId(a.id);
+    setForm({ ...a });
+  };
+
+  const openNew = () => {
+    setEditId(null);
+    setForm({ ...EMPTY });
+  };
+
+  const handleSave = () => {
+    if (!form.content) { toast.error('Le contenu est requis'); return; }
+    saveMutation.mutate({ ...form, expires_at: form.expires_at || null });
+  };
+
+  const typeIcon = (type) => {
+    const t = TYPE_OPTS.find(t => t.value === type);
+    if (!t) return null;
+    const Icon = t.icon;
+    return <Icon className={`w-3.5 h-3.5 ${t.color}`} />;
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-grotesk font-bold text-2xl flex items-center gap-3">
+            <Megaphone className="w-6 h-6 text-primary" /> Annonces
+          </h1>
+          <p className="font-inter text-sm text-muted-foreground">Bandeaux et popups d'information pour les utilisateurs</p>
+        </div>
+        <Button onClick={openNew} className="bg-primary text-primary-foreground gap-2">
+          <Plus className="w-4 h-4" /> Nouvelle annonce
+        </Button>
+      </div>
+
+      {/* Form */}
+      {form && (
+        <div className="bg-card border border-primary/30 rounded-2xl p-6 mb-6 space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-grotesk font-semibold text-base">{editId ? 'Modifier l\'annonce' : 'Nouvelle annonce'}</h2>
+            <button onClick={() => { setForm(null); setEditId(null); }} className="text-muted-foreground hover:text-foreground">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="font-inter text-xs text-muted-foreground mb-1 block">Titre (optionnel)</label>
+              <Input value={form.title || ''} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Titre de l'annonce" className="bg-secondary border-border" />
+            </div>
+            <div>
+              <label className="font-inter text-xs text-muted-foreground mb-1 block">Type</label>
+              <div className="flex gap-2">
+                {TYPE_OPTS.map(t => {
+                  const Icon = t.icon;
+                  return (
+                    <button key={t.value} onClick={() => setForm(p => ({ ...p, type: t.value }))}
+                      className={`flex-1 py-2 rounded-lg border font-inter text-xs flex items-center justify-center gap-1 transition-all ${form.type === t.value ? 'border-primary/50 bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:border-primary/30'}`}>
+                      <Icon className={`w-3 h-3 ${t.color}`} /> {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="font-inter text-xs text-muted-foreground mb-1 block">Contenu *</label>
+            <Textarea value={form.content || ''} onChange={e => setForm(p => ({ ...p, content: e.target.value }))} placeholder="Message de l'annonce..." className="bg-secondary border-border min-h-[80px]" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="font-inter text-xs text-muted-foreground mb-1 block">Affichage</label>
+              <select value={form.display_mode} onChange={e => setForm(p => ({ ...p, display_mode: e.target.value }))}
+                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 font-inter text-sm text-foreground">
+                {DISPLAY_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="font-inter text-xs text-muted-foreground mb-1 block">Cible</label>
+              <select value={form.target} onChange={e => setForm(p => ({ ...p, target: e.target.value }))}
+                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 font-inter text-sm text-foreground">
+                {TARGET_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="font-inter text-xs text-muted-foreground mb-1 block">Expire le (optionnel)</label>
+              <Input type="date" value={form.expires_at || ''} onChange={e => setForm(p => ({ ...p, expires_at: e.target.value }))} className="bg-secondary border-border" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Switch checked={form.is_active} onCheckedChange={v => setForm(p => ({ ...p, is_active: v }))} />
+              <span className="font-inter text-sm">Active</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Switch checked={form.dismissible !== false} onCheckedChange={v => setForm(p => ({ ...p, dismissible: v }))} />
+              <span className="font-inter text-sm">Fermable par l'utilisateur</span>
+            </label>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
+            <Button variant="outline" size="sm" onClick={() => { setForm(null); setEditId(null); }} className="border-border text-xs">Annuler</Button>
+            <Button size="sm" onClick={handleSave} disabled={saveMutation.isPending} className="bg-primary text-primary-foreground text-xs gap-1.5">
+              <Save className="w-3 h-3" /> Sauvegarder
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* List */}
+      {isLoading ? (
+        <div className="flex justify-center py-10"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+      ) : announcements.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground font-inter text-sm">
+          <Megaphone className="w-8 h-8 mx-auto mb-3 opacity-30" />
+          Aucune annonce créée
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {announcements.map(a => (
+            <div key={a.id} className={`bg-card border rounded-xl p-4 flex items-center gap-4 ${a.is_active ? 'border-border' : 'border-border/50 opacity-60'}`}>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {typeIcon(a.type)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  {a.title && <span className="font-grotesk font-semibold text-sm">{a.title}</span>}
+                  <span className="font-mono text-[9px] text-muted-foreground bg-secondary border border-border px-1.5 py-0.5 rounded-full">{DISPLAY_OPTS.find(o => o.value === a.display_mode)?.label}</span>
+                  <span className="font-mono text-[9px] text-muted-foreground bg-secondary border border-border px-1.5 py-0.5 rounded-full">{TARGET_OPTS.find(o => o.value === a.target)?.label}</span>
+                  {a.expires_at && <span className="font-mono text-[9px] text-muted-foreground">Expire: {format(new Date(a.expires_at), 'd MMM yy', { locale: fr })}</span>}
+                </div>
+                <p className="font-inter text-xs text-muted-foreground truncate">{a.content}</p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Switch checked={a.is_active} onCheckedChange={v => toggleActive.mutate({ id: a.id, val: v })} />
+                <Button size="icon" variant="ghost" className="w-7 h-7 text-muted-foreground hover:text-foreground" onClick={() => openEdit(a)}>
+                  <Edit className="w-3 h-3" />
+                </Button>
+                <Button size="icon" variant="ghost" className="w-7 h-7 text-muted-foreground hover:text-destructive" onClick={() => deleteMutation.mutate(a.id)}>
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

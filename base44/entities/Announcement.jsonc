@@ -1,0 +1,64 @@
+{
+  "name": "Announcement",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre de l'annonce"
+    },
+    "content": {
+      "type": "string",
+      "description": "Contenu de l'annonce"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "success",
+        "error"
+      ],
+      "default": "info",
+      "description": "Type / couleur de l'annonce"
+    },
+    "display_mode": {
+      "type": "string",
+      "enum": [
+        "banner",
+        "popup",
+        "both"
+      ],
+      "default": "banner",
+      "description": "Mode d'affichage"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Annonce active ou non"
+    },
+    "target": {
+      "type": "string",
+      "enum": [
+        "all",
+        "users_only",
+        "visitors_only"
+      ],
+      "default": "all",
+      "description": "Cible de l'annonce"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Date d'expiration (optionnel)"
+    },
+    "dismissible": {
+      "type": "boolean",
+      "default": true,
+      "description": "L'utilisateur peut fermer l'annonce"
+    }
+  },
+  "required": [
+    "content",
+    "type"
+  ]
+}

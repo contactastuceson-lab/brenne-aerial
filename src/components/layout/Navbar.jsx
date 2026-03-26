@@ -34,12 +34,23 @@ export default function Navbar() {
     });
   }, []);
 
-  const { data: notifs = [] } = useQuery({
+  const { data: notifs = [], refetch: refetchNotifs } = useQuery({
     queryKey: ['nav-notifs', user?.email],
     queryFn: () => base44.entities.Notification.filter({ user_email: user.email, is_read: false }),
     enabled: !!user?.email,
-    refetchInterval: 30000,
+    refetchInterval: 15000,
   });
+
+  // Real-time subscription for notifications
+  useEffect(() => {
+    if (!user?.email) return;
+    const unsub = base44.entities.Notification.subscribe((event) => {
+      if (event.data?.user_email === user.email) {
+        refetchNotifs();
+      }
+    });
+    return unsub;
+  }, [user?.email, refetchNotifs]);
 
   const isActive = (path) => location.pathname === path;
 

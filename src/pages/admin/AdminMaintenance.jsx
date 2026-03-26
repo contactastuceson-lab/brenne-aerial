@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Settings, Power, AlertTriangle, Save, Loader2, RefreshCw } from 'lucide-react';
@@ -22,12 +22,15 @@ export default function AdminMaintenance() {
   const { data: dbSettings = [], isLoading } = useQuery({
     queryKey: ['app-settings'],
     queryFn: () => base44.entities.AppSettings.list(),
-    onSuccess: (data) => {
-      const map = {};
-      data.forEach(s => { map[s.key] = s.value; });
-      setLocalSettings(map);
-    },
   });
+
+  useEffect(() => {
+    if (dbSettings.length > 0) {
+      const map = {};
+      dbSettings.forEach(s => { map[s.key] = s.value; });
+      setLocalSettings(map);
+    }
+  }, [dbSettings]);
 
   // Merge defaults with db
   const settings = DEFAULT_SETTINGS.map(def => {

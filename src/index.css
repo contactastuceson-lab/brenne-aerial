@@ -1,83 +1,47 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --font-syne: 'Syne', sans-serif;
+    --font-grotesk: 'Space Grotesk', sans-serif;
     --font-inter: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    --background: 0 0% 2%;
-    --foreground: 0 0% 95%;
-    --card: 240 5% 7.5%;
-    --card-foreground: 0 0% 95%;
-    --popover: 240 5% 7.5%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 68 100% 50%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 240 4% 12%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 174 72% 51%;
-    --accent-foreground: 0 0% 0%;
+    /* Brenne Aerial — Dark Sky palette */
+    --background: 214 50% 4%;
+    --foreground: 210 20% 94%;
+    --card: 214 40% 7%;
+    --card-foreground: 210 20% 94%;
+    --popover: 214 40% 7%;
+    --popover-foreground: 210 20% 94%;
+    --primary: 205 90% 58%;
+    --primary-foreground: 214 50% 4%;
+    --secondary: 214 30% 12%;
+    --secondary-foreground: 210 20% 85%;
+    --muted: 214 25% 14%;
+    --muted-foreground: 215 15% 55%;
+    --accent: 195 80% 50%;
+    --accent-foreground: 214 50% 4%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 68 100% 50%;
-    --chart-1: 68 100% 50%;
-    --chart-2: 174 72% 51%;
-    --chart-3: 240 5% 65%;
+    --border: 214 25% 14%;
+    --input: 214 25% 14%;
+    --ring: 205 90% 58%;
+    --chart-1: 205 90% 58%;
+    --chart-2: 195 80% 50%;
+    --chart-3: 215 15% 55%;
     --chart-4: 0 72% 51%;
     --chart-5: 45 93% 58%;
     --radius: 0.75rem;
-    --sidebar-background: 240 5% 5%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 68 100% 50%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 240 4% 12%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 68 100% 50%;
-  }
-
-  .dark {
-    --background: 0 0% 2%;
-    --foreground: 0 0% 95%;
-    --card: 240 5% 7.5%;
-    --card-foreground: 0 0% 95%;
-    --popover: 240 5% 7.5%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 68 100% 50%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 240 4% 12%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 174 72% 51%;
-    --accent-foreground: 0 0% 0%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 68 100% 50%;
-    --chart-1: 68 100% 50%;
-    --chart-2: 174 72% 51%;
-    --chart-3: 240 5% 65%;
-    --chart-4: 0 72% 51%;
-    --chart-5: 45 93% 58%;
-    --sidebar-background: 240 5% 5%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 68 100% 50%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 240 4% 12%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 68 100% 50%;
+    --sidebar-background: 214 45% 5%;
+    --sidebar-foreground: 210 15% 80%;
+    --sidebar-primary: 205 90% 58%;
+    --sidebar-primary-foreground: 214 50% 4%;
+    --sidebar-accent: 214 30% 10%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 214 25% 12%;
+    --sidebar-ring: 205 90% 58%;
   }
 }
 
@@ -86,42 +50,111 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
   }
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: hsl(240 5% 5%);
-}
-::-webkit-scrollbar-thumb {
-  background: hsl(240 4% 20%);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(68 100% 50%);
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: hsl(214 50% 4%); }
+::-webkit-scrollbar-thumb { background: hsl(214 25% 20%); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(205 90% 58%); }
+
+/* Glassmorphism */
+.glass {
+  background: rgba(4, 10, 20, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.06);
 }
 
-/* Shimmer effect for founder badge */
+.glass-card {
+  background: rgba(8, 18, 36, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 170, 220, 0.1);
+}
+
+/* Sky glow effects */
+.sky-glow {
+  box-shadow: 0 0 40px rgba(56, 170, 220, 0.15), 0 0 80px rgba(56, 170, 220, 0.05);
+}
+
+.sky-glow-text {
+  text-shadow: 0 0 30px rgba(56, 170, 220, 0.4);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, hsl(205 90% 58%) 0%, hsl(195 80% 50%) 50%, hsl(210 20% 94%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Drone grid bg */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(56, 170, 220, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 170, 220, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Scan line animation */
+@keyframes scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.scan-line {
+  animation: scan 4s linear infinite;
+}
+
+/* Pulse dot */
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+.pulse-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid hsl(205 90% 58%);
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+/* Badge shimmer */
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
 
-.badge-shimmer {
-  background: linear-gradient(110deg, hsl(174 72% 51%) 0%, hsl(68 100% 50%) 25%, hsl(174 72% 51%) 50%, hsl(68 100% 50%) 75%, hsl(174 72% 51%) 100%);
+.badge-founder {
+  background: linear-gradient(110deg, hsl(205 90% 58%) 0%, hsl(195 80% 50%) 30%, hsl(210 20% 94%) 50%, hsl(195 80% 50%) 70%, hsl(205 90% 58%) 100%);
   background-size: 200% 100%;
   animation: shimmer 3s linear infinite;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Glassmorphism utility */
-.glass {
-  background: rgba(18, 18, 20, 0.6);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+/* Hover lift */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(56, 170, 220, 0.12);
+}
+
+/* Video overlay gradient */
+.video-overlay {
+  background: linear-gradient(to right, hsl(214 50% 4%) 0%, hsl(214 50% 4% / 0.8) 40%, transparent 70%);
+}
+
+.video-overlay-bottom {
+  background: linear-gradient(to top, hsl(214 50% 4%) 0%, transparent 100%);
 }

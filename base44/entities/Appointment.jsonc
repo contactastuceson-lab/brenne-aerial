@@ -2,55 +2,55 @@
   "name": "Appointment",
   "type": "object",
   "properties": {
-    "date": {
+    "quote_id": {
       "type": "string",
-      "format": "date",
-      "description": "Date du rendez-vous"
-    },
-    "time_slot": {
-      "type": "string",
-      "description": "Cr\u00e9neau horaire (ex: 09:00 - 10:00)"
-    },
-    "period": {
-      "type": "string",
-      "enum": [
-        "morning",
-        "afternoon",
-        "evening"
-      ],
-      "description": "P\u00e9riode de la journ\u00e9e"
+      "description": "ID du devis associ\u00e9"
     },
     "client_name": {
-      "type": "string",
-      "description": "Nom du client"
+      "type": "string"
     },
     "client_email": {
-      "type": "string",
-      "description": "Email du client"
+      "type": "string"
     },
     "service_type": {
-      "type": "string",
-      "description": "Type de prestation"
+      "type": "string"
     },
-    "notes": {
+    "date": {
       "type": "string",
-      "description": "Notes suppl\u00e9mentaires"
+      "format": "date"
+    },
+    "time_start": {
+      "type": "string",
+      "description": "Heure d\u00e9but ex: 09:00"
+    },
+    "time_end": {
+      "type": "string",
+      "description": "Heure fin ex: 11:00"
+    },
+    "location": {
+      "type": "string"
     },
     "status": {
       "type": "string",
       "enum": [
-        "available",
-        "booked",
+        "scheduled",
+        "confirmed",
         "completed",
         "cancelled"
       ],
-      "default": "available",
-      "description": "Statut du cr\u00e9neau"
+      "default": "scheduled"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "google_event_id": {
+      "type": "string",
+      "description": "ID \u00e9v\u00e9nement Google Calendar"
     }
   },
   "required": [
+    "client_name",
     "date",
-    "time_slot",
-    "status"
+    "time_start"
   ]
 }

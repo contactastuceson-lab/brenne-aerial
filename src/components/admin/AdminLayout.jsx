@@ -1,29 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import AdminSidebar from './AdminSidebar';
+import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Settings, ArrowLeft, Bell, Plane, Wrench } from 'lucide-react';
+
+const NAV = [
+  { path: '/admin', icon: BarChart3, label: 'Dashboard' },
+  { path: '/admin/quotes', icon: FileText, label: 'Devis' },
+  { path: '/admin/appointments', icon: Calendar, label: 'Planning' },
+  { path: '/admin/clients', icon: Users, label: 'Clients' },
+  { path: '/admin/portfolio', icon: Image, label: 'Portfolio' },
+  { path: '/admin/blog', icon: BookOpen, label: 'Blog' },
+  { path: '/admin/messaging', icon: MessageSquare, label: 'Messagerie' },
+  { path: '/admin/services', icon: Wrench, label: 'Services' },
+  { path: '/admin/users', icon: Users, label: 'Utilisateurs' },
+  { path: '/admin/settings', icon: Settings, label: 'Paramètres' },
+];
 
 export default function AdminLayout() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    const checkAccess = async () => {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (!isAuth) {
-        base44.auth.redirectToLogin('/admin');
-        return;
-      }
+    (async () => {
+      const auth = await base44.auth.isAuthenticated();
+      if (!auth) { base44.auth.redirectToLogin('/admin'); return; }
       const me = await base44.auth.me();
-      if (me.role !== 'admin') {
-        navigate('/');
-        return;
-      }
+      if (me.role !== 'admin') { navigate('/'); return; }
       setUser(me);
       setLoading(false);
-    };
-    checkAccess();
+    })();
   }, [navigate]);
 
   if (loading) {
@@ -36,9 +43,54 @@ export default function AdminLayout() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <AdminSidebar />
-      <main className="flex-1 ml-16 lg:ml-56 p-6 lg:p-8">
-        <Outlet context={{ user }} />
+      {/* Sidebar */}
+      <aside className="fixed left-0 top-0 h-screen w-14 lg:w-56 bg-sidebar border-r border-sidebar-border z-40 flex flex-col py-4">
+        <div className="px-3 mb-6">
+          <Link to="/" className="flex items-center gap-2 text-sidebar-foreground hover:text-foreground transition-colors group">
+            <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Plane className="w-4 h-4 text-primary" />
+            </div>
+            <div className="hidden lg:block">
+              <p className="font-grotesk font-bold text-xs">Brenne <span className="text-primary">Aerial</span></p>
+              <p className="font-mono text-[10px] text-muted-foreground">Administration</p>
+            </div>
+          </Link>
+        </div>
+
+        <nav className="flex-1 px-2 space-y-0.5 overflow-y-auto">
+          {NAV.map(item => {
+            const active = location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path));
+            const Icon = item.icon;
+            return (
+              <Link key={item.path} to={item.path}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                  active ? 'bg-primary/10 text-primary' : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                }`}>
+                <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-primary' : ''}`} />
+                <span className="hidden lg:inline font-inter text-xs">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="px-3 pt-4 border-t border-sidebar-border">
+          <div className="hidden lg:flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
+              <span className="font-grotesk font-bold text-primary text-xs">{user?.full_name?.[0]}</span>
+            </div>
+            <div className="min-w-0">
+              <p className="font-inter text-xs truncate">{user?.full_name}</p>
+              <p className="font-mono text-[10px] text-muted-foreground">Admin</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex-1 ml-14 lg:ml-56 min-h-screen">
+        <div className="p-5 lg:p-8">
+          <Outlet context={{ user }} />
+        </div>
       </main>
     </div>
   );

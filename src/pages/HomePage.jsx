@@ -1,0 +1,299 @@
+import React, { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ArrowRight, Play, Camera, Building2, HardHat, Video, Wifi, ChevronDown, Star, Award, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+
+const SERVICES_PREVIEW = [
+  { icon: Video,      label: 'Vidéo événement',    desc: 'Captez chaque instant depuis les airs' },
+  { icon: Building2,  label: 'Inspection toiture', desc: 'Diagnostic précis sans intervention humaine' },
+  { icon: HardHat,    label: 'Suivi chantier',     desc: 'Monitoring aérien de vos chantiers' },
+  { icon: Camera,     label: 'Captation 4K',       desc: 'Qualité cinématographique pour pros et particuliers' },
+  { icon: Wifi,       label: 'Retour temps réel',  desc: 'Diffusion live de vos opérations' },
+];
+
+const STATS = [
+  { val: '200+', label: 'Missions réalisées' },
+  { val: '4K',   label: 'Qualité vidéo' },
+  { val: '99%',  label: 'Satisfaction client' },
+  { val: '48h',  label: 'Délai de réponse' },
+];
+
+export default function HomePage() {
+  const { data: projects = [] } = useQuery({
+    queryKey: ['featured-projects'],
+    queryFn: () => base44.entities.Project.filter({ is_featured: true, is_published: true }, '-created_date', 3),
+  });
+
+  return (
+    <div className="relative">
+      {/* ─── HERO ─── */}
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 grid-bg" />
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1579829366248-204fe8413f31?w=1800&auto=format&fit=crop&q=80"
+            alt="Drone aerial view"
+            className="w-full h-full object-cover opacity-25"
+          />
+          <div className="video-overlay absolute inset-0" />
+          <div className="video-overlay-bottom absolute bottom-0 left-0 right-0 h-48" />
+        </div>
+
+        {/* Scan line effect */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent scan-line pointer-events-none" />
+
+        {/* Content */}
+        <div className="relative max-w-7xl mx-auto px-5 lg:px-10 w-full pt-24 pb-16">
+          <div className="max-w-3xl">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <div className="inline-flex items-center gap-2 font-mono text-xs text-primary border border-primary/30 bg-primary/5 px-3 py-1.5 rounded-full mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                Solutions drone professionnelles
+              </div>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
+              className="font-grotesk font-bold text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[1.05] tracking-tight mb-6"
+            >
+              L'excellence
+              <br />
+              <span className="gradient-text sky-glow-text">vue du ciel.</span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
+              className="font-inter text-lg text-muted-foreground max-w-xl leading-relaxed mb-8"
+            >
+              Brenne Aerial propulse votre vision avec des solutions drone 4K de pointe — 
+              événements, inspections, chantiers, captations premium. Devis en 48h.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-wrap gap-3"
+            >
+              <Link to="/quote">
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-grotesk font-semibold px-6 sky-glow">
+                  Demander un devis <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+              <Link to="/portfolio">
+                <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-secondary font-grotesk font-semibold px-6 gap-2">
+                  <Play className="w-4 h-4 text-primary" /> Voir le portfolio
+                </Button>
+              </Link>
+            </motion.div>
+
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
+              className="flex flex-wrap gap-6 mt-12"
+            >
+              {STATS.map(s => (
+                <div key={s.label}>
+                  <div className="font-grotesk font-bold text-2xl text-primary">{s.val}</div>
+                  <div className="font-inter text-xs text-muted-foreground">{s.label}</div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1"
+        >
+          <ChevronDown className="w-5 h-5 text-muted-foreground" />
+        </motion.div>
+      </section>
+
+      {/* ─── SERVICES PREVIEW ─── */}
+      <section className="py-24 px-5 lg:px-10 max-w-7xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <p className="font-mono text-xs text-primary mb-2 tracking-widest uppercase">— Nos prestations</p>
+              <h2 className="font-grotesk font-bold text-3xl sm:text-4xl">
+                Services <span className="gradient-text">drone</span>
+              </h2>
+            </div>
+            <Link to="/services" className="hidden sm:flex items-center gap-1.5 font-inter text-sm text-muted-foreground hover:text-primary transition-colors">
+              Tous les services <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {SERVICES_PREVIEW.map((s, i) => (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+              >
+                <Link to="/services"
+                  className="block p-5 rounded-xl bg-card border border-border hover:border-primary/30 hover:sky-glow transition-all duration-300 group h-full">
+                  <s.icon className="w-7 h-7 text-primary mb-4 group-hover:scale-110 transition-transform" />
+                  <h3 className="font-grotesk font-semibold text-sm mb-1.5">{s.label}</h3>
+                  <p className="font-inter text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ─── CEO PITCH ─── */}
+      <section className="py-24 px-5 lg:px-10 relative overflow-hidden">
+        <div className="absolute inset-0 grid-bg opacity-30" />
+        <div className="relative max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+              <div className="relative">
+                <div className="absolute -inset-4 bg-primary/5 rounded-2xl blur-xl" />
+                <img
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80"
+                  alt="Enor Lefoulon Meyer — CEO"
+                  className="relative w-full max-w-sm mx-auto rounded-2xl object-cover aspect-[3/4]"
+                  style={{ filter: 'contrast(1.05) saturate(0.9)' }}
+                />
+                <div className="absolute bottom-4 left-4 right-4 glass rounded-xl p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                      <span className="font-grotesk font-bold text-primary text-sm">ELM</span>
+                    </div>
+                    <div>
+                      <p className="font-grotesk font-semibold text-sm">Enor Lefoulon Meyer</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="font-mono text-xs text-muted-foreground">Fondateur & PDG</span>
+                        <span className="badge-founder font-mono text-[10px] font-bold">★ Fondateur</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+              <p className="font-mono text-xs text-primary mb-4 tracking-widest uppercase">— Le mot du PDG</p>
+              <h2 className="font-grotesk font-bold text-3xl sm:text-4xl mb-6">
+                Voler plus haut,<br />
+                <span className="gradient-text">voir plus loin.</span>
+              </h2>
+              <div className="space-y-4 font-inter text-muted-foreground leading-relaxed">
+                <p>"Chez Brenne Aerial, nous ne nous contentons pas de faire voler des drones — nous créons des perspectives 
+                que personne n'a vues avant. Chaque mission est une opportunité d'apporter une valeur ajoutée 
+                exceptionnelle à nos clients."</p>
+                <p>"Notre engagement : précision technique, qualité cinématographique et service premium. 
+                Que ce soit pour un événement, une inspection industrielle ou un suivi de chantier, 
+                nous mettons toute notre expertise au service de votre projet."</p>
+              </div>
+              <div className="flex flex-wrap gap-4 mt-8">
+                <div className="flex items-center gap-2">
+                  <Award className="w-4 h-4 text-primary" />
+                  <span className="font-inter text-sm">Certifié DGAC</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-primary" />
+                  <span className="font-inter text-sm">Réponse 48h</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4 text-primary" />
+                  <span className="font-inter text-sm">200+ missions</span>
+                </div>
+              </div>
+              <div className="mt-8 flex gap-3">
+                <Link to="/about">
+                  <Button variant="outline" className="border-border font-grotesk font-semibold">En savoir plus</Button>
+                </Link>
+                <Link to="/quote">
+                  <Button className="bg-primary text-primary-foreground font-grotesk font-semibold sky-glow">
+                    Travailler avec nous <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FEATURED PROJECTS ─── */}
+      {projects.length > 0 && (
+        <section className="py-24 px-5 lg:px-10 max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <p className="font-mono text-xs text-primary mb-2 tracking-widest uppercase">— Réalisations récentes</p>
+              <h2 className="font-grotesk font-bold text-3xl sm:text-4xl">Portfolio <span className="gradient-text">sélection</span></h2>
+            </div>
+            <Link to="/portfolio" className="hidden sm:flex items-center gap-1.5 font-inter text-sm text-muted-foreground hover:text-primary transition-colors">
+              Tout voir <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {projects.map((p, i) => (
+              <motion.div key={p.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+                <Link to="/portfolio" className="block rounded-xl overflow-hidden bg-card border border-border hover:border-primary/30 transition-all duration-300 group">
+                  <div className="relative aspect-video overflow-hidden">
+                    <img src={p.thumbnail_url || `https://images.unsplash.com/photo-1617129514963-a4d80e74f8af?w=600&auto=format&fit=crop&q=60`}
+                      alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                    {p.media_type === 'youtube' && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-primary/20 backdrop-blur-sm border border-primary/30 flex items-center justify-center">
+                          <Play className="w-5 h-5 text-primary ml-0.5" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <span className="font-mono text-[10px] text-primary">{p.category}</span>
+                    <h3 className="font-grotesk font-semibold text-sm mt-1">{p.title}</h3>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ─── CTA ─── */}
+      <section className="py-24 px-5 lg:px-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+            className="relative rounded-2xl overflow-hidden bg-card border border-primary/20 p-12 lg:p-20 text-center sky-glow"
+          >
+            <div className="absolute inset-0 grid-bg opacity-50" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+            <div className="relative">
+              <p className="font-mono text-xs text-primary mb-4 tracking-widest uppercase">— Prêt à décoller ?</p>
+              <h2 className="font-grotesk font-bold text-3xl sm:text-5xl mb-4">
+                Votre projet mérite<br />
+                <span className="gradient-text">la meilleure altitude.</span>
+              </h2>
+              <p className="font-inter text-muted-foreground text-base mb-8 max-w-md mx-auto">
+                Obtenez un devis gratuit en moins de 2 minutes. Réponse garantie sous 48h.
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <Link to="/quote">
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-grotesk font-semibold px-8 sky-glow">
+                    Devis gratuit <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+                <Link to="/contact">
+                  <Button size="lg" variant="outline" className="border-border font-grotesk font-semibold px-8">
+                    Nous contacter
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    </div>
+  );
+}

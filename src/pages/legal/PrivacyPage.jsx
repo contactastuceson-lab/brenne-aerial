@@ -1,0 +1,46 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Shield } from 'lucide-react';
+
+const SECTIONS = [
+  { title: '1. Responsable du traitement', content: `Brenne Aerial, représentée par Enor Lefoulon Meyer, est responsable du traitement de vos données personnelles.\n\nCoordonnées :\n• Adresse : Brenne, Indre (36), France\n• Email : contact@brenne-aerial.fr\n• Téléphone : +33 6 00 00 00 00\n\nConformément au Règlement Général sur la Protection des Données (RGPD - Règlement UE 2016/679) et à la loi n°78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés, Brenne Aerial s'engage à protéger la vie privée de ses utilisateurs.` },
+  { title: '2. Données collectées', content: `Brenne Aerial collecte les catégories de données personnelles suivantes :\n\n2.1 Données d'identification\n• Nom et prénom\n• Adresse email\n• Numéro de téléphone\n• Adresse postale\n• Raison sociale (pour les professionnels)\n\n2.2 Données de navigation\n• Adresse IP\n• Type et version de navigateur\n• Système d'exploitation\n• Pages visitées et durée de visite\n• Provenance du trafic\n• Date et heure de connexion\n\n2.3 Données de communication\n• Contenu des messages envoyés via le formulaire de contact\n• Échanges par email\n• Demandes de devis\n• Réclamations et demandes de service après-vente\n\n2.4 Données financières\n• Informations de facturation (pour les clients)\n• Montants des prestations\n• Aucune donnée bancaire n'est stockée sur nos serveurs\n\n2.5 Données de contenu\n• Fichiers et photos uploadés lors des demandes de devis\n• Préférences de prestation` },
+  { title: '3. Finalités du traitement', content: `Vos données sont collectées et traitées pour les finalités suivantes :\n\n3.1 Exécution contractuelle\n• Traitement et suivi de vos demandes de devis\n• Gestion de vos réservations et rendez-vous\n• Fourniture des prestations drone commandées\n• Facturation et comptabilité\n\n3.2 Relation client\n• Réponse à vos demandes de contact\n• Envoi de confirmations de commande\n• Information sur l'avancement de vos projets\n• Service après-vente et gestion des litiges\n\n3.3 Communication commerciale (avec votre consentement)\n• Newsletter et actualités de Brenne Aerial\n• Promotions et offres spéciales\n• Invitation aux événements\n\n3.4 Amélioration de nos services\n• Analyse des statistiques de navigation\n• Évaluation de la satisfaction client\n• Développement de nouvelles fonctionnalités\n\n3.5 Obligations légales\n• Conservation des documents comptables\n• Réponse aux demandes des autorités compétentes\n• Prévention de la fraude` },
+  { title: '4. Base légale du traitement', content: `Le traitement de vos données repose sur les bases légales suivantes :\n\n• Exécution d'un contrat : lorsque vous passez commande ou demandez un devis, le traitement est nécessaire à l'exécution du contrat\n• Consentement : pour l'envoi de communications commerciales, vous pouvez retirer votre consentement à tout moment\n• Intérêt légitime : pour améliorer nos services, prévenir la fraude et assurer la sécurité de notre site\n• Obligation légale : pour respecter nos obligations fiscales et comptables` },
+  { title: '5. Durée de conservation', content: `Nous conservons vos données personnelles pendant les durées suivantes :\n\n• Données clients et devis : 5 ans à compter de la dernière prestation\n• Données de facturation : 10 ans (obligation légale comptable)\n• Données de contact : 3 ans à compter du dernier contact\n• Données de navigation : 13 mois maximum (cookies)\n• Données de connexion : 1 an\n• Fichiers uploadés : 12 mois après la prestation, puis suppression sécurisée\n• Données marketing (newsletter) : jusqu'au retrait du consentement\n\nPassé ces délais, vos données sont supprimées de manière sécurisée ou anonymisées.` },
+  { title: '6. Partage avec des tiers', content: `Brenne Aerial ne vend pas vos données personnelles à des tiers. Nous pouvons partager vos données avec :\n\n6.1 Prestataires techniques\n• Hébergeur web : serveurs sécurisés en Union Européenne\n• Outil d'emailing : plateforme conforme RGPD\n• Outil d'analyse : statistiques anonymisées\n\n6.2 Partenaires commerciaux\n• Sous-traitants drone (pilotes certifiés DGAC) en cas de mission déléguée\n• Tous nos partenaires sont liés par des clauses de confidentialité strictes\n\n6.3 Autorités légales\n• Administration fiscale et douanière si requis\n• Autorités judiciaires en cas de litige\n• CNIL en cas d'enquête\n\nAucun transfert de données hors Union Européenne n'est effectué sans garanties appropriées.` },
+  { title: '7. Vos droits RGPD', content: `Conformément au RGPD, vous disposez des droits suivants :\n\n7.1 Droit d'accès\nVous pouvez obtenir une copie de toutes les données personnelles que nous détenons sur vous.\n\n7.2 Droit de rectification\nVous pouvez demander la correction de données inexactes ou incomplètes.\n\n7.3 Droit à l'effacement ("droit à l'oubli")\nVous pouvez demander la suppression de vos données, sous réserve de nos obligations légales de conservation.\n\n7.4 Droit à la limitation\nVous pouvez demander la limitation du traitement de vos données dans certaines circonstances.\n\n7.5 Droit à la portabilité\nVous pouvez récupérer vos données dans un format structuré et lisible.\n\n7.6 Droit d'opposition\nVous pouvez vous opposer au traitement de vos données à des fins de prospection commerciale.\n\n7.7 Droit de retrait du consentement\nVous pouvez retirer votre consentement à tout moment sans affecter la licéité du traitement antérieur.\n\nExercice de vos droits : contact@brenne-aerial.fr\nDélai de réponse : 30 jours maximum.\nRéclamation : CNIL — www.cnil.fr` },
+  { title: '8. Politique des cookies', content: `Notre site utilise des cookies et technologies similaires.\n\n8.1 Cookies strictement nécessaires (pas de consentement requis)\n• Session utilisateur\n• Préférences de langue\n• Panier / formulaires en cours\n\n8.2 Cookies analytiques (avec consentement)\n• Mesure d'audience anonymisée\n• Analyse du comportement de navigation\n• Amélioration de l'expérience utilisateur\n\n8.3 Cookies marketing (avec consentement)\n• Personnalisation des contenus\n• Retargeting publicitaire\n• Réseaux sociaux (YouTube, TikTok, Instagram)\n\nGestion des cookies : vous pouvez modifier vos préférences à tout moment via le bandeau cookie ou les paramètres de votre navigateur. Le refus des cookies non essentiels n'affecte pas l'accès au site.` },
+  { title: '9. Sécurité des données', content: `Brenne Aerial met en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données :\n\n• Chiffrement SSL/TLS de toutes les communications\n• Stockage sécurisé avec chiffrement au repos\n• Accès restreint aux données (principe du moindre privilège)\n• Authentification forte pour l'accès admin\n• Sauvegardes régulières et sécurisées\n• Formation du personnel aux bonnes pratiques\n• Audit de sécurité régulier\n• Plan de réponse aux incidents de sécurité\n\nEn cas de violation de données susceptible d'engendrer un risque élevé pour vos droits, vous serez notifié dans les 72 heures conformément à l'article 34 du RGPD.` },
+  { title: '10. Modifications de la politique', content: `Brenne Aerial se réserve le droit de modifier cette politique de confidentialité à tout moment pour refléter les changements législatifs, réglementaires ou opérationnels.\n\nToute modification substantielle vous sera notifiée par :\n• Email si vous êtes client ou abonné à notre newsletter\n• Bandeau d'information sur le site web\n• Mise à jour de la date de dernière révision\n\nDate de dernière mise à jour : ${new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}\n\nNous vous encourageons à consulter régulièrement cette page pour vous tenir informé de nos pratiques de protection des données.` },
+];
+
+export default function PrivacyPage() {
+  return (
+    <div className="pt-16">
+      <section className="py-24 px-5 lg:px-10 max-w-4xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-center gap-3 mb-6">
+            <Shield className="w-7 h-7 text-primary" />
+            <div>
+              <p className="font-mono text-xs text-primary tracking-widest uppercase">Légal</p>
+              <h1 className="font-grotesk font-bold text-3xl sm:text-4xl">Politique de confidentialité</h1>
+            </div>
+          </div>
+          <p className="font-inter text-sm text-muted-foreground mb-12">
+            Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
+          <div className="prose prose-invert max-w-none space-y-10">
+            {SECTIONS.map((s, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="p-6 rounded-xl bg-card border border-border">
+                <h2 className="font-grotesk font-bold text-lg mb-4 text-foreground">{s.title}</h2>
+                <div className="font-inter text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{s.content}</div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+    </div>
+  );
+}

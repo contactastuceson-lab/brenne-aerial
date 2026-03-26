@@ -3,37 +3,33 @@
   "type": "object",
   "properties": {
     "user_email": {
-      "type": "string",
-      "description": "Email de l'utilisateur destinataire"
+      "type": "string"
     },
     "title": {
-      "type": "string",
-      "description": "Titre de la notification"
+      "type": "string"
     },
     "content": {
-      "type": "string",
-      "description": "Contenu de la notification"
+      "type": "string"
     },
     "type": {
       "type": "string",
       "enum": [
         "quote_accepted",
         "quote_refused",
+        "quote_pending",
         "new_message",
+        "appointment",
         "system",
         "badge",
-        "appointment"
-      ],
-      "description": "Type de notification"
+        "blog"
+      ]
     },
     "is_read": {
       "type": "boolean",
-      "default": false,
-      "description": "Notification lue"
+      "default": false
     },
     "link": {
-      "type": "string",
-      "description": "Lien associ\u00e9 \u00e0 la notification"
+      "type": "string"
     }
   },
   "required": [

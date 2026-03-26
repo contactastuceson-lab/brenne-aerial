@@ -4,7 +4,7 @@
   "properties": {
     "client_name": {
       "type": "string",
-      "description": "Nom du client"
+      "description": "Nom complet du client"
     },
     "client_email": {
       "type": "string",
@@ -12,45 +12,63 @@
     },
     "client_phone": {
       "type": "string",
-      "description": "T\u00e9l\u00e9phone du client"
+      "description": "T\u00e9l\u00e9phone"
+    },
+    "company": {
+      "type": "string",
+      "description": "Soci\u00e9t\u00e9 (optionnel)"
     },
     "service_type": {
       "type": "string",
       "enum": [
-        "consulting",
-        "development",
-        "design",
-        "maintenance",
-        "formation",
+        "video_evenement",
+        "inspection_toiture",
+        "suivi_chantier",
+        "captation_particulier",
+        "captation_entreprise",
+        "retour_temps_reel",
         "autre"
       ],
-      "description": "Type de service demand\u00e9"
+      "description": "Type de prestation"
+    },
+    "date_souhaitee": {
+      "type": "string",
+      "format": "date",
+      "description": "Date souhait\u00e9e"
+    },
+    "horaire": {
+      "type": "string",
+      "description": "Horaire souhait\u00e9"
+    },
+    "location": {
+      "type": "string",
+      "description": "Lieu de la prestation"
     },
     "description": {
       "type": "string",
       "description": "Description d\u00e9taill\u00e9e du besoin"
     },
-    "budget_range": {
+    "duree_estimee": {
       "type": "string",
       "enum": [
-        "< 1000\u20ac",
-        "1000\u20ac - 5000\u20ac",
-        "5000\u20ac - 10000\u20ac",
-        "10000\u20ac - 25000\u20ac",
-        "> 25000\u20ac"
+        "1h",
+        "2-3h",
+        "demi-journee",
+        "journee",
+        "multi-jours"
       ],
-      "description": "Fourchette de budget"
+      "description": "Dur\u00e9e estim\u00e9e"
     },
-    "urgency": {
-      "type": "string",
-      "enum": [
-        "low",
-        "medium",
-        "high",
-        "urgent"
-      ],
-      "default": "medium",
-      "description": "Niveau d'urgence"
+    "fichiers_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Fichiers upload\u00e9s"
+    },
+    "prix_estime": {
+      "type": "number",
+      "description": "Prix estimatif calcul\u00e9"
     },
     "status": {
       "type": "string",
@@ -58,20 +76,24 @@
         "pending",
         "reviewing",
         "accepted",
-        "refused"
+        "refused",
+        "completed"
       ],
       "default": "pending",
       "description": "Statut du devis"
     },
     "admin_notes": {
       "type": "string",
-      "description": "Notes de l'administrateur"
+      "description": "Notes admin"
+    },
+    "prix_final": {
+      "type": "number",
+      "description": "Prix final propos\u00e9"
     }
   },
   "required": [
     "client_name",
     "client_email",
-    "service_type",
-    "description"
+    "service_type"
   ]
 }

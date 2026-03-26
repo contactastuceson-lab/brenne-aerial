@@ -1,0 +1,58 @@
+{
+  "name": "BlogPost",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "excerpt": {
+      "type": "string",
+      "description": "R\u00e9sum\u00e9 court"
+    },
+    "content": {
+      "type": "string",
+      "description": "Contenu HTML/Markdown"
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "actualite",
+        "conseil",
+        "technique",
+        "projet",
+        "formation"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "author": {
+      "type": "string"
+    },
+    "is_published": {
+      "type": "boolean",
+      "default": false
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    },
+    "reading_time": {
+      "type": "number",
+      "description": "Temps de lecture en minutes"
+    }
+  },
+  "required": [
+    "title",
+    "content"
+  ]
+}

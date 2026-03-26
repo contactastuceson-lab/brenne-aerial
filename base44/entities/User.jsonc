@@ -7,39 +7,38 @@
       "enum": [
         "admin",
         "user",
-        "moderator",
-        "vip"
+        "vip",
+        "collaborateur"
       ],
-      "default": "user",
-      "description": "R\u00f4le de l'utilisateur"
+      "default": "user"
     },
     "badges": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Liste des badges attribu\u00e9s"
+      "description": "Badges attribu\u00e9s"
     },
     "phone": {
-      "type": "string",
-      "description": "Num\u00e9ro de t\u00e9l\u00e9phone"
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
     },
     "bio": {
-      "type": "string",
-      "description": "Biographie courte"
+      "type": "string"
     },
     "avatar_url": {
-      "type": "string",
-      "description": "URL de l'avatar"
+      "type": "string"
     },
-    "language": {
-      "type": "string",
-      "enum": [
-        "fr",
-        "en"
-      ],
-      "default": "fr",
-      "description": "Langue pr\u00e9f\u00e9r\u00e9e"
+    "social_tiktok": {
+      "type": "string"
+    },
+    "social_instagram": {
+      "type": "string"
+    },
+    "social_youtube": {
+      "type": "string"
     }
   }
 }

@@ -1,122 +1,89 @@
 import React, { useState } from 'react';
-import { useLanguage } from '@/context/LanguageContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { motion } from 'framer-motion';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Loader2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import StatusBadge from '@/components/shared/StatusBadge';
+import StatusBadge from '@/components/ui/StatusBadge';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export default function AdminAppointments() {
-  const { t, lang } = useLanguage();
-  const queryClient = useQueryClient();
-  const [newSlot, setNewSlot] = useState({ date: '', time_slot: '', period: 'morning' });
+  const qc = useQueryClient();
+  const [form, setForm] = useState({ date: '', time_start: '', time_end: '', service_type: '', location: '' });
 
-  const { data: appointments = [], isLoading } = useQuery({
-    queryKey: ['admin-appointments'],
-    queryFn: () => base44.entities.Appointment.list('-date'),
+  const { data: appts = [], isLoading } = useQuery({
+    queryKey: ['adm-appts-list'],
+    queryFn: () => base44.entities.Appointment.list('-date', 100),
   });
 
-  const createSlot = useMutation({
-    mutationFn: () => base44.entities.Appointment.create({ ...newSlot, status: 'available' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-appointments'] });
-      setNewSlot({ date: '', time_slot: '', period: 'morning' });
-      toast.success(lang === 'fr' ? 'Créneau ajouté' : 'Slot added');
-    },
+  const create = useMutation({
+    mutationFn: () => base44.entities.Appointment.create({ ...form, status: 'confirmed' }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-appts-list'] }); setForm({ date: '', time_start: '', time_end: '', service_type: '', location: '' }); toast.success('Créneau ajouté'); },
   });
 
-  const deleteSlot = useMutation({
+  const update = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Appointment.update(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['adm-appts-list'] }),
+  });
+
+  const del = useMutation({
     mutationFn: (id) => base44.entities.Appointment.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-appointments'] });
-      toast.success(lang === 'fr' ? 'Créneau supprimé' : 'Slot deleted');
-    },
-  });
-
-  const cancelSlot = useMutation({
-    mutationFn: (id) => base44.entities.Appointment.update(id, { status: 'cancelled' }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-appointments'] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-appts-list'] }); toast.success('Supprimé'); },
   });
 
   return (
     <div>
-      <h1 className="font-syne font-extrabold text-2xl mb-8">{t('admin.appointments')}</h1>
+      <h1 className="font-grotesk font-bold text-2xl mb-8">Gestion du planning</h1>
 
-      {/* Add slot */}
       <div className="p-5 rounded-xl bg-card border border-border mb-8">
-        <h3 className="font-syne font-bold text-sm mb-4">{lang === 'fr' ? 'Ajouter un créneau' : 'Add a slot'}</h3>
+        <h3 className="font-grotesk font-semibold text-sm mb-4">Ajouter un créneau disponible</h3>
         <div className="flex flex-wrap gap-3 items-end">
           <div>
             <label className="font-inter text-xs text-muted-foreground mb-1 block">Date</label>
-            <Input
-              type="date"
-              value={newSlot.date}
-              onChange={(e) => setNewSlot(p => ({ ...p, date: e.target.value }))}
-              className="bg-secondary border-border w-44"
-            />
+            <Input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="bg-secondary border-border w-40" />
           </div>
           <div>
-            <label className="font-inter text-xs text-muted-foreground mb-1 block">{lang === 'fr' ? 'Créneau' : 'Slot'}</label>
-            <Input
-              placeholder="09:00 - 10:00"
-              value={newSlot.time_slot}
-              onChange={(e) => setNewSlot(p => ({ ...p, time_slot: e.target.value }))}
-              className="bg-secondary border-border w-44"
-            />
+            <label className="font-inter text-xs text-muted-foreground mb-1 block">Début</label>
+            <Input placeholder="09:00" value={form.time_start} onChange={e => setForm(p => ({ ...p, time_start: e.target.value }))} className="bg-secondary border-border w-28" />
           </div>
           <div>
-            <label className="font-inter text-xs text-muted-foreground mb-1 block">{lang === 'fr' ? 'Période' : 'Period'}</label>
-            <Select value={newSlot.period} onValueChange={(v) => setNewSlot(p => ({ ...p, period: v }))}>
-              <SelectTrigger className="bg-secondary border-border w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="morning">{t('planning.morning')}</SelectItem>
-                <SelectItem value="afternoon">{t('planning.afternoon')}</SelectItem>
-                <SelectItem value="evening">{t('planning.evening')}</SelectItem>
-              </SelectContent>
-            </Select>
+            <label className="font-inter text-xs text-muted-foreground mb-1 block">Fin</label>
+            <Input placeholder="11:00" value={form.time_end} onChange={e => setForm(p => ({ ...p, time_end: e.target.value }))} className="bg-secondary border-border w-28" />
           </div>
-          <Button
-            onClick={() => createSlot.mutate()}
-            disabled={!newSlot.date || !newSlot.time_slot || createSlot.isPending}
-            className="bg-primary text-primary-foreground"
-          >
-            {createSlot.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+          <div>
+            <label className="font-inter text-xs text-muted-foreground mb-1 block">Service</label>
+            <Input placeholder="Type de prestation" value={form.service_type} onChange={e => setForm(p => ({ ...p, service_type: e.target.value }))} className="bg-secondary border-border w-48" />
+          </div>
+          <Button onClick={() => create.mutate()} disabled={!form.date || !form.time_start || create.isPending} className="bg-primary text-primary-foreground">
+            {create.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
           </Button>
         </div>
       </div>
 
-      {/* List */}
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : (
+      {isLoading ? <div className="flex justify-center py-10"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div> : (
         <div className="space-y-2">
-          {appointments.map((a) => (
-            <div key={a.id} className="flex items-center justify-between p-4 rounded-xl bg-card border border-border">
-              <div className="flex items-center gap-4">
-                <div>
-                  <span className="font-mono text-sm font-medium">{a.date}</span>
-                  <span className="font-mono text-xs text-muted-foreground ml-3">{a.time_slot}</span>
-                </div>
-                <StatusBadge status={a.status} />
-              </div>
-              <div className="flex items-center gap-3">
-                {a.client_name && (
-                  <span className="font-inter text-xs text-muted-foreground">{a.client_name}</span>
-                )}
-                {a.status === 'booked' && (
-                  <Button size="sm" variant="ghost" onClick={() => cancelSlot.mutate(a.id)} className="text-destructive hover:bg-destructive/10 text-xs">
-                    {lang === 'fr' ? 'Annuler' : 'Cancel'}
+          {appts.sort((a, b) => new Date(a.date) - new Date(b.date)).map(a => (
+            <div key={a.id} className="flex flex-wrap items-center gap-4 p-4 rounded-xl bg-card border border-border">
+              <div className="font-mono text-sm font-medium min-w-[100px]">{a.date}</div>
+              <div className="font-mono text-xs text-muted-foreground">{a.time_start}{a.time_end ? ` – ${a.time_end}` : ''}</div>
+              <StatusBadge status={a.status} />
+              {a.client_name && <span className="font-inter text-xs text-muted-foreground">{a.client_name}</span>}
+              {a.service_type && <span className="font-mono text-[10px] text-primary">{a.service_type}</span>}
+              <div className="flex items-center gap-2 ml-auto">
+                {a.status === 'scheduled' && (
+                  <Button size="sm" variant="ghost" onClick={() => update.mutate({ id: a.id, data: { status: 'confirmed' } })} className="text-green-400 hover:bg-green-400/10">
+                    <Check className="w-3.5 h-3.5" />
                   </Button>
                 )}
-                <Button size="sm" variant="ghost" onClick={() => deleteSlot.mutate(a.id)} className="text-destructive hover:bg-destructive/10">
+                {(a.status === 'scheduled' || a.status === 'confirmed') && (
+                  <Button size="sm" variant="ghost" onClick={() => update.mutate({ id: a.id, data: { status: 'cancelled' } })} className="text-destructive hover:bg-destructive/10">
+                    <X className="w-3.5 h-3.5" />
+                  </Button>
+                )}
+                <Button size="sm" variant="ghost" onClick={() => del.mutate(a.id)} className="text-destructive hover:bg-destructive/10">
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
               </div>

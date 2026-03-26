@@ -3,37 +3,37 @@
   "type": "object",
   "properties": {
     "sender_email": {
-      "type": "string",
-      "description": "Email de l'exp\u00e9diteur"
+      "type": "string"
     },
     "sender_name": {
-      "type": "string",
-      "description": "Nom de l'exp\u00e9diteur"
+      "type": "string"
     },
     "recipient_email": {
-      "type": "string",
-      "description": "Email du destinataire"
+      "type": "string"
     },
     "recipient_name": {
-      "type": "string",
-      "description": "Nom du destinataire"
+      "type": "string"
     },
     "subject": {
-      "type": "string",
-      "description": "Objet du message"
+      "type": "string"
     },
     "content": {
-      "type": "string",
-      "description": "Contenu du message"
+      "type": "string"
     },
     "is_read": {
       "type": "boolean",
-      "default": false,
-      "description": "Message lu"
+      "default": false
+    },
+    "is_priority": {
+      "type": "boolean",
+      "default": false
     },
     "thread_id": {
+      "type": "string"
+    },
+    "quote_id": {
       "type": "string",
-      "description": "ID du fil de discussion"
+      "description": "Devis li\u00e9"
     }
   },
   "required": [

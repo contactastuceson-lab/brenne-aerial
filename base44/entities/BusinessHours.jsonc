@@ -1,0 +1,43 @@
+{
+  "name": "BusinessHours",
+  "type": "object",
+  "properties": {
+    "day_of_week": {
+      "type": "string",
+      "enum": [
+        "lundi",
+        "mardi",
+        "mercredi",
+        "jeudi",
+        "vendredi",
+        "samedi",
+        "dimanche"
+      ],
+      "description": "Jour de la semaine"
+    },
+    "is_open": {
+      "type": "boolean",
+      "default": true,
+      "description": "Ouvert ce jour"
+    },
+    "open_time": {
+      "type": "string",
+      "description": "Heure d'ouverture (ex: 09:00)"
+    },
+    "close_time": {
+      "type": "string",
+      "description": "Heure de fermeture (ex: 18:00)"
+    },
+    "break_start": {
+      "type": "string",
+      "description": "D\u00e9but de pause (ex: 12:00)"
+    },
+    "break_end": {
+      "type": "string",
+      "description": "Fin de pause (ex: 13:00)"
+    }
+  },
+  "required": [
+    "day_of_week"
+  ]
+}

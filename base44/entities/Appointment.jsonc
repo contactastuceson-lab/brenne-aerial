@@ -1,0 +1,56 @@
+{
+  "name": "Appointment",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date du rendez-vous"
+    },
+    "time_slot": {
+      "type": "string",
+      "description": "Cr\u00e9neau horaire (ex: 09:00 - 10:00)"
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "morning",
+        "afternoon",
+        "evening"
+      ],
+      "description": "P\u00e9riode de la journ\u00e9e"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Nom du client"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Email du client"
+    },
+    "service_type": {
+      "type": "string",
+      "description": "Type de prestation"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notes suppl\u00e9mentaires"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "booked",
+        "completed",
+        "cancelled"
+      ],
+      "default": "available",
+      "description": "Statut du cr\u00e9neau"
+    }
+  },
+  "required": [
+    "date",
+    "time_slot",
+    "status"
+  ]
+}

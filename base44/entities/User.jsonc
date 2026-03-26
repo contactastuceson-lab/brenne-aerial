@@ -1,0 +1,45 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user",
+        "moderator",
+        "vip"
+      ],
+      "default": "user",
+      "description": "R\u00f4le de l'utilisateur"
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Liste des badges attribu\u00e9s"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Num\u00e9ro de t\u00e9l\u00e9phone"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Biographie courte"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "URL de l'avatar"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "fr",
+        "en"
+      ],
+      "default": "fr",
+      "description": "Langue pr\u00e9f\u00e9r\u00e9e"
+    }
+  }
+}

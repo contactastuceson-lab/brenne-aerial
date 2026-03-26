@@ -1,0 +1,44 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "sender_email": {
+      "type": "string",
+      "description": "Email de l'exp\u00e9diteur"
+    },
+    "sender_name": {
+      "type": "string",
+      "description": "Nom de l'exp\u00e9diteur"
+    },
+    "recipient_email": {
+      "type": "string",
+      "description": "Email du destinataire"
+    },
+    "recipient_name": {
+      "type": "string",
+      "description": "Nom du destinataire"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Objet du message"
+    },
+    "content": {
+      "type": "string",
+      "description": "Contenu du message"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Message lu"
+    },
+    "thread_id": {
+      "type": "string",
+      "description": "ID du fil de discussion"
+    }
+  },
+  "required": [
+    "sender_email",
+    "recipient_email",
+    "content"
+  ]
+}

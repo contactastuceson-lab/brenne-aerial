@@ -1,0 +1,77 @@
+{
+  "name": "Quote",
+  "type": "object",
+  "properties": {
+    "client_name": {
+      "type": "string",
+      "description": "Nom du client"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Email du client"
+    },
+    "client_phone": {
+      "type": "string",
+      "description": "T\u00e9l\u00e9phone du client"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "consulting",
+        "development",
+        "design",
+        "maintenance",
+        "formation",
+        "autre"
+      ],
+      "description": "Type de service demand\u00e9"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description d\u00e9taill\u00e9e du besoin"
+    },
+    "budget_range": {
+      "type": "string",
+      "enum": [
+        "< 1000\u20ac",
+        "1000\u20ac - 5000\u20ac",
+        "5000\u20ac - 10000\u20ac",
+        "10000\u20ac - 25000\u20ac",
+        "> 25000\u20ac"
+      ],
+      "description": "Fourchette de budget"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium",
+      "description": "Niveau d'urgence"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewing",
+        "accepted",
+        "refused"
+      ],
+      "default": "pending",
+      "description": "Statut du devis"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Notes de l'administrateur"
+    }
+  },
+  "required": [
+    "client_name",
+    "client_email",
+    "service_type",
+    "description"
+  ]
+}

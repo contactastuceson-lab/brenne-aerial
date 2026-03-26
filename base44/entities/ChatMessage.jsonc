@@ -1,0 +1,60 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "ID unique de la conversation (ex: emailA_emailB tri\u00e9 alphab\u00e9tiquement)"
+    },
+    "sender_email": {
+      "type": "string",
+      "description": "Email de l'exp\u00e9diteur"
+    },
+    "sender_name": {
+      "type": "string",
+      "description": "Nom de l'exp\u00e9diteur"
+    },
+    "sender_avatar": {
+      "type": "string",
+      "description": "Avatar de l'exp\u00e9diteur"
+    },
+    "recipient_email": {
+      "type": "string",
+      "description": "Email du destinataire"
+    },
+    "recipient_name": {
+      "type": "string",
+      "description": "Nom du destinataire"
+    },
+    "content": {
+      "type": "string",
+      "description": "Contenu du message"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Message lu ou non"
+    },
+    "is_request": {
+      "type": "boolean",
+      "default": false,
+      "description": "Est-ce une demande initiale de contact (premier message)"
+    },
+    "request_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined"
+      ],
+      "default": "pending",
+      "description": "Statut de la demande de contact"
+    }
+  },
+  "required": [
+    "conversation_id",
+    "sender_email",
+    "recipient_email",
+    "content"
+  ]
+}

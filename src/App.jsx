@@ -21,6 +21,8 @@ import PlanningPage from "@/pages/PlanningPage";
 import BlogPage from "@/pages/BlogPage";
 import ContactPage from "@/pages/ContactPage";
 import DashboardPage from "@/pages/DashboardPage";
+import DiscoverPage from "@/pages/DiscoverPage";
+import MessagesPage from "@/pages/MessagesPage";
 import PrivacyPage from "@/pages/legal/PrivacyPage";
 import TermsPage from "@/pages/legal/TermsPage";
 
@@ -66,6 +68,8 @@ const AuthenticatedApp = () => {
         <Route path="/blog/:id" element={<BlogPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/discover" element={<DiscoverPage />} />
+        <Route path="/messages" element={<MessagesPage />} />
         <Route path="/legal/privacy" element={<PrivacyPage />} />
         <Route path="/legal/terms" element={<TermsPage />} />
       </Route>

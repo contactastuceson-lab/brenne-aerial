@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Bell, User, ChevronDown } from 'lucide-react';
+import { Menu, X, Bell, User, MessageCircle, Compass } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -84,6 +84,17 @@ export default function Navbar() {
         <div className="hidden lg:flex items-center gap-3">
           {user ? (
             <>
+              <Link to="/discover">
+                <Button variant="ghost" size="sm" className={`text-muted-foreground hover:text-foreground gap-1.5 ${isActive('/discover') ? 'text-primary' : ''}`}>
+                  <Compass className="w-4 h-4" />
+                  <span className="font-inter text-sm hidden xl:inline">Découvrir</span>
+                </Button>
+              </Link>
+              <Link to="/messages" className="relative">
+                <Button variant="ghost" size="sm" className={`text-muted-foreground hover:text-foreground ${isActive('/messages') ? 'text-primary' : ''}`}>
+                  <MessageCircle className="w-4 h-4" />
+                </Button>
+              </Link>
               <Link to="/dashboard" className="relative">
                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                   <Bell className="w-4 h-4" />
@@ -150,11 +161,23 @@ export default function Navbar() {
               ))}
               <div className="pt-3 border-t border-border flex flex-col gap-2">
                 {user ? (
-                  <Link to="/dashboard" onClick={() => setOpen(false)}>
-                    <Button size="sm" variant="outline" className="w-full font-inter text-sm border-border">
-                      Mon espace
-                    </Button>
-                  </Link>
+                  <>
+                    <Link to="/discover" onClick={() => setOpen(false)}>
+                      <Button size="sm" variant="outline" className="w-full font-inter text-sm border-border gap-2">
+                        <Compass className="w-4 h-4" /> Découvrir
+                      </Button>
+                    </Link>
+                    <Link to="/messages" onClick={() => setOpen(false)}>
+                      <Button size="sm" variant="outline" className="w-full font-inter text-sm border-border gap-2">
+                        <MessageCircle className="w-4 h-4" /> Messages
+                      </Button>
+                    </Link>
+                    <Link to="/dashboard" onClick={() => setOpen(false)}>
+                      <Button size="sm" variant="outline" className="w-full font-inter text-sm border-border">
+                        Mon espace
+                      </Button>
+                    </Link>
+                  </>
                 ) : (
                   <>
                     <Button variant="ghost" size="sm" onClick={() => base44.auth.redirectToLogin()} className="w-full font-inter text-sm">Connexion</Button>

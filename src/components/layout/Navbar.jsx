@@ -105,10 +105,13 @@ export default function Navbar() {
                   )}
                 </Button>
               </Link>
-              <Link to="/dashboard">
+              <Link to="/profile">
                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5">
-                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                    <User className="w-3.5 h-3.5 text-primary" />
+                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                    {user.avatar_url
+                      ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
+                      : <User className="w-3.5 h-3.5 text-primary" />
+                    }
                   </div>
                   <span className="font-inter text-sm">{user.full_name?.split(' ')[0]}</span>
                 </Button>

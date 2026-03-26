@@ -8,9 +8,33 @@
         "admin",
         "user",
         "vip",
-        "collaborateur"
+        "collaborateur",
+        "pilote"
       ],
       "default": "user"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Biographie de l'utilisateur"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "URL de la photo de profil"
+    },
+    "cover_url": {
+      "type": "string",
+      "description": "URL de la photo de couverture"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string",
+      "description": "Ville / localisation"
+    },
+    "website": {
+      "type": "string",
+      "description": "Lien vers le site web"
     },
     "badges": {
       "type": "array",
@@ -19,26 +43,30 @@
       },
       "description": "Badges attribu\u00e9s"
     },
-    "phone": {
-      "type": "string"
+    "is_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Compte v\u00e9rifi\u00e9 par un admin"
     },
-    "company": {
-      "type": "string"
+    "account_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "banned",
+        "restricted"
+      ],
+      "default": "active",
+      "description": "Statut du compte"
     },
-    "bio": {
-      "type": "string"
+    "suspension_reason": {
+      "type": "string",
+      "description": "Raison de la suspension / ban"
     },
-    "avatar_url": {
-      "type": "string"
-    },
-    "social_tiktok": {
-      "type": "string"
-    },
-    "social_instagram": {
-      "type": "string"
-    },
-    "social_youtube": {
-      "type": "string"
+    "suspension_until": {
+      "type": "string",
+      "format": "date",
+      "description": "Date de fin de suspension temporaire"
     }
   }
 }

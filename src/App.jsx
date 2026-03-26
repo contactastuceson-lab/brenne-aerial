@@ -34,6 +34,10 @@ import AdminPortfolio from "@/pages/admin/AdminPortfolio";
 import AdminBlog from "@/pages/admin/AdminBlog";
 import AdminMessaging from "@/pages/admin/AdminMessaging";
 import AdminUsers from "@/pages/admin/AdminUsers";
+import AdminReports from "@/pages/admin/AdminReports";
+import AdminConversations from "@/pages/admin/AdminConversations";
+import AdminMaintenance from "@/pages/admin/AdminMaintenance";
+import ProfilePage from "@/pages/ProfilePage";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -70,6 +74,7 @@ const AuthenticatedApp = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/discover" element={<DiscoverPage />} />
         <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/legal/privacy" element={<PrivacyPage />} />
         <Route path="/legal/terms" element={<TermsPage />} />
       </Route>
@@ -84,6 +89,9 @@ const AuthenticatedApp = () => {
         <Route path="/admin/messaging" element={<AdminMessaging />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/clients" element={<AdminUsers />} />
+        <Route path="/admin/reports" element={<AdminReports />} />
+        <Route path="/admin/conversations" element={<AdminConversations />} />
+        <Route path="/admin/maintenance" element={<AdminMaintenance />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

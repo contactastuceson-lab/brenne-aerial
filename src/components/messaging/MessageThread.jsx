@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Send, Lock, Check, X } from 'lucide-react';
+import { ArrowLeft, Send, Lock, Check, X, Flag, Clock } from 'lucide-react';
+import ReportModal from '@/components/shared/ReportModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -15,6 +16,7 @@ function getConversationId(emailA, emailB) {
 
 export default function MessageThread({ user, conv, onBack }) {
   const [text, setText] = useState('');
+  const [reportMsg, setReportMsg] = useState(null);
   const bottomRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -203,7 +205,7 @@ export default function MessageThread({ user, conv, onBack }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i < 10 ? 0 : 0 }}
-                className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
+                className={`flex group ${isMine ? 'justify-end' : 'justify-start'}`}
               >
                 <div className={`max-w-[75%] ${isMine ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                   {msg.is_request && (
@@ -221,9 +223,19 @@ export default function MessageThread({ user, conv, onBack }) {
                   >
                     {msg.content}
                   </div>
-                  <span className="font-mono text-[9px] text-muted-foreground">
-                    {msg.created_date ? format(new Date(msg.created_date), 'HH:mm', { locale: fr }) : ''}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[9px] text-muted-foreground">
+                      {msg.created_date ? format(new Date(msg.created_date), 'HH:mm', { locale: fr }) : ''}
+                    </span>
+                    {!isMine && (
+                      <button
+                        onClick={() => setReportMsg(msg)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Flag className="w-2.5 h-2.5 text-muted-foreground/50 hover:text-destructive" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             );
@@ -282,6 +294,19 @@ export default function MessageThread({ user, conv, onBack }) {
           </div>
         ) : null}
       </div>
+
+      {reportMsg && (
+        <ReportModal
+          open={!!reportMsg}
+          onClose={() => setReportMsg(null)}
+          user={user}
+          targetType="message"
+          targetId={reportMsg.id}
+          targetEmail={reportMsg.sender_email}
+          targetName={reportMsg.sender_name}
+          messageContent={reportMsg.content}
+        />
+      )}
     </div>
   );
 }

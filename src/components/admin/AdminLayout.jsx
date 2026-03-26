@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Settings, ArrowLeft, Bell, Plane, Wrench } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Settings, Plane, Wrench, Flag, MessageCircle, Shield } from 'lucide-react';
 
 const NAV = [
   { path: '/admin', icon: BarChart3, label: 'Dashboard' },
   { path: '/admin/quotes', icon: FileText, label: 'Devis' },
   { path: '/admin/appointments', icon: Calendar, label: 'Planning' },
-  { path: '/admin/clients', icon: Users, label: 'Clients' },
+  { path: '/admin/users', icon: Users, label: 'Comptes' },
+  { path: '/admin/reports', icon: Flag, label: 'Signalements' },
+  { path: '/admin/conversations', icon: MessageCircle, label: 'Conversations' },
   { path: '/admin/portfolio', icon: Image, label: 'Portfolio' },
   { path: '/admin/blog', icon: BookOpen, label: 'Blog' },
   { path: '/admin/messaging', icon: MessageSquare, label: 'Messagerie' },
-  { path: '/admin/services', icon: Wrench, label: 'Services' },
-  { path: '/admin/users', icon: Users, label: 'Utilisateurs' },
-  { path: '/admin/settings', icon: Settings, label: 'Paramètres' },
+  { path: '/admin/maintenance', icon: Shield, label: 'Maintenance' },
 ];
 
 export default function AdminLayout() {

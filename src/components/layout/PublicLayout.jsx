@@ -1,19 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import AnnouncementBanner from '@/components/shared/AnnouncementBanner';
 import AnnouncementPopup from '@/components/shared/AnnouncementPopup';
+import MaintenancePage from '@/pages/MaintenancePage';
+import BannedPage from '@/pages/BannedPage';
 import { base44 } from '@/api/base44Client';
 
 export default function PublicLayout() {
   const [user, setUser] = useState(null);
+  const [settings, setSettings] = useState({});
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(auth => {
-      if (auth) base44.auth.me().then(setUser).catch(() => {});
-    });
+    const init = async () => {
+      // Fetch app settings
+      try {
+        const allSettings = await base44.entities.AppSettings.list();
+        const map = {};
+        allSettings.forEach(s => { map[s.key] = s.value; });
+        setSettings(map);
+      } catch (_) {}
+
+      // Fetch user
+      try {
+        const auth = await base44.auth.isAuthenticated();
+        if (auth) {
+          const me = await base44.auth.me();
+          setUser(me);
+        }
+      } catch (_) {}
+
+      setLoading(false);
+    };
+    init();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Block banned/suspended users (but allow admin access)
+  if (user && user.role !== 'admin') {
+    const status = user.account_status;
+    if (status === 'banned' || status === 'suspended' || status === 'restricted') {
+      return <BannedPage status={status} reason={user.suspension_reason} />;
+    }
+  }
+
+  // Maintenance mode — block non-admins
+  const isMaintenance = settings['maintenance_mode'] === 'true';
+  if (isMaintenance && (!user || user.role !== 'admin')) {
+    return <MaintenancePage message={settings['site_notice'] || undefined} />;
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

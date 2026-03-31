@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Send, Lock, Check, X, Flag, Clock } from 'lucide-react';
 import ReportModal from '@/components/shared/ReportModal';
+import BadgeChip from '@/components/ui/BadgeChip';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -23,6 +24,12 @@ export default function MessageThread({ user, conv, onBack }) {
   const prevCountRef = useRef(0);
 
   const convId = conv.convId || getConversationId(user.email, conv.email);
+  // Reset scroll state when conversation changes
+  const isInitialLoad = useRef(true);
+  useEffect(() => {
+    isInitialLoad.current = true;
+    prevCountRef.current = 0;
+  }, [convId]);
 
   const { data: messages = [] } = useQuery({
     queryKey: ['thread', convId],
@@ -54,17 +61,22 @@ export default function MessageThread({ user, conv, onBack }) {
       .forEach(m => base44.entities.ChatMessage.update(m.id, { is_read: true }));
   }, [messages, user.email]);
 
-  // Scroll to bottom only when new messages arrive or conversation changes
+  // Scroll to bottom only on initial load or when a NEW message arrives while near bottom
   useEffect(() => {
     if (!scrollAreaRef.current) return;
     const el = scrollAreaRef.current;
-    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
     const isNewMessage = messages.length > prevCountRef.current;
-    prevCountRef.current = messages.length;
-    // On first load or if we were near bottom, scroll down
-    if (isNewMessage || isAtBottom) {
+
+    if (isInitialLoad.current && messages.length > 0) {
+      // First load: scroll to bottom instantly
+      el.scrollTop = el.scrollHeight;
+      isInitialLoad.current = false;
+    } else if (isNewMessage && isAtBottom) {
+      // New message and user was near bottom: scroll smoothly
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
+    prevCountRef.current = messages.length;
   }, [messages]);
 
   const sendRequest = useMutation({
@@ -161,8 +173,16 @@ export default function MessageThread({ user, conv, onBack }) {
             {conv.name?.[0]?.toUpperCase() || '?'}
           </span>
         </div>
-        <div>
-          <p className="font-grotesk font-semibold text-sm">{conv.name}</p>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <p className="font-grotesk font-semibold text-sm">{conv.name}</p>
+            {conv.is_verified && (
+              <span className="text-accent text-[10px]">✓</span>
+            )}
+            {conv.badges?.slice(0, 2).map(b => (
+              <BadgeChip key={b} badge={b} size="sm" />
+            ))}
+          </div>
           <p className="font-mono text-[10px] text-muted-foreground">{conv.email}</p>
         </div>
         {!isOpen && hasAnyRequest && myPendingRequest && (

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import ReportModal from '@/components/shared/ReportModal';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 
 function getConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join('_');
@@ -37,6 +38,15 @@ export default function DiscoverPage() {
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin('/discover'));
   }, []);
+
+  const { data: settings = [] } = useQuery({
+    queryKey: ['app-settings'],
+    queryFn: () => base44.entities.AppSettings.list(),
+    enabled: !!user,
+  });
+
+  const settingsMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
+  const discoverEnabled = settingsMap['page_discover_enabled'] !== 'false' && settingsMap['discover_enabled'] !== 'false';
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['all-users'],
@@ -88,6 +98,10 @@ export default function DiscoverPage() {
         <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  if (!discoverEnabled) {
+    return <FeatureDisabled title="Découverte désactivée" message="La page de découverte des membres est temporairement désactivée." />;
   }
 
   const followingEmails = new Set(follows.map(f => f.following_email));

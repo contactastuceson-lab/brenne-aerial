@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Check, Upload, Loader2, Calculator, Video, Building2, HardHat, Camera, Briefcase, Wifi, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
 import { calculatePrice, formatPrice, SERVICE_PRICES } from '@/lib/droneUtils';
 import { toast } from 'sonner';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 
 const SERVICE_OPTIONS = [
   { key: 'video_evenement',      icon: Video,       label: 'Vidéo événement' },
@@ -34,6 +35,14 @@ export default function QuotePage() {
   const [sent, setSent] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [quotesEnabled, setQuotesEnabled] = useState(true);
+
+  useEffect(() => {
+    base44.entities.AppSettings.list().then(s => {
+      const map = Object.fromEntries(s.map(x => [x.key, x.value]));
+      setQuotesEnabled(map['page_quote_enabled'] !== 'false' && map['quotes_enabled'] !== 'false');
+    }).catch(() => {});
+  }, []);
 
   const [form, setForm] = useState({
     service_type: '', description: '', date_souhaitee: '', horaire: '',
@@ -84,6 +93,10 @@ export default function QuotePage() {
     if (step === 2) return !!form.client_name && !!form.client_email;
     return true;
   };
+
+  if (!quotesEnabled) {
+    return <FeatureDisabled title="Devis désactivés" message="Les demandes de devis sont temporairement désactivées. Revenez bientôt ou contactez-nous directement." />;
+  }
 
   if (sent) {
     return (

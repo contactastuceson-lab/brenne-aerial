@@ -38,6 +38,7 @@ import AdminReports from "@/pages/admin/AdminReports";
 import AdminConversations from "@/pages/admin/AdminConversations";
 import AdminMaintenance from "@/pages/admin/AdminMaintenance";
 import AdminAnnouncements from "@/pages/admin/AdminAnnouncements";
+import AdminPages from "@/pages/admin/AdminPages";
 import ProfilePage from "@/pages/ProfilePage";
 
 const AuthenticatedApp = () => {
@@ -94,6 +95,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/conversations" element={<AdminConversations />} />
         <Route path="/admin/maintenance" element={<AdminMaintenance />} />
         <Route path="/admin/announcements" element={<AdminAnnouncements />} />
+        <Route path="/admin/pages" element={<AdminPages />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

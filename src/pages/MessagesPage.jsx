@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import ConversationList from '@/components/messaging/ConversationList';
 import MessageThread from '@/components/messaging/MessageThread';
 import MessageRequestsPanel from '@/components/messaging/MessageRequestsPanel';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 
 function getConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join('_');
@@ -21,6 +22,7 @@ export default function MessagesPage() {
   const [user, setUser] = useState(null);
   const [selectedConv, setSelectedConv] = useState(null); // { email, name, convId }
   const [activeTab, setActiveTab] = useState('conversations'); // conversations | requests
+  const [settingsMap, setSettingsMap] = useState({});
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -35,6 +37,10 @@ export default function MessagesPage() {
         setSelectedConv({ email: toEmail, name: toName, convId });
       }
     }).catch(() => base44.auth.redirectToLogin('/messages'));
+
+    base44.entities.AppSettings.list().then(s => {
+      setSettingsMap(Object.fromEntries(s.map(x => [x.key, x.value])));
+    }).catch(() => {});
   }, []);
 
   if (!user) {
@@ -43,6 +49,11 @@ export default function MessagesPage() {
         <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  const messagingEnabled = settingsMap['page_messages_enabled'] !== 'false' && settingsMap['messaging_enabled'] !== 'false';
+  if (user && !messagingEnabled) {
+    return <FeatureDisabled title="Messagerie désactivée" message="La messagerie est temporairement désactivée par l'administrateur." />;
   }
 
   return (

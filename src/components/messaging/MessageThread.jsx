@@ -176,9 +176,6 @@ export default function MessageThread({ user, conv, onBack }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <p className="font-grotesk font-semibold text-sm">{conv.name}</p>
-            {conv.is_verified && (
-              <span className="text-accent text-[10px]">✓</span>
-            )}
             {conv.badges?.slice(0, 2).map(b => (
               <BadgeChip key={b} badge={b} size="sm" />
             ))}

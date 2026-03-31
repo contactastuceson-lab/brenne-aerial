@@ -94,7 +94,7 @@ export default function DiscoverPage() {
   const requestedEmails = new Set(myRequests.map(r => r.recipient_email));
 
   const filtered = allUsers
-    .filter(u => u.email !== user.email && (u.account_status || 'active') === 'active')
+    .filter(u => u.email !== user.email)
     .filter(u =>
       !search ||
       u.full_name?.toLowerCase().includes(search.toLowerCase()) ||

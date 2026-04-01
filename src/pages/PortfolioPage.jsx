@@ -134,7 +134,7 @@ export default function PortfolioPage() {
           >
             <motion.div
               initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
-              className="max-w-4xl w-full" onClick={e => e.stopPropagation()}
+              className="max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}
             >
               {lightbox.media_type === 'youtube' && lightbox.media_url ? (
                 <div className="aspect-video w-full rounded-xl overflow-hidden">

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, ExternalLink, Filter } from 'lucide-react';
+import { Play, ExternalLink, Filter, Star } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { getYoutubeThumbnail } from '@/lib/droneUtils';
+import ReviewsSection from '@/components/portfolio/ReviewsSection';
 
 const CATEGORIES = [
   { key: 'all', label: 'Tout' },
@@ -146,13 +147,16 @@ export default function PortfolioPage() {
                 <img src={getThumbnail(lightbox)} alt={lightbox.title} className="w-full rounded-xl" />
               )}
               <div className="mt-4 flex items-start justify-between">
-                <div>
+                <div className="flex-1 min-w-0">
                   <span className="font-mono text-xs text-primary">{lightbox.category}</span>
                   <h3 className="font-grotesk font-bold text-xl mt-1">{lightbox.title}</h3>
                   {lightbox.description && <p className="font-inter text-sm text-muted-foreground mt-1">{lightbox.description}</p>}
                 </div>
                 <button onClick={() => setLightbox(null)} className="text-muted-foreground hover:text-foreground ml-4 flex-shrink-0">✕</button>
               </div>
+              {!lightbox.id?.startsWith('d') && (
+                <ReviewsSection projectId={lightbox.id} projectTitle={lightbox.title} />
+              )}
             </motion.div>
           </motion.div>
         )}

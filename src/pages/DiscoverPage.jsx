@@ -252,20 +252,18 @@ export default function DiscoverPage() {
                         </Button>
                       )}
 
-                      {isFollowing && (
-                        alreadyRequested ? (
-                          <Button size="sm" variant="outline" className="flex-1 text-xs border-border font-inter gap-1.5 h-8 opacity-60" disabled>
+                      {alreadyRequested ? (
+                        <Button size="sm" variant="outline" className="flex-1 text-xs border-border font-inter gap-1.5 h-8 opacity-60" disabled>
+                          <MessageCircle className="w-3 h-3" />
+                          Envoyé
+                        </Button>
+                      ) : (
+                        <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`} className="flex-1">
+                          <Button size="sm" className="w-full text-xs bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 font-inter gap-1.5 h-8">
                             <MessageCircle className="w-3 h-3" />
-                            Envoyé
+                            Contacter
                           </Button>
-                        ) : (
-                          <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`} className="flex-1">
-                            <Button size="sm" className="w-full text-xs bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 font-inter gap-1.5 h-8">
-                              <MessageCircle className="w-3 h-3" />
-                              Contacter
-                            </Button>
-                          </Link>
-                        )
+                        </Link>
                       )}
                     </div>
                   </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Bell, User, MessageCircle, Compass } from 'lucide-react';
+import { Menu, X, Bell, User, MessageCircle, Compass, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -191,6 +191,13 @@ export default function Navbar() {
                         Mon espace
                       </Button>
                     </Link>
+                    {user.role === 'admin' && (
+                      <Link to="/admin" onClick={() => setOpen(false)}>
+                        <Button size="sm" className="w-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-inter text-sm gap-2">
+                          <LayoutDashboard className="w-4 h-4" /> Panel Admin
+                        </Button>
+                      </Link>
+                    )}
                   </>
                 ) : (
                   <>

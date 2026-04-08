@@ -18,6 +18,18 @@ import { Link } from 'react-router-dom';
 
 const BADGES = ['Fondateur', 'Collaborateur', 'VIP', 'Admin', 'Pilote', 'Officiel', 'Vérifié', 'Beta Testeur', 'Partenaire'];
 
+function formatPhone(raw) {
+  if (!raw) return '';
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length === 10 && digits.startsWith('0')) {
+    return digits.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
+  }
+  if (digits.length === 11 && digits.startsWith('33')) {
+    return '+33 ' + digits.slice(2).replace(/(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
+  }
+  return raw;
+}
+
 const STATUS_COLORS = {
   active:     'text-green-400 bg-green-400/10 border-green-400/30',
   suspended:  'text-yellow-400 bg-yellow-400/10 border-yellow-400/30',
@@ -146,6 +158,7 @@ export default function AdminUsers() {
                     )}
                   </div>
                   <p className="font-mono text-xs text-muted-foreground">{u.email}</p>
+                  {u.phone && <p className="font-mono text-xs text-muted-foreground/60">{formatPhone(u.phone)}</p>}
                   {u.badges?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {u.badges.map(b => <BadgeChip key={b} badge={b} size="sm" />)}
@@ -271,7 +284,13 @@ export default function AdminUsers() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="font-inter text-xs text-muted-foreground mb-1 block">Téléphone</label>
-                  <Input value={editForm.phone} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} className="bg-secondary border-border" />
+                  <Input
+                    value={editForm.phone}
+                    onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))}
+                    onBlur={e => setEditForm(p => ({ ...p, phone: formatPhone(e.target.value) }))}
+                    placeholder="06 12 34 56 78"
+                    className="bg-secondary border-border"
+                  />
                 </div>
                 <div>
                   <label className="font-inter text-xs text-muted-foreground mb-1 block">Localisation</label>

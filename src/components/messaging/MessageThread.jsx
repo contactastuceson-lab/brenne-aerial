@@ -319,7 +319,11 @@ export default function MessageThread({ user, conv, onBack }) {
               <Send className="w-4 h-4" />
             </Button>
           </div>
-        ) : null}
+        ) : (
+          <div className="text-center py-2 font-inter text-xs text-muted-foreground">
+            Cette conversation est fermée.
+          </div>
+        )}
       </div>
 
       {reportMsg && (

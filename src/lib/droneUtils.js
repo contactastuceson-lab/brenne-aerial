@@ -22,11 +22,15 @@ export function calculatePrice(serviceType, duration) {
 
 // Badge config
 export const BADGE_CONFIG = {
-  Fondateur:      { color: 'badge-founder', border: 'border-sky-400/40', bg: 'bg-sky-400/10' },
-  Collaborateur:  { color: 'text-accent', border: 'border-accent/40', bg: 'bg-accent/10' },
-  VIP:            { color: 'text-chart-5', border: 'border-chart-5/40', bg: 'bg-chart-5/10' },
-  Admin:          { color: 'text-primary', border: 'border-primary/40', bg: 'bg-primary/10' },
-  Pilote:         { color: 'text-green-400', border: 'border-green-400/40', bg: 'bg-green-400/10' },
+  Fondateur:       { color: 'badge-founder', border: 'border-sky-400/40', bg: 'bg-sky-400/10' },
+  Collaborateur:   { color: 'text-accent', border: 'border-accent/40', bg: 'bg-accent/10' },
+  VIP:             { color: 'text-chart-5', border: 'border-chart-5/40', bg: 'bg-chart-5/10' },
+  Admin:           { color: 'text-primary', border: 'border-primary/40', bg: 'bg-primary/10' },
+  Pilote:          { color: 'text-green-400', border: 'border-green-400/40', bg: 'bg-green-400/10' },
+  Officiel:        { color: 'text-accent', border: 'border-accent/40', bg: 'bg-accent/10' },
+  Vérifié:         { color: 'text-primary', border: 'border-primary/40', bg: 'bg-primary/10' },
+  'Beta Testeur':  { color: 'text-chart-5', border: 'border-chart-5/40', bg: 'bg-chart-5/10' },
+  Partenaire:      { color: 'text-green-400', border: 'border-green-400/40', bg: 'bg-green-400/10' },
 };
 
 // Status config

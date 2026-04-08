@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, LogOut } from 'lucide-react';
 
 const NAV = [
   { path: '/admin', icon: BarChart3, label: 'Dashboard' },
@@ -76,9 +76,9 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        <div className="px-3 pt-4 border-t border-sidebar-border">
+        <div className="px-3 pt-4 border-t border-sidebar-border space-y-2">
           <div className="hidden lg:flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
               <span className="font-grotesk font-bold text-primary text-xs">{user?.full_name?.[0]}</span>
             </div>
             <div className="min-w-0">
@@ -86,6 +86,14 @@ export default function AdminLayout() {
               <p className="font-mono text-[10px] text-muted-foreground">Admin</p>
             </div>
           </div>
+          <button
+            onClick={() => base44.auth.logout('/')}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+            title="Déconnexion"
+          >
+            <LogOut className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden lg:inline font-inter text-xs">Déconnexion</span>
+          </button>
         </div>
       </aside>
 

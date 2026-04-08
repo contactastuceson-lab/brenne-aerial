@@ -41,7 +41,8 @@
       "items": {
         "type": "string"
       },
-      "description": "Badges attribu\u00e9s"
+      "description": "Badges attribu\u00e9s",
+      "default": []
     },
     "is_verified": {
       "type": "boolean",
@@ -68,5 +69,6 @@
       "format": "date",
       "description": "Date de fin de suspension temporaire"
     }
-  }
+  },
+  "required": []
 }

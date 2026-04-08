@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Clock, Eye, ArrowRight, Tag } from 'lucide-react';
+import { Clock, Eye, ArrowRight, Search, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -35,6 +36,7 @@ const CAT_COLORS = {
 
 export default function BlogPage() {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [search, setSearch] = useState('');
 
   const { data: dbPosts = [] } = useQuery({
     queryKey: ['blog-posts'],
@@ -42,7 +44,9 @@ export default function BlogPage() {
   });
 
   const posts = dbPosts.length > 0 ? dbPosts : DEMO_POSTS;
-  const filtered = activeCategory === 'all' ? posts : posts.filter(p => p.category === activeCategory);
+  const filtered = posts
+    .filter(p => activeCategory === 'all' || p.category === activeCategory)
+    .filter(p => !search || p.title?.toLowerCase().includes(search.toLowerCase()) || p.excerpt?.toLowerCase().includes(search.toLowerCase()));
   const [featured, ...rest] = filtered;
 
   return (
@@ -57,6 +61,23 @@ export default function BlogPage() {
             </h1>
             <p className="font-inter text-muted-foreground max-w-lg">Conseils d'experts, actualités drone, projets et innovations.</p>
           </motion.div>
+
+          {/* Search */}
+          <div className="relative mb-5 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Rechercher un article..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-card border border-border font-inter text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            {search && (
+              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
 
           {/* Filters */}
           <div className="flex gap-2 overflow-x-auto pb-2 mb-10">

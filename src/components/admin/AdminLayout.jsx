@@ -91,7 +91,7 @@ export default function AdminLayout() {
 
       {/* Main content */}
       <main className="flex-1 ml-14 lg:ml-56 min-h-screen overflow-x-hidden">
-        <div className="p-5 lg:p-8">
+        <div className="p-3 sm:p-5 lg:p-8 max-w-full">
           <Outlet context={{ user }} />
         </div>
       </main>

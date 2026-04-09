@@ -80,7 +80,10 @@ module.exports = {
   plugins: [require("tailwindcss-animate")],
   safelist: [
     'text-primary', 'text-accent', 'text-chart-5', 'text-destructive', 'text-muted-foreground',
+    'text-green-400', 'text-blue-400', 'text-cyan-400', 'text-orange-400', 'text-purple-400',
     'bg-primary/10', 'bg-accent/10', 'bg-chart-5/10', 'bg-destructive/10',
+    'bg-green-400/10', 'bg-blue-400/10', 'bg-cyan-400/10', 'bg-orange-400/10', 'bg-purple-400/10',
     'border-primary/30', 'border-accent/30', 'border-chart-5/30', 'border-destructive/30',
+    'border-green-400/40', 'border-blue-400/40', 'border-cyan-400/40', 'border-orange-400/40', 'border-purple-400/40',
   ],
 }

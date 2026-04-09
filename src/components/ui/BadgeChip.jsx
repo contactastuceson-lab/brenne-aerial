@@ -1,8 +1,18 @@
 import React from 'react';
 import { BADGE_CONFIG } from '@/lib/droneUtils';
-import { Crown, Users, Star, Shield, Plane } from 'lucide-react';
+import { Crown, Users, Star, Shield, Plane, BadgeCheck, CheckCircle, Zap, Award } from 'lucide-react';
 
-const ICONS = { Fondateur: Crown, Collaborateur: Users, VIP: Star, Admin: Shield, Pilote: Plane };
+const ICONS = {
+  Fondateur: Crown,
+  Collaborateur: Users,
+  VIP: Star,
+  Admin: Shield,
+  Pilote: Plane,
+  Officiel: BadgeCheck,
+  'Vérifié': CheckCircle,
+  'Beta Testeur': Zap,
+  Partenaire: Award,
+};
 
 export default function BadgeChip({ badge, size = 'sm' }) {
   const cfg = BADGE_CONFIG[badge] || { color: 'text-muted-foreground', border: 'border-border', bg: 'bg-muted' };

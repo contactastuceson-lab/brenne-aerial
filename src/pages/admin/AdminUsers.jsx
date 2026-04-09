@@ -64,7 +64,7 @@ export default function AdminUsers() {
   const updateUser = useMutation({
     mutationFn: ({ id, data }) => base44.entities.User.update(id, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['adm-users-list'] });
+      setTimeout(() => qc.invalidateQueries({ queryKey: ['adm-users-list'] }), 1000);
       setEditUser(null);
       toast.success('Utilisateur mis à jour');
     },

@@ -35,8 +35,11 @@ export default function AdminBadges() {
     },
     onError: (_err, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(['adm-badges-users'], ctx.prev);
+      toast.error('Erreur lors de la mise à jour');
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ['adm-badges-users'] }),
+    onSuccess: () => {
+      setTimeout(() => qc.invalidateQueries({ queryKey: ['adm-badges-users'] }), 1000);
+    },
   });
 
   const toggleVerified = (user) => {

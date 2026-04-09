@@ -25,7 +25,18 @@ export default function AdminBadges() {
 
   const updateUser = useMutation({
     mutationFn: ({ id, data }) => base44.entities.User.update(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['adm-badges-users'] }),
+    onMutate: async ({ id, data }) => {
+      await qc.cancelQueries({ queryKey: ['adm-badges-users'] });
+      const prev = qc.getQueryData(['adm-badges-users']);
+      qc.setQueryData(['adm-badges-users'], old =>
+        (old || []).map(u => u.id === id ? { ...u, ...data } : u)
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) qc.setQueryData(['adm-badges-users'], ctx.prev);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['adm-badges-users'] }),
   });
 
   const toggleVerified = (user) => {

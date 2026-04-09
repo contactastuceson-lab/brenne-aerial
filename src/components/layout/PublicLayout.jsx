@@ -13,6 +13,7 @@ export default function PublicLayout() {
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const location = useLocation();
+  const hideFooter = location.pathname === '/messages';
 
   useEffect(() => {
     const init = async () => {
@@ -67,7 +68,7 @@ export default function PublicLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <Footer />
+      {!hideFooter && <Footer />}
       <AnnouncementPopup user={user} />
     </div>
   );

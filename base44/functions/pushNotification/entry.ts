@@ -10,28 +10,30 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No message data' }, { status: 400 });
     }
 
-    const senderName = message.sender_name || message.sender_email || 'Quelqu\'un';
-    const content = message.content || '';
-    const preview = content.length > 100 ? content.slice(0, 97) + '...' : content;
+    const senderName = message.sender_name || 'Quelqu\'un';
+    const recipientEmail = message.recipient_email;
+    const recipientName = message.recipient_name || 'vous';
+    const preview = (message.content || '').slice(0, 200);
 
-    const pushRes = await fetch('https://api.pushover.net/1/messages.json', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: Deno.env.get('PUSHOVER_APP_TOKEN'),
-        user: Deno.env.get('PUSHOVER_USER_KEY'),
-        title: `💬 Nouveau message de ${senderName}`,
-        message: preview || '(message vide)',
-        sound: 'pushover',
-        priority: 0,
-      }),
-    });
-
-    const result = await pushRes.json();
-
-    if (result.status !== 1) {
-      return Response.json({ error: 'Pushover error', details: result }, { status: 500 });
+    if (!recipientEmail) {
+      return Response.json({ error: 'No recipient email' }, { status: 400 });
     }
+
+    await base44.asServiceRole.integrations.Core.SendEmail({
+      to: recipientEmail,
+      subject: `💬 Nouveau message de ${senderName}`,
+      body: `<div style="font-family: sans-serif; max-width: 500px; margin: auto; background: #0a1628; color: #e8edf5; padding: 32px; border-radius: 12px;">
+  <h2 style="color: #38aadc; margin-top: 0;">Nouveau message reçu</h2>
+  <p style="color: #a0aec0;">De la part de <strong style="color: #e8edf5;">${senderName}</strong></p>
+  <div style="background: #0f1f3d; border: 1px solid #1e3a5f; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0; line-height: 1.6;">${preview}</p>
+  </div>
+  <a href="${Deno.env.get('BASE44_APP_URL') || 'https://brenneaerialworks.base44.app'}/messages" 
+     style="display: inline-block; background: #38aadc; color: #0a1628; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+    Répondre au message
+  </a>
+</div>`,
+    });
 
     return Response.json({ success: true });
   } catch (error) {

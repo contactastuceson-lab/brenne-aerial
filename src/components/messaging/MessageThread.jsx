@@ -180,7 +180,7 @@ export default function MessageThread({ user, conv, onBack }) {
               <BadgeChip key={b} badge={b} size="sm" />
             ))}
           </div>
-          <p className="font-mono text-[10px] text-muted-foreground">{conv.email}</p>
+
         </div>
         {!isOpen && hasAnyRequest && myPendingRequest && (
           <span className="ml-auto font-mono text-[10px] text-amber-400/80 bg-amber-400/10 border border-amber-400/20 px-2 py-1 rounded-full flex items-center gap-1">

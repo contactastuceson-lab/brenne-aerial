@@ -40,8 +40,10 @@ export default function AdminBadges() {
       if (ctx?.prev) qc.setQueryData(['adm-badges-users'], ctx.prev);
       toast.error('Erreur : vérifiez vos droits admin');
     },
-    onSuccess: () => {
-      setTimeout(() => qc.invalidateQueries({ queryKey: ['adm-badges-users'] }), 1000);
+    onSuccess: (res, { id, data }) => {
+      qc.setQueryData(['adm-badges-users'], old =>
+        (old || []).map(u => u.id === id ? { ...u, ...data } : u)
+      );
     },
   });
 

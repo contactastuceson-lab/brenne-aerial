@@ -20,7 +20,10 @@ export default function AdminBadges() {
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['adm-badges-users'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      const res = await base44.functions.invoke('adminGetUsers', {});
+      return res.data.users || [];
+    },
   });
 
   const updateUser = useMutation({

@@ -53,7 +53,10 @@ export default function AdminUsers() {
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['adm-users-list'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      const res = await base44.functions.invoke('adminGetUsers', {});
+      return res.data.users || [];
+    },
   });
 
   const { data: reports = [] } = useQuery({

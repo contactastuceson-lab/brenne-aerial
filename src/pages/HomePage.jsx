@@ -156,7 +156,7 @@ export default function HomePage() {
               <div className="relative">
                 <div className="absolute -inset-4 bg-primary/5 rounded-2xl blur-xl" />
                 <img
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80"
+                  src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/69e824fda_IMG_20260108_192238_6241-converti-depuis-webp.png"
                   alt="Enor Lefoulon Meyer — CEO"
                   className="relative w-full max-w-sm mx-auto rounded-2xl object-cover aspect-[3/4]"
                   style={{ filter: 'contrast(1.05) saturate(0.9)' }}

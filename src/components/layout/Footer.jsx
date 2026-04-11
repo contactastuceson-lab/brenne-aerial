@@ -79,6 +79,25 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Newsletter */}
+        <div className="py-8 border-t border-border mb-0">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div>
+              <h4 className="font-grotesk font-semibold text-sm mb-1">Newsletter Brenne Aerial™</h4>
+              <p className="font-inter text-xs text-muted-foreground">Actualités, projets et annonces directement dans votre boîte mail.</p>
+            </div>
+            <a
+              href="https://a4835101.sibforms.com/serve/MUIFAC3C5UXdgrZ-CYR3iV27NCBuTTlUAVw80srFWWQ1uQqa9zEJu_QjFXyxzE_cjXKKN4npfoqMKMs9lLTQwXf3ox21FCxhlCz_wVgMTyX86xIWn29NjWLwDgvg5YGhFZ2acj3HZshol1zV0zwpXdvgB0dhKU6CE25yH20lCqS0cWOYOEXnQyfPG4HwSVpt7onwP66N9DD1OCspXQ=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 inline-flex items-center gap-2 bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors rounded-lg px-5 py-2.5 font-inter text-sm font-medium"
+            >
+              <Mail className="w-4 h-4" />
+              S'inscrire à la newsletter
+            </a>
+          </div>
+        </div>
+
         {/* Bottom */}
         <div className="pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="font-mono text-xs text-muted-foreground">

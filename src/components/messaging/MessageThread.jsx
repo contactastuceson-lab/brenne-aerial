@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Send, Lock, Check, X, Flag, Clock } from 'lucide-react';
+import { ArrowLeft, Send, Lock, Check, X, Flag, Clock, CheckCircle } from 'lucide-react';
 import ReportModal from '@/components/shared/ReportModal';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { Button } from '@/components/ui/button';
@@ -176,11 +176,11 @@ export default function MessageThread({ user, conv, onBack }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <p className="font-grotesk font-semibold text-sm">{conv.name}</p>
+            {conv.is_verified && <CheckCircle className="w-3.5 h-3.5 text-accent flex-shrink-0" />}
             {conv.badges?.slice(0, 2).map(b => (
               <BadgeChip key={b} badge={b} size="sm" />
             ))}
           </div>
-
         </div>
         {!isOpen && hasAnyRequest && myPendingRequest && (
           <span className="ml-auto font-mono text-[10px] text-amber-400/80 bg-amber-400/10 border border-amber-400/20 px-2 py-1 rounded-full flex items-center gap-1">

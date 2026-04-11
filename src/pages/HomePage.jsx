@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play, Camera, Building2, HardHat, Video, Wifi, ChevronDown, Star, Award, Zap } from 'lucide-react';
+import { ArrowRight, Play, Camera, Building2, HardHat, Video, Wifi, ChevronDown, Star, Award, Zap, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -259,6 +259,50 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      {/* ─── NEWSLETTER ─── */}
+      <section className="py-20 px-5 lg:px-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="relative rounded-2xl overflow-hidden border border-primary/30 p-10 lg:p-16"
+            style={{ background: 'linear-gradient(135deg, hsl(214 40% 7%) 0%, hsl(205 40% 10%) 100%)' }}
+          >
+            <div className="absolute inset-0 grid-bg opacity-40" />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+            {/* Glow blob */}
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative flex flex-col lg:flex-row items-center justify-between gap-8">
+              <div className="text-center lg:text-left">
+                <div className="inline-flex items-center gap-2 font-mono text-xs text-primary border border-primary/30 bg-primary/5 px-3 py-1.5 rounded-full mb-4">
+                  <Mail className="w-3.5 h-3.5" />
+                  Newsletter
+                </div>
+                <h2 className="font-grotesk font-bold text-3xl sm:text-4xl mb-3">
+                  Restez dans <span className="gradient-text">la boucle.</span>
+                </h2>
+                <p className="font-inter text-muted-foreground text-sm max-w-md">
+                  Actualités, nouveaux projets, conseils drone et annonces exclusives — directement dans votre boîte mail.
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <a
+                  href="https://a4835101.sibforms.com/serve/MUIFAC3C5UXdgrZ-CYR3iV27NCBuTTlUAVw80srFWWQ1uQqa9zEJu_QjFXyxzE_cjXKKN4npfoqMKMs9lLTQwXf3ox21FCxhlCz_wVgMTyX86xIWn29NjWLwDgvg5YGhFZ2acj3HZshol1zV0zwpXdvgB0dhKU6CE25yH20lCqS0cWOYOEXnQyfPG4HwSVpt7onwP66N9DD1OCspXQ=="
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-grotesk font-semibold px-8 py-4 rounded-xl sky-glow text-base"
+                >
+                  <Mail className="w-5 h-5" />
+                  S'inscrire à la newsletter
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+                <p className="font-mono text-xs text-muted-foreground mt-3 text-center">Gratuit — Désinscription en 1 clic</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
       {/* ─── CTA ─── */}
       <section className="py-24 px-5 lg:px-10">

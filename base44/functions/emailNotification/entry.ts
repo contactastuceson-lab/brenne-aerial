@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
-const APP_URL = 'https://brenneaerialworks.base44.app';
+const APP_URL = 'https://brenneaerial.fr';
 
 Deno.serve(async (req) => {
   try {

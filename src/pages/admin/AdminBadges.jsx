@@ -35,7 +35,7 @@ export default function AdminBadges() {
     },
     onError: (_err, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(['adm-badges-users'], ctx.prev);
-      toast.error('Erreur lors de la mise à jour');
+      toast.error('Erreur : vérifiez vos droits admin');
     },
     onSuccess: () => {
       setTimeout(() => qc.invalidateQueries({ queryKey: ['adm-badges-users'] }), 1000);
@@ -51,6 +51,7 @@ export default function AdminBadges() {
     const badges = user.badges || [];
     const newBadges = badges.includes(badge) ? badges.filter(b => b !== badge) : [...badges, badge];
     updateUser.mutate({ id: user.id, data: { badges: newBadges } });
+    toast.success(badges.includes(badge) ? `Badge "${badge}" retiré` : `Badge "${badge}" ajouté`);
   };
 
   const filtered = users

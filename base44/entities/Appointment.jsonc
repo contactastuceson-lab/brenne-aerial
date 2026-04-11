@@ -49,7 +49,6 @@
     }
   },
   "required": [
-    "client_name",
     "date",
     "time_start"
   ]

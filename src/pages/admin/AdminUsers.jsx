@@ -68,11 +68,13 @@ export default function AdminUsers() {
       setEditUser(null);
       toast.success('Utilisateur mis à jour');
     },
+    onError: (err) => toast.error('Erreur : ' + (err?.message || 'Impossible de modifier cet utilisateur')),
   });
 
   const quickAction = useMutation({
     mutationFn: ({ id, data }) => base44.entities.User.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['adm-users-list'] }),
+    onError: (err) => toast.error('Erreur : ' + (err?.message || 'Impossible de modifier cet utilisateur')),
   });
 
   const toggleBadge = (badge) => setEditForm(p => ({

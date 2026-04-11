@@ -27,7 +27,7 @@ export default function AdminBadges() {
   });
 
   const updateUser = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.User.update(id, data),
+    mutationFn: ({ id, data }) => base44.functions.invoke('adminUpdateUser', { id, data }),
     onMutate: async ({ id, data }) => {
       await qc.cancelQueries({ queryKey: ['adm-badges-users'] });
       const prev = qc.getQueryData(['adm-badges-users']);

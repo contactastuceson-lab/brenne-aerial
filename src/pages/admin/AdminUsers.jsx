@@ -65,7 +65,7 @@ export default function AdminUsers() {
   });
 
   const updateUser = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.User.update(id, data),
+    mutationFn: ({ id, data }) => base44.functions.invoke('adminUpdateUser', { id, data }),
     onSuccess: () => {
       setTimeout(() => qc.invalidateQueries({ queryKey: ['adm-users-list'] }), 1000);
       setEditUser(null);
@@ -75,7 +75,7 @@ export default function AdminUsers() {
   });
 
   const quickAction = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.User.update(id, data),
+    mutationFn: ({ id, data }) => base44.functions.invoke('adminUpdateUser', { id, data }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['adm-users-list'] }),
     onError: (err) => toast.error('Erreur : ' + (err?.message || 'Impossible de modifier cet utilisateur')),
   });

@@ -48,8 +48,9 @@ export default function AdminBadges() {
   });
 
   const toggleVerified = (user) => {
-    updateUser.mutate({ id: user.id, data: { is_verified: !user.is_verified } });
-    toast.success(user.is_verified ? 'Vérification retirée' : 'Compte vérifié !');
+    const newVal = user.verified_status === 'yes' ? 'no' : 'yes';
+    updateUser.mutate({ id: user.id, data: { verified_status: newVal } });
+    toast.success(newVal === 'no' ? 'Vérification retirée' : 'Compte vérifié !');
   };
 
   const toggleBadge = (user, badge) => {
@@ -61,7 +62,7 @@ export default function AdminBadges() {
 
   const filtered = users
     .filter(u => !search || u.full_name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()))
-    .filter(u => selectedBadge === 'all' || (selectedBadge === 'verified' ? u.is_verified : u.badges?.includes(selectedBadge)));
+    .filter(u => selectedBadge === 'all' || (selectedBadge === 'verified' ? u.verified_status === 'yes' : u.badges?.includes(selectedBadge)));
 
   return (
     <div>
@@ -99,21 +100,21 @@ export default function AdminBadges() {
 
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div className="bg-card border border-border rounded-xl p-3">
-          <p className="font-mono text-xs text-muted-foreground">Total utilisateurs</p>
-          <p className="font-grotesk font-bold text-xl">{users.length}</p>
-        </div>
-        <div className="bg-card border border-accent/20 rounded-xl p-3">
-          <p className="font-mono text-xs text-accent">Comptes vérifiés</p>
-          <p className="font-grotesk font-bold text-xl text-accent">{users.filter(u => u.is_verified).length}</p>
+      <div className="bg-card border border-border rounded-xl p-3">
+        <p className="font-mono text-xs text-muted-foreground">Total utilisateurs</p>
+        <p className="font-grotesk font-bold text-xl">{users.length}</p>
+      </div>
+      <div className="bg-card border border-accent/20 rounded-xl p-3">
+        <p className="font-mono text-xs text-accent">Comptes vérifiés</p>
+        <p className="font-grotesk font-bold text-xl text-accent">{users.filter(u => u.verified_status === 'yes').length}</p>
         </div>
         <div className="bg-card border border-primary/20 rounded-xl p-3">
           <p className="font-mono text-xs text-primary">Avec badges</p>
           <p className="font-grotesk font-bold text-xl text-primary">{users.filter(u => u.badges?.length > 0).length}</p>
-        </div>
-        <div className="bg-card border border-chart-5/20 rounded-xl p-3">
-          <p className="font-mono text-xs text-chart-5">Sans badge</p>
-          <p className="font-grotesk font-bold text-xl text-chart-5">{users.filter(u => !u.badges?.length && !u.is_verified).length}</p>
+          </div>
+          <div className="bg-card border border-chart-5/20 rounded-xl p-3">
+            <p className="font-mono text-xs text-chart-5">Sans badge</p>
+            <p className="font-grotesk font-bold text-xl text-chart-5">{users.filter(u => !u.badges?.length && u.verified_status !== 'yes').length}</p>
         </div>
       </div>
 
@@ -133,7 +134,7 @@ export default function AdminBadges() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-inter text-sm font-medium">{u.full_name || '—'}</p>
-                    {u.is_verified && <CheckCircle className="w-3.5 h-3.5 text-accent" />}
+                    {u.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 text-accent" />}
                   </div>
                   <p className="font-mono text-xs text-muted-foreground">{u.email}</p>
                   {u.badges?.length > 0 && (
@@ -146,10 +147,10 @@ export default function AdminBadges() {
                 {/* Verified toggle */}
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="flex items-center gap-2 bg-secondary rounded-lg px-3 py-2">
-                    <CheckCircle className={`w-3.5 h-3.5 ${u.is_verified ? 'text-accent' : 'text-muted-foreground'}`} />
+                    <CheckCircle className={`w-3.5 h-3.5 ${u.verified_status === 'yes' ? 'text-accent' : 'text-muted-foreground'}`} />
                     <span className="font-inter text-xs">Vérifié</span>
                     <Switch
-                      checked={u.is_verified || false}
+                      checked={u.verified_status === 'yes'}
                       onCheckedChange={() => toggleVerified(u)}
                     />
                   </div>

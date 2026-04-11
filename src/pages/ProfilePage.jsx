@@ -127,7 +127,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex items-center gap-2 pb-1">
-              {user.is_verified && (
+              {user.verified_status === 'yes' && (
                 <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
                   <CheckCircle className="w-3 h-3" /> Vérifié
                 </span>

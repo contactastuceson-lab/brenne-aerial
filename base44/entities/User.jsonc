@@ -44,9 +44,13 @@
       "description": "Badges attribu\u00e9s",
       "default": []
     },
-    "is_verified": {
-      "type": "boolean",
-      "default": false,
+    "verified_status": {
+      "type": "string",
+      "enum": [
+        "yes",
+        "no"
+      ],
+      "default": "no",
       "description": "Compte v\u00e9rifi\u00e9 par un admin"
     },
     "account_status": {

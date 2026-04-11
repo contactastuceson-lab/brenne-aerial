@@ -92,7 +92,7 @@ export default function AdminUsers() {
       phone: u.phone || '',
       bio: u.bio || '',
       location: u.location || '',
-      is_verified: u.is_verified || false,
+      verified_status: u.verified_status || 'no',
       account_status: u.account_status || 'active',
       suspension_reason: u.suspension_reason || '',
       suspension_until: u.suspension_until || '',
@@ -150,7 +150,7 @@ export default function AdminUsers() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-inter text-sm font-medium">{u.full_name || '—'}</p>
-                    {u.is_verified && <CheckCircle className="w-3.5 h-3.5 text-accent" />}
+                    {u.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 text-accent" />}
                     <span className={`font-mono text-[9px] px-2 py-0.5 rounded-full border ${STATUS_COLORS[status]}`}>
                       {STATUS_LABELS[status]}
                     </span>
@@ -247,8 +247,8 @@ export default function AdminUsers() {
                   <p className="font-inter text-xs text-muted-foreground">Affiche un badge de vérification officiel</p>
                 </div>
                 <Switch
-                  checked={editForm.is_verified}
-                  onCheckedChange={v => setEditForm(p => ({ ...p, is_verified: v }))}
+                  checked={editForm.verified_status === 'yes'}
+                  onCheckedChange={v => setEditForm(p => ({ ...p, verified_status: v ? 'yes' : 'no' }))}
                 />
               </div>
 

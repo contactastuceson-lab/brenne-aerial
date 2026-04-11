@@ -190,7 +190,7 @@ export default function DiscoverPage() {
 
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <h3 className="font-grotesk font-semibold text-sm truncate">{profile.full_name}</h3>
-                      {profile.is_verified && <CheckCircle className="w-3.5 h-3.5 text-accent flex-shrink-0" />}
+                      {profile.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 text-accent flex-shrink-0" />}
                     </div>
                     {profile.location && (
                       <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1 mb-1">

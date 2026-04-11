@@ -73,7 +73,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
         ...conv,
         avatar: profile?.avatar_url,
         badges: profile?.badges || [],
-        is_verified: profile?.is_verified,
+        is_verified: profile?.verified_status === 'yes',
         lastMsg: conv.messages.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0],
         unread: conv.messages.filter(m => !m.is_read && m.recipient_email === user.email).length,
       };
@@ -125,7 +125,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
                     {conv.name?.[0]?.toUpperCase() || '?'}
                   </span>
                 )}
-                {conv.is_verified && (
+                {conv.is_verified === true && (
                   <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-background rounded-full flex items-center justify-center">
                     <CheckCircle className="w-3 h-3 text-accent" />
                   </div>

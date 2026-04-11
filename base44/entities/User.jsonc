@@ -72,6 +72,10 @@
       "type": "string",
       "format": "date",
       "description": "Date de fin de suspension temporaire"
+    },
+    "last_seen": {
+      "type": "string",
+      "description": "Derni\u00e8re activit\u00e9 (ISO datetime) pour le statut en ligne"
     }
   },
   "required": []

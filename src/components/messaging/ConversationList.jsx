@@ -69,11 +69,14 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
 
     return Object.values(map).map(conv => {
       const profile = allUsers.find(u => u.email === conv.email);
+      const lastSeen = profile?.last_seen ? new Date(profile.last_seen) : null;
+      const isOnline = lastSeen && (Date.now() - lastSeen.getTime()) < 2 * 60 * 1000;
       return {
         ...conv,
         avatar: profile?.avatar_url,
         badges: profile?.badges || [],
         is_verified: profile?.verified_status === 'yes',
+        isOnline,
         lastMsg: conv.messages.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0],
         unread: conv.messages.filter(m => !m.is_read && m.recipient_email === user.email).length,
       };
@@ -129,6 +132,9 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
                   <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-background rounded-full flex items-center justify-center">
                     <CheckCircle className="w-3 h-3 text-accent" />
                   </div>
+                )}
+                {conv.isOnline && !conv.is_verified && (
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                 )}
               </div>
 

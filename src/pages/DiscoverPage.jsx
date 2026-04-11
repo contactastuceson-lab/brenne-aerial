@@ -178,13 +178,18 @@ export default function DiscoverPage() {
 
                   {/* Avatar */}
                   <div className="px-4 -mt-8 pb-4">
-                    <div className="w-14 h-14 rounded-2xl border-2 border-background bg-secondary flex items-center justify-center mb-3 overflow-hidden sky-glow">
-                      {profile.avatar_url ? (
-                        <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="font-grotesk font-bold text-xl text-primary">
-                          {profile.full_name?.[0]?.toUpperCase() || '?'}
-                        </span>
+                    <div className="relative w-14 h-14 mb-3">
+                      <div className="w-14 h-14 rounded-2xl border-2 border-background bg-secondary flex items-center justify-center overflow-hidden sky-glow">
+                        {profile.avatar_url ? (
+                          <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="font-grotesk font-bold text-xl text-primary">
+                            {profile.full_name?.[0]?.toUpperCase() || '?'}
+                          </span>
+                        )}
+                      </div>
+                      {profile.last_seen && (Date.now() - new Date(profile.last_seen).getTime()) < 2 * 60 * 1000 && (
+                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background" />
                       )}
                     </div>
 

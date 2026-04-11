@@ -39,6 +39,15 @@ export default function PublicLayout() {
     init();
   }, []);
 
+  // Heartbeat: update last_seen every 30s
+  useEffect(() => {
+    if (!user) return;
+    const ping = () => base44.auth.updateMe({ last_seen: new Date().toISOString() }).catch(() => {});
+    ping();
+    const iv = setInterval(ping, 30000);
+    return () => clearInterval(iv);
+  }, [user?.email]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

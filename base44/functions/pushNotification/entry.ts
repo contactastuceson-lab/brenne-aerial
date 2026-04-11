@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+const APP_URL = 'https://brenneaerialworks.base44.app';
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -12,7 +14,6 @@ Deno.serve(async (req) => {
 
     const senderName = message.sender_name || 'Quelqu\'un';
     const recipientEmail = message.recipient_email;
-    const recipientName = message.recipient_name || 'vous';
     const preview = (message.content || '').slice(0, 200);
 
     if (!recipientEmail) {
@@ -28,7 +29,7 @@ Deno.serve(async (req) => {
   <div style="background: #0f1f3d; border: 1px solid #1e3a5f; border-radius: 8px; padding: 16px; margin: 20px 0;">
     <p style="margin: 0; line-height: 1.6;">${preview}</p>
   </div>
-  <a href="${Deno.env.get('BASE44_APP_URL') || 'https://brenneaerialworks.base44.app'}/messages" 
+  <a href="${APP_URL}/messages"
      style="display: inline-block; background: #38aadc; color: #0a1628; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
     Répondre au message
   </a>

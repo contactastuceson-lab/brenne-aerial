@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail, Award, Heart } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail, Award, Heart, ArrowLeft } from 'lucide-react';
 
 const NAV = [
   { path: '/admin', icon: BarChart3, label: 'Dashboard' },
@@ -52,11 +52,21 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-screen w-14 lg:w-56 bg-sidebar border-r border-sidebar-border z-40 flex flex-col py-4">
         <div className="px-3 mb-6 hidden lg:block">
-          <Link to="/" className="text-sidebar-foreground hover:text-foreground transition-colors">
-            <p className="font-grotesk font-bold text-xs">Brenne <span className="text-primary">Aerial</span></p>
-            <p className="font-mono text-[10px] text-muted-foreground">Administration</p>
+          <Link to="/" className="flex items-center gap-2 text-sidebar-foreground hover:text-foreground transition-colors group">
+            <div className="w-6 h-6 rounded bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors">
+              <Plane className="w-3.5 h-3.5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-grotesk font-bold text-xs">Brenne <span className="text-primary">Aerial</span></p>
+              <p className="font-mono text-[10px] text-muted-foreground">Administration</p>
+            </div>
           </Link>
         </div>
+
+        <Link to="/" className="lg:hidden flex items-center justify-center px-3 py-2.5 mx-2 mb-2 rounded-lg text-sidebar-foreground hover:text-foreground bg-sidebar-accent hover:bg-primary/20 transition-colors group">
+          <Plane className="w-5 h-5 text-primary" />
+          <span className="sr-only">Retour à l'accueil</span>
+        </Link>
 
         <nav className="flex-1 px-2 space-y-0.5 overflow-y-auto">
           {NAV.map(item => {

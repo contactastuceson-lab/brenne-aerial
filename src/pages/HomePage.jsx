@@ -12,7 +12,7 @@ const SERVICES_PREVIEW = [
   { icon: HardHat,    label: 'Suivi chantier',     desc: 'Monitoring aérien de vos chantiers' },
   { icon: Camera,     label: 'Photogramm. 3D',     desc: 'Modélisation 3D précise de vos projets' },
   { icon: Wifi,       label: 'Retour temps réel',  desc: 'Diffusion live de vos opérations' },
-  { icon: Building2,  label: 'Thermographie',      desc: 'Inspection thermique infrarouge' },
+  { icon: Building2,  label: 'Thermographie',      desc: 'Inspection thermique infrarouge', disabled: true },
   { icon: Video,      label: 'Surveillance aérienne', desc: 'Gardiennage et monitoring continu' },
   { icon: Camera,     label: 'Contenu réseaux',    desc: 'Vidéos pour vos plateformes sociales' },
 ];
@@ -138,10 +138,15 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
               >
-                <Link to="/services"
-                  className="block p-5 rounded-xl bg-card border border-border hover:border-primary/30 hover:sky-glow transition-all duration-300 group h-full">
-                  <s.icon className="w-7 h-7 text-primary mb-4 group-hover:scale-110 transition-transform" />
-                  <h3 className="font-grotesk font-semibold text-sm mb-1.5">{s.label}</h3>
+                <Link to={s.disabled ? '#' : '/services'} onClick={e => s.disabled && e.preventDefault()}
+                  className={`block p-5 rounded-xl border transition-all duration-300 group h-full ${
+                    s.disabled ? 'bg-destructive/5 border-destructive/30 opacity-60 cursor-not-allowed' : 'bg-card border-border hover:border-primary/30 hover:sky-glow'
+                  }`}>
+                  <div className="flex justify-between items-start mb-4">
+                    <s.icon className={`w-7 h-7 ${s.disabled ? 'text-destructive/60' : 'text-primary'} group-hover:scale-110 transition-transform`} />
+                    {s.disabled && <span className="font-mono text-[9px] px-2 py-1 rounded bg-destructive/20 text-destructive font-semibold">Bientôt</span>}
+                  </div>
+                  <h3 className={`font-grotesk font-semibold text-sm mb-1.5 ${s.disabled ? 'text-destructive' : ''}`}>{s.label}</h3>
                   <p className="font-inter text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
                 </Link>
               </motion.div>

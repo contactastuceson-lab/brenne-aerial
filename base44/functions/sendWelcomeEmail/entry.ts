@@ -5,10 +5,11 @@ const LOGO_URL = 'https://media.base44.com/images/public/69c5c081406b9e20deaed58
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
-  const { event, data } = await req.json();
+  const user = await base44.auth.me();
+  if (!user) return Response.json({ error: 'Non authentifié' }, { status: 401 });
 
-  const userEmail = data?.email;
-  const userName = data?.full_name || 'cher client';
+  const userEmail = user.email;
+  const userName = user.full_name || 'cher client';
 
   if (!userEmail) return Response.json({ error: 'Pas d\'email' }, { status: 400 });
 

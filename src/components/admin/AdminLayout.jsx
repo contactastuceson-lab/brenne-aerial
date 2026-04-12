@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail } from 'lucide-react';
 
 const NAV = [
   { path: '/admin', icon: BarChart3, label: 'Dashboard' },
@@ -17,6 +17,7 @@ const NAV = [
   { path: '/admin/blog', icon: BookOpen, label: 'Blog' },
   { path: '/admin/messaging', icon: MessageSquare, label: 'Messagerie' },
   { path: '/admin/maintenance', icon: Shield, label: 'Maintenance' },
+  { path: '/admin/emailing', icon: Mail, label: 'Emailing' },
 ];
 
 export default function AdminLayout() {

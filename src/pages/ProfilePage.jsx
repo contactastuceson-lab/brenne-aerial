@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import BadgeChip from '@/components/ui/BadgeChip';
 import DangerZone from '@/components/profile/DangerZone';
+import CertificationRequest from '@/components/profile/CertificationRequest';
 
 const BADGE_CONFIG = {
   'Fondateur':      { icon: Star,      color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -28,6 +29,7 @@ export default function ProfilePage() {
   const [form, setForm] = useState({});
   const [uploading, setUploading] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [showCertification, setShowCertification] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -233,9 +235,40 @@ export default function ProfilePage() {
           </Button>
         </motion.div>
 
+        {/* Certification request */}
+        {!user.badges?.includes('Certifié') && !user.badges?.includes('Officiel') && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-card border border-primary/20 rounded-2xl p-6 mb-6 mt-6"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Award className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-grotesk font-semibold text-sm">Demander une certification</h3>
+                  <p className="font-inter text-xs text-muted-foreground mt-1">Valorisez votre profil professionnel</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => setShowCertification(true)}
+                className="bg-primary text-primary-foreground gap-2 whitespace-nowrap"
+              >
+                <Award className="w-4 h-4" />
+                Postuler
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
         {/* Danger zone */}
         <DangerZone user={user} />
       </div>
+
+      {/* Certification modal */}
+      {showCertification && <CertificationRequest onClose={() => setShowCertification(false)} user={user} />}
     </div>
   );
 }

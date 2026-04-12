@@ -6,15 +6,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
 import { Camera, ChevronRight, ChevronLeft, Check, Plane, MapPin, Phone, User, Sparkles } from 'lucide-react';
 
-const EXPERIENCE_LEVELS = ['Débutant', 'Amateur', 'Semi-pro', 'Professionnel'];
-const INTERESTS = ['Vidéo événementiel', 'Inspection toiture', 'Suivi chantier', 'Captation particulier', 'Captation entreprise', 'Formation', 'Photographie aérienne'];
-const LICENSE_OPTIONS = ['Non, je n\'ai pas de brevet', 'Brevet télépilote A1/A3', 'Brevet télépilote A2', 'Scénarios S1/S2/S3', 'Plusieurs brevets'];
+const PROJECT_TYPES = ['Événement (mariage, concert...)', 'Inspection (toiture, bâtiment)', 'Suivi de chantier', 'Immobilier / promotion', 'Communication entreprise', 'Photographie aérienne', 'Autre'];
+const SECTORS = ['Particulier', 'Artisan / TPE', 'PME / Entreprise', 'Collectivité / Mairie', 'Association', 'Promoteur immobilier', 'Autre'];
+const HOW_FOUND = ['Bouche à oreille', 'Google / Internet', 'Réseaux sociaux', 'Recommandation pro', 'Autre'];
 
 const STEPS = [
   { id: 'welcome', title: 'Bienvenue !', subtitle: 'Personnalisons votre profil en quelques secondes' },
   { id: 'identity', title: 'Votre identité', subtitle: 'Ces infos seront visibles sur votre profil' },
   { id: 'contact', title: 'Coordonnées', subtitle: 'Pour vous contacter plus facilement' },
-  { id: 'drone', title: 'Votre univers drone', subtitle: 'Dites-nous en plus sur votre pratique' },
+  { id: 'project', title: 'Votre projet', subtitle: 'Quelques infos pour mieux vous accompagner' },
   { id: 'done', title: 'C\'est parti !', subtitle: 'Votre profil est prêt' },
 ];
 
@@ -27,14 +27,13 @@ export default function OnboardingModal({ user, onComplete }) {
     bio: user?.bio || '',
     location: user?.location || '',
     phone: user?.phone || '',
-    drone_experience: '',
-    drone_license: '',
-    drone_interests: [],
-    drone_model: '',
+    project_types: [],
+    sector: '',
+    how_found: '',
   });
 
   const set = (key, val) => setForm(p => ({ ...p, [key]: val }));
-  const toggleInterest = (i) => set('drone_interests', form.drone_interests.includes(i) ? form.drone_interests.filter(x => x !== i) : [...form.drone_interests, i]);
+  const toggleProjectType = (i) => set('project_types', form.project_types.includes(i) ? form.project_types.filter(x => x !== i) : [...form.project_types, i]);
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -165,45 +164,41 @@ export default function OnboardingModal({ user, onComplete }) {
                 </div>
               )}
 
-              {/* STEP 3 — Drone */}
+              {/* STEP 3 — Project */}
               {step === 3 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="font-inter text-xs text-muted-foreground mb-2 block">Votre niveau en drone</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {EXPERIENCE_LEVELS.map(lvl => (
-                        <button key={lvl} onClick={() => set('drone_experience', lvl)}
-                          className={`px-3 py-2 rounded-xl border font-inter text-sm transition-all ${form.drone_experience === lvl ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:border-primary/40'}`}>
-                          {lvl}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="font-inter text-xs text-muted-foreground mb-2 block">Brevet / Licence télépilote</label>
-                    <div className="space-y-1.5">
-                      {LICENSE_OPTIONS.map(lic => (
-                        <button key={lic} onClick={() => set('drone_license', lic)}
-                          className={`w-full text-left px-3 py-2 rounded-xl border font-inter text-sm transition-all ${form.drone_license === lic ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:border-primary/40'}`}>
-                          {lic}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="font-inter text-xs text-muted-foreground mb-2 block">Centres d'intérêt (plusieurs possibles)</label>
+                    <label className="font-inter text-xs text-muted-foreground mb-2 block">Quel type de projet vous intéresse ? <span className="text-muted-foreground">(plusieurs possibles)</span></label>
                     <div className="flex flex-wrap gap-2">
-                      {INTERESTS.map(interest => (
-                        <button key={interest} onClick={() => toggleInterest(interest)}
-                          className={`px-3 py-1.5 rounded-full border font-inter text-xs transition-all ${form.drone_interests.includes(interest) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:border-primary/40'}`}>
-                          {interest}
+                      {PROJECT_TYPES.map(p => (
+                        <button key={p} onClick={() => toggleProjectType(p)}
+                          className={`px-3 py-1.5 rounded-full border font-inter text-xs transition-all ${form.project_types.includes(p) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:border-primary/40'}`}>
+                          {p}
                         </button>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <label className="font-inter text-xs text-muted-foreground mb-1 block">Modèle(s) de drone utilisé(s) (optionnel)</label>
-                    <Input value={form.drone_model} onChange={e => set('drone_model', e.target.value)} placeholder="Ex: DJI Mini 4 Pro, Autel EVO..." className="bg-secondary border-border" />
+                    <label className="font-inter text-xs text-muted-foreground mb-2 block">Vous représentez…</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {SECTORS.map(s => (
+                        <button key={s} onClick={() => set('sector', s)}
+                          className={`px-3 py-2 rounded-xl border font-inter text-sm transition-all ${form.sector === s ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:border-primary/40'}`}>
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-inter text-xs text-muted-foreground mb-2 block">Comment avez-vous connu Brenne Aerial ?</label>
+                    <div className="flex flex-wrap gap-2">
+                      {HOW_FOUND.map(h => (
+                        <button key={h} onClick={() => set('how_found', h)}
+                          className={`px-3 py-1.5 rounded-full border font-inter text-xs transition-all ${form.how_found === h ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:border-primary/40'}`}>
+                          {h}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}

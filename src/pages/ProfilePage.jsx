@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Camera, Save, Loader2, MapPin, Globe, Phone,
-  CheckCircle, Shield, Star, Zap, Award, UserCheck
+  CheckCircle, Shield, Star, Zap, Award, UserCheck, Trash2, AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import BadgeChip from '@/components/ui/BadgeChip';
+import DangerZone from '@/components/profile/DangerZone';
 
 const BADGE_CONFIG = {
   'Fondateur':      { icon: Star,      color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -231,6 +232,9 @@ export default function ProfilePage() {
             Sauvegarder
           </Button>
         </motion.div>
+
+        {/* Danger zone */}
+        <DangerZone user={user} />
       </div>
     </div>
   );

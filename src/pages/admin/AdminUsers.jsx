@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   User, Save, Loader2, Search, ShieldCheck, ShieldOff,
-  Ban, Clock, CheckCircle, Flag, Eye, Download, Trash2, UserX, Filter
+  Ban, Clock, CheckCircle, Flag, Eye, Download, Trash2, UserX, Filter, AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,6 +66,24 @@ export default function AdminUsers() {
     queryKey: ['adm-user-reports'],
     queryFn: () => base44.entities.Report.filter({ target_type: 'user', status: 'pending' }),
   });
+
+  const { data: deletionRequests = [] } = useQuery({
+    queryKey: ['adm-deletion-requests'],
+    queryFn: () => base44.entities.DeletionRequest.filter({ status: 'pending' }),
+  });
+
+  const deleteUser = useMutation({
+    mutationFn: ({ userId, userEmail }) => base44.functions.invoke('adminDeleteUser', { userId, userEmail }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['adm-users-list'] });
+      qc.invalidateQueries({ queryKey: ['adm-deletion-requests'] });
+      setDeleteConfirm(null);
+      toast.success('Compte supprimé');
+    },
+    onError: (err) => toast.error('Erreur : ' + (err?.message || 'Impossible de supprimer')),
+  });
+
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const updateUser = useMutation({
     mutationFn: ({ id, data }) => base44.functions.invoke('adminUpdateUser', { id, data }),
@@ -134,6 +152,7 @@ export default function AdminUsers() {
     .filter(u => !search || u.full_name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()));
 
   const reportCountForUser = (email) => reports.filter(r => r.target_email === email).length;
+  const hasDeletionRequest = (email) => deletionRequests.some(r => r.user_email === email);
 
   return (
     <div>
@@ -141,6 +160,11 @@ export default function AdminUsers() {
         <div>
           <h1 className="font-grotesk font-bold text-2xl">Gestion des comptes</h1>
           <p className="font-inter text-sm text-muted-foreground">{users.length} comptes · {filtered.length} affiché{filtered.length > 1 ? 's' : ''}</p>
+          {deletionRequests.length > 0 && (
+            <p className="font-inter text-xs text-destructive mt-0.5 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" /> {deletionRequests.length} demande{deletionRequests.length > 1 ? 's' : ''} de suppression en attente
+            </p>
+          )}
         </div>
         <Button size="sm" variant="outline" onClick={exportCSV} className="border-border text-xs gap-1.5">
           <Download className="w-3.5 h-3.5" /> Exporter CSV
@@ -261,6 +285,10 @@ export default function AdminUsers() {
                   <Button size="sm" variant="outline" onClick={() => openEdit(u)} className="border-border text-xs">
                     Modifier
                   </Button>
+                  <Button size="sm" variant="outline" onClick={() => setDeleteConfirm(u)}
+                    className={`border-destructive/40 text-destructive hover:bg-destructive/10 text-xs gap-1 ${hasDeletionRequest(u.email) ? 'animate-pulse border-destructive' : ''}`}>
+                    <Trash2 className="w-3 h-3" /> {hasDeletionRequest(u.email) ? 'Demande!' : 'Suppr.'}
+                  </Button>
                 </div>
               </div>
             );
@@ -268,6 +296,35 @@ export default function AdminUsers() {
           {filtered.length === 0 && (
             <div className="text-center py-16 text-muted-foreground font-inter text-sm">Aucun utilisateur trouvé</div>
           )}
+        </div>
+      )}
+
+      {/* Delete confirmation dialog */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-destructive/30 rounded-2xl p-6 max-w-sm w-full space-y-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              <h3 className="font-grotesk font-bold text-base">Supprimer le compte</h3>
+            </div>
+            {hasDeletionRequest(deleteConfirm.email) && (
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg px-3 py-2 font-inter text-xs text-destructive">
+                ⚠️ Cet utilisateur a demandé la suppression de son compte.
+              </div>
+            )}
+            <p className="font-inter text-sm text-muted-foreground">
+              Supprimer définitivement <strong className="text-foreground">{deleteConfirm.full_name}</strong> ({deleteConfirm.email}) ? Cette action est irréversible.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button size="sm" variant="outline" className="border-border text-xs" onClick={() => setDeleteConfirm(null)}>Annuler</Button>
+              <Button size="sm" className="bg-destructive text-white hover:bg-destructive/90 text-xs gap-1.5"
+                onClick={() => deleteUser.mutate({ userId: deleteConfirm.id, userEmail: deleteConfirm.email })}
+                disabled={deleteUser.isPending}>
+                {deleteUser.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                Supprimer définitivement
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 

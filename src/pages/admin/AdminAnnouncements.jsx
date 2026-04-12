@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Megaphone, Plus, Trash2, Edit, Eye, EyeOff, Info, AlertTriangle, CheckCircle, AlertCircle, Save, X } from 'lucide-react';
+import { Megaphone, Plus, Trash2, Edit, Info, AlertTriangle, CheckCircle, AlertCircle, Save, X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,8 +33,11 @@ const EMPTY = { title: '', content: '', type: 'info', display_mode: 'banner', is
 
 export default function AdminAnnouncements() {
   const qc = useQueryClient();
-  const [form, setForm] = useState(null); // null = no form, EMPTY = new, {...} = edit
+  const [form, setForm] = useState(null);
   const [editId, setEditId] = useState(null);
+  const [filterType, setFilterType] = useState('all');
+  const [filterActive, setFilterActive] = useState('all');
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const { data: announcements = [], isLoading } = useQuery({
     queryKey: ['announcements-admin'],
@@ -76,16 +79,43 @@ export default function AdminAnnouncements() {
     },
   });
 
-  const openEdit = (a) => {
-    setEditId(a.id);
-    setForm({ ...a });
+  const bulkDelete = useMutation({
+    mutationFn: async (ids) => { await Promise.all(ids.map(id => base44.entities.Announcement.delete(id))); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['announcements-admin'] });
+      qc.invalidateQueries({ queryKey: ['announcements-banner'] });
+      setSelectedIds([]);
+      toast.success('Annonces supprimées');
+    },
+  });
+
+  const bulkToggle = useMutation({
+    mutationFn: async ({ ids, val }) => { await Promise.all(ids.map(id => base44.entities.Announcement.update(id, { is_active: val }))); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['announcements-admin'] });
+      qc.invalidateQueries({ queryKey: ['announcements-banner'] });
+      setSelectedIds([]);
+      toast.success('Annonces mises à jour');
+    },
+  });
+
+  const filtered = announcements
+    .filter(a => filterType === 'all' || a.type === filterType)
+    .filter(a => filterActive === 'all' || (filterActive === 'active' ? a.is_active : !a.is_active));
+
+  const toggleSelect = (id) => setSelectedIds(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  const toggleAll = () => setSelectedIds(selectedIds.length === filtered.length ? [] : filtered.map(a => a.id));
+
+  const exportCSV = () => {
+    const rows = [['Titre', 'Contenu', 'Type', 'Affichage', 'Cible', 'Active', 'Expire le']];
+    filtered.forEach(a => rows.push([a.title || '', a.content, a.type, a.display_mode, a.target, a.is_active ? 'Oui' : 'Non', a.expires_at || '']));
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const el = document.createElement('a'); el.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    el.download = 'annonces.csv'; el.click();
   };
 
-  const openNew = () => {
-    setEditId(null);
-    setForm({ ...EMPTY });
-  };
-
+  const openEdit = (a) => { setEditId(a.id); setForm({ ...a }); };
+  const openNew = () => { setEditId(null); setForm({ ...EMPTY }); };
   const handleSave = () => {
     if (!form.content) { toast.error('Le contenu est requis'); return; }
     saveMutation.mutate({ ...form, expires_at: form.expires_at || null });
@@ -100,23 +130,52 @@ export default function AdminAnnouncements() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
           <h1 className="font-grotesk font-bold text-2xl flex items-center gap-3">
             <Megaphone className="w-6 h-6 text-primary" /> Annonces
           </h1>
-          <p className="font-inter text-sm text-muted-foreground">Bandeaux et popups d'information pour les utilisateurs</p>
+          <p className="font-inter text-sm text-muted-foreground">{announcements.length} annonce{announcements.length > 1 ? 's' : ''} · {filtered.length} affichée{filtered.length > 1 ? 's' : ''}</p>
         </div>
-        <Button onClick={openNew} className="bg-primary text-primary-foreground gap-2">
-          <Plus className="w-4 h-4" /> Nouvelle annonce
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={exportCSV} className="border-border text-xs gap-1.5">
+            <Download className="w-3.5 h-3.5" /> CSV
+          </Button>
+          <Button onClick={openNew} className="bg-primary text-primary-foreground gap-2">
+            <Plus className="w-4 h-4" /> Nouvelle annonce
+          </Button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <select value={filterType} onChange={e => setFilterType(e.target.value)}
+          className="bg-card border border-border rounded-lg px-3 py-1.5 font-inter text-xs text-foreground">
+          <option value="all">Tous types</option>
+          {TYPE_OPTS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+        </select>
+        <select value={filterActive} onChange={e => setFilterActive(e.target.value)}
+          className="bg-card border border-border rounded-lg px-3 py-1.5 font-inter text-xs text-foreground">
+          <option value="all">Toutes</option>
+          <option value="active">Actives</option>
+          <option value="inactive">Inactives</option>
+        </select>
+        {selectedIds.length > 0 && (
+          <div className="flex items-center gap-2 ml-auto">
+            <span className="font-inter text-xs text-muted-foreground">{selectedIds.length} sélectionnée{selectedIds.length > 1 ? 's' : ''}</span>
+            <button onClick={() => bulkToggle.mutate({ ids: selectedIds, val: true })} className="font-inter text-xs px-2 py-1 rounded-lg bg-green-400/10 border border-green-400/30 text-green-400 hover:bg-green-400/20">Activer</button>
+            <button onClick={() => bulkToggle.mutate({ ids: selectedIds, val: false })} className="font-inter text-xs px-2 py-1 rounded-lg bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/20">Désactiver</button>
+            <button onClick={() => bulkDelete.mutate(selectedIds)} className="font-inter text-xs px-2 py-1 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive hover:bg-destructive/20">Supprimer</button>
+          </div>
+        )}
       </div>
 
       {/* Form */}
       {form && (
         <div className="bg-card border border-primary/30 rounded-2xl p-6 mb-6 space-y-4">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-grotesk font-semibold text-base">{editId ? 'Modifier l\'annonce' : 'Nouvelle annonce'}</h2>
+            <h2 className="font-grotesk font-semibold text-base">{editId ? "Modifier l'annonce" : 'Nouvelle annonce'}</h2>
             <button onClick={() => { setForm(null); setEditId(null); }} className="text-muted-foreground hover:text-foreground">
               <X className="w-4 h-4" />
             </button>
@@ -204,23 +263,32 @@ export default function AdminAnnouncements() {
       {/* List */}
       {isLoading ? (
         <div className="flex justify-center py-10"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
-      ) : announcements.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground font-inter text-sm">
           <Megaphone className="w-8 h-8 mx-auto mb-3 opacity-30" />
-          Aucune annonce créée
+          Aucune annonce
         </div>
       ) : (
         <div className="space-y-3">
-          {announcements.map(a => (
-            <div key={a.id} className={`bg-card border rounded-xl p-4 flex items-center gap-4 ${a.is_active ? 'border-border' : 'border-border/50 opacity-60'}`}>
+          {/* Select all */}
+          <div className="flex items-center gap-2 px-1">
+            <input type="checkbox" checked={selectedIds.length === filtered.length && filtered.length > 0}
+              onChange={toggleAll} className="w-3.5 h-3.5 accent-primary cursor-pointer" />
+            <span className="font-inter text-xs text-muted-foreground">Tout sélectionner</span>
+          </div>
+          {filtered.map(a => (
+            <div key={a.id} className={`bg-card border rounded-xl p-4 flex items-center gap-3 ${selectedIds.includes(a.id) ? 'border-primary/40 bg-primary/5' : a.is_active ? 'border-border' : 'border-border/50 opacity-60'}`}>
+              <input type="checkbox" checked={selectedIds.includes(a.id)} onChange={() => toggleSelect(a.id)}
+                className="w-3.5 h-3.5 accent-primary cursor-pointer flex-shrink-0" />
               <div className="flex items-center gap-2 flex-shrink-0">
                 {typeIcon(a.type)}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
+                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                   {a.title && <span className="font-grotesk font-semibold text-sm">{a.title}</span>}
                   <span className="font-mono text-[9px] text-muted-foreground bg-secondary border border-border px-1.5 py-0.5 rounded-full">{DISPLAY_OPTS.find(o => o.value === a.display_mode)?.label}</span>
                   <span className="font-mono text-[9px] text-muted-foreground bg-secondary border border-border px-1.5 py-0.5 rounded-full">{TARGET_OPTS.find(o => o.value === a.target)?.label}</span>
+                  {a.link_url && <span className="font-mono text-[9px] text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-full">🔗 lien</span>}
                   {a.expires_at && <span className="font-mono text-[9px] text-muted-foreground">Expire: {format(new Date(a.expires_at), 'd MMM yy', { locale: fr })}</span>}
                 </div>
                 <p className="font-inter text-xs text-muted-foreground truncate">{a.content}</p>

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   User, Save, Loader2, Search, ShieldCheck, ShieldOff,
-  Ban, Clock, CheckCircle, Flag, Eye
+  Ban, Clock, CheckCircle, Flag, Eye, Download, Trash2, UserX, Filter
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,6 +50,9 @@ export default function AdminUsers() {
   const [editForm, setEditForm] = useState({});
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterRole, setFilterRole] = useState('all');
+  const [filterBadge, setFilterBadge] = useState('all');
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['adm-users-list'],
@@ -99,48 +102,120 @@ export default function AdminUsers() {
     });
   };
 
+  const bulkSuspend = useMutation({
+    mutationFn: async (ids) => {
+      await Promise.all(ids.map(id => base44.functions.invoke('adminUpdateUser', { id, data: { account_status: 'suspended', suspension_reason: 'Suspension groupée' } })));
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-users-list'] }); setSelectedIds([]); toast.success('Comptes suspendus'); },
+  });
+
+  const bulkBan = useMutation({
+    mutationFn: async (ids) => {
+      await Promise.all(ids.map(id => base44.functions.invoke('adminUpdateUser', { id, data: { account_status: 'banned', suspension_reason: 'Bannissement groupé' } })));
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-users-list'] }); setSelectedIds([]); toast.success('Comptes bannis'); },
+  });
+
+  const exportCSV = () => {
+    const rows = [['Nom', 'Email', 'Rôle', 'Statut', 'Badges', 'Téléphone', 'Localisation']];
+    filtered.forEach(u => rows.push([u.full_name || '', u.email || '', u.role || 'user', u.account_status || 'active', (u.badges || []).join(', '), u.phone || '', u.location || '']));
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'utilisateurs.csv'; a.click();
+  };
+
+  const toggleSelect = (id) => setSelectedIds(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  const toggleAll = () => setSelectedIds(selectedIds.length === filtered.length ? [] : filtered.map(u => u.id));
+
   const filtered = users
     .filter(u => filterStatus === 'all' || (u.account_status || 'active') === filterStatus)
+    .filter(u => filterRole === 'all' || (u.role || 'user') === filterRole)
+    .filter(u => filterBadge === 'all' || (u.badges || []).includes(filterBadge))
     .filter(u => !search || u.full_name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()));
 
   const reportCountForUser = (email) => reports.filter(r => r.target_email === email).length;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
           <h1 className="font-grotesk font-bold text-2xl">Gestion des comptes</h1>
-          <p className="font-inter text-sm text-muted-foreground">{users.length} comptes</p>
+          <p className="font-inter text-sm text-muted-foreground">{users.length} comptes · {filtered.length} affiché{filtered.length > 1 ? 's' : ''}</p>
         </div>
-        <div className="flex gap-2">
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="bg-card border-border w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous</SelectItem>
-              <SelectItem value="active">Actifs</SelectItem>
-              <SelectItem value="suspended">Suspendus</SelectItem>
-              <SelectItem value="banned">Bannis</SelectItem>
-              <SelectItem value="restricted">Restreints</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input placeholder="Rechercher..." value={search} onChange={e => setSearch(e.target.value)} className="bg-card border-border pl-9 w-48" />
-          </div>
-        </div>
+        <Button size="sm" variant="outline" onClick={exportCSV} className="border-border text-xs gap-1.5">
+          <Download className="w-3.5 h-3.5" /> Exporter CSV
+        </Button>
       </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input placeholder="Rechercher..." value={search} onChange={e => setSearch(e.target.value)} className="bg-card border-border pl-9 w-44" />
+        </div>
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="bg-card border-border w-36"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous statuts</SelectItem>
+            <SelectItem value="active">Actifs</SelectItem>
+            <SelectItem value="suspended">Suspendus</SelectItem>
+            <SelectItem value="banned">Bannis</SelectItem>
+            <SelectItem value="restricted">Restreints</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterRole} onValueChange={setFilterRole}>
+          <SelectTrigger className="bg-card border-border w-36"><SelectValue placeholder="Rôle" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous rôles</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="user">Utilisateur</SelectItem>
+            <SelectItem value="vip">VIP</SelectItem>
+            <SelectItem value="collaborateur">Collaborateur</SelectItem>
+            <SelectItem value="pilote">Pilote</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterBadge} onValueChange={setFilterBadge}>
+          <SelectTrigger className="bg-card border-border w-36"><SelectValue placeholder="Badge" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous badges</SelectItem>
+            {BADGES.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Bulk action bar */}
+      {selectedIds.length > 0 && (
+        <div className="flex items-center gap-3 mb-3 p-3 rounded-xl bg-primary/10 border border-primary/30">
+          <span className="font-inter text-sm font-medium">{selectedIds.length} sélectionné{selectedIds.length > 1 ? 's' : ''}</span>
+          <Button size="sm" variant="outline" className="border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10 text-xs gap-1" onClick={() => bulkSuspend.mutate(selectedIds)}>
+            <ShieldOff className="w-3 h-3" /> Suspendre
+          </Button>
+          <Button size="sm" variant="outline" className="border-red-400/30 text-red-400 hover:bg-red-400/10 text-xs gap-1" onClick={() => bulkBan.mutate(selectedIds)}>
+            <UserX className="w-3 h-3" /> Bannir
+          </Button>
+          <button className="ml-auto font-inter text-xs text-muted-foreground hover:text-foreground" onClick={() => setSelectedIds([])}>Désélectionner tout</button>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-10"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
       ) : (
         <div className="space-y-2">
+          {/* Select all */}
+          {filtered.length > 0 && (
+            <div className="flex items-center gap-2 px-1 mb-1">
+              <input type="checkbox" checked={selectedIds.length === filtered.length && filtered.length > 0}
+                onChange={toggleAll} className="w-3.5 h-3.5 accent-primary cursor-pointer" />
+              <span className="font-inter text-xs text-muted-foreground">Tout sélectionner</span>
+            </div>
+          )}
           {filtered.map(u => {
             const status = u.account_status || 'active';
             const reportCount = reportCountForUser(u.email);
             return (
-              <div key={u.id} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/20 transition-colors">
+              <div key={u.id} className={`flex items-center gap-4 p-4 rounded-xl bg-card border transition-colors ${selectedIds.includes(u.id) ? 'border-primary/40 bg-primary/5' : 'border-border hover:border-primary/20'}`}>
+                <input type="checkbox" checked={selectedIds.includes(u.id)} onChange={() => toggleSelect(u.id)}
+                  className="w-3.5 h-3.5 accent-primary cursor-pointer flex-shrink-0" />
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {u.avatar_url
                     ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />

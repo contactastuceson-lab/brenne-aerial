@@ -2,7 +2,8 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { FileText, Users, Calendar, MessageSquare, TrendingUp, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { FileText, Users, Calendar, MessageSquare, TrendingUp, Clock, CheckCircle, XCircle, Download, Flag, Percent } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { format } from 'date-fns';
@@ -17,14 +18,28 @@ export default function AdminDashboard() {
   const { data: users = [] } = useQuery({ queryKey: ['adm-users'], queryFn: () => base44.entities.User.list() });
   const { data: appts = [] } = useQuery({ queryKey: ['adm-appts'], queryFn: () => base44.entities.Appointment.list('-date', 50) });
   const { data: messages = [] } = useQuery({ queryKey: ['adm-msgs'], queryFn: () => base44.entities.Message.list('-created_date', 50) });
+  const { data: reports = [] } = useQuery({ queryKey: ['adm-reports-dash'], queryFn: () => base44.entities.Report.filter({ status: 'pending' }) });
 
   const revenue = quotes.filter(q => q.status === 'accepted' || q.status === 'completed').reduce((s, q) => s + (q.prix_final || q.prix_estime || 0), 0);
+  const conversionRate = quotes.length > 0 ? Math.round((quotes.filter(q => q.status === 'accepted' || q.status === 'completed').length / quotes.length) * 100) : 0;
+
+  const exportQuotesCSV = () => {
+    const rows = [['Client', 'Email', 'Service', 'Date souhaitée', 'Statut', 'Prix estimé', 'Prix final', 'Créé le']];
+    quotes.forEach(q => rows.push([q.client_name || '', q.client_email || '', q.service_type || '', q.date_souhaitee || '', q.status || '', q.prix_estime || '', q.prix_final || '', q.created_date ? q.created_date.split('T')[0] : '']));
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'devis.csv'; a.click();
+  };
 
   const stats = [
     { label: 'Revenus estimés', value: formatPrice(revenue), icon: TrendingUp, color: 'text-primary' },
-    { label: 'Devis', value: quotes.length, icon: FileText, color: 'text-accent' },
-    { label: 'Clients', value: users.length, icon: Users, color: 'text-chart-5' },
+    { label: 'Devis total', value: quotes.length, icon: FileText, color: 'text-accent' },
+    { label: 'Membres', value: users.length, icon: Users, color: 'text-chart-5' },
     { label: 'RDV planifiés', value: appts.filter(a => a.status === 'scheduled' || a.status === 'confirmed').length, icon: Calendar, color: 'text-green-400' },
+    { label: 'Taux de conversion', value: `${conversionRate}%`, icon: Percent, color: 'text-purple-400' },
+    { label: 'Msgs non lus', value: messages.filter(m => !m.is_read).length, icon: MessageSquare, color: 'text-blue-400' },
+    { label: 'Signalements', value: reports.length, icon: Flag, color: reports.length > 0 ? 'text-destructive' : 'text-muted-foreground' },
+    { label: 'Devis acceptés', value: quotes.filter(q => q.status === 'accepted' || q.status === 'completed').length, icon: CheckCircle, color: 'text-green-400' },
   ];
 
   const byStatus = ['pending', 'reviewing', 'accepted', 'refused'].map(s => ({
@@ -41,9 +56,14 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="font-grotesk font-bold text-2xl">Dashboard</h1>
-        <p className="font-inter text-sm text-muted-foreground mt-1">Vue d'ensemble de Brenne Aerial</p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-grotesk font-bold text-2xl">Dashboard</h1>
+          <p className="font-inter text-sm text-muted-foreground mt-1">Vue d'ensemble de Brenne Aerial</p>
+        </div>
+        <Button size="sm" variant="outline" onClick={exportQuotesCSV} className="border-border text-xs gap-1.5">
+          <Download className="w-3.5 h-3.5" /> Exporter devis CSV
+        </Button>
       </div>
 
       {/* Alerts */}

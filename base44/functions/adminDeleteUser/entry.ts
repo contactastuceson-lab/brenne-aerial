@@ -11,7 +11,14 @@ Deno.serve(async (req) => {
   if (!userId) return Response.json({ error: 'userId requis' }, { status: 400 });
 
   // Delete the user
-  await base44.asServiceRole.entities.User.delete(userId);
+  try {
+    await base44.asServiceRole.entities.User.delete(userId);
+  } catch (e) {
+    if (e?.status === 403 || e?.message?.includes('owner')) {
+      return Response.json({ error: 'Impossible de supprimer le propriétaire de l\'application.' }, { status: 403 });
+    }
+    throw e;
+  }
 
   // Mark deletion request as processed if any
   if (userEmail) {

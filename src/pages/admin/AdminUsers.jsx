@@ -80,7 +80,10 @@ export default function AdminUsers() {
       setDeleteConfirm(null);
       toast.success('Compte supprimé');
     },
-    onError: (err) => toast.error('Erreur : ' + (err?.message || 'Impossible de supprimer')),
+    onError: (err) => {
+      const msg = err?.response?.data?.error || err?.message || 'Impossible de supprimer';
+      toast.error(msg);
+    },
   });
 
   const [deleteConfirm, setDeleteConfirm] = useState(null);

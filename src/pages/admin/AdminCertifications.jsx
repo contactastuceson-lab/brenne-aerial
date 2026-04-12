@@ -78,10 +78,10 @@ export default function AdminCertifications() {
   });
 
   const sendEmailMutation = useMutation({
-    mutationFn: (request) => base44.integrations.Core.SendEmail({
-      to: request.user_email,
-      subject: `Demande de certification — ${request.status === 'approved' ? 'Approuvée' : 'Refusée'}`,
-      body: `Bonjour ${request.user_name},\n\nVotre demande de certification a été ${request.status === 'approved' ? 'approuvée' : 'refusée'}.\n\nNotes : ${adminNotes || 'Aucune'}\n\nCordialement,\nL'équipe Brenne Aerial`,
+    mutationFn: (request) => base44.functions.invoke('sendCertificationEmail', {
+      certificationRequestId: request.id,
+      status: request.status,
+      adminNotes: adminNotes,
     }),
     onSuccess: () => toast.success('Email envoyé'),
   });
@@ -243,59 +243,63 @@ export default function AdminCertifications() {
 
             {/* Responses */}
             {selectedRequest.responses && Object.keys(selectedRequest.responses).length > 0 && (
-              <div className="mb-6 space-y-4">
+              <div className="space-y-2">
                 <p className="text-xs text-muted-foreground font-semibold uppercase">Réponses</p>
                 {Object.entries(selectedRequest.responses).map(([key, value]) => (
-                  <div key={key} className="p-3 rounded-lg bg-secondary/50 border border-border">
-                    <p className="text-xs text-muted-foreground mb-1 capitalize">{key.replace(/_/g, ' ')}</p>
-                    <p className="text-sm">{value}</p>
+                  <div key={key} className="p-2 rounded text-xs bg-secondary/50 border border-border">
+                    <p className="text-muted-foreground mb-0.5 capitalize">{key.replace(/_/g, ' ')}</p>
+                    <p className="truncate">{value}</p>
                   </div>
                 ))}
               </div>
             )}
 
             {/* Admin notes */}
-            <div className="mb-6 space-y-2">
+            <div className="space-y-1">
               <p className="text-xs text-muted-foreground font-semibold">Notes admin</p>
               <Textarea
                 value={adminNotes}
                 onChange={e => setAdminNotes(e.target.value)}
                 placeholder="Ajoutez vos notes..."
-                className="bg-secondary border-border min-h-[100px]"
+                className="bg-secondary border-border h-20 text-xs resize-none"
               />
             </div>
 
             {/* Actions */}
-            {selectedRequest.status === 'pending' && (
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => rejectMutation.mutate(selectedRequest.id)}
-                  disabled={rejectMutation.isPending}
-                  className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
-                >
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Refuser
-                </Button>
-                <Button
-                  onClick={() => approveMutation.mutate(selectedRequest.id)}
-                  disabled={approveMutation.isPending}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Approuver
-                </Button>
-              </div>
-            )}
-
-            <Button
-              variant="ghost"
-              onClick={() => sendEmailMutation.mutate(selectedRequest)}
-              className="w-full mt-3 gap-2"
-            >
-              <Mail className="w-4 h-4" />
-              Envoyer un email
-            </Button>
+            <div className="sticky bottom-0 bg-card border-t border-border p-4 -mx-6 -mb-6 space-y-2">
+              {selectedRequest.status === 'pending' && (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => rejectMutation.mutate(selectedRequest.id)}
+                    disabled={rejectMutation.isPending}
+                    className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
+                  >
+                    <XCircle className="w-3 h-3 mr-1" />
+                    Refuser
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => approveMutation.mutate(selectedRequest.id)}
+                    disabled={approveMutation.isPending}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    Approuver
+                  </Button>
+                </div>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => sendEmailMutation.mutate(selectedRequest)}
+                className="w-full gap-1"
+              >
+                <Mail className="w-3 h-3" />
+                Envoyer email
+              </Button>
+            </div>
           </motion.div>
         </motion.div>
       )}

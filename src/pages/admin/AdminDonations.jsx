@@ -45,7 +45,8 @@ export default function AdminDonations() {
         [donation.id]: !donation.has_badge
       }));
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await new Promise(resolve => setTimeout(resolve, 300));
       queryClient.invalidateQueries({ queryKey: ['donations'] });
       setLocalBadgeStates({});
       toast.success('Badge mis à jour');

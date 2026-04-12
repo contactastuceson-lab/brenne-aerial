@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Bell, Award, FileText, MessageCircle } from 'lucide-react';
+import { Bell, Award, FileText, MessageCircle, Award as AwardIcon } from 'lucide-react';
+import CertificationTracking from '@/components/dashboard/CertificationTracking';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +32,12 @@ export default function DashboardPage() {
   const { data: myQuotes = [] } = useQuery({
     queryKey: ['my-quotes', user?.email],
     queryFn: () => base44.entities.Quote.filter({ client_email: user.email }, '-created_date', 10),
+    enabled: !!user?.email,
+  });
+
+  const { data: myCertifications = [] } = useQuery({
+    queryKey: ['my-certifications', user?.email],
+    queryFn: () => base44.entities.CertificationRequest.filter({ user_email: user.email }, '-created_date', 5),
     enabled: !!user?.email,
   });
 
@@ -87,6 +94,9 @@ export default function DashboardPage() {
             <TabsTrigger value="quotes" className="gap-1.5 font-inter text-sm">
               <FileText className="w-4 h-4" /> Mes devis
             </TabsTrigger>
+            <TabsTrigger value="certifications" className="gap-1.5 font-inter text-sm">
+              <Award className="w-4 h-4" /> Certifications
+            </TabsTrigger>
             <TabsTrigger value="badges" className="gap-1.5 font-inter text-sm">
               <Award className="w-4 h-4" /> Badges
             </TabsTrigger>
@@ -139,6 +149,20 @@ export default function DashboardPage() {
                 </div>
               </div>
             ))}
+          </TabsContent>
+
+          {/* Certifications */}
+          <TabsContent value="certifications" className="space-y-3">
+            <div className="bg-card border border-border rounded-xl p-6">
+              {myCertifications.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="font-inter text-sm text-muted-foreground mb-4">Aucune demande de certification</p>
+                  <Link to="/profile"><Button size="sm" className="bg-primary text-primary-foreground">Demander une certification</Button></Link>
+                </div>
+              ) : (
+                <CertificationTracking request={myCertifications[0]} />
+              )}
+            </div>
           </TabsContent>
 
           {/* Badges */}

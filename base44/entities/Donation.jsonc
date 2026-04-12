@@ -1,0 +1,46 @@
+{
+  "name": "Donation",
+  "type": "object",
+  "properties": {
+    "donor_email": {
+      "type": "string",
+      "description": "Email du donateur"
+    },
+    "donor_name": {
+      "type": "string",
+      "description": "Nom du donateur"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Montant du don en euros"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Statut du don"
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "ID de la session Stripe"
+    },
+    "is_anonymous": {
+      "type": "boolean",
+      "default": false,
+      "description": "Don anonyme"
+    },
+    "has_badge": {
+      "type": "boolean",
+      "default": true,
+      "description": "Le badge Donateur est attribu\u00e9"
+    }
+  },
+  "required": [
+    "donor_email",
+    "amount"
+  ]
+}

@@ -11,6 +11,29 @@ export default function DonationSuccessPage() {
   useEffect(() => {
     base44.auth.me().then(async (u) => {
       setUser(u);
+      const params = new URLSearchParams(window.location.search);
+      const amount = parseFloat(params.get('amount')) || 0;
+      const sessionId = params.get('session_id') || '';
+      
+      // Ajouter le badge Donateur
+      try {
+        await base44.functions.invoke('addDonatorBadge', {});
+      } catch (err) {
+        console.error('Badge error:', err);
+      }
+      
+      // Logger le don
+      try {
+        await base44.functions.invoke('logDonation', {
+          userEmail: u?.email || 'anonymous',
+          userName: u?.full_name || 'Bienfaiteur',
+          amount: amount,
+          stripeSessionId: sessionId,
+        });
+      } catch (err) {
+        console.error('Log error:', err);
+      }
+      
       // Envoyer email de confirmation de don
       try {
         await base44.functions.invoke('sendDonationConfirmation', {

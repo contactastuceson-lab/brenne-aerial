@@ -50,15 +50,10 @@ export default function AdminLayout() {
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-screen w-14 lg:w-56 bg-sidebar border-r border-sidebar-border z-40 flex flex-col py-4">
-        <div className="px-3 mb-6">
-          <Link to="/" className="flex items-center gap-2 text-sidebar-foreground hover:text-foreground transition-colors group">
-            <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Plane className="w-4 h-4 text-primary" />
-            </div>
-            <div className="hidden lg:block">
-              <p className="font-grotesk font-bold text-xs">Brenne <span className="text-primary">Aerial</span></p>
-              <p className="font-mono text-[10px] text-muted-foreground">Administration</p>
-            </div>
+        <div className="px-3 mb-6 hidden lg:block">
+          <Link to="/" className="text-sidebar-foreground hover:text-foreground transition-colors">
+            <p className="font-grotesk font-bold text-xs">Brenne <span className="text-primary">Aerial</span></p>
+            <p className="font-mono text-[10px] text-muted-foreground">Administration</p>
           </Link>
         </div>
 

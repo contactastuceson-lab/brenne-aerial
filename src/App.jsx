@@ -46,6 +46,8 @@ import AdminAccounts from "@/pages/admin/AdminAccounts";
 import AdminCertifications from "@/pages/admin/AdminCertifications";
 import ProfilePage from "@/pages/ProfilePage";
 import CertificationSuccessPage from "@/pages/CertificationSuccessPage";
+import DonationPage from "@/pages/DonationPage";
+import DonationSuccessPage from "@/pages/DonationSuccessPage";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -84,6 +86,8 @@ const AuthenticatedApp = () => {
         <Route path="/messages" element={<MessagesPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/certification-success" element={<CertificationSuccessPage />} />
+        <Route path="/donation" element={<DonationPage />} />
+        <Route path="/donation-success" element={<DonationSuccessPage />} />
         <Route path="/legal/privacy" element={<PrivacyPage />} />
         <Route path="/legal/terms" element={<TermsPage />} />
       </Route>

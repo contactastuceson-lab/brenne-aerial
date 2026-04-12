@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingModal from '@/components/shared/OnboardingModal';
+import EmailVerificationModal from '@/components/shared/EmailVerificationModal';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -56,6 +57,14 @@ export default function PublicLayout() {
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  // Email verification — before onboarding
+  if (user && !user.email_verified) {
+    return <EmailVerificationModal user={user} onVerified={async () => {
+      const me = await base44.auth.me();
+      setUser(me);
+    }} />;
   }
 
   // Show onboarding if user hasn't completed it

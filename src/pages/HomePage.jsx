@@ -10,8 +10,11 @@ const SERVICES_PREVIEW = [
   { icon: Video,      label: 'Vidéo événement',    desc: 'Captez chaque instant depuis les airs' },
   { icon: Building2,  label: 'Inspection toiture', desc: 'Diagnostic précis sans intervention humaine' },
   { icon: HardHat,    label: 'Suivi chantier',     desc: 'Monitoring aérien de vos chantiers' },
-  { icon: Camera,     label: 'Captation 4K',       desc: 'Qualité cinématographique pour pros et particuliers' },
+  { icon: Camera,     label: 'Photogramm. 3D',     desc: 'Modélisation 3D précise de vos projets' },
   { icon: Wifi,       label: 'Retour temps réel',  desc: 'Diffusion live de vos opérations' },
+  { icon: Building2,  label: 'Thermographie',      desc: 'Inspection thermique infrarouge' },
+  { icon: Video,      label: 'Surveillance aérienne', desc: 'Gardiennage et monitoring continu' },
+  { icon: Camera,     label: 'Contenu réseaux',    desc: 'Vidéos pour vos plateformes sociales' },
 ];
 
 const STATS = [

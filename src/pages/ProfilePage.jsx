@@ -236,7 +236,7 @@ export default function ProfilePage() {
         </motion.div>
 
         {/* Certification request */}
-        {!user.badges?.includes('Certifié') && !user.badges?.includes('Officiel') && (
+        {!user.badges?.includes('Officiel') && !user.badges?.includes('Pilote') && !user.badges?.includes('Fondateur') && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -6,6 +6,15 @@ export const SERVICE_PRICES = {
   captation_particulier:{ base: 250, per_hour: 80,  label: 'Captation particulier' },
   captation_entreprise: { base: 600, per_hour: 180, label: 'Captation entreprise' },
   retour_temps_reel:    { base: 800, per_hour: 200, label: 'Retour temps réel' },
+  photogrammetrie_3d:   { base: 400, per_hour: 120, label: 'Photogrammétrie 3D' },
+  cartographie_releves: { base: 450, per_hour: 140, label: 'Cartographie/Relevés' },
+  thermographie:        { base: 350, per_hour: 110, label: 'Thermographie infrarouge' },
+  surveillance:         { base: 200, per_hour: 80,  label: 'Surveillance/Gardiennage' },
+  contenu_social:       { base: 250, per_hour: 90,  label: 'Contenu réseaux sociaux' },
+  reportage:            { base: 350, per_hour: 120, label: 'Reportage/Documentaire' },
+  mariage_aero:         { base: 300, per_hour: 100, label: 'Mariage photo aérienne' },
+  immobilier_virtuelle: { base: 200, per_hour: 70,  label: 'Visite immobilière virtuelle' },
+  agriculture:          { base: 300, per_hour: 100, label: 'Agriculture/Monitoring' },
   autre:                { base: 0, per_hour: 0, label: 'Autre' },
 };
 

@@ -16,6 +16,15 @@ const SERVICE_OPTIONS = [
   { key: 'captation_particulier',icon: Camera,      label: 'Captation particulier' },
   { key: 'captation_entreprise', icon: Briefcase,   label: 'Captation entreprise' },
   { key: 'retour_temps_reel',    icon: Wifi,        label: 'Retour temps réel' },
+  { key: 'photogrammetrie_3d',   icon: Building2,   label: 'Photogrammétrie 3D' },
+  { key: 'cartographie_releves', icon: Camera,      label: 'Cartographie/Relevés' },
+  { key: 'thermographie',        icon: Camera,      label: 'Thermographie infrarouge' },
+  { key: 'surveillance',         icon: Video,       label: 'Surveillance/Gardiennage' },
+  { key: 'contenu_social',       icon: Video,       label: 'Contenu réseaux sociaux' },
+  { key: 'reportage',            icon: Video,       label: 'Reportage/Documentaire' },
+  { key: 'mariage_aero',         icon: Camera,      label: 'Mariage photo aérienne' },
+  { key: 'immobilier_virtuelle', icon: Building2,   label: 'Visite immobilière virtuelle' },
+  { key: 'agriculture',          icon: HardHat,     label: 'Agriculture/Monitoring' },
   { key: 'autre',                icon: Sparkles,    label: 'Autre' },
 ];
 

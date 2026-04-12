@@ -20,10 +20,9 @@ export default function CertificationSuccessPage() {
         await base44.entities.CertificationRequest.update(requests[0].id, {
           payment_status: 'completed'
         });
-        // Envoyer l'email de confirmation
-        await base44.functions.invoke('sendCertificationEmail', {
+        // Envoyer l'email de confirmation de paiement
+        await base44.functions.invoke('sendCertificationPaymentConfirmation', {
           certificationRequestId: requests[0].id,
-          status: requests[0].status,
         });
       }
     });

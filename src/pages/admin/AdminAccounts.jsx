@@ -28,7 +28,10 @@ export default function AdminAccounts() {
   // Fetch users
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['admin-accounts'],
-    queryFn: () => base44.functions.invoke('adminGetUsers', {}),
+    queryFn: async () => {
+      const res = await base44.functions.invoke('adminGetUsers', {});
+      return res.data || res || [];
+    },
   });
 
   // Update user mutation

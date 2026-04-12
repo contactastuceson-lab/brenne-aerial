@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Loader2, Check, Award } from 'lucide-react';
+import { X, Loader2, Check, Award, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +19,21 @@ export default function CertificationRequest({ onClose, user }) {
   const [step, setStep] = useState('form'); // form, payment, success
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({});
+  const [certificationsEnabled, setCertificationsEnabled] = useState(true);
+
+  useEffect(() => {
+    const checkSettings = async () => {
+      try {
+        const settings = await base44.entities.AppSettings.filter({ key: 'certifications_enabled' });
+        if (settings.length > 0) {
+          setCertificationsEnabled(settings[0].value === 'true');
+        }
+      } catch (err) {
+        console.error('Error checking certifications setting:', err);
+      }
+    };
+    checkSettings();
+  }, []);
 
   const handleInputChange = (id, value) => {
     setFormData(p => ({ ...p, [id]: value }));
@@ -94,7 +109,22 @@ export default function CertificationRequest({ onClose, user }) {
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          {step === 'form' && (
+          {!certificationsEnabled ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center mx-auto">
+                <AlertCircle className="w-8 h-8 text-destructive" />
+              </div>
+              <div>
+                <h3 className="font-grotesk font-semibold text-lg">Certifications temporairement désactivées</h3>
+                <p className="font-inter text-sm text-muted-foreground mt-2">
+                  Les demandes de certification sont actuellement fermées. Veuillez réessayer ultérieurement.
+                </p>
+              </div>
+              <Button onClick={onClose} className="bg-primary text-primary-foreground w-full">
+                Fermer
+              </Button>
+            </motion.div>
+          ) : step === 'form' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <p className="font-inter text-sm text-muted-foreground mb-6">
                 Complétez ce formulaire pour demander votre certification. Frais : 49€

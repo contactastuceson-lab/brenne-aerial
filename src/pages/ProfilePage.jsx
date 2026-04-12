@@ -30,6 +30,7 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [showCertification, setShowCertification] = useState(false);
+  const [certificationsEnabled, setCertificationsEnabled] = useState(true);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -41,6 +42,12 @@ export default function ProfilePage() {
         website: u.website || '',
       });
     }).catch(() => base44.auth.redirectToLogin('/profile'));
+
+    base44.entities.AppSettings.filter({ key: 'certifications_enabled' }).then(settings => {
+      if (settings.length > 0) {
+        setCertificationsEnabled(settings[0].value === 'true');
+      }
+    });
   }, []);
 
   const saveMutation = useMutation({
@@ -236,7 +243,7 @@ export default function ProfilePage() {
         </motion.div>
 
         {/* Certification request */}
-        {!user.badges?.includes('Officiel') && !user.badges?.includes('Pilote') && !user.badges?.includes('Fondateur') && (
+        {certificationsEnabled && !user.badges?.includes('Officiel') && !user.badges?.includes('Pilote') && !user.badges?.includes('Fondateur') && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

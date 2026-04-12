@@ -22,11 +22,10 @@ export default function AdminDonations() {
 
   const toggleBadgeMutation = useMutation({
     mutationFn: async (donation) => {
-      await base44.functions.invoke('toggleDonatorBadge', {
-        donorEmail: donation.donor_email,
+      await base44.functions.invoke('updateDonorBadge', {
+        donationId: donation.id,
         hasBadge: donation.has_badge,
       });
-      await base44.entities.Donation.update(donation.id, { has_badge: !donation.has_badge });
     },
     onMutate: (donation) => {
       setLocalBadgeStates(prev => ({
@@ -34,8 +33,7 @@ export default function AdminDonations() {
         [donation.id]: !donation.has_badge
       }));
     },
-    onSuccess: async () => {
-      await new Promise(resolve => setTimeout(resolve, 300));
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['donations'] });
       setLocalBadgeStates({});
       toast.success('Badge mis à jour');
@@ -46,6 +44,7 @@ export default function AdminDonations() {
         delete newState[donation.id];
         return newState;
       });
+      console.error('Badge update error:', error);
       toast.error('Erreur lors de la mise à jour du badge');
     },
   });

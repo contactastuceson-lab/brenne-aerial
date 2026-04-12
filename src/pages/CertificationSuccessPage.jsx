@@ -9,7 +9,20 @@ export default function CertificationSuccessPage() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(setUser);
+    base44.auth.me().then(async (u) => {
+      setUser(u);
+      // Récupérer la dernière demande de certification et marquer comme payée
+      const requests = await base44.entities.CertificationRequest.filter(
+        { user_email: u.email },
+        '-created_date',
+        1
+      );
+      if (requests.length > 0) {
+        await base44.entities.CertificationRequest.update(requests[0].id, {
+          payment_status: 'completed'
+        });
+      }
+    });
   }, []);
 
   if (!user) {

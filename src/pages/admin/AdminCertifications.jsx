@@ -187,11 +187,13 @@ export default function AdminCertifications() {
                   </td>
                   <td className="px-4 py-3 text-xs">
                     <span className={`px-2 py-1 rounded text-[10px] font-semibold ${
-                      r.payment_status === 'completed' ? 'bg-green-400/10 text-green-400' :
-                      r.payment_status === 'failed' ? 'bg-red-400/10 text-red-400' :
-                      'bg-yellow-400/10 text-yellow-400'
+                      r.payment_status === 'completed' ? 'bg-green-400/10 text-green-400 border border-green-400/30' :
+                      r.payment_status === 'failed' ? 'bg-red-400/10 text-red-400 border border-red-400/30' :
+                      'bg-yellow-400/10 text-yellow-400 border border-yellow-400/30'
                     }`}>
-                      {r.payment_status}
+                      {r.payment_status === 'completed' ? '✓ Payé' :
+                       r.payment_status === 'failed' ? '✕ Échoué' :
+                       '⏳ En attente'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">

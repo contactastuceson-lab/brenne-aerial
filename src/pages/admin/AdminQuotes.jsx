@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Eye, Check, X, Loader2, FileText } from 'lucide-react';
+import { Eye, Check, X, Loader2, FileText, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,19 +15,42 @@ import { fr } from 'date-fns/locale';
 
 export default function AdminQuotes() {
   const qc = useQueryClient();
+  const [tab, setTab] = useState('quotes');
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState(null);
   const [prixFinal, setPrixFinal] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
+  const [newService, setNewService] = useState({ name: '', base_price: '', price_per_hour: '' });
+  const [editingService, setEditingService] = useState(null);
 
   const { data: quotes = [], isLoading } = useQuery({
     queryKey: ['adm-quotes-list'],
     queryFn: () => base44.entities.Quote.list('-created_date', 100),
   });
 
+  const { data: services = [], isLoading: servicesLoading } = useQuery({
+    queryKey: ['adm-services-list'],
+    queryFn: () => base44.entities.Service.list('order'),
+  });
+
   const updateQ = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Quote.update(id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-quotes-list'] }); toast.success('Devis mis à jour'); },
+  });
+
+  const createService = useMutation({
+    mutationFn: (data) => base44.entities.Service.create(data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-services-list'] }); toast.success('Service créé'); setNewService({ name: '', base_price: '', price_per_hour: '' }); },
+  });
+
+  const updateService = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Service.update(id, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-services-list'] }); toast.success('Service mis à jour'); setEditingService(null); },
+  });
+
+  const deleteService = useMutation({
+    mutationFn: (id) => base44.entities.Service.delete(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-services-list'] }); toast.success('Service supprimé'); },
   });
 
   const handleAction = async (quote, status) => {
@@ -53,10 +76,24 @@ export default function AdminQuotes() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-grotesk font-bold text-2xl">Gestion des devis</h1>
-          <p className="font-inter text-sm text-muted-foreground">{quotes.length} devis au total</p>
+          <h1 className="font-grotesk font-bold text-2xl">Devis & Tarification</h1>
+          <p className="font-inter text-sm text-muted-foreground">Gérez vos devis et vos tarifs de services</p>
         </div>
       </div>
+
+      <div className="flex gap-2 mb-6">
+        <button onClick={() => setTab('quotes')} className={`px-4 py-2 rounded-lg font-inter text-sm border transition-colors ${
+          tab === 'quotes' ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:text-foreground'
+        }`}>Devis ({quotes.length})</button>
+        <button onClick={() => setTab('pricing')} className={`px-4 py-2 rounded-lg font-inter text-sm border transition-colors flex items-center gap-2 ${
+          tab === 'pricing' ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:text-foreground'
+        }`}><Settings className="w-4 h-4" /> Tarification</button>
+      </div>
+
+      {tab === 'quotes' && (
+        <>
+          <div className="flex items-center justify-between mb-8">
+          </div>
 
       <div className="flex gap-2 flex-wrap mb-6">
         {['all', 'pending', 'reviewing', 'accepted', 'refused', 'completed'].map(s => (
@@ -69,9 +106,9 @@ export default function AdminQuotes() {
         ))}
       </div>
 
-      {isLoading ? <div className="flex justify-center py-10"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div> : (
-        <div className="space-y-2">
-          {filtered.map(q => (
+          {isLoading ? <div className="flex justify-center py-10"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div> : (
+            <div className="space-y-2">
+              {filtered.map(q => (
             <motion.div key={q.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-border/60 transition-colors">
               <div className="flex-1 min-w-0">
@@ -118,7 +155,57 @@ export default function AdminQuotes() {
                 )}
               </div>
             </motion.div>
-          ))}
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {tab === 'pricing' && (
+        <div className="space-y-6">
+          <div className="p-6 rounded-xl bg-card border border-border">
+            <h2 className="font-grotesk font-semibold text-lg mb-4">Ajouter un nouveau service</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Input placeholder="Nom du service" value={newService.name} onChange={e => setNewService(p => ({ ...p, name: e.target.value }))} className="bg-secondary border-border" />
+              <Input type="number" placeholder="Prix de base (€)" value={newService.base_price} onChange={e => setNewService(p => ({ ...p, base_price: e.target.value }))} className="bg-secondary border-border" />
+              <Input type="number" placeholder="Prix/heure (€)" value={newService.price_per_hour} onChange={e => setNewService(p => ({ ...p, price_per_hour: e.target.value }))} className="bg-secondary border-border" />
+              <Button onClick={() => createService.mutate({ name: newService.name, base_price: parseFloat(newService.base_price), price_per_hour: parseFloat(newService.price_per_hour) })} disabled={createService.isPending || !newService.name} className="col-span-1 sm:col-span-3 bg-primary">
+                {createService.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Ajouter le service'}
+              </Button>
+            </div>
+          </div>
+
+          {servicesLoading ? <div className="flex justify-center py-10"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div> : (
+            <div className="space-y-2">
+              {services.map(s => (
+                <motion.div key={s.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-card border border-border">
+                  {editingService?.id === s.id ? (
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <Input value={editingService.name} onChange={e => setEditingService(p => ({ ...p, name: e.target.value }))} className="bg-secondary border-border" />
+                      <Input type="number" value={editingService.base_price} onChange={e => setEditingService(p => ({ ...p, base_price: parseFloat(e.target.value) }))} className="bg-secondary border-border" />
+                      <Input type="number" value={editingService.price_per_hour} onChange={e => setEditingService(p => ({ ...p, price_per_hour: parseFloat(e.target.value) }))} className="bg-secondary border-border" />
+                      <Button onClick={() => updateService.mutate({ id: s.id, data: editingService })} disabled={updateService.isPending} className="col-span-1 sm:col-span-3 bg-green-400/10 text-green-400 border border-green-400/20 hover:bg-green-400/20">
+                        {updateService.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 mr-1" />} Enregistrer
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex-1">
+                        <p className="font-inter font-medium text-sm">{s.name}</p>
+                        <p className="font-mono text-xs text-muted-foreground">{s.base_price ? `${s.base_price}€` : '—'} base {s.price_per_hour ? `/ ${s.price_per_hour}€/h` : ''}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setEditingService(s)} className="text-primary border-primary/20">Éditer</Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteService.mutate(s.id)} className="text-destructive hover:bg-destructive/10" disabled={deleteService.isPending}>
+                          {deleteService.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

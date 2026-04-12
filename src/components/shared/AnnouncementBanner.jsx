@@ -30,11 +30,11 @@ function RichContent({ text, textClass }) {
 }
 
 export default function AnnouncementBanner({ user }) {
-  const [dismissed, setDismissed] = useState([]);
+  // dismissed = { [id]: dismissedAt (ISO string) }
+  const [dismissed, setDismissed] = useState({});
 
-  // Load dismissed IDs from localStorage
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('dismissed_announcements') || '[]');
+    const saved = JSON.parse(localStorage.getItem('dismissed_announcements_v2') || '{}');
     setDismissed(saved);
   }, []);
 
@@ -45,14 +45,16 @@ export default function AnnouncementBanner({ user }) {
   });
 
   const dismiss = (id) => {
-    const next = [...dismissed, id];
+    const next = { ...dismissed, [id]: new Date().toISOString() };
     setDismissed(next);
-    localStorage.setItem('dismissed_announcements', JSON.stringify(next));
+    localStorage.setItem('dismissed_announcements_v2', JSON.stringify(next));
   };
 
   const now = new Date();
   const visible = announcements.filter(a => {
-    if (dismissed.includes(a.id)) return false;
+    // Show again if announcement was updated after being dismissed
+    const dismissedAt = dismissed[a.id];
+    if (dismissedAt && (!a.updated_date || new Date(a.updated_date) <= new Date(dismissedAt))) return false;
     if (a.display_mode === 'popup') return false; // popup handled separately
     if (a.expires_at && new Date(a.expires_at) < now) return false;
     if (a.target === 'users_only' && !user) return false;

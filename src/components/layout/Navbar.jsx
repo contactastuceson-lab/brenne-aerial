@@ -194,6 +194,11 @@ export default function Navbar() {
                         <MessageCircle className="w-4 h-4" /> Messages
                       </Button>
                     </Link>
+                    <Link to="/profile" onClick={() => setOpen(false)}>
+                      <Button size="sm" variant="outline" className="w-full font-inter text-sm border-border gap-2">
+                        <User className="w-4 h-4" /> Mon profil
+                      </Button>
+                    </Link>
                     <Link to="/dashboard" onClick={() => setOpen(false)}>
                       <Button size="sm" variant="outline" className="w-full font-inter text-sm border-border">
                         Mon espace

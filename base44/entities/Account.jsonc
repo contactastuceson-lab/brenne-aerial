@@ -1,0 +1,52 @@
+{
+  "name": "Account",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nom complet"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email de contact"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Num\u00e9ro de t\u00e9l\u00e9phone"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "URL de l'avatar"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Biographie"
+    },
+    "location": {
+      "type": "string",
+      "description": "Localisation"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "admin"
+      ],
+      "default": "user",
+      "description": "R\u00f4le de l'utilisateur"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active",
+      "description": "Statut du compte"
+    }
+  },
+  "required": [
+    "name",
+    "email"
+  ]
+}

@@ -17,7 +17,10 @@ export default function AdminDonations() {
 
   const { data: donations = [] } = useQuery({
     queryKey: ['donations'],
-    queryFn: () => base44.entities.Donation.list('-created_date', 100),
+    queryFn: async () => {
+      const allDonations = await base44.entities.Donation.list('-created_date', 100);
+      return allDonations.filter(d => d.status === 'completed');
+    },
   });
 
   const toggleBadgeMutation = useMutation({
@@ -132,7 +135,7 @@ export default function AdminDonations() {
         <TabsContent value="list" className="space-y-2">
           {donations.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground font-inter text-sm">
-              Aucun don pour le moment
+              Aucun don confirmé pour le moment
             </div>
           ) : (
             donations.map((d) => (

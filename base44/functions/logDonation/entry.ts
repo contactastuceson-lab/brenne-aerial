@@ -18,31 +18,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing sessionId' }, { status: 400 });
     }
 
-    // Récupérer la session Stripe complète
+    // Récupérer la session Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!session || session.payment_status !== 'paid') {
       return Response.json({ error: 'Invalid or unpaid session' }, { status: 400 });
     }
 
-    // Vérifier si le don existe déjà
-    const existing = await base44.asServiceRole.entities.Donation.filter({
+    // Chercher le don pending
+    const donations = await base44.asServiceRole.entities.Donation.filter({
       stripe_session_id: sessionId,
     });
 
-    if (existing.length > 0) {
-      return Response.json({ success: true, donation: existing[0] });
+    if (donations.length === 0) {
+      return Response.json({ error: 'Donation not found' }, { status: 404 });
     }
 
-    // Créer le don
-    const donation = await base44.asServiceRole.entities.Donation.create({
-      donor_email: user.email,
-      donor_name: user.full_name || 'Donateur anonyme',
-      amount: session.amount_total / 100,
+    const donation = donations[0];
+
+    // Mettre à jour en "completed" et ajouter le badge
+    await base44.asServiceRole.entities.Donation.update(donation.id, {
       status: 'completed',
-      stripe_session_id: sessionId,
       has_badge: true,
-      is_anonymous: false,
     });
 
     return Response.json({ success: true, donation });

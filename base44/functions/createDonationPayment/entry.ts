@@ -39,10 +39,25 @@ Deno.serve(async (req) => {
       },
     });
 
+    // Créer un don en "pending" tout de suite
+    try {
+      await base44.asServiceRole.entities.Donation.create({
+        donor_email: user?.email || 'anonymous',
+        donor_name: user?.full_name || 'Donateur anonyme',
+        amount: amount,
+        status: 'pending',
+        stripe_session_id: session.id,
+        has_badge: false,
+        is_anonymous: user ? false : true,
+      });
+    } catch (e) {
+      console.error('Error creating pending donation:', e);
+    }
+
     return Response.json({
       success: true,
       url: session.url,
-    });
+    })
   } catch (error) {
     console.error('Donation payment error:', error);
     return Response.json({ error: error.message }, { status: 500 });

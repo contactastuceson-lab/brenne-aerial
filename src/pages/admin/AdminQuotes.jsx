@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Eye, Check, X, Loader2 } from 'lucide-react';
+import { Eye, Check, X, Loader2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -91,6 +91,21 @@ export default function AdminQuotes() {
                 <Button variant="ghost" size="sm" onClick={() => { setSelected(q); setAdminNotes(q.admin_notes || ''); setPrixFinal(q.prix_final?.toString() || ''); }}>
                   <Eye className="w-4 h-4" />
                 </Button>
+                <Button variant="outline" size="sm" onClick={async () => {
+                  const res = await base44.functions.invoke('generateQuotePDF', { quoteId: q.id });
+                  if (res.data) {
+                    const blob = new Blob([res.data], { type: 'application/pdf' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `devis-${q.id.slice(0, 8)}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                  } else toast.error('Erreur lors de la génération');
+                }} className="gap-1 text-primary">
+                  <FileText className="w-4 h-4" /> PDF
+                </Button>
                 {(q.status === 'pending' || q.status === 'reviewing') && (
                   <>
                     <Button size="sm" onClick={() => { setSelected(q); setAdminNotes(''); setPrixFinal(''); }} className="bg-green-400/10 text-green-400 border border-green-400/20 hover:bg-green-400/20">
@@ -143,6 +158,26 @@ export default function AdminQuotes() {
                   Marquer comme terminé
                 </Button>
               )}
+              <Button
+                onClick={async () => {
+                  const res = await base44.functions.invoke('generateQuotePDF', { quoteId: selected.id });
+                  if (res.data) {
+                    const blob = new Blob([res.data], { type: 'application/pdf' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `devis-${selected.id.slice(0, 8)}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    toast.success('Devis téléchargé');
+                  } else toast.error('Erreur lors de la génération');
+                }}
+                variant="outline"
+                className="w-full gap-2 text-primary"
+              >
+                <FileText className="w-4 h-4" /> Télécharger le devis PDF
+              </Button>
             </div>
           )}
         </DialogContent>

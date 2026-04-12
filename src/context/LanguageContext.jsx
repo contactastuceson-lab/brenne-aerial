@@ -10,7 +10,7 @@ const translations = {
     hours: { title: 'Horaires d\'ouverture', open: 'Ouvert', closed: 'Fermé', break: 'Pause' },
     planning: { title: 'Planning & Réservation', available: 'Disponible', booked: 'Réservé', book: 'Réserver', morning: 'Matin', afternoon: 'Après-midi', evening: 'Soir' },
     dashboard: { title: 'Mon Espace', messages: 'Messages', notifications: 'Notifications', badges: 'Badges', profile: 'Profil' },
-    admin: { title: 'Administration', quotes: 'Devis', appointments: 'Rendez-vous', users: 'Utilisateurs', messaging: 'Messagerie', stats: 'Statistiques', settings: 'Paramètres', emailing: 'Emailing' },
+    admin: { title: 'Administration', quotes: 'Devis', appointments: 'Rendez-vous', users: 'Utilisateurs', messaging: 'Messagerie', stats: 'Statistiques', settings: 'Paramètres', emailing: 'Emailing', pricing: 'Tarification' },
     badges: { founder: 'Fondateur', admin: 'Administrateur', vip: 'VIP', moderator: 'Modérateur', user: 'Utilisateur' },
     common: { loading: 'Chargement...', save: 'Enregistrer', cancel: 'Annuler', delete: 'Supprimer', edit: 'Modifier', accept: 'Accepter', refuse: 'Refuser', send: 'Envoyer', search: 'Rechercher', noResults: 'Aucun résultat', pending: 'En attente', reviewing: 'En cours', accepted: 'Accepté', refused: 'Refusé' }
   },
@@ -23,7 +23,7 @@ const translations = {
     hours: { title: 'Business Hours', open: 'Open', closed: 'Closed', break: 'Break' },
     planning: { title: 'Planning & Booking', available: 'Available', booked: 'Booked', book: 'Book', morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening' },
     dashboard: { title: 'My Dashboard', messages: 'Messages', notifications: 'Notifications', badges: 'Badges', profile: 'Profile' },
-    admin: { title: 'Administration', quotes: 'Quotes', appointments: 'Appointments', users: 'Users', messaging: 'Messaging', stats: 'Statistics', settings: 'Settings', emailing: 'Emailing' },
+    admin: { title: 'Administration', quotes: 'Quotes', appointments: 'Appointments', users: 'Users', messaging: 'Messaging', stats: 'Statistics', settings: 'Settings', emailing: 'Emailing', pricing: 'Pricing' },
     badges: { founder: 'Founder', admin: 'Administrator', vip: 'VIP', moderator: 'Moderator', user: 'User' },
     common: { loading: 'Loading...', save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', accept: 'Accept', refuse: 'Refuse', send: 'Send', search: 'Search', noResults: 'No results', pending: 'Pending', reviewing: 'Reviewing', accepted: 'Accepted', refused: 'Refused' }
   }

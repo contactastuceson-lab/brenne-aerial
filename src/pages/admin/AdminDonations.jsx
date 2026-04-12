@@ -35,6 +35,8 @@ export default function AdminDonations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['donations'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       setLocalBadgeStates({});
       toast.success('Badge mis à jour');
     },

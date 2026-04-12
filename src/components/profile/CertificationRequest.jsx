@@ -50,12 +50,17 @@ export default function CertificationRequest({ onClose, user }) {
     setLoading(true);
     try {
       // Create certification request
-      await base44.entities.CertificationRequest?.create?.({
+      const request = await base44.entities.CertificationRequest.create({
         user_email: user.email,
         user_name: user.full_name,
         status: 'pending',
         responses: formData,
         submitted_at: new Date().toISOString(),
+      });
+      
+      // Send confirmation email
+      await base44.functions.invoke('sendCertificationConfirmation', {
+        certificationRequestId: request.id,
       });
       
       setStep('payment');
@@ -70,11 +75,11 @@ export default function CertificationRequest({ onClose, user }) {
   const handlePayment = async () => {
     setLoading(true);
     try {
-      // Redirect to payment or trigger payment modal
+      // Redirect to payment
       const response = await base44.functions.invoke('createCertificationPayment', {
         userEmail: user.email,
         userName: user.full_name,
-        amount: 4900, // €49.00
+        amount: 500, // €5.00
       });
       
       if (response.data?.url) {
@@ -127,7 +132,7 @@ export default function CertificationRequest({ onClose, user }) {
           ) : step === 'form' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <p className="font-inter text-sm text-muted-foreground mb-6">
-                Complétez ce formulaire pour demander votre certification. Frais : 49€
+                Complétez ce formulaire pour demander votre certification. Frais : 5€
               </p>
 
               <div className="space-y-4">
@@ -180,7 +185,7 @@ export default function CertificationRequest({ onClose, user }) {
               <div>
                 <h3 className="font-grotesk font-semibold text-lg mb-1">Paiement de la certification</h3>
                 <p className="font-inter text-sm text-muted-foreground">
-                  Montant : <span className="font-grotesk font-bold text-primary">49€</span>
+                  Montant : <span className="font-grotesk font-bold text-primary">5€</span>
                 </p>
               </div>
               <p className="font-inter text-xs text-muted-foreground">
@@ -202,7 +207,7 @@ export default function CertificationRequest({ onClose, user }) {
                   className="bg-primary text-primary-foreground flex-1 gap-2"
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  Payer 49€
+                  Payer 5€
                 </Button>
               </div>
             </motion.div>

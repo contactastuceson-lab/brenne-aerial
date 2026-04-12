@@ -31,6 +31,7 @@ export default function ProfilePage() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [showCertification, setShowCertification] = useState(false);
   const [certificationsEnabled, setCertificationsEnabled] = useState(true);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -48,6 +49,15 @@ export default function ProfilePage() {
         setCertificationsEnabled(settings[0].value === 'true');
       }
     });
+
+    // Check for payment success
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('certification') === 'success') {
+      setPaymentSuccess(true);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      setTimeout(() => setPaymentSuccess(false), 5000);
+    }
   }, []);
 
   const saveMutation = useMutation({
@@ -98,6 +108,20 @@ export default function ProfilePage() {
   return (
     <div className="pt-20 min-h-screen pb-20">
       <div className="max-w-2xl mx-auto px-5">
+        {paymentSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="mb-6 bg-green-500/10 border border-green-500/30 rounded-lg p-4 flex items-start gap-3"
+          >
+            <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-sm text-green-400">Paiement reçu !</p>
+              <p className="text-xs text-green-300 mt-1">Votre demande de certification a été confirmée. Vous recevrez une réponse sous 5 jours.</p>
+            </div>
+          </motion.div>
+        )}
 
         {/* Cover */}
         <div className="relative h-40 rounded-2xl overflow-hidden mb-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary">

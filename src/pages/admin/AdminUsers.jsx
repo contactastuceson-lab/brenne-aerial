@@ -86,6 +86,16 @@ export default function AdminUsers() {
     },
   });
 
+  const refuseDeletion = useMutation({
+    mutationFn: ({ requestId, userEmail, userName }) => base44.functions.invoke('refuseDeletionRequest', { requestId, userEmail, userName }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['adm-deletion-requests'] });
+      setDeleteConfirm(null);
+      toast.success('Demande refusée — email envoyé à l\'utilisateur');
+    },
+    onError: () => toast.error('Erreur lors du refus'),
+  });
+
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const updateUser = useMutation({
@@ -318,14 +328,27 @@ export default function AdminUsers() {
             <p className="font-inter text-sm text-muted-foreground">
               Supprimer définitivement <strong className="text-foreground">{deleteConfirm.full_name}</strong> ({deleteConfirm.email}) ? Cette action est irréversible.
             </p>
-            <div className="flex gap-2 justify-end">
-              <Button size="sm" variant="outline" className="border-border text-xs" onClick={() => setDeleteConfirm(null)}>Annuler</Button>
-              <Button size="sm" className="bg-destructive text-white hover:bg-destructive/90 text-xs gap-1.5"
-                onClick={() => deleteUser.mutate({ userId: deleteConfirm.id, userEmail: deleteConfirm.email })}
-                disabled={deleteUser.isPending}>
-                {deleteUser.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
-                Supprimer définitivement
-              </Button>
+            <div className="flex flex-col gap-2">
+              {hasDeletionRequest(deleteConfirm.email) && (
+                <Button size="sm" variant="outline"
+                  className="border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10 text-xs gap-1.5 w-full"
+                  onClick={() => {
+                    const req = deletionRequests.find(r => r.user_email === deleteConfirm.email);
+                    if (req) refuseDeletion.mutate({ requestId: req.id, userEmail: deleteConfirm.email, userName: deleteConfirm.full_name });
+                  }}
+                  disabled={refuseDeletion.isPending}>
+                  {refuseDeletion.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : '❌'} Refuser la demande (et notifier l'utilisateur)
+                </Button>
+              )}
+              <div className="flex gap-2 justify-end">
+                <Button size="sm" variant="outline" className="border-border text-xs" onClick={() => setDeleteConfirm(null)}>Annuler</Button>
+                <Button size="sm" className="bg-destructive text-white hover:bg-destructive/90 text-xs gap-1.5"
+                  onClick={() => deleteUser.mutate({ userId: deleteConfirm.id, userEmail: deleteConfirm.email })}
+                  disabled={deleteUser.isPending}>
+                  {deleteUser.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                  Supprimer définitivement
+                </Button>
+              </div>
             </div>
           </div>
         </div>

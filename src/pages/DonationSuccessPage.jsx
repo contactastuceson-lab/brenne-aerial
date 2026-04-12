@@ -7,12 +7,27 @@ import { base44 } from '@/api/base44Client';
 
 export default function DonationSuccessPage() {
   const [user, setUser] = useState(null);
+  const [amount, setAmount] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
       setUser(u);
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id') || '';
+      
+      // Récupérer le montant du don depuis la base de données
+      try {
+        if (sessionId) {
+          const donations = await base44.entities.Donation.filter({
+            stripe_session_id: sessionId,
+          });
+          if (donations.length > 0) {
+            setAmount(donations[0].amount);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching donation amount:', err);
+      }
       
       // Ajouter le badge Donateur
       try {
@@ -37,6 +52,7 @@ export default function DonationSuccessPage() {
         await base44.functions.invoke('sendDonationConfirmation', {
           userEmail: u?.email || 'anonymous',
           userName: u?.full_name || 'Bienfaiteur',
+          amount: amount || 'N/A',
         });
       } catch (err) {
         console.error('Email error:', err);

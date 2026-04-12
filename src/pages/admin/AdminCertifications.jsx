@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { CheckCircle, XCircle, Clock, Eye, Mail } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Eye, Mail, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
@@ -11,11 +11,45 @@ export default function AdminCertifications() {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [adminNotes, setAdminNotes] = useState('');
   const queryClient = useQueryClient();
+  const [certificationsEnabled, setCertificationsEnabled] = useState(true);
+  const [toggleLoading, setToggleLoading] = useState(false);
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['certification-requests'],
     queryFn: () => base44.entities.CertificationRequest.list('-created_date', 100),
   });
+
+  const { data: appSettings = [] } = useQuery({
+    queryKey: ['app-settings-certifications'],
+    queryFn: () => base44.entities.AppSettings.filter({ key: 'certifications_enabled' }),
+    onSuccess: (settings) => {
+      if (settings.length > 0) {
+        setCertificationsEnabled(settings[0].value === 'true');
+      }
+    },
+  });
+
+  const toggleCertifications = async () => {
+    setToggleLoading(true);
+    try {
+      const setting = appSettings.find(s => s.key === 'certifications_enabled');
+      const newValue = !certificationsEnabled;
+      
+      if (setting) {
+        await base44.entities.AppSettings.update(setting.id, { value: String(newValue) });
+      } else {
+        await base44.entities.AppSettings.create({ key: 'certifications_enabled', value: String(newValue) });
+      }
+      
+      setCertificationsEnabled(newValue);
+      queryClient.invalidateQueries({ queryKey: ['app-settings-certifications'] });
+      toast.success(newValue ? 'Certifications activées' : 'Certifications désactivées');
+    } catch (err) {
+      toast.error('Erreur lors de la mise à jour');
+    } finally {
+      setToggleLoading(false);
+    }
+  };
 
   const approveMutation = useMutation({
     mutationFn: (id) => base44.entities.CertificationRequest.update(id, {
@@ -68,10 +102,32 @@ export default function AdminCertifications() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-grotesk font-bold text-3xl mb-2">Certifications</h1>
-        <p className="text-muted-foreground">Gérez les demandes de certification des utilisateurs</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-grotesk font-bold text-3xl mb-2">Certifications</h1>
+          <p className="text-muted-foreground">Gérez les demandes de certification des utilisateurs</p>
+        </div>
+        <div>
+          <Button
+            onClick={toggleCertifications}
+            disabled={toggleLoading}
+            variant={certificationsEnabled ? 'default' : 'outline'}
+            className={certificationsEnabled ? 'bg-green-600 hover:bg-green-700' : 'border-destructive text-destructive'}
+          >
+            {certificationsEnabled ? '✓ Actif' : '✕ Désactivé'}
+          </Button>
+        </div>
       </div>
+
+      {!certificationsEnabled && (
+        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 flex gap-3">
+          <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-sm">Certifications désactivées</p>
+            <p className="text-xs text-muted-foreground mt-1">Les utilisateurs ne peuvent plus demander de certification. Les demandes existantes restent visibles.</p>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">

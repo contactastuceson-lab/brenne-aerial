@@ -34,7 +34,8 @@ export default function ProfilePage() {
   const [certificationsEnabled, setCertificationsEnabled] = useState(true);
 
   useEffect(() => {
-    base44.auth.me().then(u => {
+    const loadUser = async () => {
+      const u = await base44.auth.me();
       setUser(u);
       setForm({
         bio: u.bio || '',
@@ -42,7 +43,18 @@ export default function ProfilePage() {
         location: u.location || '',
         website: u.website || '',
       });
-    }).catch(() => base44.auth.redirectToLogin('/profile'));
+    };
+    
+    loadUser().catch(() => base44.auth.redirectToLogin('/profile'));
+
+    // Surveiller les changements de l'entité User
+    const unsubscribe = base44.entities.User.subscribe((event) => {
+      if (event.data?.email === user?.email) {
+        setUser(event.data);
+      }
+    });
+
+    return () => unsubscribe();
 
     base44.entities.AppSettings.filter({ key: 'certifications_enabled' }).then(settings => {
       if (settings.length > 0) {

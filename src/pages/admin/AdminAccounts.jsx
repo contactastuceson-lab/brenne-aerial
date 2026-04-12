@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Edit2, Trash2, X, Loader2, Upload, Check, AlertCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Loader2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,33 +14,31 @@ export default function AdminAccounts() {
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
+    name: '',
     email: '',
-    full_name: '',
     avatar_url: '',
     bio: '',
     location: '',
     phone: '',
     role: 'user',
+    status: 'active',
   });
 
   const u = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
-  // Fetch users
-  const { data: users = [], isLoading } = useQuery({
+  // Fetch accounts
+  const { data: accounts = [], isLoading } = useQuery({
     queryKey: ['admin-accounts'],
-    queryFn: async () => {
-      const res = await base44.functions.invoke('adminGetUsers', {});
-      return res.data || res || [];
-    },
+    queryFn: () => base44.entities.Account.list('-updated_date'),
   });
 
-  // Update user mutation
+  // Create/Update account mutation
   const updateMutation = useMutation({
     mutationFn: async (data) => {
       if (editingId) {
-        return base44.functions.invoke('adminUpdateUser', { userId: editingId, updates: data });
+        return base44.entities.Account.update(editingId, data);
       } else {
-        return base44.users.inviteUser(data.email, data.role);
+        return base44.entities.Account.create(data);
       }
     },
     onSuccess: () => {
@@ -53,9 +51,9 @@ export default function AdminAccounts() {
     },
   });
 
-  // Delete user mutation
+  // Delete account mutation
   const deleteMutation = useMutation({
-    mutationFn: (userId) => base44.functions.invoke('adminDeleteUser', { userId }),
+    mutationFn: (id) => base44.entities.Account.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-accounts'] });
       toast.success('Compte supprimé');
@@ -78,31 +76,33 @@ export default function AdminAccounts() {
     }
   };
 
-  // Edit user
-  const handleEdit = (user) => {
+  // Edit account
+  const handleEdit = (account) => {
     setForm({
-      email: user.email,
-      full_name: user.full_name || '',
-      avatar_url: user.avatar_url || '',
-      bio: user.bio || '',
-      location: user.location || '',
-      phone: user.phone || '',
-      role: user.role || 'user',
+      name: account.name || '',
+      email: account.email || '',
+      avatar_url: account.avatar_url || '',
+      bio: account.bio || '',
+      location: account.location || '',
+      phone: account.phone || '',
+      role: account.role || 'user',
+      status: account.status || 'active',
     });
-    setEditingId(user.id);
+    setEditingId(account.id);
     setShowForm(true);
   };
 
   // Reset form
   const resetForm = () => {
     setForm({
+      name: '',
       email: '',
-      full_name: '',
       avatar_url: '',
       bio: '',
       location: '',
       phone: '',
       role: 'user',
+      status: 'active',
     });
     setEditingId(null);
     setShowForm(false);
@@ -110,17 +110,17 @@ export default function AdminAccounts() {
 
   // Submit form
   const handleSubmit = async () => {
-    if (!form.email || !form.full_name) {
+    if (!form.email || !form.name) {
       toast.error('Email et nom requis');
       return;
     }
     updateMutation.mutate(form);
   };
 
-  // Delete user
-  const handleDelete = (userId) => {
+  // Delete account
+  const handleDelete = (id) => {
     if (confirm('Confirmer la suppression ?')) {
-      deleteMutation.mutate(userId);
+      deleteMutation.mutate(id);
     }
   };
 
@@ -138,16 +138,16 @@ export default function AdminAccounts() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="font-grotesk font-bold text-3xl mb-1">Gestion des comptes</h1>
-          <p className="font-inter text-sm text-muted-foreground">{users.length} compte(s) au total</p>
+          <p className="font-inter text-sm text-muted-foreground">{accounts.length} compte(s) au total</p>
         </div>
         <Button onClick={() => { resetForm(); setShowForm(true); }} className="bg-primary text-primary-foreground gap-2">
           <Plus className="w-4 h-4" /> Créer un compte
         </Button>
       </div>
 
-      {/* Users table */}
+      {/* Accounts table */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
-        {users.length === 0 ? (
+        {accounts.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">Aucun compte créé</div>
         ) : (
           <div className="overflow-x-auto">
@@ -162,32 +162,32 @@ export default function AdminAccounts() {
                 </tr>
               </thead>
               <tbody>
-                {users.map(user => (
-                  <tr key={user.id} className="border-b border-border hover:bg-secondary/20 transition-colors">
+                {accounts.map(account => (
+                  <tr key={account.id} className="border-b border-border hover:bg-secondary/20 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-secondary border border-border overflow-hidden flex-shrink-0">
-                          {user.avatar_url ? (
-                            <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
+                          {account.avatar_url ? (
+                            <img src={account.avatar_url} alt={account.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs font-bold">
-                              {user.full_name?.charAt(0).toUpperCase()}
+                              {account.name?.charAt(0).toUpperCase()}
                             </div>
                           )}
                         </div>
                         <div>
-                          <p className="font-grotesk font-semibold text-sm">{user.full_name || '—'}</p>
-                          <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
+                          <p className="font-grotesk font-semibold text-sm">{account.name || '—'}</p>
+                          <p className="font-mono text-xs text-muted-foreground">{account.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-mono text-sm text-muted-foreground">{user.email}</td>
-                    <td className="px-6 py-4 font-inter text-sm text-muted-foreground">{user.location || '—'}</td>
+                    <td className="px-6 py-4 font-mono text-sm text-muted-foreground">{account.email}</td>
+                    <td className="px-6 py-4 font-inter text-sm text-muted-foreground">{account.location || '—'}</td>
                     <td className="px-6 py-4">
                       <span className={`font-mono text-xs px-2 py-1 rounded-full ${
-                        user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                        account.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                       }`}>
-                        {user.role || 'user'}
+                        {account.role || 'user'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -196,7 +196,7 @@ export default function AdminAccounts() {
                           size="icon"
                           variant="outline"
                           className="border-border w-8 h-8"
-                          onClick={() => handleEdit(user)}
+                          onClick={() => handleEdit(account)}
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </Button>
@@ -204,7 +204,7 @@ export default function AdminAccounts() {
                           size="icon"
                           variant="outline"
                           className="border-destructive/20 text-destructive hover:bg-destructive/10 w-8 h-8"
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => handleDelete(account.id)}
                           disabled={deleteMutation.isPending}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -270,8 +270,8 @@ export default function AdminAccounts() {
               <div>
                 <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Nom complet *</label>
                 <Input
-                  value={form.full_name}
-                  onChange={e => u('full_name', e.target.value)}
+                  value={form.name}
+                  onChange={e => u('name', e.target.value)}
                   placeholder="Jean Dupont"
                   className="bg-secondary border-border"
                 />
@@ -320,6 +320,19 @@ export default function AdminAccounts() {
                 >
                   <option value="user">Utilisateur</option>
                   <option value="admin">Administrateur</option>
+                </select>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Statut</label>
+                <select
+                  value={form.status}
+                  onChange={e => u('status', e.target.value)}
+                  className="w-full px-3 py-2 rounded-md bg-secondary border border-border text-foreground font-inter text-sm"
+                >
+                  <option value="active">Actif</option>
+                  <option value="inactive">Inactif</option>
                 </select>
               </div>
             </div>

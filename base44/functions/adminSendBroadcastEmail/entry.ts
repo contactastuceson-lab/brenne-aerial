@@ -2,10 +2,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const LOGO_URL = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/6de51adde_1775602844308.png';
 
-function buildEmail(userName, subject, message, senderName, senderRole) {
-  const paragraphs = message.split('\n').filter(l => l.trim()).map(l =>
-    `<p style="margin:0 0 14px;color:#8aaec8;font-size:15px;line-height:1.8;">${l}</p>`
-  ).join('');
+function buildEmail(userName, subject, message, senderName, senderRole, attachments = []) {
+  const images = attachments.filter(a => a.type?.startsWith('image/'));
+  const files = attachments.filter(a => !a.type?.startsWith('image/'));
+
+  const imagesBlock = images.length ? `
+    <div style="margin:20px 0;display:flex;flex-wrap:wrap;gap:10px;">
+      ${images.map(img => `<img src="${img.url}" style="max-width:100%;border-radius:10px;border:1px solid #1e3048;" alt="${img.name}" />`).join('')}
+    </div>` : '';
+
+  const filesBlock = files.length ? `
+    <div style="margin:16px 0;">
+      <p style="margin:0 0 8px;font-size:13px;color:#4a6a8a;">Pièces jointes :</p>
+      ${files.map(f => `<a href="${f.url}" style="display:inline-block;margin:4px;padding:8px 14px;background:#1a3050;border:1px solid #1e3048;border-radius:8px;color:#3ab0dc;font-size:13px;text-decoration:none;">📎 ${f.name}</a>`).join('')}
+    </div>` : '';
 
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -22,6 +32,8 @@ function buildEmail(userName, subject, message, senderName, senderRole) {
           <p style="margin:0 0 8px;font-size:13px;color:#4a6a8a;">Bonjour ${userName},</p>
           <h1 style="margin:0 0 24px;font-size:22px;font-weight:700;color:#e8f4fc;">${subject}</h1>
           ${paragraphs}
+          ${imagesBlock}
+          ${filesBlock}
           <div style="margin:32px 0 0;border-top:1px solid #1e3048;padding-top:24px;">
             <table cellpadding="0" cellspacing="0"><tr>
               <td style="padding-right:14px;vertical-align:middle;">
@@ -67,7 +79,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { subject, message, senderName, senderRole, recipients } = body;
+    const { subject, message, senderName, senderRole, recipients, attachments = [] } = body;
 
     if (!subject || !message || !recipients?.length) {
       return Response.json({ error: 'Paramètres manquants' }, { status: 400 });
@@ -78,7 +90,7 @@ Deno.serve(async (req) => {
     let sent = 0;
     for (const recipient of recipients) {
       console.log('Sending to:', recipient.email);
-      const html = buildEmail(recipient.name || 'cher client', subject, message, senderName, senderRole);
+      const html = buildEmail(recipient.name || 'cher client', subject, message, senderName, senderRole, attachments);
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: recipient.email,
         subject,

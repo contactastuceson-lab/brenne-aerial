@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Mail, Send, Users, User, Loader2, CheckCircle, ChevronDown } from 'lucide-react';
+import { Mail, Send, Users, User, Loader2, CheckCircle, Paperclip, X, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +21,8 @@ export default function AdminEmailing() {
   const [target, setTarget] = useState('all');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [attachments, setAttachments] = useState([]);
+  const [uploading, setUploading] = useState(false);
 
   const { data: users = [] } = useQuery({
     queryKey: ['adm-users-list'],
@@ -36,6 +38,20 @@ export default function AdminEmailing() {
 
   const senderProfile = SENDER_PROFILES.find(p => p.id === sender);
 
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploading(true);
+    for (const file of files) {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setAttachments(prev => [...prev, { url: file_url, name: file.name, type: file.type }]);
+    }
+    setUploading(false);
+    e.target.value = '';
+  };
+
+  const removeAttachment = (url) => setAttachments(prev => prev.filter(a => a.url !== url));
+
   const handleSend = async () => {
     if (!subject.trim() || !message.trim()) {
       toast.error('Objet et message requis');
@@ -46,6 +62,7 @@ export default function AdminEmailing() {
       subject,
       message,
       senderName: senderProfile.name,
+      attachments,
       senderRole: senderProfile.role,
       recipients: targetUsers.map(u => ({ email: u.email, name: u.full_name })),
     });
@@ -145,6 +162,28 @@ export default function AdminEmailing() {
             {message && <p className="font-inter text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">{message}</p>}
           </div>
         )}
+
+        {/* Attachments */}
+        <div>
+          <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Pièces jointes / Photos</label>
+          <label className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-border bg-card hover:border-primary/40 cursor-pointer transition-colors">
+            {uploading ? <Loader2 className="w-4 h-4 text-primary animate-spin" /> : <Paperclip className="w-4 h-4 text-muted-foreground" />}
+            <span className="font-inter text-sm text-muted-foreground">{uploading ? 'Upload en cours...' : 'Ajouter des fichiers ou images'}</span>
+            <input type="file" multiple accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+          </label>
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {attachments.map(a => (
+                <div key={a.url} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary border border-border">
+                  {a.type?.startsWith('image/') ? <ImageIcon className="w-3.5 h-3.5 text-primary" /> : <Paperclip className="w-3.5 h-3.5 text-muted-foreground" />}
+                  <span className="font-inter text-xs max-w-[120px] truncate">{a.name}</span>
+                  {a.type?.startsWith('image/') && <img src={a.url} className="w-8 h-8 object-cover rounded" alt="" />}
+                  <button onClick={() => removeAttachment(a.url)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Send button */}
         {sent ? (

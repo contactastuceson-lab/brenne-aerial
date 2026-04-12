@@ -1,20 +1,36 @@
-// Price calculator
+// Price calculator - fallback defaults
 export const SERVICE_PRICES = {
-  video_evenement:      { base: 350, per_hour: 150, label: 'Vidéo événement' },
-  inspection_toiture:   { base: 200, per_hour: 100, label: 'Inspection toiture' },
-  suivi_chantier:       { base: 250, per_hour: 120, label: 'Suivi chantier' },
-  captation_particulier:{ base: 180, per_hour: 90,  label: 'Captation particulier' },
-  captation_entreprise: { base: 400, per_hour: 180, label: 'Captation entreprise' },
-  retour_temps_reel:    { base: 500, per_hour: 200, label: 'Retour temps réel' },
-  autre:                { base: 200, per_hour: 100, label: 'Autre' },
+  video_evenement:      { base: 500, per_hour: 150, label: 'Vidéo événement' },
+  inspection_toiture:   { base: 300, per_hour: 100, label: 'Inspection toiture' },
+  suivi_chantier:       { base: 400, per_hour: 120, label: 'Suivi chantier' },
+  captation_particulier:{ base: 250, per_hour: 80,  label: 'Captation particulier' },
+  captation_entreprise: { base: 600, per_hour: 180, label: 'Captation entreprise' },
+  retour_temps_reel:    { base: 800, per_hour: 200, label: 'Retour temps réel' },
+  autre:                { base: 0, per_hour: 0, label: 'Autre' },
 };
+
+// Load prices from database
+export async function getServicePrices() {
+  try {
+    const { base44 } = await import('@/api/base44Client');
+    const services = await base44.entities.Service.list();
+    const prices = {};
+    services.forEach(s => {
+      prices[s.slug] = { base: s.base_price || 0, per_hour: s.price_per_hour || 0, label: s.name };
+    });
+    return prices;
+  } catch (err) {
+    console.warn('Failed to load service prices from DB, using defaults', err);
+    return SERVICE_PRICES;
+  }
+}
 
 export const DURATION_HOURS = {
   '1h': 1, '2-3h': 2.5, 'demi-journee': 4, 'journee': 8, 'multi-jours': 16,
 };
 
-export function calculatePrice(serviceType, duration) {
-  const svc = SERVICE_PRICES[serviceType];
+export function calculatePrice(serviceType, duration, prices = SERVICE_PRICES) {
+  const svc = prices[serviceType];
   if (!svc) return 0;
   const hours = DURATION_HOURS[duration] || 1;
   return Math.round(svc.base + svc.per_hour * (hours - 1));

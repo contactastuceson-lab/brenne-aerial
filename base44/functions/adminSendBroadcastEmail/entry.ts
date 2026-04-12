@@ -17,6 +17,10 @@ function buildEmail(userName, subject, message, senderName, senderRole, attachme
       ${files.map(f => `<a href="${f.url}" style="display:inline-block;margin:4px;padding:8px 14px;background:#1a3050;border:1px solid #1e3048;border-radius:8px;color:#3ab0dc;font-size:13px;text-decoration:none;">📎 ${f.name}</a>`).join('')}
     </div>` : '';
 
+  const paragraphs = message.split('\n').filter(l => l.trim()).map(l =>
+    `<p style="margin:0 0 14px;color:#8aaec8;font-size:15px;line-height:1.8;">${l}</p>`
+  ).join('');
+
   return `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${subject}</title></head>

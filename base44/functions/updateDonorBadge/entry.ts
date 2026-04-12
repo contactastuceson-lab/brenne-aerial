@@ -24,21 +24,11 @@ Deno.serve(async (req) => {
     const newHasBadge = !hasBadge;
     await base44.asServiceRole.entities.Donation.update(donationId, { has_badge: newHasBadge });
 
-    // Mettre à jour les badges de l'utilisateur
-    let allUsers = [];
-    let page = 0;
-    let hasMore = true;
+    // Trouver et mettre à jour les badges de l'utilisateur
+    const users = await base44.asServiceRole.entities.User.filter({ email: donation.donor_email });
     
-    while (hasMore) {
-      const users = await base44.asServiceRole.entities.User.list('-created_date', 100, page * 100);
-      allUsers = allUsers.concat(users);
-      hasMore = users.length === 100;
-      page++;
-    }
-    
-    const donorUser = allUsers.find(u => u.email === donation.donor_email);
-    
-    if (donorUser) {
+    if (users.length > 0) {
+      const donorUser = users[0];
       const badges = donorUser.badges || [];
       let newBadges;
       

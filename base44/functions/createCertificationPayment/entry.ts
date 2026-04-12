@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${Deno.env.get('APP_URL')}/profile?certification=success`,
+      success_url: `${Deno.env.get('APP_URL')}/certification-success`,
       cancel_url: `${Deno.env.get('APP_URL')}/profile?certification=cancelled`,
       customer_email: userEmail,
       metadata: {

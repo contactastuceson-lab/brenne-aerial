@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
     const isApproved = status === 'approved';
     const subject = isApproved 
       ? '✓ Votre demande de certification a été approuvée'
-      : '✗ Votre demande de certification a été examinée';
+      : '✗ Votre demande de certification a été refusée';
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       <h2 style="margin-top: 0;">Bonjour ${certRequest.user_name},</h2>
       
       <div class="status-badge ${isApproved ? 'status-approved' : 'status-rejected'}">
-        ${isApproved ? '✓ APPROUVÉE' : '⚠ EXAMINÉE'}
+        ${isApproved ? '✓ APPROUVÉE' : '✗ REFUSÉE'}
       </div>
 
       <p>
@@ -60,7 +60,9 @@ Deno.serve(async (req) => {
         <p>Vous pouvez désormais afficher le badge "Officiel" sur votre profil. Cela valorise votre expertise et renforce la confiance avec les clients potentiels.</p>
         <p><a href="https://brenne-aerial.fr/profile" class="btn">Voir mon profil</a></p>
       ` : `
-        <p>Votre demande de certification a été examinée par notre équipe.</p>
+        <p style="font-size: 16px; font-weight: bold; color: #721c24;">
+          Votre demande de certification a été <strong>refusée</strong>.
+        </p>
         ${adminNotes ? `
           <div class="notes-box">
             <p style="margin-top: 0; font-weight: bold; color: #666;">Commentaires de l'équipe :</p>
@@ -79,7 +81,7 @@ Deno.serve(async (req) => {
       </div>
 
       ${!isApproved ? `
-        <p>Si vous avez des questions, n'hésitez pas à nous contacter à <strong>contact@brenne-aerial.fr</strong></p>
+        <p>Vous pouvez soumettre une nouvelle demande ultérieurement. Si vous avez des questions, contactez-nous à <strong>contact@brenne-aerial.fr</strong></p>
       ` : ''}
 
       <p style="margin-top: 30px; margin-bottom: 0;">Cordialement,<br><strong>L'équipe Brenne Aerial</strong></p>

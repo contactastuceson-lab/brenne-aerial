@@ -13,6 +13,7 @@ import { fr } from 'date-fns/locale';
 export default function AdminDonations() {
   const queryClient = useQueryClient();
   const [selectedDonation, setSelectedDonation] = useState(null);
+  const [localBadgeStates, setLocalBadgeStates] = useState({});
 
   const { data: donations = [] } = useQuery({
     queryKey: ['donations'],
@@ -38,9 +39,24 @@ export default function AdminDonations() {
         }
       }
     },
+    onMutate: (donation) => {
+      setLocalBadgeStates(prev => ({
+        ...prev,
+        [donation.id]: !donation.has_badge
+      }));
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['donations'] });
+      setLocalBadgeStates({});
       toast.success('Badge mis à jour');
+    },
+    onError: (error, donation) => {
+      setLocalBadgeStates(prev => {
+        const newState = { ...prev };
+        delete newState[donation.id];
+        return newState;
+      });
+      toast.error('Erreur lors de la mise à jour du badge');
     },
   });
 
@@ -181,13 +197,13 @@ export default function AdminDonations() {
                     )}
                     <Button
                       size="sm"
-                      variant={d.has_badge ? 'destructive' : 'default'}
+                      variant={(localBadgeStates[d.id] !== undefined ? localBadgeStates[d.id] : d.has_badge) ? 'destructive' : 'default'}
                       onClick={() => toggleBadgeMutation.mutate(d)}
                       disabled={toggleBadgeMutation.isPending}
                       className="gap-1.5"
                     >
                       <Edit2 className="w-3 h-3" />
-                      {d.has_badge ? 'Retirer' : 'Ajouter'}
+                      {(localBadgeStates[d.id] !== undefined ? localBadgeStates[d.id] : d.has_badge) ? 'Retirer' : 'Remettre'}
                     </Button>
                     <Button
                       size="sm"

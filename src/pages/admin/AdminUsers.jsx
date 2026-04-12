@@ -97,6 +97,7 @@ export default function AdminUsers() {
   });
 
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleteReason, setDeleteReason] = useState('');
 
   const updateUser = useMutation({
     mutationFn: ({ id, data }) => base44.functions.invoke('adminUpdateUser', { id, data }),
@@ -298,7 +299,7 @@ export default function AdminUsers() {
                   <Button size="sm" variant="outline" onClick={() => openEdit(u)} className="border-border text-xs">
                     Modifier
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => setDeleteConfirm(u)}
+                  <Button size="sm" variant="outline" onClick={() => { setDeleteConfirm(u); setDeleteReason(''); }}
                     className={`border-destructive/40 text-destructive hover:bg-destructive/10 text-xs gap-1 ${hasDeletionRequest(u.email) ? 'animate-pulse border-destructive' : ''}`}>
                     <Trash2 className="w-3 h-3" /> {hasDeletionRequest(u.email) ? 'Demande!' : 'Suppr.'}
                   </Button>
@@ -328,6 +329,17 @@ export default function AdminUsers() {
             <p className="font-inter text-sm text-muted-foreground">
               Supprimer définitivement <strong className="text-foreground">{deleteConfirm.full_name}</strong> ({deleteConfirm.email}) ? Cette action est irréversible.
             </p>
+            {!hasDeletionRequest(deleteConfirm.email) && (
+              <div>
+                <label className="font-inter text-xs text-muted-foreground mb-1 block">Raison de la suppression <span className="text-destructive">*</span></label>
+                <Textarea
+                  value={deleteReason}
+                  onChange={e => setDeleteReason(e.target.value)}
+                  placeholder="Ex: Compte inactif, violation des CGU..."
+                  className="bg-secondary border-border resize-none h-20 text-sm"
+                />
+              </div>
+            )}
             <div className="flex flex-col gap-2">
               {hasDeletionRequest(deleteConfirm.email) && (
                 <Button size="sm" variant="outline"
@@ -343,8 +355,8 @@ export default function AdminUsers() {
               <div className="flex gap-2 justify-end">
                 <Button size="sm" variant="outline" className="border-border text-xs" onClick={() => setDeleteConfirm(null)}>Annuler</Button>
                 <Button size="sm" className="bg-destructive text-white hover:bg-destructive/90 text-xs gap-1.5"
-                  onClick={() => deleteUser.mutate({ userId: deleteConfirm.id, userEmail: deleteConfirm.email })}
-                  disabled={deleteUser.isPending}>
+                  onClick={() => deleteUser.mutate({ userId: deleteConfirm.id, userEmail: deleteConfirm.email, userName: deleteConfirm.full_name, reason: deleteReason })}
+                  disabled={deleteUser.isPending || (!hasDeletionRequest(deleteConfirm.email) && !deleteReason.trim())}>
                   {deleteUser.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                   Supprimer définitivement
                 </Button>

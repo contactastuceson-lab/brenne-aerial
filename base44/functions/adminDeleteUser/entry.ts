@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const { userId, userEmail } = await req.json();
+  const { userId, userEmail, userName, reason } = await req.json();
   if (!userId) return Response.json({ error: 'userId requis' }, { status: 400 });
 
   // Delete the user
@@ -49,33 +49,48 @@ Deno.serve(async (req) => {
     throw e;
   }
 
-  // Mark deletion request as processed if any
+  // Check if there was a pending deletion request
+  let hadRequest = false;
   if (userEmail) {
     const requests = await base44.asServiceRole.entities.DeletionRequest.filter({ user_email: userEmail, status: 'pending' });
     for (const r of requests) {
       await base44.asServiceRole.entities.DeletionRequest.update(r.id, { status: 'processed' });
     }
+    hadRequest = requests.length > 0;
+  }
 
-    // Notify the user by email (best effort — user may no longer be in the app)
+  // Send email to user
+  if (userEmail) {
     try {
+      const isAdminInitiated = !hadRequest;
+      const bodyHtml = isAdminInitiated ? `
+        <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Bonjour <strong style="color:#e8f4fc;">${userName || ''}</strong>,</p>
+        <div style="background:#0a1120;border-left:3px solid #e55555;border-radius:8px;padding:16px 20px;margin:0 0 20px;">
+          <p style="margin:0;color:#e55555;font-size:13px;font-weight:700;">🔴 Votre compte a été supprimé par un administrateur</p>
+          ${reason ? `<p style="margin:6px 0 0;color:#8aaec8;font-size:13px;"><strong style="color:#e8f4fc;">Raison :</strong> ${reason}</p>` : ''}
+        </div>
+        <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Toutes vos données personnelles ont été <strong style="color:#e8f4fc;">définitivement effacées</strong> de notre plateforme.</p>
+        <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Si vous pensez qu'il s'agit d'une erreur ou souhaitez plus d'informations, contactez-nous à <a href="mailto:contact@brenneaerial.fr" style="color:#3ab0dc;">contact@brenneaerial.fr</a></p>
+      ` : `
+        <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Bonjour <strong style="color:#e8f4fc;">${userName || ''}</strong>,</p>
+        <div style="background:#0a1120;border-left:3px solid #22c55e;border-radius:8px;padding:16px 20px;margin:0 0 20px;">
+          <p style="margin:0;color:#22c55e;font-size:13px;font-weight:700;">✅ Suppression effectuée</p>
+          <p style="margin:6px 0 0;color:#8aaec8;font-size:13px;">Votre compte a bien été supprimé conformément à votre demande.</p>
+        </div>
+        <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Toutes vos données personnelles ont été <strong style="color:#e8f4fc;">définitivement effacées</strong> de notre plateforme.</p>
+        <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Nous vous remercions d'avoir fait confiance à Brenne Aerial. Contactez-nous à <a href="mailto:contact@brenneaerial.fr" style="color:#3ab0dc;">contact@brenneaerial.fr</a></p>
+      `;
+
       await base44.integrations.Core.SendEmail({
         to: userEmail,
-        subject: '✅ Votre compte Brenne Aerial a été supprimé',
+        subject: isAdminInitiated ? '🔴 Votre compte Brenne Aerial a été supprimé' : '✅ Votre compte Brenne Aerial a été supprimé',
         body: emailTemplate({
           title: 'Compte supprimé',
-          preheader: 'Votre compte Brenne Aerial a bien été supprimé.',
-          bodyHtml: `
-            <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Bonjour,</p>
-            <div style="background:#0a1120;border-left:3px solid #22c55e;border-radius:8px;padding:16px 20px;margin:0 0 20px;">
-              <p style="margin:0;color:#22c55e;font-size:13px;font-weight:700;">✅ Suppression effectuée</p>
-              <p style="margin:6px 0 0;color:#8aaec8;font-size:13px;">Votre compte a bien été supprimé conformément à votre demande.</p>
-            </div>
-            <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Toutes vos données personnelles ont été <strong style="color:#e8f4fc;">définitivement effacées</strong> de notre plateforme.</p>
-            <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Nous vous remercions d'avoir fait confiance à Brenne Aerial. Si vous avez des questions, contactez-nous à <a href="mailto:contact@brenneaerial.fr" style="color:#3ab0dc;">contact@brenneaerial.fr</a></p>
-          `,
+          preheader: 'Votre compte Brenne Aerial a été supprimé.',
+          bodyHtml,
         }),
       });
-    } catch (_) { /* user deleted, email not critical */ }
+    } catch (_) { /* best effort */ }
   }
 
   return Response.json({ success: true });

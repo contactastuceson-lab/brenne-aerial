@@ -10,9 +10,10 @@ const navItems = [
   { key: 'users', icon: Users, path: '/admin/users' },
   { key: 'messaging', icon: MessageSquare, path: '/admin/messaging' },
   { key: 'pricing', icon: DollarSign, path: '/admin/pricing' },
-  { key: 'settings', icon: Settings, path: '/admin/hours' },
   { key: 'emailing', icon: Mail, path: '/admin/emailing' },
+  { key: 'settings', icon: Settings, path: '/admin/hours' },
 ];
+
 
 export default function AdminSidebar() {
   const { t } = useLanguage();

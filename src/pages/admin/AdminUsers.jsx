@@ -98,6 +98,17 @@ export default function AdminUsers() {
 
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [deleteReason, setDeleteReason] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
+
+  const sendDeletionEmail = useMutation({
+    mutationFn: ({ userEmail, userName, reason, hadRequest }) =>
+      base44.functions.invoke('sendDeletionEmail', { userEmail, userName, reason, hadRequest }),
+    onSuccess: () => {
+      setEmailSent(true);
+      toast.success('Email envoyé à l\'utilisateur');
+    },
+    onError: () => toast.error('Erreur lors de l\'envoi de l\'email'),
+  });
 
   const updateUser = useMutation({
     mutationFn: ({ id, data }) => base44.functions.invoke('adminUpdateUser', { id, data }),
@@ -299,7 +310,7 @@ export default function AdminUsers() {
                   <Button size="sm" variant="outline" onClick={() => openEdit(u)} className="border-border text-xs">
                     Modifier
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => { setDeleteConfirm(u); setDeleteReason(''); }}
+                  <Button size="sm" variant="outline" onClick={() => { setDeleteConfirm(u); setDeleteReason(''); setEmailSent(false); }}
                     className={`border-destructive/40 text-destructive hover:bg-destructive/10 text-xs gap-1 ${hasDeletionRequest(u.email) ? 'animate-pulse border-destructive' : ''}`}>
                     <Trash2 className="w-3 h-3" /> {hasDeletionRequest(u.email) ? 'Demande!' : 'Suppr.'}
                   </Button>
@@ -352,13 +363,33 @@ export default function AdminUsers() {
                   {refuseDeletion.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : '❌'} Refuser la demande (et notifier l'utilisateur)
                 </Button>
               )}
+              {/* Step 1: Send email */}
+              {!emailSent ? (
+                <Button size="sm" variant="outline"
+                  className="border-primary/40 text-primary hover:bg-primary/10 text-xs gap-1.5 w-full"
+                  onClick={() => sendDeletionEmail.mutate({
+                    userEmail: deleteConfirm.email,
+                    userName: deleteConfirm.full_name,
+                    reason: deleteReason,
+                    hadRequest: hasDeletionRequest(deleteConfirm.email),
+                  })}
+                  disabled={sendDeletionEmail.isPending || (!hasDeletionRequest(deleteConfirm.email) && !deleteReason.trim())}>
+                  {sendDeletionEmail.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : '📧'} Étape 1 — Envoyer l'email de notification
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-400/10 border border-green-400/20">
+                  <span className="text-green-400 text-xs">✅ Email envoyé</span>
+                  <button className="ml-auto text-xs text-muted-foreground underline" onClick={() => setEmailSent(false)}>Renvoyer</button>
+                </div>
+              )}
+              {/* Step 2: Delete */}
               <div className="flex gap-2 justify-end">
                 <Button size="sm" variant="outline" className="border-border text-xs" onClick={() => setDeleteConfirm(null)}>Annuler</Button>
                 <Button size="sm" className="bg-destructive text-white hover:bg-destructive/90 text-xs gap-1.5"
                   onClick={() => deleteUser.mutate({ userId: deleteConfirm.id, userEmail: deleteConfirm.email, userName: deleteConfirm.full_name, reason: deleteReason })}
-                  disabled={deleteUser.isPending || (!hasDeletionRequest(deleteConfirm.email) && !deleteReason.trim())}>
+                  disabled={deleteUser.isPending || !emailSent}>
                   {deleteUser.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
-                  Supprimer définitivement
+                  Étape 2 — Supprimer définitivement
                 </Button>
               </div>
             </div>

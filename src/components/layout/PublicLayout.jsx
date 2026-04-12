@@ -70,7 +70,7 @@ export default function PublicLayout() {
   if (user && user.role !== 'admin') {
     const status = user.account_status;
     if (status === 'banned' || status === 'suspended' || status === 'restricted') {
-      return <BannedPage status={status} reason={user.suspension_reason} />;
+      return <BannedPage status={status} reason={user.suspension_reason} until={user.suspension_until} />;
     }
   }
 

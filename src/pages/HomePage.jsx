@@ -49,10 +49,7 @@ export default function HomePage() {
         {/* Scan line effect */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent scan-line pointer-events-none" />
 
-        {/* Logo */}
-        <div className="absolute top-10 left-5 lg:left-10 z-10">
-          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/9a84faae6_1775602844308.png" alt="BrenneAerial" className="w-24 h-24 lg:w-32 lg:h-32" />
-        </div>
+
 
         {/* Content */}
         <div className="relative max-w-7xl mx-auto px-5 lg:px-10 w-full pt-24 pb-16">

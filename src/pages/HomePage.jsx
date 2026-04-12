@@ -49,6 +49,11 @@ export default function HomePage() {
         {/* Scan line effect */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent scan-line pointer-events-none" />
 
+        {/* Logo */}
+        <div className="absolute top-10 left-5 lg:left-10 z-10">
+          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/9a84faae6_1775602844308.png" alt="BrenneAerial" className="w-24 h-24 lg:w-32 lg:h-32" />
+        </div>
+
         {/* Content */}
         <div className="relative max-w-7xl mx-auto px-5 lg:px-10 w-full pt-24 pb-16">
           <div className="max-w-3xl">
@@ -63,9 +68,9 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
               className="font-grotesk font-bold text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[1.05] tracking-tight mb-6"
             >
-              L'excellence
+              Services drone
               <br />
-              <span className="gradient-text sky-glow-text">vue du ciel.</span>
+              <span className="gradient-text sky-glow-text">professionnels.</span>
             </motion.h1>
 
             <motion.p
@@ -187,18 +192,13 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-              <p className="font-mono text-xs text-primary mb-4 tracking-widest uppercase">— Le mot du PDG</p>
+              <p className="font-mono text-xs text-primary mb-4 tracking-widest uppercase">— À propos</p>
               <h2 className="font-grotesk font-bold text-3xl sm:text-4xl mb-6">
-                Voler plus haut,<br />
-                <span className="gradient-text">voir plus loin.</span>
+                Expertise aérienne<br />
+                <span className="gradient-text">au service de vos projets.</span>
               </h2>
               <div className="space-y-4 font-inter text-muted-foreground leading-relaxed">
-                <p>"Chez Brenne Aerial, nous ne nous contentons pas de faire voler des drones — nous créons des perspectives 
-                que personne n'a vues avant. Chaque mission est une opportunité d'apporter une valeur ajoutée 
-                exceptionnelle à nos clients."</p>
-                <p>"Notre engagement : précision technique, qualité cinématographique et service premium. 
-                Que ce soit pour un événement, une inspection industrielle ou un suivi de chantier, 
-                nous mettons toute notre expertise au service de votre projet."</p>
+                <p>Brenne Aerial offre des solutions drone complètes pour vos besoins professionnels : vidéo événement, inspections, chantiers, captations spécialisées. Réactivité, qualité 4K et tarifs justes.</p>
               </div>
               <div className="flex flex-wrap gap-4 mt-8">
                 <div className="flex items-center gap-2">

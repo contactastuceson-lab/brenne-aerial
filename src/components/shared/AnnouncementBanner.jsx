@@ -11,6 +11,24 @@ const TYPE_CONFIG = {
   error:   { icon: AlertCircle,   bg: 'bg-red-600 border-red-700',             text: 'text-white',         iconColor: 'text-white' },
 };
 
+// Parse text and make URLs + emails clickable
+function RichContent({ text, textClass }) {
+  const parts = text.split(/(https?:\/\/[^\s]+|[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/g);
+  return (
+    <span>
+      {parts.map((part, i) => {
+        if (/^https?:\/\//.test(part)) {
+          return <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline font-semibold text-white hover:text-white/80">{part}</a>;
+        }
+        if (/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(part)) {
+          return <a key={i} href={`mailto:${part}`} className="underline font-semibold text-white hover:text-white/80">{part}</a>;
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </span>
+  );
+}
+
 export default function AnnouncementBanner({ user }) {
   const [dismissed, setDismissed] = useState([]);
 
@@ -58,7 +76,13 @@ export default function AnnouncementBanner({ user }) {
             <Icon className={`w-4 h-4 flex-shrink-0 ${cfg.iconColor}`} />
             <div className="flex-1 min-w-0">
               {a.title && <span className={`font-grotesk font-semibold text-sm mr-2 ${cfg.text}`}>{a.title}</span>}
-              <span className={`font-inter text-sm ${cfg.text}`}>{a.content}</span>
+              <span className={`font-inter text-sm ${cfg.text}`}><RichContent text={a.content} textClass={cfg.text} /></span>
+              {a.link_url && (
+                <a href={a.link_url} target="_blank" rel="noopener noreferrer"
+                  className="flex-shrink-0 ml-2 font-inter text-xs font-semibold underline text-white hover:text-white/80 whitespace-nowrap">
+                  {a.link_label || 'En savoir plus'} →
+                </a>
+              )}
             </div>
             {a.dismissible !== false && (
               <button onClick={() => dismiss(a.id)} className="text-white/70 hover:text-white flex-shrink-0">

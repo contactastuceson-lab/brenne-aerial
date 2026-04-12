@@ -55,6 +55,14 @@
       "type": "boolean",
       "default": true,
       "description": "L'utilisateur peut fermer l'annonce"
+    },
+    "link_url": {
+      "type": "string",
+      "description": "URL du bouton d'action (optionnel)"
+    },
+    "link_label": {
+      "type": "string",
+      "description": "Texte du bouton d'action (optionnel, d\u00e9faut: 'En savoir plus')"
     }
   },
   "required": [

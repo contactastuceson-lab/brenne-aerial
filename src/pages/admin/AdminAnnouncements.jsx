@@ -29,7 +29,7 @@ const TARGET_OPTS = [
   { value: 'visitors_only', label: 'Visiteurs uniquement' },
 ];
 
-const EMPTY = { title: '', content: '', type: 'info', display_mode: 'banner', is_active: true, target: 'all', dismissible: true, expires_at: '' };
+const EMPTY = { title: '', content: '', type: 'info', display_mode: 'banner', is_active: true, target: 'all', dismissible: true, expires_at: '', link_url: '', link_label: '' };
 
 export default function AdminAnnouncements() {
   const qc = useQueryClient();
@@ -145,7 +145,19 @@ export default function AdminAnnouncements() {
 
           <div>
             <label className="font-inter text-xs text-muted-foreground mb-1 block">Contenu *</label>
-            <Textarea value={form.content || ''} onChange={e => setForm(p => ({ ...p, content: e.target.value }))} placeholder="Message de l'annonce..." className="bg-secondary border-border min-h-[80px]" />
+            <Textarea value={form.content || ''} onChange={e => setForm(p => ({ ...p, content: e.target.value }))} placeholder="Message de l'annonce... Les URLs et emails sont auto-cliquables." className="bg-secondary border-border min-h-[80px]" />
+            <p className="font-inter text-[10px] text-muted-foreground mt-1">💡 Les liens (https://...) et adresses email sont automatiquement rendus cliquables en bleu.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="font-inter text-xs text-muted-foreground mb-1 block">Lien bouton d'action (optionnel)</label>
+              <Input value={form.link_url || ''} onChange={e => setForm(p => ({ ...p, link_url: e.target.value }))} placeholder="https://exemple.com" className="bg-secondary border-border" />
+            </div>
+            <div>
+              <label className="font-inter text-xs text-muted-foreground mb-1 block">Texte du bouton</label>
+              <Input value={form.link_label || ''} onChange={e => setForm(p => ({ ...p, link_label: e.target.value }))} placeholder="En savoir plus" className="bg-secondary border-border" />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

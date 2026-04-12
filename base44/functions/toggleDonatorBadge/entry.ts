@@ -16,13 +16,22 @@ Deno.serve(async (req) => {
     }
 
     // Récupérer l'utilisateur à mettre à jour
-    const donorUsers = await base44.asServiceRole.entities.User.filter({ email: donorEmail });
+    let allUsers = [];
+    let page = 0;
+    let hasMore = true;
     
-    if (!donorUsers || donorUsers.length === 0) {
-      return Response.json({ error: 'User not found', email: donorEmail }, { status: 404 });
+    while (hasMore) {
+      const users = await base44.asServiceRole.entities.User.list('-created_date', 100, page * 100);
+      allUsers = allUsers.concat(users);
+      hasMore = users.length === 100;
+      page++;
     }
     
-    const targetUser = donorUsers[0];
+    const targetUser = allUsers.find(u => u.email === donorEmail);
+    
+    if (!targetUser) {
+      return Response.json({ error: 'User not found', email: donorEmail, total: allUsers.length }, { status: 404 });
+    }
 
     const badges = targetUser.badges || [];
     let newBadges;

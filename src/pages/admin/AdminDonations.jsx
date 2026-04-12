@@ -22,22 +22,11 @@ export default function AdminDonations() {
 
   const toggleBadgeMutation = useMutation({
     mutationFn: async (donation) => {
-      const users = await base44.entities.User.list();
-      const donorUser = users.find(u => u.email === donation.donor_email);
-      if (donorUser) {
-        const badges = donorUser.badges || [];
-        if (donation.has_badge) {
-          const filtered = badges.filter(b => b !== 'Donateur');
-          await base44.entities.User.update(donorUser.id, { badges: filtered });
-          await base44.entities.Donation.update(donation.id, { has_badge: false });
-        } else {
-          if (!badges.includes('Donateur')) {
-            badges.push('Donateur');
-            await base44.entities.User.update(donorUser.id, { badges });
-          }
-          await base44.entities.Donation.update(donation.id, { has_badge: true });
-        }
-      }
+      await base44.functions.invoke('toggleDonatorBadge', {
+        donorEmail: donation.donor_email,
+        hasBadge: donation.has_badge,
+      });
+      await base44.entities.Donation.update(donation.id, { has_badge: !donation.has_badge });
     },
     onMutate: (donation) => {
       setLocalBadgeStates(prev => ({

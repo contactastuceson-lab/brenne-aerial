@@ -11,7 +11,6 @@ export default function CertificationSuccessPage() {
   useEffect(() => {
     base44.auth.me().then(async (u) => {
       setUser(u);
-      // Récupérer la dernière demande de certification et marquer comme payée
       const requests = await base44.entities.CertificationRequest.filter(
         { user_email: u.email },
         '-created_date',
@@ -20,6 +19,11 @@ export default function CertificationSuccessPage() {
       if (requests.length > 0) {
         await base44.entities.CertificationRequest.update(requests[0].id, {
           payment_status: 'completed'
+        });
+        // Envoyer l'email de confirmation
+        await base44.functions.invoke('sendCertificationEmail', {
+          certificationRequestId: requests[0].id,
+          status: requests[0].status,
         });
       }
     });

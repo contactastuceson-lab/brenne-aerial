@@ -33,8 +33,9 @@ Deno.serve(async (req) => {
       cancel_url: `${Deno.env.get('APP_URL')}/donation?cancelled=true`,
       customer_email: user?.email || '',
       metadata: {
-        donationAmount: amount,
-        userEmail: user?.email || 'anonymous',
+        donor_email: user?.email || 'anonymous',
+        donor_name: user?.full_name || 'Donateur anonyme',
+        is_anonymous: user ? 'false' : 'true',
       },
     });
 

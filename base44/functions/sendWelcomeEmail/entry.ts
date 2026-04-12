@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
             </ul>
           </div>
           <div style="text-align:center;margin:0 0 24px;">
-            <a href="https://brenneaerial.base44.app/dashboard" style="display:inline-block;background:#3ab0dc;color:#0a1120;font-weight:700;font-size:14px;padding:14px 32px;border-radius:10px;text-decoration:none;">
+            <a href="https://brenneaerial.fr/dashboard" style="display:inline-block;background:#3ab0dc;color:#0a1120;font-weight:700;font-size:14px;padding:14px 32px;border-radius:10px;text-decoration:none;">
               Accéder à mon espace →
             </a>
           </div>
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
   </table>
 </body></html>`;
 
-  await base44.asServiceRole.integrations.Core.SendEmail({
+  await base44.integrations.Core.SendEmail({
     to: userEmail,
     subject: '🎉 Bienvenue chez Brenne Aerial !',
     body,

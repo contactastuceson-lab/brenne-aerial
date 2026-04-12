@@ -1,0 +1,51 @@
+{
+  "name": "CertificationRequest",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nom de l'utilisateur"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Statut de la demande"
+    },
+    "responses": {
+      "type": "object",
+      "description": "R\u00e9ponses au questionnaire"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de soumission"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Statut du paiement"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Notes de l'admin"
+    }
+  },
+  "required": [
+    "user_email",
+    "user_name"
+  ]
+}

@@ -72,19 +72,26 @@ export default function QuotePage() {
 
   const handleSubmit = async () => {
     setSending(true);
-    const quote = await base44.entities.Quote.create({
-      ...form,
-      fichiers_urls: uploadedFiles,
-      prix_estime: estimatedPrice,
-      status: 'pending',
-    });
-    await base44.integrations.Core.SendEmail({
-      to: form.client_email,
-      subject: 'Votre demande de devis — Brenne Aerial',
-      body: `Bonjour ${form.client_name},\n\nNous avons bien reçu votre demande de devis pour "${SERVICE_PRICES[form.service_type]?.label || form.service_type}".\nPrix estimatif : ${estimatedPrice ? formatPrice(estimatedPrice) : 'À définir'}\n\nNous vous recontacterons dans les 48 heures.\n\nCordialement,\nEnor Lefoulon Meyer\nBrenn Aerial`,
-    });
-    setSending(false);
-    setSent(true);
+    try {
+      await base44.entities.Quote.create({
+        ...form,
+        fichiers_urls: uploadedFiles,
+        prix_estime: estimatedPrice,
+        status: 'pending',
+      });
+      await base44.functions.invoke('sendQuoteConfirmation', {
+        clientName: form.client_name,
+        clientEmail: form.client_email,
+        serviceType: form.service_type,
+        estimatedPrice: estimatedPrice,
+      });
+      setSent(true);
+    } catch (err) {
+      toast.error('Erreur lors de l\'envoi de votre demande');
+      console.error(err);
+    } finally {
+      setSending(false);
+    }
   };
 
   const canNext = () => {

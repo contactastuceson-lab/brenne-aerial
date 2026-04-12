@@ -68,8 +68,8 @@ export default function ServicesPage() {
       <section className="px-5 lg:px-10 max-w-7xl mx-auto pb-24">
         <div className="space-y-8">
           {services.map((svc, i) => {
-            const desc = SERVICE_DESCRIPTIONS[svc.slug];
-            const Icon = ICON_MAP[desc?.icon];
+            const desc = SERVICE_DESCRIPTIONS[svc.slug] || { color: 'text-primary', icon: 'Video', features: [] };
+            const Icon = ICON_MAP[desc.icon] || Video;
             const price = { base: svc.base_price, per_hour: svc.price_per_hour };
             return (
               <motion.div key={svc.key}

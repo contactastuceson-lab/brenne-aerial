@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     }
 
     // Récupérer l'utilisateur à mettre à jour
-    const users = await base44.asServiceRole.entities.User.list();
+    const users = await base44.entities.User.list();
     const donorUser = users.find(u => u.email === donorEmail);
 
     if (!donorUser) {
@@ -24,20 +24,19 @@ Deno.serve(async (req) => {
     }
 
     const badges = donorUser.badges || [];
+    let newBadges;
 
     if (hasBadge) {
       // Retirer le badge
-      const filtered = badges.filter(b => b !== 'Donateur');
-      await base44.asServiceRole.entities.User.update(donorUser.id, { badges: filtered });
+      newBadges = badges.filter(b => b !== 'Donateur');
     } else {
       // Ajouter le badge
-      if (!badges.includes('Donateur')) {
-        badges.push('Donateur');
-        await base44.asServiceRole.entities.User.update(donorUser.id, { badges });
-      }
+      newBadges = badges.includes('Donateur') ? badges : [...badges, 'Donateur'];
     }
 
-    return Response.json({ success: true, badges: hasBadge ? badges.filter(b => b !== 'Donateur') : badges });
+    await base44.entities.User.update(donorUser.id, { badges: newBadges });
+
+    return Response.json({ success: true, badges: newBadges });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -127,14 +127,15 @@ export default function Navbar() {
                   <span className="font-inter text-sm">{user.full_name?.split(' ')[0]}</span>
                 </Button>
               </Link>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => base44.auth.logout('/')}
                 title="Déconnexion"
+                className="text-muted-foreground hover:text-destructive"
               >
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </button>
+                <LogOut className="w-4 h-4" />
+              </Button>
               {user.role === 'admin' && (
                 <Link to="/admin">
                   <Button size="sm" className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-inter text-xs">
@@ -204,11 +205,14 @@ export default function Navbar() {
                         Mon espace
                       </Button>
                     </Link>
-                    <button onClick={() => base44.auth.logout('/')} className="w-full">
-                      <Button size="sm" variant="outline" className="w-full font-inter text-sm border-border gap-2 text-destructive border-destructive/20">
-                        <LogOut className="w-4 h-4" /> Déconnexion
-                      </Button>
-                    </button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => base44.auth.logout('/')}
+                      className="w-full font-inter text-sm border-border gap-2 text-destructive border-destructive/20"
+                    >
+                      <LogOut className="w-4 h-4" /> Déconnexion
+                    </Button>
                     {user.role === 'admin' && (
                       <Link to="/admin" onClick={() => setOpen(false)}>
                         <Button size="sm" className="w-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-inter text-sm gap-2">

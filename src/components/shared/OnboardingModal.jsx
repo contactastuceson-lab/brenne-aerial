@@ -47,6 +47,8 @@ export default function OnboardingModal({ user, onComplete }) {
   const handleFinish = async () => {
     setSaving(true);
     await base44.auth.updateMe({ ...form, onboarding_completed: true });
+    // Send welcome email (best effort, don't block)
+    base44.functions.invoke('sendWelcomeEmail', {}).catch(() => {});
     setSaving(false);
     onComplete();
   };

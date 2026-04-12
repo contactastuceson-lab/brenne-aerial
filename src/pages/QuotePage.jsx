@@ -18,7 +18,7 @@ const SERVICE_OPTIONS = [
   { key: 'retour_temps_reel',    icon: Wifi,        label: 'Retour temps réel' },
   { key: 'photogrammetrie_3d',   icon: Building2,   label: 'Photogrammétrie 3D' },
   { key: 'cartographie_releves', icon: Camera,      label: 'Cartographie/Relevés' },
-  { key: 'thermographie',        icon: Camera,      label: 'Thermographie infrarouge' },
+  { key: 'thermographie',        icon: Camera,      label: 'Thermographie infrarouge', disabled: true },
   { key: 'surveillance',         icon: Video,       label: 'Surveillance/Gardiennage' },
   { key: 'contenu_social',       icon: Video,       label: 'Contenu réseaux sociaux' },
   { key: 'reportage',            icon: Video,       label: 'Reportage/Documentaire' },
@@ -202,17 +202,20 @@ export default function QuotePage() {
                     const Icon = s.icon;
                     const sel = form.service_type === s.key;
                     return (
-                      <button key={s.key} onClick={() => u('service_type', s.key)}
+                      <button key={s.key} onClick={() => !s.disabled && u('service_type', s.key)} disabled={s.disabled}
                         className={`p-4 rounded-xl border text-left transition-all duration-200 ${
+                          s.disabled ? 'border-destructive/30 bg-destructive/5 opacity-60 cursor-not-allowed' :
                           sel ? 'border-primary bg-primary/10' : 'border-border bg-card hover:border-muted-foreground/40'
                         }`}>
-                        <Icon className={`w-6 h-6 mb-2.5 ${sel ? 'text-primary' : 'text-muted-foreground'}`} />
-                        <p className={`font-grotesk font-semibold text-sm ${sel ? 'text-primary' : ''}`}>{s.label}</p>
-                        {prices[s.key] && (
+                        <Icon className={`w-6 h-6 mb-2.5 ${s.disabled ? 'text-destructive/60' : sel ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <p className={`font-grotesk font-semibold text-sm ${s.disabled ? 'text-destructive' : sel ? 'text-primary' : ''}`}>{s.label}</p>
+                        {s.disabled ? (
+                          <p className="font-mono text-[10px] text-destructive mt-1 font-semibold">Non disponible</p>
+                        ) : prices[s.key] ? (
                           <p className="font-mono text-[10px] text-muted-foreground mt-1">
                             Dès {formatPrice(prices[s.key].base)}
                           </p>
-                        )}
+                        ) : null}
                       </button>
                     );
                   })}

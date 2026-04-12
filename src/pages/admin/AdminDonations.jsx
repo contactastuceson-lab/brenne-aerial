@@ -16,27 +16,25 @@ export default function AdminDonations() {
 
   const { data: donations = [] } = useQuery({
     queryKey: ['donations'],
-    queryFn: () => base44.asServiceRole.entities.Donation.list('-created_date', 100),
+    queryFn: () => base44.entities.Donation.list('-created_date', 100),
   });
 
   const toggleBadgeMutation = useMutation({
     mutationFn: async (donation) => {
-      const users = await base44.asServiceRole.entities.User.list();
+      const users = await base44.entities.User.list();
       const donorUser = users.find(u => u.email === donation.donor_email);
       if (donorUser) {
         const badges = donorUser.badges || [];
         if (donation.has_badge) {
-          // Retirer le badge
           const filtered = badges.filter(b => b !== 'Donateur');
-          await base44.asServiceRole.entities.User.update(donorUser.id, { badges: filtered });
-          await base44.asServiceRole.entities.Donation.update(donation.id, { has_badge: false });
+          await base44.entities.User.update(donorUser.id, { badges: filtered });
+          await base44.entities.Donation.update(donation.id, { has_badge: false });
         } else {
-          // Ajouter le badge
           if (!badges.includes('Donateur')) {
             badges.push('Donateur');
-            await base44.asServiceRole.entities.User.update(donorUser.id, { badges });
+            await base44.entities.User.update(donorUser.id, { badges });
           }
-          await base44.asServiceRole.entities.Donation.update(donation.id, { has_badge: true });
+          await base44.entities.Donation.update(donation.id, { has_badge: true });
         }
       }
     },
@@ -47,7 +45,7 @@ export default function AdminDonations() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.asServiceRole.entities.Donation.delete(id),
+    mutationFn: (id) => base44.entities.Donation.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['donations'] });
       setSelectedDonation(null);

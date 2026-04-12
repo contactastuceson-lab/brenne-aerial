@@ -12,11 +12,13 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 export default function DashboardPage() {
   const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get('tab') || 'notifications';
 
 
   useEffect(() => {
@@ -86,7 +88,7 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        <Tabs defaultValue="notifications">
+        <Tabs defaultValue={defaultTab}>
           <TabsList className="bg-card border border-border mb-6">
             <TabsTrigger value="notifications" className="gap-1.5 font-inter text-sm">
               <Bell className="w-4 h-4" /> Notifs {unread > 0 && <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground font-mono text-[10px] flex items-center justify-center">{unread}</span>}

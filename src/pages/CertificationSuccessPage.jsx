@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, Home, Mail } from 'lucide-react';
+import { CheckCircle, Home, Mail, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -89,17 +89,18 @@ export default function CertificationSuccessPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="flex gap-3"
+            className="flex flex-col gap-2"
           >
-            <Link to="/profile" className="flex-1">
+            <Link to="/dashboard?tab=certifications" className="w-full">
               <Button className="w-full bg-primary text-primary-foreground gap-2">
-                <Home className="w-4 h-4" />
-                Retour au profil
+                <Eye className="w-4 h-4" />
+                Voir la timeline
               </Button>
             </Link>
-            <Link to="/dashboard" className="flex-1">
-              <Button variant="outline" className="w-full">
-                Tableau de bord
+            <Link to="/profile" className="w-full">
+              <Button variant="outline" className="w-full gap-2">
+                <Home className="w-4 h-4" />
+                Retour au profil
               </Button>
             </Link>
           </motion.div>

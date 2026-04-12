@@ -43,6 +43,7 @@ import AdminBadges from "@/pages/admin/AdminBadges";
 import AdminEmailing from "@/pages/admin/AdminEmailing";
 import AdminPricing from "@/pages/admin/AdminPricing";
 import AdminAccounts from "@/pages/admin/AdminAccounts";
+import AdminCertifications from "@/pages/admin/AdminCertifications";
 import ProfilePage from "@/pages/ProfilePage";
 
 const AuthenticatedApp = () => {
@@ -104,6 +105,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/emailing" element={<AdminEmailing />} />
         <Route path="/admin/pricing" element={<AdminPricing />} />
         <Route path="/admin/accounts" element={<AdminAccounts />} />
+        <Route path="/admin/certifications" element={<AdminCertifications />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

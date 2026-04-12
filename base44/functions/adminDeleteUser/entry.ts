@@ -27,12 +27,14 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.DeletionRequest.update(r.id, { status: 'processed' });
     }
 
-    // Notify the user by email
-    await base44.integrations.Core.SendEmail({
-      to: userEmail,
-      subject: '✅ Votre compte a été supprimé',
-      body: `Bonjour,\n\nVotre compte Brenne Aerial a bien été supprimé suite à votre demande.\n\nToutes vos données ont été effacées de notre plateforme.\n\nCordialement,\nL'équipe Brenne Aerial`,
-    });
+    // Notify the user by email (best effort — user may no longer be in the app)
+    try {
+      await base44.integrations.Core.SendEmail({
+        to: userEmail,
+        subject: '✅ Votre compte a été supprimé',
+        body: `Bonjour,\n\nVotre compte Brenne Aerial a bien été supprimé suite à votre demande.\n\nToutes vos données ont été effacées de notre plateforme.\n\nCordialement,\nL'équipe Brenne Aerial`,
+      });
+    } catch (_) { /* user deleted, email not critical */ }
   }
 
   return Response.json({ success: true });

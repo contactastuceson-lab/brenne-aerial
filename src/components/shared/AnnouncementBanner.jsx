@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Info, AlertTriangle, CheckCircle, AlertCircle, Megaphone } from 'lucide-react';
 
 const TYPE_CONFIG = {
-  info:    { icon: Info,          bg: 'bg-primary/10 border-primary/30',       text: 'text-primary',       iconColor: 'text-primary' },
-  warning: { icon: AlertTriangle, bg: 'bg-yellow-400/10 border-yellow-400/30', text: 'text-yellow-300',    iconColor: 'text-yellow-400' },
-  success: { icon: CheckCircle,   bg: 'bg-green-400/10 border-green-400/30',   text: 'text-green-300',     iconColor: 'text-green-400' },
-  error:   { icon: AlertCircle,   bg: 'bg-destructive/10 border-destructive/30', text: 'text-destructive', iconColor: 'text-destructive' },
+  info:    { icon: Info,          bg: 'bg-primary border-primary/80',         text: 'text-white',         iconColor: 'text-white' },
+  warning: { icon: AlertTriangle, bg: 'bg-yellow-500 border-yellow-600',       text: 'text-white',         iconColor: 'text-white' },
+  success: { icon: CheckCircle,   bg: 'bg-green-600 border-green-700',         text: 'text-white',         iconColor: 'text-white' },
+  error:   { icon: AlertCircle,   bg: 'bg-red-600 border-red-700',             text: 'text-white',         iconColor: 'text-white' },
 };
 
 export default function AnnouncementBanner({ user }) {
@@ -53,15 +53,15 @@ export default function AnnouncementBanner({ user }) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`w-full border-b ${cfg.bg} px-5 py-2.5 flex items-center gap-3`}
+            className={`w-full border-b ${cfg.bg} px-5 py-3 flex items-center gap-3`}
           >
             <Icon className={`w-4 h-4 flex-shrink-0 ${cfg.iconColor}`} />
             <div className="flex-1 min-w-0">
-              {a.title && <span className={`font-grotesk font-semibold text-xs mr-2 ${cfg.text}`}>{a.title}</span>}
-              <span className={`font-inter text-xs ${cfg.text}/90`}>{a.content}</span>
+              {a.title && <span className={`font-grotesk font-semibold text-sm mr-2 ${cfg.text}`}>{a.title}</span>}
+              <span className={`font-inter text-sm ${cfg.text}`}>{a.content}</span>
             </div>
             {a.dismissible !== false && (
-              <button onClick={() => dismiss(a.id)} className="text-muted-foreground hover:text-foreground flex-shrink-0">
+              <button onClick={() => dismiss(a.id)} className="text-white/70 hover:text-white flex-shrink-0">
                 <X className="w-3.5 h-3.5" />
               </button>
             )}

@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Camera, Save, Loader2, MapPin, Globe, Phone,
-  CheckCircle, Shield, Star, Zap, Award, UserCheck, Trash2, AlertTriangle
+  CheckCircle, Shield, Star, Zap, Award, UserCheck, Trash2, AlertTriangle, Heart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,7 @@ const BADGE_CONFIG = {
   'Pilote':         { icon: Zap,       color: 'text-primary',    bg: 'bg-primary/10',    border: 'border-primary/30' },
   'Officiel':       { icon: CheckCircle, color: 'text-accent',   bg: 'bg-accent/10',     border: 'border-accent/30' },
   'Vérfifié':       { icon: CheckCircle, color: 'text-green-400',bg: 'bg-green-400/10',  border: 'border-green-400/30' },
+  'Donateur':       { icon: Heart,     color: 'text-red-400',    bg: 'bg-red-400/10',    border: 'border-red-400/30' },
 };
 
 export default function ProfilePage() {

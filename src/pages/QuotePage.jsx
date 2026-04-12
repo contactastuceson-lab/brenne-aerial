@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
-import { calculatePrice, formatPrice, SERVICE_PRICES } from '@/lib/droneUtils';
+import { calculatePrice, formatPrice, SERVICE_PRICES, getServicePrices } from '@/lib/droneUtils';
 import { toast } from 'sonner';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
 
@@ -36,13 +36,8 @@ export default function QuotePage() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [quotesEnabled, setQuotesEnabled] = useState(true);
-
-  useEffect(() => {
-    base44.entities.AppSettings.list().then(s => {
-      const map = Object.fromEntries(s.map(x => [x.key, x.value]));
-      setQuotesEnabled(map['page_quote_enabled'] !== 'false' && map['quotes_enabled'] !== 'false');
-    }).catch(() => {});
-  }, []);
+  const [servicePrices, setServicePrices] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [form, setForm] = useState({
     service_type: '', description: '', date_souhaitee: '', horaire: '',
@@ -52,8 +47,24 @@ export default function QuotePage() {
 
   const u = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const settings = await base44.entities.AppSettings.list().catch(() => []);
+        const map = Object.fromEntries(settings.map(x => [x.key, x.value]));
+        setQuotesEnabled(map['page_quote_enabled'] !== 'false' && map['quotes_enabled'] !== 'false');
+        const prices = await getServicePrices();
+        setServicePrices(prices);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+  }, []);
+
+  const prices = servicePrices || SERVICE_PRICES;
   const estimatedPrice = form.service_type && form.duree_estimee
-    ? calculatePrice(form.service_type, form.duree_estimee)
+    ? calculatePrice(form.service_type, form.duree_estimee, prices)
     : null;
 
   const handleFileUpload = async (e) => {
@@ -100,6 +111,14 @@ export default function QuotePage() {
     if (step === 2) return !!form.client_name && !!form.client_email;
     return true;
   };
+
+  if (loading) {
+    return (
+      <div className="pt-16 min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!quotesEnabled) {
     return <FeatureDisabled title="Devis désactivés" message="Les demandes de devis sont temporairement désactivées. Revenez bientôt ou contactez-nous directement." />;
@@ -180,9 +199,9 @@ export default function QuotePage() {
                         }`}>
                         <Icon className={`w-6 h-6 mb-2.5 ${sel ? 'text-primary' : 'text-muted-foreground'}`} />
                         <p className={`font-grotesk font-semibold text-sm ${sel ? 'text-primary' : ''}`}>{s.label}</p>
-                        {SERVICE_PRICES[s.key] && (
+                        {prices[s.key] && (
                           <p className="font-mono text-[10px] text-muted-foreground mt-1">
-                            Dès {formatPrice(SERVICE_PRICES[s.key].base)}
+                            Dès {formatPrice(prices[s.key].base)}
                           </p>
                         )}
                       </button>
@@ -282,7 +301,7 @@ export default function QuotePage() {
                 <h2 className="font-grotesk font-semibold text-lg mb-5">Récapitulatif de votre demande</h2>
                 <div className="p-5 rounded-xl bg-card border border-border space-y-3">
                   {[
-                    ['Service', SERVICE_OPTIONS.find(s => s.key === form.service_type)?.label],
+                    ['Service', prices[form.service_type]?.label || SERVICE_OPTIONS.find(s => s.key === form.service_type)?.label],
                     ['Durée', DURATIONS.find(d => d.key === form.duree_estimee)?.label],
                     ['Date', form.date_souhaitee || '—'],
                     ['Horaire', form.horaire || '—'],

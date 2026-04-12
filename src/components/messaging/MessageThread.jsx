@@ -168,10 +168,14 @@ export default function MessageThread({ user, conv, onBack }) {
         <button onClick={onBack} className="md:hidden p-1.5 rounded-lg hover:bg-secondary text-muted-foreground">
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <div className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center">
-          <span className="font-grotesk font-bold text-sm text-primary">
-            {conv.name?.[0]?.toUpperCase() || '?'}
-          </span>
+        <div className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
+          {conv.avatar ? (
+            <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="font-grotesk font-bold text-sm text-primary">
+              {conv.name?.[0]?.toUpperCase() || '?'}
+            </span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">

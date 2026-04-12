@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${Deno.env.get('APP_URL')}/donation-success`,
+      success_url: `${Deno.env.get('APP_URL')}/donation-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${Deno.env.get('APP_URL')}/donation?cancelled=true`,
       customer_email: user?.email || '',
       metadata: {

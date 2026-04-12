@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail, Award } from 'lucide-react';
 
 const NAV = [
   { path: '/admin', icon: BarChart3, label: 'Dashboard' },
@@ -9,6 +9,7 @@ const NAV = [
   { path: '/admin/appointments', icon: Calendar, label: 'Planning' },
   { path: '/admin/users', icon: Users, label: 'Comptes' },
   { path: '/admin/badges', icon: BadgeCheck, label: 'Badges' },
+  { path: '/admin/certifications', icon: Award, label: 'Certifications' },
   { path: '/admin/reports', icon: Flag, label: 'Signalements' },
   { path: '/admin/conversations', icon: MessageCircle, label: 'Conversations' },
   { path: '/admin/announcements', icon: Megaphone, label: 'Annonces' },

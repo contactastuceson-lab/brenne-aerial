@@ -41,6 +41,17 @@ export default function DiscoverPage() {
     base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin('/discover'));
   }, []);
 
+  // Listen for own user changes to refresh verifications
+  useEffect(() => {
+    if (!user?.email) return;
+    const unsub = base44.entities.User.subscribe(evt => {
+      if (evt.type === 'update' && evt.data?.email === user.email) {
+        setUser(evt.data);
+      }
+    });
+    return () => unsub();
+  }, [user?.email]);
+
   const { data: settings = [] } = useQuery({
     queryKey: ['app-settings'],
     queryFn: () => base44.entities.AppSettings.list(),
@@ -58,6 +69,16 @@ export default function DiscoverPage() {
     },
     enabled: !!user,
   });
+
+  // Refresh allUsers when any user verification changes
+  useEffect(() => {
+    const unsub = base44.entities.User.subscribe(evt => {
+      if (evt.type === 'update') {
+        queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      }
+    });
+    return () => unsub();
+  }, [queryClient]);
 
   const { data: follows = [] } = useQuery({
     queryKey: ['my-follows', user?.email],

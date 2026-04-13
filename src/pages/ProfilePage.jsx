@@ -48,14 +48,12 @@ export default function ProfilePage() {
     
     loadUser().catch(() => base44.auth.redirectToLogin('/profile'));
 
-    // Surveiller les changements de l'entité User
+    // Surveiller les changements de l'entité User en temps réel
     const unsubscribe = base44.entities.User.subscribe((event) => {
-      if (event.data?.email === user?.email) {
+      if (event.type === 'update' && event.data?.email === user?.email) {
         setUser(event.data);
       }
     });
-
-    return () => unsubscribe();
 
     base44.entities.AppSettings.filter({ key: 'certifications_enabled' }).then(settings => {
       if (settings.length > 0) {

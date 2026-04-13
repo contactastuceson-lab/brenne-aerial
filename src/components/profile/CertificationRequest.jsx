@@ -182,7 +182,7 @@ const BADGE_LEVELS = [
     color: 'text-purple-400',
     bg: 'bg-purple-400/10',
     border: 'border-purple-400/30',
-    price: 2500,
+    price: 4000,
     desc: 'Pour les entités, marques ou organisations reconnues',
     steps: [
       {

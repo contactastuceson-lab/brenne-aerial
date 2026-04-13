@@ -1,0 +1,33 @@
+{
+  "name": "AppModuleStatus",
+  "type": "object",
+  "properties": {
+    "module_name": {
+      "type": "string",
+      "description": "Nom du module (messagerie, portfolio, blog, etc)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Module actif ou non"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "operational",
+        "degraded",
+        "maintenance",
+        "offline"
+      ],
+      "default": "operational",
+      "description": "Statut du module"
+    },
+    "message": {
+      "type": "string",
+      "description": "Message informatif (ex: maintenance en cours)"
+    }
+  },
+  "required": [
+    "module_name"
+  ]
+}

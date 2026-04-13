@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
     bio: u.bio || null,
     location: u.location || null,
     badges: u.badges || [],
+    verifications: u.verifications || [],
     verified_status: u.verified_status || 'no',
     account_status: u.account_status || 'active',
     last_seen: u.last_seen || null,

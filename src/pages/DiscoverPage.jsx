@@ -157,6 +157,8 @@ export default function DiscoverPage() {
               const followRecord = follows.find(f => f.following_email === profile.email);
               const alreadyRequested = requestedEmails.has(profile.email);
 
+              const isSupreme = profile.verifications?.includes('supreme');
+
               return (
                 <motion.div
                   key={profile.id}
@@ -164,9 +166,23 @@ export default function DiscoverPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: i * 0.04 }}
-                  className={`group relative bg-card rounded-2xl overflow-hidden hover-lift ${profile.verifications?.includes('supreme') ? 'border-2' : 'border border-border'}`}
-                  style={profile.verifications?.includes('supreme') ? { borderColor: '#f59e0b', boxShadow: '0 0 24px rgba(245,158,11,0.25), 0 0 60px rgba(245,158,11,0.08)' } : {}}
+                  className={`group relative rounded-2xl overflow-hidden hover-lift ${isSupreme ? 'border-2' : 'border border-border bg-card'}`}
+                  style={isSupreme ? {
+                    background: 'linear-gradient(145deg, #0d0800, #1a0e00, #0d0800)',
+                    borderColor: '#d97706',
+                    boxShadow: '0 0 0 1px rgba(245,158,11,0.15), 0 0 30px rgba(245,158,11,0.2), 0 0 80px rgba(245,158,11,0.07)',
+                  } : {}}
                 >
+                  {isSupreme && (
+                    <div className="absolute inset-0 rounded-2xl pointer-events-none z-0" style={{ background: 'linear-gradient(145deg, rgba(245,158,11,0.06) 0%, transparent 40%, rgba(245,158,11,0.04) 100%)' }} />
+                  )}
+                  {isSupreme && (
+                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'linear-gradient(135deg, #92400e, #d97706)', boxShadow: '0 2px 8px rgba(245,158,11,0.4)' }}>
+                      <span style={{ fontSize: '10px' }}>👑</span>
+                      <span className="font-mono text-[9px] font-bold text-yellow-100 uppercase tracking-widest">Suprême</span>
+                    </div>
+                  )}
+
                   {/* Cover */}
                   <div className="h-20 relative overflow-hidden">
                     {profile.cover_url
@@ -185,7 +201,10 @@ export default function DiscoverPage() {
                   {/* Avatar */}
                   <div className="px-4 -mt-8 pb-4">
                     <div className="relative w-14 h-14 mb-3">
-                      <div className="w-14 h-14 rounded-2xl border-2 border-background bg-secondary flex items-center justify-center overflow-hidden sky-glow">
+                      <div
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden"
+                        style={isSupreme ? { border: '2px solid #d97706', boxShadow: '0 0 12px rgba(245,158,11,0.5)', background: '#1a0e00' } : { border: '2px solid var(--background)', background: 'var(--secondary)' }}
+                      >
                         {profile.avatar_url ? (
                           <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -200,7 +219,10 @@ export default function DiscoverPage() {
                     </div>
 
                     <div className="flex items-center gap-1 mb-0.5">
-                      <h3 className="font-grotesk font-semibold text-sm truncate">{profile.full_name}</h3>
+                      <h3
+                        className="font-grotesk font-semibold text-sm truncate"
+                        style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+                      >{profile.full_name}</h3>
                       <VerificationIcons verifications={profile.verifications} />
                     </div>
                     {profile.location && (
@@ -250,17 +272,22 @@ export default function DiscoverPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 text-xs border-border font-inter gap-1.5 h-8"
+                          className="flex-1 text-xs font-inter gap-1.5 h-8"
+                          style={isSupreme ? { borderColor: 'rgba(217,119,6,0.4)', color: '#d97706' } : {}}
                           onClick={() => unfollowMutation.mutate(followRecord.id)}
                           disabled={unfollowMutation.isPending}
                         >
-                          <UserCheck className="w-3 h-3 text-primary" />
+                          <UserCheck className="w-3 h-3" />
                           Suivi
                         </Button>
                       ) : (
                         <Button
                           size="sm"
-                          className="flex-1 text-xs bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-inter gap-1.5 h-8"
+                          className="flex-1 text-xs font-inter gap-1.5 h-8"
+                          style={isSupreme
+                            ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
+                            : { background: 'rgba(56,170,220,0.1)', color: 'hsl(var(--primary))', border: '1px solid rgba(56,170,220,0.2)' }
+                          }
                           onClick={() => followMutation.mutate(profile)}
                           disabled={followMutation.isPending}
                         >
@@ -276,7 +303,14 @@ export default function DiscoverPage() {
                         </Button>
                       ) : (
                         <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`} className="flex-1">
-                          <Button size="sm" className="w-full text-xs bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 font-inter gap-1.5 h-8">
+                          <Button
+                            size="sm"
+                            className="w-full text-xs font-inter gap-1.5 h-8"
+                            style={isSupreme
+                              ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
+                              : { background: 'rgba(56,200,180,0.1)', color: 'hsl(var(--accent))', border: '1px solid rgba(56,200,180,0.2)' }
+                            }
+                          >
                             <MessageCircle className="w-3 h-3" />
                             Contacter
                           </Button>

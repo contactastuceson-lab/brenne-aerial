@@ -25,6 +25,9 @@ const VERIFICATION_TYPES = [
 export default function AdminBadges() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+
+  React.useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
   const [selectedBadge, setSelectedBadge] = useState('all');
 
   const { data: users = [], isLoading } = useQuery({
@@ -63,6 +66,10 @@ export default function AdminBadges() {
   };
 
   const toggleVerification = (user, key) => {
+    if (key === 'supreme' && currentUser?.role !== 'owner') {
+      toast.error('Seul le propriétaire peut attribuer ou retirer le rang Suprême.');
+      return;
+    }
     const current = user.verifications || [];
     const adding = !current.includes(key);
     const next = adding ? [...current, key] : current.filter(v => v !== key);
@@ -190,6 +197,7 @@ export default function AdminBadges() {
                         <Switch
                           checked={active}
                           onCheckedChange={() => toggleVerification(u, vt.key)}
+                          disabled={vt.key === 'supreme' && currentUser?.role !== 'owner'}
                           className={active ? `[&>span]:${vt.bg}` : ''}
                         />
                       </div>

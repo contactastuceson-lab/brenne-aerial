@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
@@ -46,6 +46,9 @@ const STATUS_LABELS = {
 
 export default function AdminUsers() {
   const qc = useQueryClient();
+  const [currentUser, setCurrentUser] = useState(null);
+  useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
+  const isOwner = currentUser?.role === 'owner';
   const [editUser, setEditUser] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [search, setSearch] = useState('');
@@ -296,24 +299,40 @@ export default function AdminUsers() {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="font-mono text-xs text-muted-foreground hidden sm:block">{u.role || 'user'}</span>
-                  {status === 'active' ? (
-                    <Button size="sm" variant="outline" className="border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10 text-xs gap-1"
-                      onClick={() => quickAction.mutate({ id: u.id, data: { account_status: 'suspended', suspension_reason: 'Suspension admin' } })}>
-                      <ShieldOff className="w-3 h-3" /> Suspendre
-                    </Button>
-                  ) : status !== 'active' && (
-                    <Button size="sm" variant="outline" className="border-green-400/30 text-green-400 hover:bg-green-400/10 text-xs gap-1"
-                      onClick={() => quickAction.mutate({ id: u.id, data: { account_status: 'active', suspension_reason: '' } })}>
-                      <ShieldCheck className="w-3 h-3" /> Réactiver
-                    </Button>
-                  )}
-                  <Button size="sm" variant="outline" onClick={() => openEdit(u)} className="border-border text-xs">
-                    Modifier
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => { setDeleteConfirm(u); setDeleteReason(''); setEmailSent(false); }}
-                    className={`border-destructive/40 text-destructive hover:bg-destructive/10 text-xs gap-1 ${hasDeletionRequest(u.email) ? 'animate-pulse border-destructive' : ''}`}>
-                    <Trash2 className="w-3 h-3" /> {hasDeletionRequest(u.email) ? 'Demande!' : 'Suppr.'}
-                  </Button>
+                  {(() => {
+                    const isTargetSupreme = (u.verifications || []).includes('supreme');
+                    const blocked = isTargetSupreme && !isOwner;
+                    return (
+                      <>
+                        {status === 'active' ? (
+                          <Button size="sm" variant="outline"
+                            className={blocked ? 'border-amber-600/30 text-amber-600/50 text-xs gap-1 cursor-not-allowed opacity-50' : 'border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10 text-xs gap-1'}
+                            onClick={() => blocked ? toast.error('Seul le propriétaire peut agir sur un membre Suprême.') : quickAction.mutate({ id: u.id, data: { account_status: 'suspended', suspension_reason: 'Suspension admin' } })}>
+                            <ShieldOff className="w-3 h-3" /> Suspendre
+                          </Button>
+                        ) : status !== 'active' && (
+                          <Button size="sm" variant="outline" className="border-green-400/30 text-green-400 hover:bg-green-400/10 text-xs gap-1"
+                            onClick={() => quickAction.mutate({ id: u.id, data: { account_status: 'active', suspension_reason: '' } })}>
+                            <ShieldCheck className="w-3 h-3" /> Réactiver
+                          </Button>
+                        )}
+                        <Button size="sm" variant="outline"
+                          onClick={() => blocked ? toast.error('Seul le propriétaire peut modifier un membre Suprême.') : openEdit(u)}
+                          className={blocked ? 'border-amber-600/30 text-amber-600/50 text-xs cursor-not-allowed opacity-50' : 'border-border text-xs'}>
+                          Modifier
+                        </Button>
+                        <Button size="sm" variant="outline"
+                          onClick={() => blocked ? toast.error('Seul le propriétaire peut supprimer un membre Suprême.') : (setDeleteConfirm(u), setDeleteReason(''), setEmailSent(false))}
+                          className={`text-xs gap-1 ${
+                            blocked
+                              ? 'border-amber-600/30 text-amber-600/50 cursor-not-allowed opacity-50'
+                              : `border-destructive/40 text-destructive hover:bg-destructive/10 ${hasDeletionRequest(u.email) ? 'animate-pulse border-destructive' : ''}`
+                          }`}>
+                          <Trash2 className="w-3 h-3" /> {hasDeletionRequest(u.email) ? 'Demande!' : 'Suppr.'}
+                        </Button>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             );
@@ -325,13 +344,25 @@ export default function AdminUsers() {
       )}
 
       {/* Delete confirmation dialog */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card border border-destructive/30 rounded-2xl p-6 max-w-sm w-full space-y-4">
+      {deleteConfirm && (() => {
+        const isTargetSupreme = (deleteConfirm.verifications || []).includes('supreme');
+        return (
+        <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={isTargetSupreme ? { background: 'rgba(13,8,0,0.92)' } : { background: 'rgba(0,0,0,0.8)' }}>
+          <div className="rounded-2xl p-6 max-w-sm w-full space-y-4" style={isTargetSupreme ? {
+            background: 'linear-gradient(145deg,#1a0c00,#2d1500,#1a0c00)',
+            border: '1px solid rgba(217,119,6,0.5)',
+            boxShadow: '0 0 40px rgba(245,158,11,0.15), 0 0 80px rgba(245,158,11,0.05)',
+          } : { background: 'hsl(var(--card))', border: '1px solid rgba(239,68,68,0.3)' }}>
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-destructive" />
-              <h3 className="font-grotesk font-bold text-base">Supprimer le compte</h3>
+              {isTargetSupreme ? <span style={{ fontSize: 20 }}>👑</span> : <AlertTriangle className="w-5 h-5 text-destructive" />}
+              <h3 className="font-grotesk font-bold text-base" style={isTargetSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : {}}>Supprimer le compte{isTargetSupreme ? ' — Rang Suprême' : ''}</h3>
             </div>
+            {isTargetSupreme && (
+              <div style={{ background: 'linear-gradient(135deg,rgba(245,158,11,0.08),rgba(217,119,6,0.05))', border: '1px solid rgba(217,119,6,0.35)', borderRadius: 10, padding: '12px 16px' }}>
+                <p className="font-mono text-[10px] font-bold uppercase tracking-widest" style={{ color: '#f59e0b' }}>👑 Membre Suprême — Action Exclusive Propriétaire</p>
+                <p className="font-inter text-xs mt-1" style={{ color: '#a08040' }}>Cette suppression est irréversible et concerne un membre d'élite.</p>
+              </div>
+            )}
             {hasDeletionRequest(deleteConfirm.email) && (
               <div className="bg-destructive/10 border border-destructive/30 rounded-lg px-3 py-2 font-inter text-xs text-destructive">
                 ⚠️ Cet utilisateur a demandé la suppression de son compte.
@@ -363,7 +394,6 @@ export default function AdminUsers() {
                   {refuseDeletion.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : '❌'} Refuser la demande (et notifier l'utilisateur)
                 </Button>
               )}
-              {/* Step 1: Send email */}
               {!emailSent ? (
                 <Button size="sm" variant="outline"
                   className="border-primary/40 text-primary hover:bg-primary/10 text-xs gap-1.5 w-full"
@@ -382,7 +412,6 @@ export default function AdminUsers() {
                   <button className="ml-auto text-xs text-muted-foreground underline" onClick={() => setEmailSent(false)}>Renvoyer</button>
                 </div>
               )}
-              {/* Step 2: Delete */}
               <div className="flex gap-2 justify-end">
                 <Button size="sm" variant="outline" className="border-border text-xs" onClick={() => setDeleteConfirm(null)}>Annuler</Button>
                 <Button size="sm" className="bg-destructive text-white hover:bg-destructive/90 text-xs gap-1.5"
@@ -395,7 +424,8 @@ export default function AdminUsers() {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>
         <DialogContent className="bg-card border-border max-w-lg max-h-[90vh] overflow-y-auto">

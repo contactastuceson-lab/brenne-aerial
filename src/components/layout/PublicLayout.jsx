@@ -76,11 +76,13 @@ export default function PublicLayout() {
     }} />;
   }
 
-  // Block banned/suspended users (but allow admin access)
-  if (user && user.role !== 'admin') {
+  // Block banned/suspended users (but allow admin/owner access)
+  const isOwnerUser = user?.role === 'owner' || user?.email === 'contact.astuceson@gmail.com';
+  if (user && user.role !== 'admin' && !isOwnerUser) {
     const status = user.account_status;
     if (status === 'banned' || status === 'suspended' || status === 'restricted') {
-      return <BannedPage status={status} reason={user.suspension_reason} until={user.suspension_until} />;
+      const isSupreme = (user.verifications || []).includes('supreme');
+      return <BannedPage status={status} reason={user.suspension_reason} until={user.suspension_until} isSupreme={isSupreme} />;
     }
   }
 

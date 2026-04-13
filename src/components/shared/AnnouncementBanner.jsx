@@ -30,13 +30,13 @@ function RichContent({ text, textClass }) {
 }
 
 export default function AnnouncementBanner({ user }) {
-  // dismissed = { [id]: dismissedAt (ISO string) }
+  // dismissed = { [id]: dismissedAt (ISO string) } - session only, not persistent
   const [dismissed, setDismissed] = useState({});
 
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('dismissed_announcements_v2') || '{}');
-    setDismissed(saved);
-  }, []);
+  const dismiss = (id) => {
+    const next = { ...dismissed, [id]: new Date().toISOString() };
+    setDismissed(next);
+  };
 
   const { data: announcements = [] } = useQuery({
     queryKey: ['announcements-banner'],
@@ -44,17 +44,10 @@ export default function AnnouncementBanner({ user }) {
     refetchInterval: 60000,
   });
 
-  const dismiss = (id) => {
-    const next = { ...dismissed, [id]: new Date().toISOString() };
-    setDismissed(next);
-    localStorage.setItem('dismissed_announcements_v2', JSON.stringify(next));
-  };
-
   const now = new Date();
   const visible = announcements.filter(a => {
-    // Show again if announcement was updated after being dismissed
-    const dismissedAt = dismissed[a.id];
-    if (dismissedAt && (!a.updated_date || new Date(a.updated_date) <= new Date(dismissedAt))) return false;
+    // Only filter by expiration and target - no persistent dismissals
+    if (dismissed[a.id]) return false; // Only hide during this session
     if (a.display_mode === 'popup') return false; // popup handled separately
     if (a.expires_at && new Date(a.expires_at) < now) return false;
     if (a.target === 'users_only' && !user) return false;
@@ -87,7 +80,7 @@ export default function AnnouncementBanner({ user }) {
               )}
             </div>
             {a.dismissible !== false && (
-              <button onClick={() => dismiss(a.id)} className="text-white/70 hover:text-white flex-shrink-0">
+              <button onClick={() => dismiss(a.id)} className="text-white/70 hover:text-white flex-shrink-0" title="Masquer jusqu'au refresh">
                 <X className="w-3.5 h-3.5" />
               </button>
             )}

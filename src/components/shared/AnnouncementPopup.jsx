@@ -13,13 +13,8 @@ const TYPE_CONFIG = {
 };
 
 export default function AnnouncementPopup({ user }) {
-  const [dismissed, setDismissed] = useState([]);
+  const [dismissed, setDismissed] = useState([]); // Session-only, resets on refresh
   const [current, setCurrent] = useState(null);
-
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('dismissed_announcements') || '[]');
-    setDismissed(saved);
-  }, []);
 
   const { data: announcements = [] } = useQuery({
     queryKey: ['announcements-popup'],
@@ -44,7 +39,6 @@ export default function AnnouncementPopup({ user }) {
     if (!current) return;
     const next = [...dismissed, current.id];
     setDismissed(next);
-    localStorage.setItem('dismissed_announcements', JSON.stringify(next));
     setCurrent(null);
   };
 

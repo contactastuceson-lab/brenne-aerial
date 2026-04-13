@@ -110,7 +110,10 @@ Deno.serve(async (req) => {
     status: 'pending',
   });
 
-  const isSupreme = Array.isArray(user.verifications) && user.verifications.includes('supreme');
+  // Fetch full user profile to get custom fields like verifications
+  const fullUser = await base44.asServiceRole.entities.User.filter({ email: user.email });
+  const userVerifications = fullUser.length > 0 ? (fullUser[0].verifications || []) : [];
+  const isSupreme = Array.isArray(userVerifications) && userVerifications.includes('supreme');
 
   // Send confirmation email to the user
   if (isSupreme) {

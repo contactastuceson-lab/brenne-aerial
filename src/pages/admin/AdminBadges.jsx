@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Search, CheckCircle, ShieldCheck, Award, Star, Zap, Shield, Users, Crown } from 'lucide-react';
+import { Search, CheckCircle, ShieldCheck, Award, Star, Zap, Shield, Users, Crown, BadgeCheck, Gem, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -10,8 +10,14 @@ import BadgeChip from '@/components/ui/BadgeChip';
 import { toast } from 'sonner';
 
 const ALL_BADGES = ['Fondateur', 'Collaborateur', 'VIP', 'Admin', 'Pilote', 'Officiel', 'Vérifié', 'Beta Testeur', 'Partenaire'];
-
 const BADGE_ICONS = { Fondateur: Crown, Collaborateur: Users, VIP: Star, Admin: Shield, Pilote: Zap, Officiel: CheckCircle, Vérifié: CheckCircle, 'Beta Testeur': Zap, Partenaire: Award };
+
+const VERIFICATION_TYPES = [
+  { key: 'verified',   label: 'Vérifié',     icon: CheckCircle, color: 'text-sky-400',    bg: 'bg-sky-400/15',    border: 'border-sky-400/40',    desc: 'Compte vérifié (bleu)' },
+  { key: 'certified',  label: 'Certifié',    icon: BadgeCheck,  color: 'text-amber-400',  bg: 'bg-amber-400/15',  border: 'border-amber-400/40',  desc: 'Certification officielle (or)' },
+  { key: 'official',   label: 'Officiel',    icon: Building2,   color: 'text-purple-400', bg: 'bg-purple-400/15', border: 'border-purple-400/40', desc: 'Entité officielle (violet)' },
+  { key: 'pro',        label: 'Pro',         icon: Gem,         color: 'text-emerald-400', bg: 'bg-emerald-400/15', border: 'border-emerald-400/40', desc: 'Professionnel validé (vert)' },
+];
 
 export default function AdminBadges() {
   const qc = useQueryClient();
@@ -51,6 +57,14 @@ export default function AdminBadges() {
     const newVal = user.verified_status === 'yes' ? 'no' : 'yes';
     updateUser.mutate({ id: user.id, data: { verified_status: newVal } });
     toast.success(newVal === 'no' ? 'Vérification retirée' : 'Compte vérifié !');
+  };
+
+  const toggleVerification = (user, key) => {
+    const current = user.verifications || [];
+    const next = current.includes(key) ? current.filter(v => v !== key) : [...current, key];
+    updateUser.mutate({ id: user.id, data: { verifications: next } });
+    const vt = VERIFICATION_TYPES.find(v => v.key === key);
+    toast.success(current.includes(key) ? `${vt?.label} retiré` : `${vt?.label} activé`);
   };
 
   const toggleBadge = (user, badge) => {
@@ -144,16 +158,23 @@ export default function AdminBadges() {
                   )}
                 </div>
 
-                {/* Verified toggle */}
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <div className="flex items-center gap-2 bg-secondary rounded-lg px-3 py-2">
-                    <CheckCircle className={`w-3.5 h-3.5 ${u.verified_status === 'yes' ? 'text-accent' : 'text-muted-foreground'}`} />
-                    <span className="font-inter text-xs">Vérifié</span>
-                    <Switch
-                      checked={u.verified_status === 'yes'}
-                      onCheckedChange={() => toggleVerified(u)}
-                    />
-                  </div>
+                {/* Verification toggles */}
+                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+                  {VERIFICATION_TYPES.map(vt => {
+                    const active = (u.verifications || []).includes(vt.key);
+                    const Icon = vt.icon;
+                    return (
+                      <div key={vt.key} title={vt.desc} className={`flex items-center gap-2 rounded-lg px-3 py-2 border transition-all ${active ? `${vt.bg} ${vt.border}` : 'bg-secondary border-border'}`}>
+                        <Icon className={`w-3.5 h-3.5 ${active ? vt.color : 'text-muted-foreground'}`} />
+                        <span className={`font-inter text-xs ${active ? vt.color : 'text-muted-foreground'}`}>{vt.label}</span>
+                        <Switch
+                          checked={active}
+                          onCheckedChange={() => toggleVerification(u, vt.key)}
+                          className={active ? `[&>span]:${vt.bg}` : ''}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 

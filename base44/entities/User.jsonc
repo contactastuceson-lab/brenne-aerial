@@ -5,44 +5,10 @@
     "role": {
       "type": "string",
       "enum": [
-        "admin",
         "user",
-        "vip",
-        "collaborateur",
-        "pilote"
+        "admin"
       ],
       "default": "user"
-    },
-    "bio": {
-      "type": "string",
-      "description": "Biographie de l'utilisateur"
-    },
-    "avatar_url": {
-      "type": "string",
-      "description": "URL de la photo de profil"
-    },
-    "cover_url": {
-      "type": "string",
-      "description": "URL de la photo de couverture"
-    },
-    "phone": {
-      "type": "string"
-    },
-    "location": {
-      "type": "string",
-      "description": "Ville / localisation"
-    },
-    "website": {
-      "type": "string",
-      "description": "Lien vers le site web"
-    },
-    "badges": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Badges attribu\u00e9s",
-      "default": []
     },
     "verified_status": {
       "type": "string",
@@ -51,32 +17,53 @@
         "no"
       ],
       "default": "no",
-      "description": "Compte v\u00e9rifi\u00e9 par un admin"
+      "description": "V\u00e9rification principale (compte v\u00e9rifi\u00e9)"
     },
-    "account_status": {
+    "verifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Types de v\u00e9rification : verified, certified, official, pro"
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Badges de l'utilisateur"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "status": {
       "type": "string",
       "enum": [
         "active",
+        "inactive",
         "suspended",
-        "banned",
-        "restricted"
+        "banned"
       ],
-      "default": "active",
-      "description": "Statut du compte"
+      "default": "active"
     },
-    "suspension_reason": {
+    "last_active": {
       "type": "string",
-      "description": "Raison de la suspension / ban"
-    },
-    "suspension_until": {
-      "type": "string",
-      "format": "date",
-      "description": "Date de fin de suspension temporaire"
-    },
-    "last_seen": {
-      "type": "string",
-      "description": "Derni\u00e8re activit\u00e9 (ISO datetime) pour le statut en ligne"
+      "format": "date-time"
     }
-  },
-  "required": []
+  }
 }

@@ -52,19 +52,19 @@ function buildStandardRestoreEmail({ name }) {
 
 const SUPREME_STATUS_MESSAGES = {
   banned: {
-    headline: 'Votre accès à la plateforme a été définitivement révoqué.',
-    detail: "Suite à une violation grave de nos conditions d'utilisation, votre compte Rang Suprême a été banni de manière permanente. Cette décision a été prise après examen approfondi par notre équipe administrative.",
-    note: "En tant qu'ancien membre Suprême, vous disposez d'un droit de contestation prioritaire. Nous vous invitons à nous contacter dans les plus brefs délais si vous estimez que cette décision est injuste.",
+    headline: 'Votre accès à la plateforme Brenne Aerial a été définitivement et irrévocablement révoqué.',
+    detail: "Suite à une ou plusieurs violations graves et caractérisées de nos Conditions Générales d'Utilisation, notre équipe administrative a pris la décision de procéder au bannissement permanent de votre compte. Cette décision n'a pas été prise à la légère : elle fait suite à un examen approfondi, rigoureux et collégial de l'ensemble des éléments portés à notre connaissance. Le Rang Suprême confère des privilèges d'exception sur notre plateforme, mais implique en contrepartie une responsabilité et une exemplarité accrues. Ces exigences n'ont pas été respectées.",
+    note: "Malgré la gravité de cette décision, nous reconnaissons votre appartenance passée au Rang Suprême. À ce titre, vous bénéficiez d'une voie de recours prioritaire et confidentielle. Si vous estimez que cette décision est injuste, erronée ou disproportionnée, nous vous encourageons vivement à nous contacter par email en exposant vos arguments. Chaque contestation sera examinée avec sérieux par un membre senior de notre équipe. Passé un délai de 30 jours sans contestation de votre part, la décision sera considérée comme définitivement acceptée.",
   },
   suspended: {
-    headline: 'Votre accès est temporairement suspendu.',
-    detail: "Votre compte Rang Suprême a été temporairement suspendu suite à un manquement identifié. Cette mesure est conservative et peut être levée avant son terme en cas de résolution satisfaisante.",
-    note: "Votre statut Suprême, vos avantages exclusifs et vos données sont préservés durant cette période. Vous retrouverez un accès complet à la levée de la suspension.",
+    headline: 'Votre accès à la plateforme est temporairement suspendu.',
+    detail: "Votre compte Rang Suprême a été temporairement suspendu suite à un manquement identifié à nos règles communautaires. Cette mesure conservatoire a été prise dans l'intérêt de la communauté et de l'intégrité de la plateforme. Elle n'est pas définitive : une résolution satisfaisante de la situation peut entraîner une levée anticipée de la suspension, avant même l'échéance prévue.",
+    note: "Durant toute la durée de cette suspension, votre statut Suprême, l'ensemble de vos données, vos avantages exclusifs et vos contenus sont intégralement préservés. Aucune information ne sera supprimée. À la levée de la suspension, vous retrouverez un accès complet et intact à votre espace Suprême.",
   },
   restricted: {
-    headline: 'Votre compte est en accès restreint.',
-    detail: "Certaines fonctionnalités de votre compte Rang Suprême ont été temporairement limitées. Cette restriction a été appliquée à titre préventif dans l'attente d'une clarification de la situation.",
-    note: "Vos privilèges Suprême restent partiellement actifs. Un traitement prioritaire de votre dossier est en cours par notre équipe dédiée.",
+    headline: "Votre compte est actuellement placé en mode d'accès restreint.",
+    detail: "Certaines fonctionnalités de votre compte Rang Suprême ont été temporairement désactivées à titre préventif. Cette mesure fait suite à des signalements ou à une situation nécessitant vérification de notre part. Elle ne préjuge en rien d'une sanction définitive et a pour unique objectif de protéger l'ensemble de la communauté le temps que la situation soit clarifiée.",
+    note: "Vos privilèges Suprême restent partiellement actifs. Notre équipe dédiée traite votre dossier en priorité absolue. Nous nous engageons à vous tenir informé(e) dans les meilleurs délais de l'issue de cet examen.",
   },
 };
 
@@ -137,31 +137,59 @@ function buildSupremeRestoreEmail({ name }) {
 <div style="max-width:580px;margin:40px auto;padding:0 16px;">
   <div style="height:4px;background:linear-gradient(90deg,#92400e,#f59e0b,#fde68a,#f59e0b,#92400e);border-radius:4px 4px 0 0;"></div>
   <div style="background:linear-gradient(180deg,#1a0e00 0%,#0d0800 60%,#120a00 100%);border:1px solid #d97706;border-top:none;border-radius:0 0 20px 20px;overflow:hidden;box-shadow:0 0 60px rgba(245,158,11,0.2);">
+
+    <!-- Header -->
     <div style="padding:36px 36px 24px;text-align:center;border-bottom:1px solid rgba(217,119,6,0.2);background:linear-gradient(135deg,#2d1500,#1a0c00);">
       <div style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#78350f,#d97706);padding:6px 20px;border-radius:30px;margin-bottom:20px;box-shadow:0 4px 16px rgba(245,158,11,0.35);">
         <span style="font-size:14px;">&#128081;</span>
         <span style="font-size:10px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:#fde68a;">RANG SUPRÊME</span>
         <span style="font-size:14px;">&#128081;</span>
       </div>
-      <div style="font-size:44px;margin-bottom:10px;">&#10004;</div>
-      <h1 style="color:#4ade80;font-size:26px;font-weight:800;margin:0;text-shadow:0 0 20px rgba(74,222,128,0.4);">Accès pleinement restauré</h1>
-      <p style="color:#a08040;font-size:12px;margin:8px 0 0;letter-spacing:1px;text-transform:uppercase;">Notification officielle &bull; Brenne Aerial</p>
+      <div style="font-size:44px;margin-bottom:10px;">&#127775;</div>
+      <h1 style="color:#f59e0b;font-size:26px;font-weight:800;margin:0;text-shadow:0 0 30px rgba(245,158,11,0.6);">Une nouvelle chance vous a été accordée</h1>
+      <p style="color:#a08040;font-size:12px;margin:8px 0 0;letter-spacing:1px;text-transform:uppercase;">Décision administrative officielle &bull; Brenne Aerial</p>
     </div>
+
+    <!-- Body -->
     <div style="padding:32px 36px;">
       <p style="color:#c8943a;font-size:15px;margin:0 0 4px;">Bonjour,</p>
       <p style="font-size:22px;font-weight:700;margin:0 0 24px;color:#f59e0b;">${name}</p>
-      <p style="color:#e8c06a;font-size:15px;font-weight:600;line-height:1.5;margin:0 0 12px;">Votre compte Rang Suprême est de nouveau pleinement actif.</p>
-      <p style="color:#a08040;font-size:13px;line-height:1.8;margin:0 0 20px;">Nous avons le plaisir de vous annoncer que toutes les restrictions appliquées à votre compte ont été levées. Vous bénéficiez de nouveau de l'ensemble de vos privilèges et accès exclusifs liés au Rang Suprême.</p>
-      <div style="background:linear-gradient(135deg,rgba(74,222,128,0.05),transparent);border-left:3px solid #4ade80;padding:14px 18px;margin:20px 0;border-radius:0 8px 8px 0;">
-        <p style="color:#86efac;font-size:13px;line-height:1.7;margin:0;">Tous vos avantages, données et accès Suprême sont intacts. Nous vous remercions de votre compréhension et vous souhaitons une excellente continuation sur la plateforme.</p>
+
+      <p style="color:#e8c06a;font-size:15px;font-weight:600;line-height:1.5;margin:0 0 16px;">Votre compte Rang Suprême a été intégralement réactivé. L'ensemble de vos droits, privilèges et accès exclusifs vous sont restitués dès à présent.</p>
+
+      <p style="color:#a08040;font-size:13px;line-height:1.9;margin:0 0 16px;">Cette décision a été prise après examen attentif et délibération au sein de notre équipe administrative. Elle traduit la volonté de Brenne Aerial de ne pas rester figé dans une sanction lorsque les circonstances, l'évolution du dossier ou vos échanges avec notre équipe permettent d'envisager une issue positive. Nous croyons en la capacité de chacun à tirer les leçons de ses erreurs.</p>
+
+      <!-- Chance block -->
+      <div style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(217,119,6,0.03));border:1px solid rgba(217,119,6,0.5);border-radius:14px;padding:20px 24px;margin:20px 0;">
+        <p style="color:#d97706;font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin:0 0 12px;">&#9889; UNE CHANCE RARE</p>
+        <p style="color:#c8943a;font-size:13px;line-height:1.8;margin:0 0 10px;">Le Rang Suprême est réservé à une élite restreinte de notre communauté. La réactivation d'un compte après bannissement est une décision exceptionnelle, qui ne se produit qu'en de très rares circonstances. Nous vous demandons d'en prendre pleinement conscience.</p>
+        <p style="color:#a08040;font-size:13px;line-height:1.8;margin:0;">Cette opportunité représente un nouveau départ. Elle s'accompagne d'une confiance renouvelée de notre part envers vous, et nous espérons sincèrement que vous saurez honorer cette confiance par vos actes et votre comportement sur la plateforme.</p>
       </div>
+
+      <!-- Expectations block -->
+      <div style="background:rgba(245,158,11,0.03);border-left:3px solid #d97706;padding:16px 20px;margin:20px 0;border-radius:0 10px 10px 0;">
+        <p style="color:#d97706;font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin:0 0 10px;">&#128218; CE QUE NOUS ATTENDONS DE VOUS</p>
+        <ul style="color:#a08040;font-size:13px;line-height:2;margin:0;padding-left:18px;">
+          <li>Respect scrupuleux de nos Conditions Générales d'Utilisation</li>
+          <li>Exemplarité et bienveillance envers l'ensemble de la communauté</li>
+          <li>Aucune récidive des comportements ayant conduit à la sanction précédente</li>
+          <li>Coopération immédiate avec notre équipe en cas de nouveau signalement</li>
+        </ul>
+      </div>
+
+      <p style="color:#7a6030;font-size:13px;line-height:1.8;margin:20px 0;">Sachez que tout manquement futur aux règles de notre plateforme entraînera une sanction définitive, sans possibilité de recours ni de réactivation. Nous ne vous faisons part de cela non pas pour vous menacer, mais pour vous donner toutes les clés afin que cette situation ne se reproduise pas.</p>
+
       <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(217,119,6,0.4),transparent);margin:28px 0;"></div>
+
+      <!-- CTA -->
       <div style="text-align:center;">
-        <p style="color:#7a6030;font-size:12px;margin:0 0 12px;">Pour toute question ou remarque :</p>
+        <p style="color:#7a6030;font-size:12px;margin:0 0 12px;">Pour toute question ou pour remercier notre équipe :</p>
         <a href="mailto:contact@brenneaerial.fr" style="display:inline-block;background:linear-gradient(135deg,#78350f,#d97706);color:#fff;font-size:13px;font-weight:700;padding:12px 28px;border-radius:30px;text-decoration:none;box-shadow:0 4px 16px rgba(245,158,11,0.35);">Contacter le support Suprême</a>
         <p style="color:#5a4010;font-size:11px;margin:12px 0 0;">contact@brenneaerial.fr &bull; Réponse prioritaire garantie</p>
       </div>
     </div>
+
+    <!-- Footer -->
     <div style="padding:20px 36px;border-top:1px solid rgba(217,119,6,0.15);text-align:center;background:rgba(0,0,0,0.2);">
       <p style="color:#d97706;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px;">&#9733; BRENNE AERIAL SUPRÊME &#9733;</p>
       <p style="color:#5a4010;font-size:10px;margin:0;">Cette notification vous est envoyée en raison de votre appartenance au Rang Suprême.<br>Ne répondez pas directement à cet e-mail.</p>

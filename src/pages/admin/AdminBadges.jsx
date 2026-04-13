@@ -64,17 +64,35 @@ export default function AdminBadges() {
 
   const toggleVerification = (user, key) => {
     const current = user.verifications || [];
-    const next = current.includes(key) ? current.filter(v => v !== key) : [...current, key];
+    const adding = !current.includes(key);
+    const next = adding ? [...current, key] : current.filter(v => v !== key);
     updateUser.mutate({ id: user.id, data: { verifications: next } });
     const vt = VERIFICATION_TYPES.find(v => v.key === key);
-    toast.success(current.includes(key) ? `${vt?.label} retiré` : `${vt?.label} activé`);
+    toast.success(adding ? `${vt?.label} activé` : `${vt?.label} retiré`);
+    if (adding) {
+      base44.functions.invoke('sendBadgeAssignedEmail', {
+        userEmail: user.email,
+        userName: user.full_name,
+        badgeKey: key,
+        type: 'verification',
+      }).catch(() => {});
+    }
   };
 
   const toggleBadge = (user, badge) => {
     const badges = user.badges || [];
-    const newBadges = badges.includes(badge) ? badges.filter(b => b !== badge) : [...badges, badge];
+    const adding = !badges.includes(badge);
+    const newBadges = adding ? [...badges, badge] : badges.filter(b => b !== badge);
     updateUser.mutate({ id: user.id, data: { badges: newBadges } });
-    toast.success(badges.includes(badge) ? `Badge "${badge}" retiré` : `Badge "${badge}" ajouté`);
+    toast.success(adding ? `Badge "${badge}" ajouté` : `Badge "${badge}" retiré`);
+    if (adding) {
+      base44.functions.invoke('sendBadgeAssignedEmail', {
+        userEmail: user.email,
+        userName: user.full_name,
+        badgeLabel: badge,
+        type: 'badge',
+      }).catch(() => {});
+    }
   };
 
   const filtered = users

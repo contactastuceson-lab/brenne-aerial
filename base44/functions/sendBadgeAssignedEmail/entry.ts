@@ -171,42 +171,79 @@ function buildEmail(tpl, userName) {
 <html>
 <head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#000000;">
-<div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#000000;color:#f5e6c8;">
+<div style="font-family:'Segoe UI',sans-serif;max-width:620px;margin:auto;background:#000000;color:#f5e6c8;">
 
   <!-- Supreme Header -->
-  <div style="background:linear-gradient(135deg,#0a0600 0%,#1a0e00 40%,#0a0600 100%);padding:50px 40px 40px;text-align:center;border-bottom:1px solid #b45309;">
-    <p style="color:#92400e;font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;margin:0 0 16px;">BRENNE AERIAL · DISTINCTION SUPRÊME</p>
-    <div style="font-size:52px;margin:0 0 16px;">👑</div>
-    <h1 style="background:linear-gradient(135deg,#f59e0b,#fde68a,#d97706,#fde68a,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:42px;font-weight:900;letter-spacing:4px;margin:0 0 8px;text-transform:uppercase;">SUPRÊME</h1>
-    <p style="color:#d97706;font-size:13px;letter-spacing:2px;margin:0;text-transform:uppercase;">Le rang le plus élevé de la plateforme</p>
+  <div style="background:linear-gradient(135deg,#0a0600 0%,#1a0e00 40%,#0a0600 100%);padding:54px 40px 40px;text-align:center;border-bottom:2px solid #b45309;">
+    <p style="color:#92400e;font-size:9px;font-weight:700;letter-spacing:6px;text-transform:uppercase;margin:0 0 20px;">BRENNE AERIAL · DISTINCTION SUPRÊME · CONFIDENTIEL</p>
+    <div style="font-size:60px;margin:0 0 18px;">👑</div>
+    <h1 style="background:linear-gradient(135deg,#f59e0b,#fde68a,#d97706,#fde68a,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:46px;font-weight:900;letter-spacing:6px;margin:0 0 10px;text-transform:uppercase;">SUPRÊME</h1>
+    <p style="color:#d97706;font-size:12px;letter-spacing:3px;margin:0;text-transform:uppercase;">Le rang le plus élevé · Sur invitation exclusive du PDG</p>
   </div>
 
-  <!-- Body -->
-  <div style="padding:40px;background:linear-gradient(180deg,#0a0600 0%,#060408 100%);">
-    <p style="color:#d97706;font-size:14px;margin:0 0 20px;">À ${name},</p>
+  <!-- Divider gold line -->
+  <div style="height:3px;background:linear-gradient(90deg,transparent,#f59e0b,#fde68a,#f59e0b,transparent);"></div>
 
-    <p style="color:#e8d5a3;font-size:15px;line-height:1.8;margin:0 0 24px;">
-      Ce message vous est adressé pour une raison exceptionnelle.<br>
-      <strong style="color:#fde68a;">Vous venez d'être élevé au rang Suprême</strong> sur Brenne Aerial.
+  <!-- Intro message -->
+  <div style="padding:44px 40px 0;background:linear-gradient(180deg,#0a0600 0%,#060408 100%);">
+    <p style="color:#d97706;font-size:13px;letter-spacing:1px;margin:0 0 8px;text-transform:uppercase;font-weight:600;">Message Personnel</p>
+    <p style="color:#e8d5a3;font-size:15px;line-height:1.9;margin:0 0 20px;">
+      À <strong style="color:#fde68a;">${name}</strong>,
     </p>
+    <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 18px;">
+      Ce message ne vous parvient pas par hasard. Il est le résultat d'une décision personnelle, réfléchie, et rarissime — prise directement par le <strong style="color:#fde68a;">PDG de Brenne Aerial</strong>.
+    </p>
+    <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 18px;">
+      Le rang <strong style="color:#fde68a;">Suprême</strong> n'existe pas dans nos catalogues. Il ne s'achète pas. Il ne se demande pas. Il ne se gagne pas par le nombre de posts ou de followers. Il est attribué, à titre exceptionnel, à des individus qui ont laissé une empreinte réelle et profonde sur la communauté Brenne Aerial.
+    </p>
+    <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 18px;">
+      Seul le PDG possède la clé de cette distinction. Aucun administrateur, aucun modérateur, aucun collaborateur ne peut l'attribuer. C'est une décision qui appartient à une seule personne — et cette décision, aujourd'hui, vous concerne.
+    </p>
+  </div>
 
-    <!-- Gold card -->
-    <div style="background:linear-gradient(135deg,#1a0e00,#2d1a00);border:1px solid #b45309;border-radius:16px;padding:28px;margin:0 0 28px;text-align:center;box-shadow:0 0 40px rgba(245,158,11,0.2);">
-      <p style="color:#fde68a;font-size:13px;letter-spacing:3px;text-transform:uppercase;margin:0 0 10px;">BADGE OBTENU</p>
-      <p style="background:linear-gradient(135deg,#f59e0b,#fde68a,#b45309);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:32px;font-weight:900;margin:0 0 10px;letter-spacing:2px;">👑 SUPRÊME</p>
-      <p style="color:#92400e;font-size:12px;margin:0;">Sur invitation uniquement · Badge le plus rare</p>
+  <!-- Gold separator -->
+  <div style="padding:0 40px;background:#060408;">
+    <div style="height:1px;background:linear-gradient(90deg,transparent,#b45309,transparent);margin:28px 0;"></div>
+  </div>
+
+  <!-- Gold card -->
+  <div style="padding:0 40px;background:#060408;">
+    <div style="background:linear-gradient(135deg,#1a0e00,#2d1a00);border:1px solid #b45309;border-radius:16px;padding:32px;margin:0 0 32px;text-align:center;box-shadow:0 0 60px rgba(245,158,11,0.15);">
+      <p style="color:#fde68a;font-size:11px;letter-spacing:4px;text-transform:uppercase;margin:0 0 12px;">BADGE DÉCERNÉ PERSONNELLEMENT PAR LE PDG</p>
+      <p style="background:linear-gradient(135deg,#f59e0b,#fde68a,#b45309,#fde68a,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:36px;font-weight:900;margin:0 0 12px;letter-spacing:3px;">👑 SUPRÊME</p>
+      <p style="color:#92400e;font-size:11px;margin:0 0 6px;">Sur invitation exclusive · Non transférable · Permanent</p>
+      <p style="color:#78350f;font-size:10px;margin:0;">Attribué à : <span style="color:#d97706;">${name}</span></p>
     </div>
+  </div>
 
-    <p style="color:#c4a47c;font-size:14px;line-height:1.8;margin:0 0 16px;">
-      Le badge Suprême est réservé à une poignée d'individus qui ont marqué la communauté Brenne Aerial de manière profonde et durable. Il ne s'achète pas. Il ne se demande pas. Il se mérite.
+  <!-- What it means -->
+  <div style="padding:0 40px 8px;background:#060408;">
+    <p style="color:#d97706;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin:0 0 16px;">Ce que cela signifie</p>
+    <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 16px;">
+      En portant le badge Suprême, vous rejoignez un cercle d'une extrême exclusivité. Vous êtes désormais l'un des rares membres à bénéficier du rang le plus élevé que Brenne Aerial puisse offrir. Ce badge est affiché en premier sur votre profil, visible par l'ensemble de la communauté, et identifié comme la distinction ultime de la plateforme.
     </p>
-    <p style="color:#c4a47c;font-size:14px;line-height:1.8;margin:0 0 32px;">
-      Notre équipe a fait le choix de vous honorer de cette distinction. Portez-la avec fierté.
+    <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 16px;">
+      Il témoigne non seulement de votre valeur en tant que membre, mais aussi de la confiance directe que le PDG de Brenne Aerial vous accorde. C'est une marque d'estime sincère et personnelle.
+    </p>
+  </div>
+
+  <!-- Divider -->
+  <div style="padding:0 40px;background:#060408;">
+    <div style="height:1px;background:linear-gradient(90deg,transparent,#b45309,transparent);margin:24px 0;"></div>
+  </div>
+
+  <!-- Closing words -->
+  <div style="padding:0 40px 40px;background:#060408;">
+    <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 16px;">
+      Portez ce rang avec la discrétion et la fierté qu'il mérite. Vous faites désormais partie d'une histoire — celle de Brenne Aerial — à un niveau que très peu atteindront jamais.
+    </p>
+    <p style="color:#92400e;font-size:13px;font-style:italic;margin:0 0 36px;">
+      — Le PDG de Brenne Aerial
     </p>
 
     <!-- CTA -->
-    <div style="text-align:center;margin:0 0 16px;">
-      <a href="${profileUrl}" style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000000;padding:16px 40px;border-radius:12px;text-decoration:none;font-weight:800;font-size:15px;letter-spacing:1px;box-shadow:0 4px 20px rgba(245,158,11,0.4);">
+    <div style="text-align:center;margin:0 0 8px;">
+      <a href="${profileUrl}" style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000000;padding:18px 48px;border-radius:12px;text-decoration:none;font-weight:800;font-size:15px;letter-spacing:1.5px;box-shadow:0 6px 30px rgba(245,158,11,0.35);text-transform:uppercase;">
         👑 Accéder à mon profil Suprême
       </a>
     </div>
@@ -214,7 +251,8 @@ function buildEmail(tpl, userName) {
 
   <!-- Footer -->
   <div style="padding:20px 40px;border-top:1px solid #1a0e00;text-align:center;background:#000000;">
-    <p style="color:#4a3510;font-size:11px;margin:0;letter-spacing:1px;">BRENNE AERIAL · DISTINCTION EXCLUSIVE</p>
+    <p style="color:#4a3510;font-size:10px;margin:0;letter-spacing:2px;text-transform:uppercase;">BRENNE AERIAL · DISTINCTION EXCLUSIVE · CONFIDENTIEL</p>
+    <p style="color:#3a2a0a;font-size:10px;margin:6px 0 0;"><a href="${profileUrl}" style="color:#4a3510;text-decoration:underline;">brenneaerial.fr/profile</a></p>
   </div>
 </div>
 </body>
@@ -222,6 +260,7 @@ function buildEmail(tpl, userName) {
   }
 
   if (tpl.tone === 'premium') {
+
     return `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>

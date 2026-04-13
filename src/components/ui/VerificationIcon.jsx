@@ -6,7 +6,7 @@ const bgMap = {
   'text-amber-400':   'bg-amber-500',
   'text-purple-400':  'bg-purple-500',
   'text-emerald-400': 'bg-emerald-500',
-  'text-chart-5':     'bg-amber-400',
+  'text-yellow-300':  null, // handled as gradient
 };
 
 export default function VerificationIcons({ verifications = [], size = 'sm' }) {
@@ -21,14 +21,16 @@ export default function VerificationIcons({ verifications = [], size = 'sm' }) {
         const cfg = VERIFICATION_CONFIG[key];
         if (!cfg) return null;
         const Icon = cfg.icon;
-        const bg = bgMap[cfg.color] || 'bg-sky-500';
+        const bg = bgMap[cfg.color];
+        const isGold = cfg.gradient;
         return (
           <span
             key={key}
             title={cfg.label}
-            className={`inline-flex items-center justify-center ${dim} rounded-full ${bg} flex-shrink-0`}
+            className={`inline-flex items-center justify-center ${dim} rounded-full flex-shrink-0 ${isGold ? '' : (bg || 'bg-sky-500')}`}
+            style={isGold ? { background: 'linear-gradient(135deg, #f59e0b, #fde68a, #b45309)', boxShadow: '0 0 6px rgba(245,158,11,0.6)' } : {}}
           >
-            <Icon className={`${iconDim} text-white`} strokeWidth={3} />
+            <Icon className={`${iconDim} ${isGold ? 'text-yellow-900' : 'text-white'}`} strokeWidth={3} />
           </span>
         );
       })}

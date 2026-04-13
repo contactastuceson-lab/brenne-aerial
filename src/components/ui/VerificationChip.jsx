@@ -1,12 +1,12 @@
 import React from 'react';
-import { CheckCircle, BadgeCheck, Building2, Gem, ShieldCheck } from 'lucide-react';
+import { CheckCircle, BadgeCheck, Building2, Gem, Crown } from 'lucide-react';
 
 export const VERIFICATION_CONFIG = {
   verified:  { label: 'Vérifié',   icon: CheckCircle, color: 'text-sky-400',     border: 'border-sky-400/40',     bg: 'bg-sky-400/10' },
   certified: { label: 'Certifié',  icon: BadgeCheck,  color: 'text-amber-400',   border: 'border-amber-400/40',   bg: 'bg-amber-400/10' },
   official:  { label: 'Officiel',  icon: Building2,   color: 'text-purple-400',  border: 'border-purple-400/40',  bg: 'bg-purple-400/10' },
   pro:       { label: 'Pro',       icon: Gem,         color: 'text-emerald-400', border: 'border-emerald-400/40', bg: 'bg-emerald-400/10' },
-  supreme:   { label: 'Suprême',   icon: ShieldCheck, color: 'text-chart-5',     border: 'border-chart-5/40',     bg: 'bg-chart-5/10' },
+  supreme:   { label: 'Suprême',   icon: Crown,       color: 'text-yellow-300',  border: 'border-yellow-400/60',  bg: 'bg-yellow-400/15', gradient: true },
 };
 
 export default function VerificationChip({ type, size = 'sm' }) {

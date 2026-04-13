@@ -1,5 +1,6 @@
 import React from 'react';
 import { VERIFICATION_CONFIG } from './VerificationChip';
+import BadgePopup from './BadgePopup';
 
 const bgMap = {
   'text-sky-400':     'bg-sky-500',
@@ -24,14 +25,14 @@ export default function VerificationIcons({ verifications = [], size = 'sm' }) {
         const bg = bgMap[cfg.color];
         const isGold = cfg.gradient;
         return (
-          <span
-            key={key}
-            title={cfg.label}
-            className={`inline-flex items-center justify-center ${dim} rounded-full flex-shrink-0 ${isGold ? '' : (bg || 'bg-sky-500')}`}
-            style={isGold ? { background: 'linear-gradient(135deg, #f59e0b, #fde68a, #b45309)', boxShadow: '0 0 6px rgba(245,158,11,0.6)' } : {}}
-          >
-            <Icon className={`${iconDim} ${isGold ? 'text-yellow-900' : 'text-white'}`} strokeWidth={3} />
-          </span>
+          <BadgePopup key={key} badgeKey={key}>
+            <span
+              className={`inline-flex items-center justify-center ${dim} rounded-full flex-shrink-0 ${isGold ? '' : (bg || 'bg-sky-500')}`}
+              style={isGold ? { background: 'linear-gradient(135deg, #f59e0b, #fde68a, #b45309)', boxShadow: '0 0 6px rgba(245,158,11,0.6)' } : {}}
+            >
+              <Icon className={`${iconDim} ${isGold ? 'text-yellow-900' : 'text-white'}`} strokeWidth={3} />
+            </span>
+          </BadgePopup>
         );
       })}
     </>

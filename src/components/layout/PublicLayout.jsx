@@ -86,9 +86,9 @@ export default function PublicLayout() {
     }
   }
 
-  // Maintenance mode — block non-admins
+  // Maintenance mode — block non-admins (but allow /status for everyone)
   const isMaintenance = settings['maintenance_mode'] === 'true';
-  if (isMaintenance && (!user || user.role !== 'admin')) {
+  if (isMaintenance && location.pathname !== '/status' && (!user || user.role !== 'admin')) {
     return <MaintenancePage message={settings['site_notice'] || undefined} />;
   }
 

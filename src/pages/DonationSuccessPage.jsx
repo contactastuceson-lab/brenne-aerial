@@ -16,26 +16,21 @@ export default function DonationSuccessPage() {
       const sessionId = params.get('session_id') || '';
       
       // Récupérer le montant du don depuis la base de données
+      let donationAmount = null;
       try {
         if (sessionId) {
           const donations = await base44.entities.Donation.filter({
             stripe_session_id: sessionId,
           });
           if (donations.length > 0) {
-            setAmount(donations[0].amount);
+            donationAmount = donations[0].amount;
+            setAmount(donationAmount);
           }
         }
       } catch (err) {
         console.error('Error fetching donation amount:', err);
       }
-      
-      // Ajouter le badge Donateur
-      try {
-        await base44.functions.invoke('addDonatorBadge', {});
-      } catch (err) {
-        console.error('Badge error:', err);
-      }
-      
+
       // Logger le don
       try {
         if (sessionId) {
@@ -52,7 +47,7 @@ export default function DonationSuccessPage() {
         await base44.functions.invoke('sendDonationConfirmation', {
           userEmail: u?.email || 'anonymous',
           userName: u?.full_name || 'Bienfaiteur',
-          amount: amount || 'N/A',
+          amount: donationAmount,
         });
       } catch (err) {
         console.error('Email error:', err);

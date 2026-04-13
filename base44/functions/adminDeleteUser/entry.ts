@@ -32,7 +32,8 @@ function emailTemplate({ title, preheader, bodyHtml }) {
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
-  if (!user || user.role !== 'admin') {
+  const isOwner = user?.role === 'owner' || user?.email === 'contact.astuceson@gmail.com';
+  if (!user || (user.role !== 'admin' && !isOwner)) {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 

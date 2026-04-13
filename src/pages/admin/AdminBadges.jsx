@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Search, CheckCircle, ShieldCheck, Award, Star, Zap, Shield, Users, Crown, BadgeCheck, Gem, Building2 } from 'lucide-react';
+import VerificationChip from '@/components/ui/VerificationChip';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -151,11 +152,10 @@ export default function AdminBadges() {
                     {u.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 text-accent" />}
                   </div>
                   <p className="font-mono text-xs text-muted-foreground">{u.email}</p>
-                  {u.badges?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {u.badges.map(b => <BadgeChip key={b} badge={b} size="sm" />)}
-                    </div>
-                  )}
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {u.badges?.map(b => <BadgeChip key={b} badge={b} size="sm" />)}
+                    {u.verifications?.map(v => <VerificationChip key={v} type={v} size="sm" />)}
+                  </div>
                 </div>
 
                 {/* Verification toggles */}

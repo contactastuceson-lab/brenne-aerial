@@ -9,6 +9,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import VerificationIcons from '@/components/ui/VerificationIcon';
 import { Link } from 'react-router-dom';
 import ReportModal from '@/components/shared/ReportModal';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
@@ -196,9 +197,9 @@ export default function DiscoverPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1.5 mb-0.5">
+                    <div className="flex items-center gap-1 mb-0.5">
                       <h3 className="font-grotesk font-semibold text-sm truncate">{profile.full_name}</h3>
-                      {profile.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 text-accent flex-shrink-0" />}
+                      <VerificationIcons verifications={profile.verifications} />
                     </div>
                     {profile.location && (
                       <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1 mb-1">

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Search, CheckCircle, ShieldCheck, Award, Star, Zap, Shield, Users, Crown, BadgeCheck, Gem, Building2 } from 'lucide-react';
 import VerificationChip from '@/components/ui/VerificationChip';
+import VerificationIcons from '@/components/ui/VerificationIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -14,10 +15,11 @@ const ALL_BADGES = ['Fondateur', 'Collaborateur', 'VIP', 'Admin', 'Pilote', 'Off
 const BADGE_ICONS = { Fondateur: Crown, Collaborateur: Users, VIP: Star, Admin: Shield, Pilote: Zap, Officiel: CheckCircle, Vérifié: CheckCircle, 'Beta Testeur': Zap, Partenaire: Award };
 
 const VERIFICATION_TYPES = [
-  { key: 'verified',   label: 'Vérifié',     icon: CheckCircle, color: 'text-sky-400',    bg: 'bg-sky-400/15',    border: 'border-sky-400/40',    desc: 'Compte vérifié (bleu)' },
-  { key: 'certified',  label: 'Certifié',    icon: BadgeCheck,  color: 'text-amber-400',  bg: 'bg-amber-400/15',  border: 'border-amber-400/40',  desc: 'Certification officielle (or)' },
-  { key: 'official',   label: 'Officiel',    icon: Building2,   color: 'text-purple-400', bg: 'bg-purple-400/15', border: 'border-purple-400/40', desc: 'Entité officielle (violet)' },
-  { key: 'pro',        label: 'Pro',         icon: Gem,         color: 'text-emerald-400', bg: 'bg-emerald-400/15', border: 'border-emerald-400/40', desc: 'Professionnel validé (vert)' },
+  { key: 'verified',  label: 'Vérifié',  icon: CheckCircle, color: 'text-sky-400',     bg: 'bg-sky-400/15',     border: 'border-sky-400/40',    desc: 'Compte vérifié (bleu)' },
+  { key: 'certified', label: 'Certifié', icon: BadgeCheck,  color: 'text-amber-400',   bg: 'bg-amber-400/15',   border: 'border-amber-400/40',  desc: 'Certification officielle (or)' },
+  { key: 'official',  label: 'Officiel', icon: Building2,   color: 'text-purple-400',  bg: 'bg-purple-400/15',  border: 'border-purple-400/40', desc: 'Entité officielle (violet)' },
+  { key: 'pro',       label: 'Pro',      icon: Gem,         color: 'text-emerald-400', bg: 'bg-emerald-400/15', border: 'border-emerald-400/40', desc: 'Professionnel validé (vert)' },
+  { key: 'supreme',   label: 'Suprême',  icon: ShieldCheck, color: 'text-chart-5',     bg: 'bg-chart-5/15',     border: 'border-chart-5/40',    desc: 'Compte Suprême Brenne Aérial (or)' },
 ];
 
 export default function AdminBadges() {

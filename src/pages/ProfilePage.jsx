@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import BadgeChip from '@/components/ui/BadgeChip';
+import VerificationIcons from '@/components/ui/VerificationIcon';
 import DangerZone from '@/components/profile/DangerZone';
 import CertificationRequest from '@/components/profile/CertificationRequest';
 
@@ -163,7 +164,10 @@ export default function ProfilePage() {
           </div>
 
           <div className="mt-4">
-            <h1 className="font-grotesk font-bold text-xl">{user.full_name}</h1>
+            <div className="flex items-center gap-1.5">
+              <h1 className="font-grotesk font-bold text-xl">{user.full_name}</h1>
+              <VerificationIcons verifications={user.verifications} size="md" />
+            </div>
             <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
             {user.role && (
               <span className="inline-block mt-1 font-mono text-[10px] text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full capitalize">

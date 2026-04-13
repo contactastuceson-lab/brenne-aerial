@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import BadgePopup from '@/components/ui/BadgePopup';
 import { Link } from 'react-router-dom';
 import ReportModal from '@/components/shared/ReportModal';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
@@ -223,12 +224,18 @@ export default function DiscoverPage() {
                       <div className="flex flex-wrap gap-1 mb-3">
                         {profile.badges.slice(0, 3).map(b => {
                           const cfg = BADGE_CONFIG[b];
-                          if (!cfg) return <span key={b} className="font-mono text-[9px] bg-secondary border border-border px-2 py-0.5 rounded-full">{b}</span>;
+                          if (!cfg) return (
+                            <BadgePopup key={b} badgeKey={b}>
+                              <span className="font-mono text-[9px] bg-secondary border border-border px-2 py-0.5 rounded-full cursor-pointer">{b}</span>
+                            </BadgePopup>
+                          );
                           const Icon = cfg.icon;
                           return (
-                            <span key={b} className={`flex items-center gap-1 font-inter text-[9px] px-2 py-0.5 rounded-full border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
-                              <Icon className="w-2.5 h-2.5" /> {b}
-                            </span>
+                            <BadgePopup key={b} badgeKey={b}>
+                              <span className={`flex items-center gap-1 font-inter text-[9px] px-2 py-0.5 rounded-full border cursor-pointer ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+                                <Icon className="w-2.5 h-2.5" /> {b}
+                              </span>
+                            </BadgePopup>
                           );
                         })}
                         {profile.badges.length > 3 && (

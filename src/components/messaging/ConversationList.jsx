@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MessageCircle, CheckCircle, Star, Award, Zap, Shield, UserCheck } from 'lucide-react';
+import VerificationIcons from '@/components/ui/VerificationIcon';
 
 function getConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join('_');
@@ -75,6 +76,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
         ...conv,
         avatar: profile?.avatar_url,
         badges: profile?.badges || [],
+        verifications: profile?.verifications || [],
         is_verified: profile?.verified_status === 'yes',
         isOnline,
         lastMsg: conv.messages.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0],
@@ -140,8 +142,9 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-0.5">
-                  <div className="flex items-center gap-1.5 min-w-0">
+                  <div className="flex items-center gap-1 min-w-0">
                     <span className="font-inter font-medium text-sm truncate">{conv.name}</span>
+                    <VerificationIcons verifications={conv.verifications} />
                     {BadgeIcon && (
                       <BadgeIcon className={`w-3 h-3 flex-shrink-0 ${badgeCfg.color}`} />
                     )}

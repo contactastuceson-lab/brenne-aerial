@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Send, Lock, Check, X, Flag, Clock, CheckCircle } from 'lucide-react';
 import ReportModal from '@/components/shared/ReportModal';
 import BadgeChip from '@/components/ui/BadgeChip';
+import VerificationIcons from '@/components/ui/VerificationIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -180,7 +181,7 @@ export default function MessageThread({ user, conv, onBack }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <p className="font-grotesk font-semibold text-sm">{conv.name}</p>
-            {conv.is_verified && <CheckCircle className="w-3.5 h-3.5 text-accent flex-shrink-0" />}
+            <VerificationIcons verifications={conv.verifications} />
             {conv.badges?.slice(0, 2).map(b => (
               <BadgeChip key={b} badge={b} size="sm" />
             ))}

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useAnimationFrame } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Camera, Save, Loader2, MapPin, Globe, Phone,
-  CheckCircle, Shield, Star, Zap, Award, UserCheck, Trash2, AlertTriangle, Heart
+  CheckCircle, Shield, Star, Zap, Award, UserCheck, Trash2, AlertTriangle, Heart, Crown, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -102,6 +102,8 @@ export default function ProfilePage() {
     );
   }
 
+  const isSupreme = user.verifications?.includes('supreme');
+
   const statusColors = {
     active: 'text-green-400 bg-green-400/10 border-green-400/30',
     suspended: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30',
@@ -110,12 +112,77 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="pt-20 min-h-screen pb-20">
-      <div className="max-w-2xl mx-auto px-5">
+    <div className="pt-20 min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
+      {/* Supreme ambient particles */}
+      {isSupreme && (
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          {[...Array(18)].map((_, idx) => (
+            <motion.div
+              key={idx}
+              className="absolute rounded-full"
+              style={{
+                width: (idx % 3) + 1 + 1,
+                height: (idx % 3) + 1 + 1,
+                left: `${(idx * 17 + 7) % 100}%`,
+                top: `${(idx * 23 + 11) % 100}%`,
+                background: `rgba(245,158,11,${0.1 + (idx % 4) * 0.1})`,
+                boxShadow: '0 0 6px rgba(245,158,11,0.6)',
+              }}
+              animate={{ y: [-20, 20, -20], opacity: [0.2, 0.8, 0.2] }}
+              transition={{ duration: 3 + (idx % 4), repeat: Infinity, delay: (idx % 3) }}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="max-w-2xl mx-auto px-5 relative z-10">
+
+        {/* Supreme crown banner */}
+        {isSupreme && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 rounded-2xl overflow-hidden relative"
+            style={{
+              background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)',
+              border: '1px solid rgba(217,119,6,0.4)',
+              boxShadow: '0 0 40px rgba(245,158,11,0.12), inset 0 1px 0 rgba(245,158,11,0.15)',
+            }}
+          >
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, transparent, rgba(245,158,11,0.04), transparent)' }} />
+            <div className="relative flex items-center justify-center gap-4 py-3 px-6">
+              <motion.div animate={{ rotate: [-5, 5, -5] }} transition={{ duration: 3, repeat: Infinity }}>
+                <Crown className="w-5 h-5" style={{ color: '#f59e0b', filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.8))' }} />
+              </motion.div>
+              <div className="text-center">
+                <p className="font-mono text-[10px] uppercase tracking-[0.3em]" style={{ color: '#d97706' }}>Rang Exclusif</p>
+                <p className="font-grotesk font-bold text-sm" style={{ background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>SUPRÊME</p>
+              </div>
+              <motion.div animate={{ rotate: [5, -5, 5] }} transition={{ duration: 3, repeat: Infinity }}>
+                <Crown className="w-5 h-5" style={{ color: '#f59e0b', filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.8))' }} />
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Cover */}
-        <div className="relative h-40 rounded-2xl overflow-hidden mb-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary">
+        <div
+          className="relative h-40 rounded-2xl overflow-hidden mb-0"
+          style={isSupreme
+            ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', border: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
+            : { background: 'linear-gradient(to bottom right, hsl(var(--primary)/0.2), hsl(var(--accent)/0.1), hsl(var(--secondary)))' }
+          }
+        >
           {user.cover_url ? (
             <img src={user.cover_url} alt="cover" className="w-full h-full object-cover" />
+          ) : isSupreme ? (
+            <>
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.12) 0%, transparent 50%, rgba(217,119,6,0.08) 100%)' }} />
+              <div className="absolute inset-0 grid-bg opacity-20" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Sparkles className="w-16 h-16 opacity-10" style={{ color: '#f59e0b' }} />
+              </div>
+            </>
           ) : (
             <div className="absolute inset-0 grid-bg" />
           )}
@@ -132,7 +199,13 @@ export default function ProfilePage() {
         <div className="relative px-6 -mt-10 mb-6">
           <div className="flex items-end justify-between">
             <div className="relative">
-              <div className="w-20 h-20 rounded-2xl border-4 border-background bg-secondary flex items-center justify-center overflow-hidden sky-glow">
+              <div
+                className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden"
+                style={isSupreme
+                  ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
+                  : { border: '4px solid hsl(var(--background))', background: 'hsl(var(--secondary))' }
+                }
+              >
                 {user.avatar_url ? (
                   <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -165,7 +238,10 @@ export default function ProfilePage() {
 
           <div className="mt-4">
             <div className="flex items-center gap-1.5">
-              <h1 className="font-grotesk font-bold text-xl">{user.full_name}</h1>
+              <h1
+                className="font-grotesk font-bold text-xl"
+                style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.3))' } : {}}
+              >{user.full_name}</h1>
               <VerificationIcons verifications={user.verifications} size="md" />
             </div>
             <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
@@ -197,7 +273,11 @@ export default function ProfilePage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card border border-border rounded-2xl p-6 space-y-5"
+          className="rounded-2xl p-6 space-y-5"
+          style={isSupreme
+            ? { background: 'linear-gradient(145deg, #1a0c00, #150a00)', border: '1px solid rgba(217,119,6,0.3)', boxShadow: '0 0 30px rgba(245,158,11,0.07)' }
+            : { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }
+          }
         >
           <h2 className="font-grotesk font-semibold text-base">Modifier mon profil</h2>
 
@@ -251,7 +331,11 @@ export default function ProfilePage() {
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
-            className="w-full bg-primary text-primary-foreground gap-2"
+            className="w-full gap-2 font-grotesk font-semibold"
+            style={isSupreme
+              ? { background: 'linear-gradient(135deg, #92400e, #d97706, #92400e)', color: '#fff', border: 'none', boxShadow: '0 4px 20px rgba(245,158,11,0.3)' }
+              : {}
+            }
           >
             {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             Sauvegarder

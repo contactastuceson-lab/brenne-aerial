@@ -1,5 +1,6 @@
 import React from 'react';
 import { Shield, Crown, Star, Award, User } from 'lucide-react';
+import BadgePopup from '@/components/ui/BadgePopup';
 
 const badgeConfig = {
   Fondateur: { icon: Crown, className: 'badge-shimmer font-mono text-xs font-bold px-3 py-1 rounded-full border border-accent/30 bg-accent/10' },
@@ -18,10 +19,12 @@ export default function BadgeDisplay({ badges = [], size = 'sm' }) {
         const config = badgeConfig[badge] || badgeConfig.Utilisateur;
         const Icon = config.icon;
         return (
-          <span key={badge} className={`inline-flex items-center gap-1.5 ${config.className}`}>
-            <Icon className={size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'} />
-            {badge}
-          </span>
+          <BadgePopup key={badge} badgeKey={badge}>
+            <span className={`inline-flex items-center gap-1.5 ${config.className}`}>
+              <Icon className={size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'} />
+              {badge}
+            </span>
+          </BadgePopup>
         );
       })}
     </div>

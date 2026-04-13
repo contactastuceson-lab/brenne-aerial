@@ -164,7 +164,8 @@ export default function DiscoverPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: i * 0.04 }}
-                  className="group relative bg-card border border-border rounded-2xl overflow-hidden hover-lift"
+                  className={`group relative bg-card rounded-2xl overflow-hidden hover-lift ${profile.verifications?.includes('supreme') ? 'border-2' : 'border border-border'}`}
+                  style={profile.verifications?.includes('supreme') ? { borderColor: '#f59e0b', boxShadow: '0 0 24px rgba(245,158,11,0.25), 0 0 60px rgba(245,158,11,0.08)' } : {}}
                 >
                   {/* Cover */}
                   <div className="h-20 relative overflow-hidden">

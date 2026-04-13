@@ -229,77 +229,128 @@ export default function AdminCertifications() {
           onClick={() => setSelectedRequest(null)}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-card border border-border rounded-2xl w-full max-w-2xl p-6"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-card border border-border rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl"
+            style={{ maxHeight: '90vh' }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 className="font-grotesk font-bold text-xl mb-6">Détails de la demande</h2>
-
-            {/* User info */}
-            <div className="mb-6 p-4 rounded-lg bg-secondary space-y-2">
-              <p className="text-xs text-muted-foreground">Utilisateur</p>
-              <p className="font-semibold">{selectedRequest.user_name}</p>
-              <p className="font-mono text-sm text-muted-foreground">{selectedRequest.user_email}</p>
-            </div>
-
-            {/* Responses */}
-            {selectedRequest.responses && Object.keys(selectedRequest.responses).length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground font-semibold uppercase">Réponses</p>
-                {Object.entries(selectedRequest.responses).map(([key, value]) => (
-                  <div key={key} className="p-2 rounded text-xs bg-secondary/50 border border-border">
-                    <p className="text-muted-foreground mb-0.5 capitalize">{key.replace(/_/g, ' ')}</p>
-                    <p className="truncate">{value}</p>
-                  </div>
-                ))}
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-border flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <Eye className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <h2 className="font-grotesk font-bold text-base">Détails de la demande</h2>
+                  <p className="font-mono text-[10px] text-muted-foreground">{selectedRequest.user_email}</p>
+                </div>
               </div>
-            )}
-
-            {/* Admin notes */}
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground font-semibold">Notes admin</p>
-              <Textarea
-                value={adminNotes}
-                onChange={e => setAdminNotes(e.target.value)}
-                placeholder="Ajoutez vos notes..."
-                className="bg-secondary border-border h-20 text-xs resize-none"
-              />
+              <div className="flex items-center gap-2">
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                  selectedRequest.status === 'pending' ? 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30' :
+                  selectedRequest.status === 'approved' ? 'bg-green-400/10 text-green-400 border-green-400/30' :
+                  'bg-red-400/10 text-red-400 border-red-400/30'
+                }`}>
+                  {selectedRequest.status === 'pending' && <Clock className="w-3 h-3" />}
+                  {selectedRequest.status === 'approved' && <CheckCircle className="w-3 h-3" />}
+                  {selectedRequest.status === 'rejected' && <XCircle className="w-3 h-3" />}
+                  {selectedRequest.status === 'pending' ? 'En attente' : selectedRequest.status === 'approved' ? 'Approuvé' : 'Refusé'}
+                </span>
+                <button onClick={() => setSelectedRequest(null)} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                  <XCircle className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            {/* Actions */}
-            <div className="sticky bottom-0 bg-card border-t border-border p-4 -mx-6 -mb-6 space-y-2">
+            {/* Scrollable body */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+
+              {/* User info */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-secondary rounded-xl p-4 border border-border">
+                  <p className="font-mono text-[10px] text-muted-foreground mb-1">Nom</p>
+                  <p className="font-grotesk font-semibold text-sm">{selectedRequest.user_name}</p>
+                </div>
+                <div className="bg-secondary rounded-xl p-4 border border-border">
+                  <p className="font-mono text-[10px] text-muted-foreground mb-1">Paiement</p>
+                  <span className={`inline-flex items-center gap-1 text-xs font-semibold ${
+                    selectedRequest.payment_status === 'completed' ? 'text-green-400' :
+                    selectedRequest.payment_status === 'failed' ? 'text-red-400' : 'text-yellow-400'
+                  }`}>
+                    {selectedRequest.payment_status === 'completed' ? '✓ Payé' :
+                     selectedRequest.payment_status === 'failed' ? '✕ Échoué' : '⏳ En attente'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-secondary rounded-xl p-4 border border-border">
+                <p className="font-mono text-[10px] text-muted-foreground mb-1">Date de soumission</p>
+                <p className="font-inter text-sm">{new Date(selectedRequest.created_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
+
+              {/* Responses */}
+              {selectedRequest.responses && Object.keys(selectedRequest.responses).length > 0 && (
+                <div>
+                  <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider mb-3">Réponses du formulaire</p>
+                  <div className="space-y-3">
+                    {Object.entries(selectedRequest.responses).map(([key, value]) => (
+                      <div key={key} className="rounded-xl border border-border bg-secondary/50 p-4">
+                        <p className="font-mono text-[10px] text-muted-foreground mb-1.5 capitalize">{key.replace(/_/g, ' ')}</p>
+                        {String(value).startsWith('http') ? (
+                          <a href={value} target="_blank" rel="noopener noreferrer" className="font-inter text-sm text-primary hover:underline break-all">{value}</a>
+                        ) : (
+                          <p className="font-inter text-sm text-foreground whitespace-pre-wrap break-words">{value}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Admin notes */}
+              <div>
+                <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Notes admin</p>
+                <Textarea
+                  value={adminNotes}
+                  onChange={e => setAdminNotes(e.target.value)}
+                  placeholder="Ajoutez vos notes (motif de refus, observations...)..."
+                  className="bg-secondary border-border h-28 text-sm resize-none font-inter"
+                />
+              </div>
+            </div>
+
+            {/* Sticky actions */}
+            <div className="flex-shrink-0 border-t border-border p-4 space-y-2 bg-card">
               {selectedRequest.status === 'pending' && (
                 <div className="flex gap-2">
                   <Button
-                    size="sm"
-                    variant="outline"
                     onClick={() => rejectMutation.mutate(selectedRequest.id)}
                     disabled={rejectMutation.isPending}
-                    className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
+                    className="flex-1 gap-2 bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive/20"
+                    variant="outline"
                   >
-                    <XCircle className="w-3 h-3 mr-1" />
+                    <XCircle className="w-4 h-4" />
                     Refuser
                   </Button>
                   <Button
-                    size="sm"
                     onClick={() => approveMutation.mutate(selectedRequest.id)}
                     disabled={approveMutation.isPending}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                    className="flex-1 gap-2 bg-green-600 hover:bg-green-700 text-white"
                   >
-                    <CheckCircle className="w-3 h-3 mr-1" />
+                    <CheckCircle className="w-4 h-4" />
                     Approuver
                   </Button>
                 </div>
               )}
               <Button
-                size="sm"
                 variant="outline"
                 onClick={() => sendEmailMutation.mutate(selectedRequest)}
-                className="w-full gap-1"
+                className="w-full gap-2 border-border"
+                disabled={sendEmailMutation.isPending}
               >
-                <Mail className="w-3 h-3" />
-                Envoyer email
+                <Mail className="w-4 h-4" />
+                Envoyer un email de notification
               </Button>
             </div>
           </motion.div>

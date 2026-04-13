@@ -5,6 +5,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Info, AlertTriangle, CheckCircle, AlertCircle, Megaphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// Parse text and make URLs + emails clickable
+function RichContent({ text, textClass }) {
+  const parts = text.split(/(https?:\/\/[^\s]+|[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/g);
+  return (
+    <span>
+      {parts.map((part, i) => {
+        if (/^https?:\/\//.test(part)) {
+          return <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline font-semibold text-primary hover:text-primary/80">{part}</a>;
+        }
+        if (/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(part)) {
+          return <a key={i} href={`mailto:${part}`} className="underline font-semibold text-primary hover:text-primary/80">{part}</a>;
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </span>
+  );
+}
+
 const TYPE_CONFIG = {
   info:    { icon: Info,          border: 'border-primary/40',       title: 'text-primary',       bg: 'bg-primary/5' },
   warning: { icon: AlertTriangle, border: 'border-yellow-400/40',    title: 'text-yellow-300',    bg: 'bg-yellow-400/5' },
@@ -76,7 +94,12 @@ export default function AnnouncementPopup({ user }) {
               {current.title && (
                 <h3 className={`font-grotesk font-bold text-base mb-2 ${cfg.title}`}>{current.title}</h3>
               )}
-              <p className="font-inter text-sm text-foreground/90 leading-relaxed">{current.content}</p>
+              <p className="font-inter text-sm text-foreground/90 leading-relaxed"><RichContent text={current.content} textClass="text-foreground/90" /></p>
+              {current.link_url && (
+                <a href={current.link_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 font-inter text-xs font-semibold underline text-primary hover:text-primary/80">
+                  {current.link_label || 'En savoir plus'} →
+                </a>
+              )}
             </div>
           </div>
           {current.dismissible !== false && (

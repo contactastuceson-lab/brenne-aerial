@@ -65,8 +65,10 @@ export default function AdminBadges() {
     toast.success(newVal === 'no' ? 'Vérification retirée' : 'Compte vérifié !');
   };
 
+  const isOwner = currentUser?.role === 'owner' || currentUser?.email === 'contact.astuceson@gmail.com';
+
   const toggleVerification = (user, key) => {
-    if (key === 'supreme' && currentUser?.role !== 'owner') {
+    if (key === 'supreme' && !isOwner) {
       toast.error('Seul le propriétaire peut attribuer ou retirer le rang Suprême.');
       return;
     }
@@ -197,7 +199,7 @@ export default function AdminBadges() {
                         <Switch
                           checked={active}
                           onCheckedChange={() => toggleVerification(u, vt.key)}
-                          disabled={vt.key === 'supreme' && currentUser?.role !== 'owner'}
+                          disabled={vt.key === 'supreme' && !isOwner}
                           className={active ? `[&>span]:${vt.bg}` : ''}
                         />
                       </div>

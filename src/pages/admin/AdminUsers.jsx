@@ -48,7 +48,7 @@ export default function AdminUsers() {
   const qc = useQueryClient();
   const [currentUser, setCurrentUser] = useState(null);
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
-  const isOwner = currentUser?.role === 'owner';
+  const isOwner = currentUser?.role === 'owner' || currentUser?.email === 'contact.astuceson@gmail.com';
   const [editUser, setEditUser] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [search, setSearch] = useState('');

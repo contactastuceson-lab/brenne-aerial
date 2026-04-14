@@ -348,25 +348,30 @@ export default function MessageThread({ user, conv, onBack }) {
                     <Trash2 className="w-4 h-4" />
                     Supprimer la conversation
                   </button>
-                  {!isProtectedTeamMember && (
-                    !isBlocked ? (
-                      <button
-                        onClick={() => { blockUser.mutate(); }}
-                        disabled={blockUser.isPending}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                      >
-                        <ShieldAlert className="w-4 h-4" />
-                        Bloquer cet utilisateur
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => { setShowUnblockConfirm(true); setShowOptions(false); }}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-yellow-400 hover:bg-yellow-400/10 transition-colors"
-                      >
-                        <ShieldOff className="w-4 h-4" />
-                        Débloquer cet utilisateur
-                      </button>
-                    )
+                  {!isBlocked ? (
+                    <button
+                      onClick={() => {
+                        if (isProtectedTeamMember) {
+                          toast.error(`Impossible de bloquer un membre de l'équipe officielle (Admin, PDG, Collaborateur…)`);
+                          setShowOptions(false);
+                          return;
+                        }
+                        blockUser.mutate();
+                      }}
+                      disabled={blockUser.isPending}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      <ShieldAlert className="w-4 h-4" />
+                      Bloquer cet utilisateur
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setShowUnblockConfirm(true); setShowOptions(false); }}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-yellow-400 hover:bg-yellow-400/10 transition-colors"
+                    >
+                      <ShieldOff className="w-4 h-4" />
+                      Débloquer cet utilisateur
+                    </button>
                   )}
                   <button
                     onClick={() => {

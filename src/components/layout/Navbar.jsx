@@ -169,68 +169,66 @@ export default function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}
             className="lg:hidden glass border-t border-border"
           >
-            <div className="px-5 py-4 space-y-1">
-              {NAV_LINKS.map(link => (
-                <Link key={link.to} to={link.to} onClick={() => setOpen(false)}
-                  className={`block px-3 py-2.5 rounded-lg font-inter text-sm transition-colors ${
-                    isActive(link.to) ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground'
-                  }`}>
-                  {link.label}
-                </Link>
-              ))}
-              <div className="pt-3 border-t border-border flex flex-col gap-2">
-                {user ? (
-                  <>
-                    <Link to="/discover" onClick={() => setOpen(false)}>
-                      <Button size="sm" variant="outline" className="w-full font-inter text-sm border-border gap-2">
-                        <Compass className="w-4 h-4" /> Découvrir
-                      </Button>
-                    </Link>
-                    <Link to="/messages" onClick={() => setOpen(false)}>
-                      <Button size="sm" variant="outline" className="w-full font-inter text-sm border-border gap-2">
-                        <MessageCircle className="w-4 h-4" /> Messages
-                      </Button>
-                    </Link>
-                    <Link to="/profile" onClick={() => setOpen(false)}>
-                      <Button size="sm" variant="outline" className="w-full font-inter text-sm border-border gap-2">
-                        <User className="w-4 h-4" /> Mon profil
-                      </Button>
-                    </Link>
-                    <Link to="/dashboard" onClick={() => setOpen(false)}>
-                      <Button size="sm" variant="outline" className="w-full font-inter text-sm border-border">
-                        Mon espace
-                      </Button>
-                    </Link>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => base44.auth.logout('/')}
-                      className="w-full font-inter text-sm border-border gap-2 text-destructive border-destructive/20"
-                    >
-                      <LogOut className="w-4 h-4" /> Déconnexion
-                    </Button>
-                    {hasAdminAccess(user) && (
-                      <Link to="/admin" onClick={() => setOpen(false)}>
-                        <Button size="sm" className="w-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-inter text-sm gap-2">
-                          <LayoutDashboard className="w-4 h-4" /> Panel Admin
-                        </Button>
-                      </Link>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <Button variant="ghost" size="sm" onClick={() => base44.auth.redirectToLogin()} className="w-full font-inter text-sm">Connexion</Button>
-                    <Link to="/quote" onClick={() => setOpen(false)}>
-                      <Button size="sm" className="w-full bg-primary text-primary-foreground font-grotesk font-semibold">Devis gratuit</Button>
-                    </Link>
-                  </>
-                )}
+            <div className="px-4 py-3">
+              {/* Nav links — grille compacte */}
+              <div className="grid grid-cols-4 gap-1 mb-3">
+                {NAV_LINKS.map(link => (
+                  <Link key={link.to} to={link.to} onClick={() => setOpen(false)}
+                    className={`text-center px-1 py-2 rounded-lg font-inter text-xs transition-colors ${
+                      isActive(link.to) ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                    }`}>
+                    {link.label}
+                  </Link>
+                ))}
               </div>
+
+              {/* Actions utilisateur */}
+              {user ? (
+                <div className="border-t border-border pt-3 flex items-center gap-2">
+                  {/* Avatar + nom */}
+                  <Link to="/profile" onClick={() => setOpen(false)} className="flex items-center gap-1.5 flex-1 min-w-0">
+                    <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {user.avatar_url
+                        ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
+                        : <User className="w-3.5 h-3.5 text-primary" />
+                      }
+                    </div>
+                    <span className="font-inter text-xs text-foreground truncate">{user.full_name?.split(' ')[0]}</span>
+                  </Link>
+                  {/* Icônes rapides */}
+                  <Link to="/discover" onClick={() => setOpen(false)} className={`p-2 rounded-lg ${isActive('/discover') ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}>
+                    <Compass className="w-4 h-4" />
+                  </Link>
+                  <Link to="/messages" onClick={() => setOpen(false)} className={`p-2 rounded-lg ${isActive('/messages') ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}>
+                    <MessageCircle className="w-4 h-4" />
+                  </Link>
+                  <Link to="/dashboard" onClick={() => setOpen(false)} className={`relative p-2 rounded-lg ${isActive('/dashboard') ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}>
+                    <Bell className="w-4 h-4" />
+                    {notifs.length > 0 && <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary" />}
+                  </Link>
+                  {hasAdminAccess(user) && (
+                    <Link to="/admin" onClick={() => setOpen(false)} className="p-2 rounded-lg text-primary bg-primary/10 hover:bg-primary/20">
+                      <LayoutDashboard className="w-4 h-4" />
+                    </Link>
+                  )}
+                  <button onClick={() => base44.auth.logout('/')} className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="border-t border-border pt-3 flex gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => base44.auth.redirectToLogin()} className="flex-1 font-inter text-sm">Connexion</Button>
+                  <Link to="/quote" onClick={() => setOpen(false)} className="flex-1">
+                    <Button size="sm" className="w-full bg-primary text-primary-foreground font-grotesk font-semibold">Devis gratuit</Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

@@ -14,32 +14,34 @@ export default function EmployeeProfileModal({ employee, onClose }) {
         onClick={e => e.stopPropagation()}
       >
         {/* Cover + close */}
-        <div className="relative h-20 flex-shrink-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary">
+        <div className="relative h-16 flex-shrink-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary">
           {employee.cover_url && <img src={employee.cover_url} alt="" className="w-full h-full object-cover" />}
           <div className="absolute inset-0 grid-bg opacity-40" />
           <button onClick={onClose} className="absolute top-3 right-3 w-7 h-7 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors">
             <X className="w-4 h-4" />
           </button>
-          {pole && (
-            <div className={`absolute bottom-2 left-3 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border ${pole.bg} ${pole.color} ${pole.border}`}>
-              {pole.emoji} {pole.label}
-            </div>
-          )}
         </div>
 
         {/* Scrollable content */}
         <div className="overflow-y-auto flex-1">
           {/* Header row */}
-          <div className="flex items-center gap-3 px-4 -mt-6 mb-3">
-            <div className="w-12 h-12 rounded-xl border-2 border-background bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="flex items-center gap-3 px-4 -mt-5 mb-3">
+            <div className="w-12 h-12 rounded-xl border-2 border-background bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0 shadow-lg">
               {employee.avatar_url
                 ? <img src={employee.avatar_url} alt="" className="w-full h-full object-cover" />
                 : <span className="font-grotesk font-bold text-lg text-primary">{employee.full_name?.[0]}</span>
               }
             </div>
-            <div className="flex-1 min-w-0 mt-6">
-              <h2 className="font-grotesk font-bold text-base leading-tight truncate">{employee.full_name}</h2>
-              <p className="font-inter text-xs text-primary truncate">{employee.job_title}</p>
+            <div className="flex-1 min-w-0 pt-6">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-grotesk font-bold text-base leading-tight">{employee.full_name}</h2>
+                {pole && (
+                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border ${pole.bg} ${pole.color} ${pole.border}`}>
+                    {pole.emoji} {pole.label}
+                  </span>
+                )}
+              </div>
+              <p className="font-inter text-xs text-primary">{employee.job_title}</p>
             </div>
           </div>
 

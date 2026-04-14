@@ -178,7 +178,7 @@ function buildEmail(tpl, userName) {
     <p style="color:#92400e;font-size:9px;font-weight:700;letter-spacing:6px;text-transform:uppercase;margin:0 0 20px;">BRENNE AERIAL · DISTINCTION SUPRÊME · CONFIDENTIEL</p>
     <div style="font-size:60px;margin:0 0 18px;">👑</div>
     <h1 style="background:linear-gradient(135deg,#f59e0b,#fde68a,#d97706,#fde68a,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:46px;font-weight:900;letter-spacing:6px;margin:0 0 10px;text-transform:uppercase;">SUPRÊME</h1>
-    <p style="color:#d97706;font-size:12px;letter-spacing:3px;margin:0;text-transform:uppercase;">Le rang le plus élevé · Sur invitation exclusive du PDG</p>
+    <p style="color:#d97706;font-size:12px;letter-spacing:3px;margin:0;text-transform:uppercase;">Le rang le plus élevé · Sur invitation exclusive de la Direction</p>
   </div>
 
   <!-- Divider gold line -->
@@ -191,13 +191,13 @@ function buildEmail(tpl, userName) {
       À <strong style="color:#fde68a;">${name}</strong>,
     </p>
     <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 18px;">
-      Ce message ne vous parvient pas par hasard. Il est le résultat d'une décision personnelle, réfléchie, et rarissime — prise directement par le <strong style="color:#fde68a;">PDG de Brenne Aerial</strong>.
+      Ce message ne vous parvient pas par hasard. Il est le résultat d'une décision personnelle, réfléchie, et rarissime — prise directement par la <strong style="color:#fde68a;">Direction de Brenne Aerial (PDG ou PDG-Adjoint)</strong>.
     </p>
     <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 18px;">
       Le rang <strong style="color:#fde68a;">Suprême</strong> n'existe pas dans nos catalogues. Il ne s'achète pas. Il ne se demande pas. Il ne se gagne pas par le nombre de posts ou de followers. Il est attribué, à titre exceptionnel, à des individus qui ont laissé une empreinte réelle et profonde sur la communauté Brenne Aerial.
     </p>
     <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 18px;">
-      Seul le PDG possède la clé de cette distinction. Aucun administrateur, aucun modérateur, aucun collaborateur ne peut l'attribuer. C'est une décision qui appartient à une seule personne — et cette décision, aujourd'hui, vous concerne.
+      Seuls le PDG et le PDG-Adjoint possèdent la clé de cette distinction. Aucun administrateur, aucun modérateur, aucun collaborateur ne peut l'attribuer. C'est une décision qui appartient à la direction — et cette décision, aujourd'hui, vous concerne.
     </p>
   </div>
 
@@ -238,7 +238,7 @@ function buildEmail(tpl, userName) {
       Portez ce rang avec la discrétion et la fierté qu'il mérite. Vous faites désormais partie d'une histoire — celle de Brenne Aerial — à un niveau que très peu atteindront jamais.
     </p>
     <p style="color:#92400e;font-size:13px;font-style:italic;margin:0 0 36px;">
-      — Le PDG de Brenne Aerial
+      — La Direction de Brenne Aerial (PDG &amp; PDG-Adjoint)
     </p>
 
     <!-- CTA -->

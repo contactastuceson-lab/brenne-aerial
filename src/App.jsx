@@ -47,6 +47,7 @@ import AdminAccounts from "@/pages/admin/AdminAccounts";
 import AdminCertifications from "@/pages/admin/AdminCertifications";
 import AdminDonations from "@/pages/admin/AdminDonations";
 import AdminStatus from "@/pages/admin/AdminStatus";
+import AdminGovernance from "@/pages/admin/AdminGovernance";
 import StatusPage from "@/pages/StatusPage";
 import ProfilePage from "@/pages/ProfilePage";
 import CertificationSuccessPage from "@/pages/CertificationSuccessPage";
@@ -119,6 +120,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/certifications" element={<AdminCertifications />} />
         <Route path="/admin/donations" element={<AdminDonations />} />
         <Route path="/admin/status" element={<AdminStatus />} />
+        <Route path="/admin/governance" element={<AdminGovernance />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

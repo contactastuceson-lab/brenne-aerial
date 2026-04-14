@@ -15,6 +15,7 @@ import VerificationIcons from '@/components/ui/VerificationIcon';
 import DangerZone from '@/components/profile/DangerZone';
 import CertificationRequest from '@/components/profile/CertificationRequest';
 import ThemeSelector from '@/components/profile/ThemeSelector';
+import { ROLE_CONFIG, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 
 const BADGE_CONFIG = {
   'Fondateur':      { icon: Star,      color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -102,6 +103,8 @@ export default function ProfilePage() {
   }
 
   const isSupreme = user.verifications?.includes('supreme');
+  const isPdgAdjoint = user.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS.includes(user.email);
+  const roleCfg = ROLE_CONFIG[user.role];
 
   const statusColors = {
     active: 'text-green-400 bg-green-400/10 border-green-400/30',
@@ -244,9 +247,9 @@ export default function ProfilePage() {
               <VerificationIcons verifications={user.verifications} size="md" />
             </div>
             <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
-            {user.role && (
-              <span className="inline-block mt-1 font-mono text-[10px] text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full capitalize">
-                {user.role}
+            {user.role && roleCfg && (
+              <span className={`inline-block mt-1 font-mono text-[10px] px-2 py-0.5 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
+                {roleCfg.emoji} {roleCfg.label}
               </span>
             )}
           </div>

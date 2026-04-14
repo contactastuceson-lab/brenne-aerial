@@ -77,7 +77,7 @@ export default function PublicLayout() {
   }
 
   // Block banned/suspended users (but allow admin/owner access)
-  const isOwnerUser = user?.role === 'owner' || user?.email === 'contact.astuceson@gmail.com';
+  const isOwnerUser = user?.role === 'owner' || user?.email === 'contact.astuceson@gmail.com' || user?.role === 'pdg_adjoint' || user?.email === 'sentenacborys@gmail.com';
   if (user && user.role !== 'admin' && !isOwnerUser) {
     const status = user.account_status;
     if (status === 'banned' || status === 'suspended' || status === 'restricted') {
@@ -88,7 +88,8 @@ export default function PublicLayout() {
 
   // Maintenance mode — block non-admins (but allow /status for everyone)
   const isMaintenance = settings['maintenance_mode'] === 'true';
-  if (isMaintenance && location.pathname !== '/status' && (!user || user.role !== 'admin')) {
+  const hasHighAccess = user && (user.role === 'admin' || user.role === 'owner' || user.role === 'pdg_adjoint' || user?.email === 'sentenacborys@gmail.com');
+  if (isMaintenance && location.pathname !== '/status' && !hasHighAccess) {
     return <MaintenancePage message={settings['site_notice'] || undefined} />;
   }
 

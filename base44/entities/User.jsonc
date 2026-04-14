@@ -6,14 +6,19 @@
       "type": "string",
       "enum": [
         "owner",
+        "pdg_adjoint",
         "admin",
+        "conseil_admin",
+        "directeur",
+        "responsable",
+        "collaborateur_interne",
         "user",
         "vip",
         "collaborateur",
         "pilote"
       ],
       "default": "user",
-      "description": "R\u00f4le de l'utilisateur. 'owner' = propri\u00e9taire exclusif de la plateforme."
+      "description": "R\u00f4le de l'utilisateur. owner = PDG/propri\u00e9taire exclusif. pdg_adjoint = PDG-Adjoint avec pouvoirs \u00e9quivalents. conseil_admin = Conseil d'Administration. directeur = Directeur de d\u00e9partement. responsable = Responsable de service. collaborateur_interne = Collaborateur interne."
     },
     "avatar_url": {
       "type": "string"
@@ -73,6 +78,27 @@
     "last_seen": {
       "type": "string",
       "format": "date-time"
+    },
+    "department": {
+      "type": "string",
+      "description": "D\u00e9partement / p\u00f4le de l'utilisateur (ex: Communication, Technique, Commercial)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Titre officiel (ex: Directeur Technique, Responsable Commercial)"
     }
-  }
+  },
+  "required": [
+    "avatar_url",
+    "cover_url",
+    "bio",
+    "phone",
+    "location",
+    "website",
+    "badges",
+    "verifications",
+    "suspension_reason",
+    "suspension_until",
+    "last_seen"
+  ]
 }

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail, Award, Heart, ArrowLeft } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail, Award, Heart, ArrowLeft, Crown, Building2, Settings } from 'lucide-react';
+import { ROLE_CONFIG, hasAdminAccess, canManageSupreme, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 
 const NAV = [
   { path: '/admin', icon: BarChart3, label: 'Dashboard' },
@@ -20,6 +21,8 @@ const NAV = [
   { path: '/admin/messaging', icon: MessageSquare, label: 'Messagerie' },
   { path: '/admin/maintenance', icon: Shield, label: 'Maintenance' },
   { path: '/admin/emailing', icon: Mail, label: 'Emailing' },
+  { path: '/admin/status', icon: Settings, label: 'Statut Site' },
+  { path: '/admin/governance', icon: Building2, label: 'Gouvernance', topOnly: true },
 ];
 
 export default function AdminLayout() {
@@ -33,7 +36,7 @@ export default function AdminLayout() {
       const auth = await base44.auth.isAuthenticated();
       if (!auth) { base44.auth.redirectToLogin('/admin'); return; }
       const me = await base44.auth.me();
-      if (me.role !== 'admin') { navigate('/'); return; }
+      if (!hasAdminAccess(me)) { navigate('/'); return; }
       setUser(me);
       setLoading(false);
     })();
@@ -46,6 +49,11 @@ export default function AdminLayout() {
       </div>
     );
   }
+
+  const isTopMgmt = user?.role === 'owner' || user?.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS.includes(user?.email);
+  const roleCfg = ROLE_CONFIG[user?.role] || ROLE_CONFIG.admin;
+
+  const visibleNav = NAV.filter(item => !item.topOnly || isTopMgmt);
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -65,11 +73,10 @@ export default function AdminLayout() {
 
         <Link to="/" className="lg:hidden flex items-center justify-center px-3 py-2.5 mx-2 mb-2 rounded-lg text-sidebar-foreground hover:text-foreground bg-sidebar-accent hover:bg-primary/20 transition-colors group">
           <Plane className="w-5 h-5 text-primary" />
-          <span className="sr-only">Retour à l'accueil</span>
         </Link>
 
         <nav className="flex-1 px-2 space-y-0.5 overflow-y-auto">
-          {NAV.map(item => {
+          {visibleNav.map(item => {
             const active = location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path));
             const Icon = item.icon;
             return (
@@ -84,14 +91,22 @@ export default function AdminLayout() {
           })}
         </nav>
 
+        {/* User info */}
         <div className="px-3 pt-4 border-t border-sidebar-border">
           <div className="hidden lg:flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-              <span className="font-grotesk font-bold text-primary text-xs">{user?.full_name?.[0]}</span>
+            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
+              style={isTopMgmt ? { background: 'linear-gradient(135deg,#92400e,#d97706)', border: '1px solid #d97706' } : { background: 'hsl(var(--primary)/0.2)' }}>
+              {user?.avatar_url
+                ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
+                : <span className="font-grotesk font-bold text-xs" style={isTopMgmt ? { color: '#fde68a' } : { color: 'hsl(var(--primary))' }}>{user?.full_name?.[0]}</span>
+              }
             </div>
             <div className="min-w-0">
               <p className="font-inter text-xs truncate">{user?.full_name}</p>
-              <p className="font-mono text-[10px] text-muted-foreground">Admin</p>
+              <p className="font-mono text-[10px] flex items-center gap-1" style={{ color: roleCfg.color.replace('text-', '') }}>
+                <span>{roleCfg.emoji}</span>
+                <span className="truncate">{roleCfg.label}</span>
+              </p>
             </div>
           </div>
         </div>
@@ -99,6 +114,17 @@ export default function AdminLayout() {
 
       {/* Main content */}
       <main className="flex-1 ml-14 lg:ml-56 min-h-screen overflow-x-hidden">
+        {/* Top banner pour PDG-Adjoint */}
+        {isTopMgmt && user?.role !== 'owner' && (
+          <div className="sticky top-0 z-30 px-4 py-1.5 text-center font-mono text-[10px] font-semibold" style={{ background: 'linear-gradient(90deg,#92400e,#d97706,#92400e)', color: '#fde68a', letterSpacing: '0.1em' }}>
+            🥈 SESSION PDG-ADJOINT — Accès complet direction activé
+          </div>
+        )}
+        {isTopMgmt && user?.role === 'owner' && (
+          <div className="sticky top-0 z-30 px-4 py-1.5 text-center font-mono text-[10px] font-semibold" style={{ background: 'linear-gradient(90deg,#78350f,#f59e0b,#78350f)', color: '#fde68a', letterSpacing: '0.1em' }}>
+            👑 SESSION PDG — Contrôle total plateforme
+          </div>
+        )}
         <div className="p-3 sm:p-5 lg:p-8 max-w-full">
           <Outlet context={{ user }} />
         </div>

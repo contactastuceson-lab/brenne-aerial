@@ -205,10 +205,15 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    const isOwner = user.role === 'owner' || user.email === 'contact.astuceson@gmail.com';
-    if (!user || (user.role !== 'admin' && !isOwner)) {
+    const PDG_EMAILS = ['contact.astuceson@gmail.com'];
+    const PDG_ADJOINT_EMAILS = ['sentenacborys@gmail.com'];
+    const ADMIN_ROLES = ['owner', 'pdg_adjoint', 'admin', 'conseil_admin', 'directeur'];
+    const isTopLevel = PDG_EMAILS.includes(user?.email) || PDG_ADJOINT_EMAILS.includes(user?.email) || ADMIN_ROLES.includes(user?.role);
+    if (!user || !isTopLevel) {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
+    // PDG-Adjoint a les mêmes droits que le PDG pour gérer les Suprêmes
+    const canManageSupreme = PDG_EMAILS.includes(user.email) || PDG_ADJOINT_EMAILS.includes(user.email) || user.role === 'owner' || user.role === 'pdg_adjoint';
 
     const { id, data } = await req.json();
     if (!id || !data) {
@@ -218,6 +223,15 @@ Deno.serve(async (req) => {
     let targetUser = null;
     try { targetUser = await base44.asServiceRole.entities.User.get(id); } catch(_) {}
 
+    // Vérifier si on essaie d'attribuer/retirer supreme sans les droits nécessaires
+    if (data.verifications) {
+      const targetUser2 = await base44.asServiceRole.entities.User.get(id).catch(() => null);
+      const hadSupreme = (targetUser2?.verifications || []).includes('supreme');
+      const willHaveSupreme = data.verifications.includes('supreme');
+      if (hadSupreme !== willHaveSupreme && !canManageSupreme) {
+        return Response.json({ error: 'Forbidden: Seuls le PDG et PDG-Adjoint peuvent gérer le rang Suprême' }, { status: 403 });
+      }
+    }
     const updated = await base44.asServiceRole.entities.User.update(id, data);
 
     const restrictedStatuses = ['banned', 'suspended', 'restricted'];

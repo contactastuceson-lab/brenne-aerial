@@ -5,8 +5,11 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    const isOwner = user?.role === 'owner' || user?.email === 'contact.astuceson@gmail.com';
-    if (!user || (user.role !== 'admin' && !isOwner)) {
+    const PDG_EMAILS = ['contact.astuceson@gmail.com'];
+    const PDG_ADJOINT_EMAILS = ['sentenacborys@gmail.com'];
+    const ADMIN_ROLES = ['owner', 'pdg_adjoint', 'admin', 'conseil_admin', 'directeur'];
+    const isTopLevel = PDG_EMAILS.includes(user?.email) || PDG_ADJOINT_EMAILS.includes(user?.email) || ADMIN_ROLES.includes(user?.role);
+    if (!user || !isTopLevel) {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 

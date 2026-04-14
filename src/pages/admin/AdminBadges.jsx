@@ -66,7 +66,8 @@ export default function AdminBadges() {
     toast.success(newVal === 'no' ? 'Vérification retirée' : 'Compte vérifié !');
   };
 
-  const isOwner = currentUser?.role === 'owner' || currentUser?.email === 'contact.astuceson@gmail.com';
+  const PDG_ADJOINT_EMAILS_LIST = ['sentenacborys@gmail.com'];
+  const isOwner = currentUser?.role === 'owner' || currentUser?.email === 'contact.astuceson@gmail.com' || currentUser?.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS_LIST.includes(currentUser?.email);
 
   const toggleVerification = (user, key) => {
     if (key === 'supreme' && !isOwner) {

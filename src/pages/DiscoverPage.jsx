@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import ReportModal from '@/components/shared/ReportModal';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import EmployeeProfileModal from '@/components/admin/EmployeeProfileModal';
+import UserProfileModal from '@/components/shared/UserProfileModal';
 import { POLES } from '@/lib/employeeRoles';
 
 function getConversationId(emailA, emailB) {
@@ -40,6 +41,7 @@ export default function DiscoverPage() {
   const [activeTab, setActiveTab] = useState('members');
   const [filterPole, setFilterPole] = useState('all');
   const [viewEmployee, setViewEmployee] = useState(null);
+  const [viewProfile, setViewProfile] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -288,7 +290,8 @@ export default function DiscoverPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: i * 0.04 }}
-                  className={`group relative rounded-2xl overflow-hidden hover-lift ${isSupreme ? 'border-2' : 'border border-border bg-card'}`}
+                  onClick={() => setViewProfile(profile)}
+                  className={`group relative rounded-2xl overflow-hidden hover-lift cursor-pointer ${isSupreme ? 'border-2' : 'border border-border bg-card'}`}
                   style={isSupreme ? {
                     background: 'linear-gradient(145deg, #0d0800, #1a0e00, #0d0800)',
                     borderColor: '#d97706',
@@ -468,6 +471,10 @@ export default function DiscoverPage() {
 
       {viewEmployee && (
         <EmployeeProfileModal employee={viewEmployee} onClose={() => setViewEmployee(null)} />
+      )}
+
+      {viewProfile && (
+        <UserProfileModal profile={viewProfile} onClose={() => setViewProfile(null)} />
       )}
     </div>
   );

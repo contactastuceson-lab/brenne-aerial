@@ -13,7 +13,7 @@ import EmployeeProfileModal from '@/components/admin/EmployeeProfileModal';
 import { toast } from 'sonner';
 
 const EMPTY_FORM = {
-  full_name: '', avatar_url: '', cover_url: '', pole: 'direction',
+  user_email: '', full_name: '', avatar_url: '', cover_url: '', pole: 'direction',
   job_title: '', job_role_key: '', bio: '', location: '', phone: '',
   hire_date: '', is_public: true, status: 'active', permissions: [],
 };
@@ -30,6 +30,14 @@ export default function AdminEmployees() {
   const { data: employees = [], isLoading } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.Employee.list('-created_date'),
+  });
+
+  const { data: siteUsers = [] } = useQuery({
+    queryKey: ['admin-users-for-employees'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('adminGetUsers', {});
+      return res.data.users || [];
+    },
   });
 
   const saveMutation = useMutation({
@@ -57,6 +65,7 @@ export default function AdminEmployees() {
   const openEdit = (emp) => {
     setEditingId(emp.id);
     setForm({
+      user_email: emp.user_email || '',
       full_name: emp.full_name || '',
       avatar_url: emp.avatar_url || '',
       cover_url: emp.cover_url || '',
@@ -203,8 +212,30 @@ export default function AdminEmployees() {
             <div className="p-5 space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
+                  <label className="font-inter text-xs text-muted-foreground mb-1 block">Compte utilisateur lié *</label>
+                  <Select value={form.user_email || '__custom__'} onValueChange={v => {
+                    if (v === '__custom__') {
+                      setForm(p => ({ ...p, user_email: '', full_name: '', avatar_url: '' }));
+                    } else {
+                      const u = siteUsers.find(u => u.email === v);
+                      setForm(p => ({ ...p, user_email: v, full_name: u?.full_name || '', avatar_url: u?.avatar_url || '' }));
+                    }
+                  }}>
+                    <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Choisir un compte..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__custom__">— Saisie manuelle —</SelectItem>
+                      {siteUsers.map(u => (
+                        <SelectItem key={u.id} value={u.email}>
+                          {u.full_name || u.email}
+                          {u.email ? ` (${u.email})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-2">
                   <label className="font-inter text-xs text-muted-foreground mb-1 block">Nom complet *</label>
-                  <Input value={form.full_name} onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))} className="bg-secondary border-border" />
+                  <Input value={form.full_name} onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))} className="bg-secondary border-border" placeholder="Sera auto-rempli si compte lié" />
                 </div>
                 <div>
                   <label className="font-inter text-xs text-muted-foreground mb-1 block">Pôle *</label>

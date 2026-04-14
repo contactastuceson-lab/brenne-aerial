@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -96,14 +97,14 @@ export default function AdminMessaging() {
                 <p className="font-inter text-xs text-muted-foreground">Envoyé depuis le profil officiel — l'utilisateur ne peut pas répondre</p>
               </div>
             </div>
-            <select
-              value={officialForm.recipient_email}
-              onChange={e => setOfficialForm(p => ({ ...p, recipient_email: e.target.value }))}
-              className="w-full bg-secondary border border-border rounded-lg px-3 py-2 font-inter text-sm text-foreground"
-            >
-              <option value="">Sélectionner un destinataire</option>
-              {users.map(u => <option key={u.id} value={u.email}>{u.full_name} ({u.email})</option>)}
-            </select>
+            <Select value={officialForm.recipient_email} onValueChange={val => setOfficialForm(p => ({ ...p, recipient_email: val }))}>
+              <SelectTrigger className="bg-secondary border-border">
+                <SelectValue placeholder="Sélectionner un destinataire" />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map(u => <SelectItem key={u.id} value={u.email}>{u.full_name} ({u.email})</SelectItem>)}
+              </SelectContent>
+            </Select>
             <Textarea
               placeholder="Contenu du message officiel..."
               value={officialForm.content}

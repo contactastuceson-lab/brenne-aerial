@@ -81,24 +81,20 @@
     },
     "department": {
       "type": "string",
-      "description": "D\u00e9partement / p\u00f4le de l'utilisateur (ex: Communication, Technique, Commercial)"
+      "description": "D\u00e9partement / p\u00f4le de l'utilisateur"
     },
     "title": {
       "type": "string",
-      "description": "Titre officiel (ex: Directeur Technique, Responsable Commercial)"
+      "description": "Titre officiel (ex: Directeur Technique, PDG-Adjoint)"
+    },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "email_verified": {
+      "type": "boolean",
+      "default": false
     }
   },
-  "required": [
-    "avatar_url",
-    "cover_url",
-    "bio",
-    "phone",
-    "location",
-    "website",
-    "badges",
-    "verifications",
-    "suspension_reason",
-    "suspension_until",
-    "last_seen"
-  ]
+  "required": []
 }

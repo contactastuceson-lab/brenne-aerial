@@ -23,7 +23,14 @@ export default function AdminMessaging() {
 
   const { data: messages = [] } = useQuery({ queryKey: ['adm-msgs-all'], queryFn: () => base44.entities.Message.list('-created_date', 100) });
   const { data: notifs = [] } = useQuery({ queryKey: ['adm-notifs-all'], queryFn: () => base44.entities.Notification.list('-created_date', 100) });
-  const { data: users = [] } = useQuery({ queryKey: ['adm-users-msg'], queryFn: () => base44.entities.User.list() });
+  const { data: usersData = { users: [] } } = useQuery({
+    queryKey: ['adm-users-msg'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getAdminUsers', {});
+      return res.data;
+    },
+  });
+  const users = usersData.users;
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser);

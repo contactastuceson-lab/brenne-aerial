@@ -444,13 +444,11 @@ export default function DiscoverPage() {
               );
             })}
           </AnimatePresence>
-        </div>
-
-        {filtered.length === 0 && (
-          <div className="text-center py-20 text-muted-foreground font-inter text-sm">
-            Aucun profil trouvé
-          </div>
-        )}
+          {filtered.length === 0 && (
+            <div className="text-center py-20 text-muted-foreground font-inter text-sm">
+              Aucun profil trouvé
+            </div>
+          )}
         </div>
         )}
       </div>

@@ -25,9 +25,9 @@ function wmoLabel(code) {
   return 'Orage';
 }
 
-// Coordonnées fixes pour Brenne, France
-const LAT = 46.7;
-const LON = 1.4;
+// Coordonnées fixes pour Mézières-en-Brenne, France
+const LAT = 46.8167;
+const LON = 1.2167;
 
 export default function DroneWeatherWidget() {
   const [weather, setWeather] = useState(null);
@@ -113,7 +113,7 @@ export default function DroneWeatherWidget() {
       </div>
 
       <p className="font-mono text-[10px] text-muted-foreground mt-2.5">
-        {weather.condition} · Brenne, France · Open-Meteo
+        {weather.condition} · Mézières-en-Brenne · Open-Meteo
       </p>
     </div>
   );

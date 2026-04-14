@@ -18,6 +18,7 @@ export default function AdminMessaging() {
   const [notifForm, setNotifForm] = useState({ user_email: '', title: '', content: '', type: 'system', bulk: false });
   const [msgForm, setMsgForm] = useState({ recipient_email: '', subject: '', content: '', is_priority: false });
   const [officialForm, setOfficialForm] = useState({ recipient_email: '', content: '' });
+  const [openDropdown, setOpenDropdown] = useState(false);
 
   const { data: messages = [] } = useQuery({ queryKey: ['adm-msgs-all'], queryFn: () => base44.entities.Message.list('-created_date', 100) });
   const { data: notifs = [] } = useQuery({ queryKey: ['adm-notifs-all'], queryFn: () => base44.entities.Notification.list('-created_date', 100) });
@@ -97,27 +98,28 @@ export default function AdminMessaging() {
                 <p className="font-inter text-xs text-muted-foreground">Envoyé depuis le profil officiel — l'utilisateur ne peut pas répondre</p>
               </div>
             </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between border-border bg-secondary">
-                  {officialForm.recipient_email ? users.find(u => u.email === officialForm.recipient_email)?.full_name : 'Sélectionner un destinataire'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-2 w-72">
-                <div className="space-y-1 max-h-64 overflow-y-auto">
+            <div className="relative">
+              <button
+                onClick={() => setOpenDropdown(!openDropdown)}
+                className="w-full text-left px-3 py-2 rounded-lg border border-border bg-secondary hover:bg-secondary/80 transition-colors font-inter text-sm"
+              >
+                {officialForm.recipient_email ? users.find(u => u.email === officialForm.recipient_email)?.full_name : 'Sélectionner un destinataire'}
+              </button>
+              {openDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                   {users.map(u => (
                     <button
                       key={u.id}
-                      onClick={() => setOfficialForm(p => ({ ...p, recipient_email: u.email }))}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition-colors font-inter text-sm"
+                      onClick={() => { setOfficialForm(p => ({ ...p, recipient_email: u.email })); setOpenDropdown(false); }}
+                      className="w-full text-left px-3 py-2 hover:bg-secondary transition-colors font-inter text-sm border-b border-border last:border-b-0"
                     >
                       <span className="font-medium text-foreground">{u.full_name}</span>
                       <span className="text-muted-foreground text-xs ml-2">({u.email})</span>
                     </button>
                   ))}
                 </div>
-              </PopoverContent>
-            </Popover>
+              )}
+            </div>
             <Textarea
               placeholder="Contenu du message officiel..."
               value={officialForm.content}

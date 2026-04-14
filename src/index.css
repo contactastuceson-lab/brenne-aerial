@@ -44,40 +44,40 @@
     --sidebar-ring: 205 90% 58%;
   }
 
-  /* Light theme */
+  /* Light theme — Brenne Aerial Sky Light */
   .light {
-    --background: 210 40% 98%;
-    --foreground: 214 40% 10%;
+    --background: 210 30% 97%;
+    --foreground: 215 35% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 214 40% 10%;
+    --card-foreground: 215 35% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 214 40% 10%;
-    --primary: 205 90% 42%;
+    --popover-foreground: 215 35% 12%;
+    --primary: 205 85% 40%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 30% 92%;
-    --secondary-foreground: 214 30% 25%;
-    --muted: 210 25% 90%;
-    --muted-foreground: 215 15% 45%;
-    --accent: 195 80% 38%;
+    --secondary: 214 25% 93%;
+    --secondary-foreground: 215 30% 22%;
+    --muted: 214 20% 91%;
+    --muted-foreground: 215 20% 42%;
+    --accent: 195 75% 36%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 214 20% 85%;
-    --input: 214 20% 88%;
-    --ring: 205 90% 42%;
-    --chart-1: 205 90% 42%;
-    --chart-2: 195 80% 38%;
-    --chart-3: 215 15% 45%;
+    --border: 214 18% 84%;
+    --input: 214 18% 90%;
+    --ring: 205 85% 40%;
+    --chart-1: 205 85% 40%;
+    --chart-2: 195 75% 36%;
+    --chart-3: 215 20% 42%;
     --chart-4: 0 72% 51%;
-    --chart-5: 45 93% 45%;
-    --sidebar-background: 210 35% 95%;
-    --sidebar-foreground: 214 30% 25%;
-    --sidebar-primary: 205 90% 42%;
+    --chart-5: 38 90% 50%;
+    --sidebar-background: 214 28% 94%;
+    --sidebar-foreground: 215 30% 22%;
+    --sidebar-primary: 205 85% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 25% 88%;
-    --sidebar-accent-foreground: 214 40% 10%;
-    --sidebar-border: 214 20% 82%;
-    --sidebar-ring: 205 90% 42%;
+    --sidebar-accent: 214 22% 88%;
+    --sidebar-accent-foreground: 215 35% 12%;
+    --sidebar-border: 214 18% 82%;
+    --sidebar-ring: 205 85% 40%;
   }
 }
 
@@ -104,10 +104,24 @@
   border: 1px solid rgba(255,255,255,0.06);
 }
 
+.light .glass {
+  background: rgba(255, 255, 255, 0.80);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(14, 116, 163, 0.12);
+  box-shadow: 0 4px 24px rgba(14, 116, 163, 0.08);
+}
+
 .glass-card {
   background: rgba(8, 18, 36, 0.6);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(56, 170, 220, 0.1);
+}
+
+.light .glass-card {
+  background: rgba(255, 255, 255, 0.70);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(14, 116, 163, 0.10);
 }
 
 /* Sky glow effects */
@@ -115,8 +129,16 @@
   box-shadow: 0 0 40px rgba(56, 170, 220, 0.15), 0 0 80px rgba(56, 170, 220, 0.05);
 }
 
+.light .sky-glow {
+  box-shadow: 0 4px 24px rgba(14, 116, 163, 0.22), 0 1px 4px rgba(14, 116, 163, 0.10);
+}
+
 .sky-glow-text {
   text-shadow: 0 0 30px rgba(56, 170, 220, 0.4);
+}
+
+.light .sky-glow-text {
+  text-shadow: 0 2px 16px rgba(14, 116, 163, 0.25);
 }
 
 /* Gradient text */
@@ -127,11 +149,25 @@
   background-clip: text;
 }
 
+.light .gradient-text {
+  background: linear-gradient(135deg, hsl(205 85% 35%) 0%, hsl(195 75% 32%) 50%, hsl(215 35% 20%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* Drone grid bg */
 .grid-bg {
   background-image:
     linear-gradient(rgba(56, 170, 220, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(56, 170, 220, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.light .grid-bg {
+  background-image:
+    linear-gradient(rgba(14, 116, 163, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 116, 163, 0.07) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 
@@ -184,6 +220,30 @@
 .hover-lift:hover {
   transform: translateY(-4px);
   box-shadow: 0 20px 60px rgba(56, 170, 220, 0.12);
+}
+
+.light .hover-lift:hover {
+  box-shadow: 0 12px 40px rgba(14, 116, 163, 0.15), 0 2px 8px rgba(14, 116, 163, 0.08);
+}
+
+/* Light theme — body & card refinements */
+.light body {
+  background-color: hsl(210 30% 97%);
+  color: hsl(215 35% 12%);
+}
+
+.light .bg-card {
+  box-shadow: 0 1px 4px rgba(14, 116, 163, 0.06);
+}
+
+/* Light theme — badge shimmer adapté */
+.light .badge-founder {
+  background: linear-gradient(110deg, hsl(205 85% 35%) 0%, hsl(195 75% 30%) 30%, hsl(215 35% 20%) 50%, hsl(195 75% 30%) 70%, hsl(205 85% 35%) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Video overlay gradient */

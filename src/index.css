@@ -8,7 +8,7 @@
     --font-inter: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Brenne Aerial — Dark Sky palette */
+    /* Brenne Aerial — Dark Sky palette (default dark) */
     --background: 214 50% 4%;
     --foreground: 210 20% 94%;
     --card: 214 40% 7%;
@@ -43,6 +43,42 @@
     --sidebar-border: 214 25% 12%;
     --sidebar-ring: 205 90% 58%;
   }
+
+  /* Light theme */
+  .light {
+    --background: 210 40% 98%;
+    --foreground: 214 40% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 214 40% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 214 40% 10%;
+    --primary: 205 90% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 30% 92%;
+    --secondary-foreground: 214 30% 25%;
+    --muted: 210 25% 90%;
+    --muted-foreground: 215 15% 45%;
+    --accent: 195 80% 38%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 20% 85%;
+    --input: 214 20% 88%;
+    --ring: 205 90% 42%;
+    --chart-1: 205 90% 42%;
+    --chart-2: 195 80% 38%;
+    --chart-3: 215 15% 45%;
+    --chart-4: 0 72% 51%;
+    --chart-5: 45 93% 45%;
+    --sidebar-background: 210 35% 95%;
+    --sidebar-foreground: 214 30% 25%;
+    --sidebar-primary: 205 90% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 25% 88%;
+    --sidebar-accent-foreground: 214 40% 10%;
+    --sidebar-border: 214 20% 82%;
+    --sidebar-ring: 205 90% 42%;
+  }
 }
 
 @layer base {
@@ -56,9 +92,9 @@
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: hsl(214 50% 4%); }
-::-webkit-scrollbar-thumb { background: hsl(214 25% 20%); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(205 90% 58%); }
+::-webkit-scrollbar-track { background: hsl(var(--background)); }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary)); }
 
 /* Glassmorphism */
 .glass {
@@ -152,9 +188,9 @@
 
 /* Video overlay gradient */
 .video-overlay {
-  background: linear-gradient(to right, hsl(214 50% 4%) 0%, hsl(214 50% 4% / 0.8) 40%, transparent 70%);
+  background: linear-gradient(to right, hsl(var(--background)) 0%, hsl(var(--background) / 0.8) 40%, transparent 70%);
 }
 
 .video-overlay-bottom {
-  background: linear-gradient(to top, hsl(214 50% 4%) 0%, transparent 100%);
+  background: linear-gradient(to top, hsl(var(--background)) 0%, transparent 100%);
 }

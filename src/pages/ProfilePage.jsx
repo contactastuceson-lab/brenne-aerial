@@ -14,6 +14,7 @@ import BadgeChip from '@/components/ui/BadgeChip';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import DangerZone from '@/components/profile/DangerZone';
 import CertificationRequest from '@/components/profile/CertificationRequest';
+import ThemeSelector from '@/components/profile/ThemeSelector';
 
 const BADGE_CONFIG = {
   'Fondateur':      { icon: Star,      color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -325,6 +326,8 @@ export default function ProfilePage() {
               className="bg-secondary border-border font-inter"
             />
           </div>
+
+          <ThemeSelector />
 
           <Button
             onClick={() => saveMutation.mutate()}

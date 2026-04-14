@@ -5,6 +5,7 @@ import { queryClientInstance } from "@/lib/query-client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import PageNotFound from "./lib/PageNotFound";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 
 // Layout
@@ -128,6 +129,7 @@ const AuthenticatedApp = () => {
 export default function App() {
   return (
     <AuthProvider>
+      <ThemeProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <AuthenticatedApp />
@@ -146,6 +148,7 @@ export default function App() {
         />
         <Toaster />
       </QueryClientProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

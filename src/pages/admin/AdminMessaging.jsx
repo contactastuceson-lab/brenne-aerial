@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Send, Bell, Loader2, Flag, Users, ShieldCheck } from 'lucide-react';
@@ -19,10 +19,15 @@ export default function AdminMessaging() {
   const [msgForm, setMsgForm] = useState({ recipient_email: '', subject: '', content: '', is_priority: false });
   const [officialForm, setOfficialForm] = useState({ recipient_email: '', content: '' });
   const [openDropdown, setOpenDropdown] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const { data: messages = [] } = useQuery({ queryKey: ['adm-msgs-all'], queryFn: () => base44.entities.Message.list('-created_date', 100) });
   const { data: notifs = [] } = useQuery({ queryKey: ['adm-notifs-all'], queryFn: () => base44.entities.Notification.list('-created_date', 100) });
   const { data: users = [] } = useQuery({ queryKey: ['adm-users-msg'], queryFn: () => base44.entities.User.list() });
+
+  useEffect(() => {
+    base44.auth.me().then(setCurrentUser);
+  }, []);
 
   const sendNotif = useMutation({
     mutationFn: async () => {
@@ -87,8 +92,13 @@ export default function AdminMessaging() {
         </TabsList>
 
         {/* ── Official Message Tab ── */}
-        <TabsContent value="official" className="space-y-5">
-          <div className="p-5 rounded-xl bg-card border border-primary/30 space-y-4">
+         <TabsContent value="official" className="space-y-5">
+           {currentUser?.role !== 'admin' ? (
+             <div className="p-5 rounded-xl bg-destructive/10 border border-destructive/30 text-center">
+               <p className="font-inter text-sm text-destructive">Seuls les administrateurs peuvent envoyer des messages officiels.</p>
+             </div>
+           ) : (
+           <div className="p-5 rounded-xl bg-card border border-primary/30 space-y-4">
             <div className="flex items-center gap-3 pb-2 border-b border-border">
               <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5 text-primary" />
@@ -136,9 +146,10 @@ export default function AdminMessaging() {
             >
               {sendOfficialMsg.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
               Envoyer le message officiel
-            </Button>
-          </div>
-        </TabsContent>
+              </Button>
+              </div>
+              )}
+              </TabsContent>
 
         <TabsContent value="notifications" className="space-y-5">
           <div className="p-5 rounded-xl bg-card border border-border space-y-3">

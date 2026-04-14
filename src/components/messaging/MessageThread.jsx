@@ -235,63 +235,76 @@ export default function MessageThread({ user, conv, onBack }) {
     .filter(m => !(isBlocked && m.sender_email === conv.email));
 
   return (
-    <div className="flex flex-col h-full bg-card border border-border rounded-2xl overflow-hidden relative">
+    <div className={`flex flex-col h-full rounded-2xl overflow-hidden relative ${isOfficialConversation ? 'border border-primary/30' : 'bg-card border border-border'}`}
+      style={isOfficialConversation ? { background: 'linear-gradient(180deg, hsl(214 50% 5%) 0%, hsl(214 50% 4%) 100%)' } : {}}>
 
-      {/* ── Header ── */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-border flex-shrink-0 bg-card">
-        <button onClick={onBack} className="md:hidden p-1.5 rounded-lg hover:bg-secondary text-muted-foreground transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-        </button>
+      {/* ── Header officiel ── */}
+      {isOfficialConversation ? (
+        <div className="flex items-center gap-3 px-4 py-4 flex-shrink-0 relative overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, hsl(205 90% 10%) 0%, hsl(214 50% 7%) 60%, hsl(205 80% 8%) 100%)', borderBottom: '1px solid rgba(56,170,220,0.2)' }}>
+          {/* Glow bg */}
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 30% 50%, rgba(56,170,220,0.08) 0%, transparent 70%)' }} />
 
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 relative ${conv.isOfficial ? 'bg-primary/10 border-2 border-primary/40' : 'bg-secondary border border-border hover:ring-2 hover:ring-primary/40 cursor-pointer transition-all'}`}
-          onClick={() => !conv.isOfficial && setShowProfile(true)}
-        >
-          {conv.isOfficial ? (
-            <ShieldCheck className="w-5 h-5 text-primary" />
-          ) : conv.avatar ? (
-            <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <span className="font-grotesk font-bold text-sm text-primary">
-              {conv.name?.[0]?.toUpperCase() || '?'}
+          <button onClick={onBack} className="md:hidden p-1.5 rounded-lg hover:bg-white/10 text-primary/70 transition-colors z-10">
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+
+          {/* Avatar officiel premium */}
+          <div className="relative z-10 flex-shrink-0">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, hsl(205 90% 20%), hsl(205 90% 12%))', border: '1.5px solid rgba(56,170,220,0.5)', boxShadow: '0 0 20px rgba(56,170,220,0.25)' }}>
+              <ShieldCheck className="w-6 h-6 text-primary" />
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-primary rounded-full border-2 flex items-center justify-center" style={{ borderColor: 'hsl(205 90% 10%)' }}>
+              <span className="w-1.5 h-1.5 bg-primary-foreground rounded-full" />
             </span>
-          )}
-        </div>
+          </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {conv.isOfficial ? (
-              <span className="font-grotesk font-semibold text-sm">{conv.name}</span>
-            ) : (
-              <button onClick={() => setShowProfile(true)} className="font-grotesk font-semibold text-sm hover:text-primary transition-colors">{conv.name}</button>
-            )}
-            {conv.isOfficial ? (
-              <span className="flex items-center gap-0.5 font-mono text-[9px] text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-full">
-                <ShieldCheck className="w-2.5 h-2.5" /> Message Officiel
+          <div className="flex-1 min-w-0 z-10">
+            <div className="flex items-center gap-2">
+              <span className="font-grotesk font-bold text-base text-foreground">{conv.name}</span>
+              <span className="flex items-center gap-1 font-mono text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                style={{ background: 'rgba(56,170,220,0.15)', border: '1px solid rgba(56,170,220,0.35)', color: 'hsl(205 90% 70%)' }}>
+                <ShieldCheck className="w-2.5 h-2.5" /> Officiel
               </span>
+            </div>
+            <p className="font-inter text-[11px] text-primary/60 mt-0.5">Communication officielle · Lecture seule</p>
+          </div>
+        </div>
+      ) : (
+        /* ── Header normal ── */
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border flex-shrink-0 bg-card">
+          <button onClick={onBack} className="md:hidden p-1.5 rounded-lg hover:bg-secondary text-muted-foreground transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+
+          <div className="w-10 h-10 rounded-full bg-secondary border border-border hover:ring-2 hover:ring-primary/40 cursor-pointer transition-all flex items-center justify-center overflow-hidden flex-shrink-0"
+            onClick={() => setShowProfile(true)}>
+            {conv.avatar ? (
+              <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
             ) : (
-              <>
-                <VerificationIcons verifications={conv.verifications} />
-                {conv.badges?.slice(0, 2).map(b => (
-                  <BadgeChip key={b} badge={b} size="sm" />
-                ))}
-              </>
+              <span className="font-grotesk font-bold text-sm text-primary">{conv.name?.[0]?.toUpperCase() || '?'}</span>
             )}
           </div>
-          {!isOpen && hasAnyRequest && myPendingRequest && (
-            <p className="font-mono text-[10px] text-amber-400/80 flex items-center gap-1 mt-0.5">
-              <Clock className="w-2.5 h-2.5" /> En attente de réponse
-            </p>
-          )}
-        </div>
 
-        {/* Options button — hidden for official conversations */}
-        <div className="relative" ref={optionsRef}>
-          <button
-            onClick={() => !conv.isOfficial && setShowOptions(v => !v)}
-            className={`p-2 rounded-lg text-muted-foreground transition-colors ${conv.isOfficial ? 'opacity-0 pointer-events-none' : 'hover:bg-secondary'}`}
-          >
-            <MoreVertical className="w-4 h-4" />
-          </button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button onClick={() => setShowProfile(true)} className="font-grotesk font-semibold text-sm hover:text-primary transition-colors">{conv.name}</button>
+              <VerificationIcons verifications={conv.verifications} />
+              {conv.badges?.slice(0, 2).map(b => <BadgeChip key={b} badge={b} size="sm" />)}
+            </div>
+            {!isOpen && hasAnyRequest && myPendingRequest && (
+              <p className="font-mono text-[10px] text-amber-400/80 flex items-center gap-1 mt-0.5">
+                <Clock className="w-2.5 h-2.5" /> En attente de réponse
+              </p>
+            )}
+          </div>
+
+          {/* Options button */}
+          <div className="relative" ref={optionsRef}>
+            <button onClick={() => setShowOptions(v => !v)} className="p-2 rounded-lg hover:bg-secondary text-muted-foreground transition-colors">
+              <MoreVertical className="w-4 h-4" />
+            </button>
 
           <AnimatePresence>
             {showOptions && (
@@ -371,9 +384,11 @@ export default function MessageThread({ user, conv, onBack }) {
           </AnimatePresence>
         </div>
       </div>
+      )}
 
       {/* ── Messages ── */}
-      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div ref={scrollAreaRef} className={`flex-1 overflow-y-auto p-4 space-y-2 ${isOfficialConversation ? 'official-bg' : ''}`}
+        style={isOfficialConversation ? { background: 'radial-gradient(ellipse at 50% 0%, rgba(56,170,220,0.04) 0%, transparent 60%)' } : {}}>
 
         {pendingRequest && (
           <motion.div
@@ -414,10 +429,18 @@ export default function MessageThread({ user, conv, onBack }) {
                   )}
                   <div
                     className={`px-4 py-2.5 rounded-2xl font-inter text-sm leading-relaxed select-text ${
-                      isMine
-                        ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                        : 'bg-secondary text-foreground border border-border rounded-tl-sm'
+                      msg.is_official
+                        ? 'rounded-tl-sm'
+                        : isMine
+                          ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                          : 'bg-secondary text-foreground border border-border rounded-tl-sm'
                     } ${msg.is_request && msg.request_status === 'pending' ? 'opacity-75' : ''}`}
+                    style={msg.is_official ? {
+                      background: 'linear-gradient(135deg, hsl(205 90% 12%), hsl(205 80% 9%))',
+                      border: '1px solid rgba(56,170,220,0.25)',
+                      color: 'hsl(210 20% 94%)',
+                      boxShadow: '0 2px 12px rgba(56,170,220,0.08)',
+                    } : {}}
                   >
                     {msg.content}
                   </div>
@@ -459,13 +482,22 @@ export default function MessageThread({ user, conv, onBack }) {
       </div>
 
       {/* ── Input ── */}
-      <div className="px-4 py-3 border-t border-border flex-shrink-0 bg-card">
+      <div className={`px-4 py-3 flex-shrink-0 ${isOfficialConversation ? '' : 'border-t border-border bg-card'}`}
+        style={isOfficialConversation ? { borderTop: '1px solid rgba(56,170,220,0.15)', background: 'linear-gradient(180deg, hsl(214 50% 5%) 0%, hsl(205 90% 6%) 100%)' } : {}}>
         {isOfficialConversation ? (
-          <div className="flex items-center justify-center gap-2 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
-            <Lock className="w-4 h-4 text-primary/50 flex-shrink-0" />
-            <span className="font-inter text-xs text-muted-foreground text-center">
-              Il s'agit d'un <span className="text-primary font-semibold">message officiel Brenne Aerial</span>. Vous ne pouvez pas répondre à cette conversation.
-            </span>
+          <div className="flex flex-col items-center gap-3 py-2">
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl w-full"
+              style={{ background: 'rgba(56,170,220,0.06)', border: '1px solid rgba(56,170,220,0.15)' }}>
+              <Lock className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'hsl(205 90% 60%)' }} />
+              <span className="font-inter text-xs text-center flex-1" style={{ color: 'hsl(215 15% 55%)' }}>
+                Conversation en <span className="font-semibold" style={{ color: 'hsl(205 90% 65%)' }}>lecture seule</span> · Impossible de répondre
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1 h-1 rounded-full bg-primary/40" />
+              <span className="font-mono text-[9px] uppercase tracking-widest" style={{ color: 'hsl(205 90% 50%)', opacity: 0.6 }}>Brenne Aerial · Communication officielle</span>
+              <div className="w-1 h-1 rounded-full bg-primary/40" />
+            </div>
           </div>
         ) : isBlocked ? (
           <div className="flex items-center justify-between gap-3 bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">

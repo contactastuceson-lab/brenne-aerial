@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { format, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MessageCircle, CheckCircle, Star, Award, Zap, Shield, UserCheck } from 'lucide-react';
+import { MessageCircle, CheckCircle, Star, Award, Zap, Shield, UserCheck, ShieldCheck } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 
 function getConversationId(emailA, emailB) {
@@ -78,9 +78,10 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
       const profile = allUsers.find(u => u.email === conv.email);
       const lastSeen = profile?.last_seen ? new Date(profile.last_seen) : null;
       const isOnline = lastSeen && (Date.now() - lastSeen.getTime()) < 2 * 60 * 1000;
+      const isOfficial = conv.messages.some(m => m.is_official);
       return {
         ...conv,
-        avatar: profile?.avatar_url,
+        avatar: isOfficial ? null : profile?.avatar_url,
         cover_url: profile?.cover_url,
         bio: profile?.bio,
         location: profile?.location,
@@ -89,6 +90,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
         verifications: profile?.verifications || [],
         is_verified: profile?.verified_status === 'yes',
         isOnline,
+        isOfficial,
         lastMsg: conv.messages.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0],
         unread: conv.messages.filter(m => !m.is_read && m.recipient_email === user.email).length,
       };
@@ -139,8 +141,10 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
             <div className="flex items-center gap-3">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <div className="w-11 h-11 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden">
-                  {conv.avatar ? (
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden ${conv.isOfficial ? 'bg-primary/10 border-2 border-primary/40' : 'bg-secondary border border-border'}`}>
+                  {conv.isOfficial ? (
+                    <ShieldCheck className="w-5 h-5 text-primary" />
+                  ) : conv.avatar ? (
                     <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <span className="font-grotesk font-bold text-base text-primary">
@@ -148,7 +152,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
                     </span>
                   )}
                 </div>
-                {conv.isOnline && (
+                {!conv.isOfficial && conv.isOnline && (
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                 )}
               </div>
@@ -160,9 +164,17 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
                     <span className={`font-inter text-sm truncate ${hasUnread ? 'font-semibold text-foreground' : 'font-medium text-foreground/90'}`}>
                       {conv.name}
                     </span>
-                    <VerificationIcons verifications={conv.verifications} />
-                    {BadgeIcon && (
-                      <BadgeIcon className={`w-3 h-3 flex-shrink-0 ${badgeCfg.color}`} />
+                    {conv.isOfficial ? (
+                      <span className="flex items-center gap-0.5 font-mono text-[9px] text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                        <ShieldCheck className="w-2.5 h-2.5" /> Officiel
+                      </span>
+                    ) : (
+                      <>
+                        <VerificationIcons verifications={conv.verifications} />
+                        {BadgeIcon && (
+                          <BadgeIcon className={`w-3 h-3 flex-shrink-0 ${badgeCfg.color}`} />
+                        )}
+                      </>
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">

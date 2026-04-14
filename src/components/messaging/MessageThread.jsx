@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft, Send, Lock, Check, X, Flag, Clock,
-  MoreVertical, Trash2, Copy, Info, ShieldOff, ShieldAlert
+  MoreVertical, Trash2, Copy, Info, ShieldOff, ShieldAlert, ShieldCheck
 } from 'lucide-react';
 import ReportModal from '@/components/shared/ReportModal';
 import UserProfileModal from '@/components/shared/UserProfileModal';
@@ -52,6 +52,10 @@ export default function MessageThread({ user, conv, onBack }) {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [msgMenu]);
+
+  // Official / protected team members cannot be blocked
+  const PROTECTED_BADGES = ['Admin', 'Officiel', 'Collaborateur', 'Pilote'];
+  const isProtectedTeamMember = conv.role === 'admin' || conv.badges?.some(b => PROTECTED_BADGES.includes(b));
 
   // Block status
   const { data: myBlocks = [] } = useQuery({
@@ -222,6 +226,9 @@ export default function MessageThread({ user, conv, onBack }) {
     setMsgMenu({ id: msg.id, msg, x: e.clientX, y: e.clientY });
   };
 
+  // Detect if this is an official conversation
+  const isOfficialConversation = messages.some(m => m.is_official);
+
   // If I blocked them, hide their messages from my view (they can still send but I don't see)
   const visibleMessages = messages
     .filter(m => !m.is_request || m.request_status !== 'declined')
@@ -236,23 +243,39 @@ export default function MessageThread({ user, conv, onBack }) {
           <ArrowLeft className="w-4 h-4" />
         </button>
 
-        <button onClick={() => setShowProfile(true)} className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden flex-shrink-0 relative hover:ring-2 hover:ring-primary/40 transition-all">
-          {conv.avatar ? (
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 relative ${conv.isOfficial ? 'bg-primary/10 border-2 border-primary/40' : 'bg-secondary border border-border hover:ring-2 hover:ring-primary/40 cursor-pointer transition-all'}`}
+          onClick={() => !conv.isOfficial && setShowProfile(true)}
+        >
+          {conv.isOfficial ? (
+            <ShieldCheck className="w-5 h-5 text-primary" />
+          ) : conv.avatar ? (
             <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
           ) : (
             <span className="font-grotesk font-bold text-sm text-primary">
               {conv.name?.[0]?.toUpperCase() || '?'}
             </span>
           )}
-        </button>
+        </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <button onClick={() => setShowProfile(true)} className="font-grotesk font-semibold text-sm hover:text-primary transition-colors">{conv.name}</button>
-            <VerificationIcons verifications={conv.verifications} />
-            {conv.badges?.slice(0, 2).map(b => (
-              <BadgeChip key={b} badge={b} size="sm" />
-            ))}
+            {conv.isOfficial ? (
+              <span className="font-grotesk font-semibold text-sm">{conv.name}</span>
+            ) : (
+              <button onClick={() => setShowProfile(true)} className="font-grotesk font-semibold text-sm hover:text-primary transition-colors">{conv.name}</button>
+            )}
+            {conv.isOfficial ? (
+              <span className="flex items-center gap-0.5 font-mono text-[9px] text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-full">
+                <ShieldCheck className="w-2.5 h-2.5" /> Message Officiel
+              </span>
+            ) : (
+              <>
+                <VerificationIcons verifications={conv.verifications} />
+                {conv.badges?.slice(0, 2).map(b => (
+                  <BadgeChip key={b} badge={b} size="sm" />
+                ))}
+              </>
+            )}
           </div>
           {!isOpen && hasAnyRequest && myPendingRequest && (
             <p className="font-mono text-[10px] text-amber-400/80 flex items-center gap-1 mt-0.5">
@@ -261,11 +284,11 @@ export default function MessageThread({ user, conv, onBack }) {
           )}
         </div>
 
-        {/* Options button */}
+        {/* Options button — hidden for official conversations */}
         <div className="relative" ref={optionsRef}>
           <button
-            onClick={() => setShowOptions(v => !v)}
-            className="p-2 rounded-lg hover:bg-secondary text-muted-foreground transition-colors"
+            onClick={() => !conv.isOfficial && setShowOptions(v => !v)}
+            className={`p-2 rounded-lg text-muted-foreground transition-colors ${conv.isOfficial ? 'opacity-0 pointer-events-none' : 'hover:bg-secondary'}`}
           >
             <MoreVertical className="w-4 h-4" />
           </button>
@@ -312,23 +335,25 @@ export default function MessageThread({ user, conv, onBack }) {
                     <Trash2 className="w-4 h-4" />
                     Supprimer la conversation
                   </button>
-                  {!isBlocked ? (
-                    <button
-                      onClick={() => { blockUser.mutate(); }}
-                      disabled={blockUser.isPending}
-                      className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                    >
-                      <ShieldAlert className="w-4 h-4" />
-                      Bloquer cet utilisateur
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => { setShowUnblockConfirm(true); setShowOptions(false); }}
-                      className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-yellow-400 hover:bg-yellow-400/10 transition-colors"
-                    >
-                      <ShieldOff className="w-4 h-4" />
-                      Débloquer cet utilisateur
-                    </button>
+                  {!isProtectedTeamMember && (
+                    !isBlocked ? (
+                      <button
+                        onClick={() => { blockUser.mutate(); }}
+                        disabled={blockUser.isPending}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                      >
+                        <ShieldAlert className="w-4 h-4" />
+                        Bloquer cet utilisateur
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => { setShowUnblockConfirm(true); setShowOptions(false); }}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-yellow-400 hover:bg-yellow-400/10 transition-colors"
+                      >
+                        <ShieldOff className="w-4 h-4" />
+                        Débloquer cet utilisateur
+                      </button>
+                    )
                   )}
                   <button
                     onClick={() => {
@@ -435,7 +460,14 @@ export default function MessageThread({ user, conv, onBack }) {
 
       {/* ── Input ── */}
       <div className="px-4 py-3 border-t border-border flex-shrink-0 bg-card">
-        {isBlocked ? (
+        {isOfficialConversation ? (
+          <div className="flex items-center justify-center gap-2 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
+            <Lock className="w-4 h-4 text-primary/50 flex-shrink-0" />
+            <span className="font-inter text-xs text-muted-foreground text-center">
+              Il s'agit d'un <span className="text-primary font-semibold">message officiel Brenne Aerial</span>. Vous ne pouvez pas répondre à cette conversation.
+            </span>
+          </div>
+        ) : isBlocked ? (
           <div className="flex items-center justify-between gap-3 bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
             <div className="flex items-center gap-2 min-w-0">
               <ShieldAlert className="w-4 h-4 text-destructive flex-shrink-0" />

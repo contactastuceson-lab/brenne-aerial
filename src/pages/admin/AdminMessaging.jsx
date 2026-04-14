@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Send, Bell, Loader2, Flag, Users } from 'lucide-react';
+import { Send, Bell, Loader2, Flag, Users, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,10 +10,13 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
+const OFFICIAL_CONV_ID = (recipientEmail) => `brenne_aerial_official_${recipientEmail}`;
+
 export default function AdminMessaging() {
   const qc = useQueryClient();
   const [notifForm, setNotifForm] = useState({ user_email: '', title: '', content: '', type: 'system', bulk: false });
   const [msgForm, setMsgForm] = useState({ recipient_email: '', subject: '', content: '', is_priority: false });
+  const [officialForm, setOfficialForm] = useState({ recipient_email: '', content: '' });
 
   const { data: messages = [] } = useQuery({ queryKey: ['adm-msgs-all'], queryFn: () => base44.entities.Message.list('-created_date', 100) });
   const { data: notifs = [] } = useQuery({ queryKey: ['adm-notifs-all'], queryFn: () => base44.entities.Notification.list('-created_date', 100) });
@@ -39,15 +42,87 @@ export default function AdminMessaging() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-msgs-all'] }); setMsgForm({ recipient_email: '', subject: '', content: '', is_priority: false }); toast.success('Message envoyé'); },
   });
 
+  const sendOfficialMsg = useMutation({
+    mutationFn: async () => {
+      const convId = OFFICIAL_CONV_ID(officialForm.recipient_email);
+      const recipient = users.find(u => u.email === officialForm.recipient_email);
+      await base44.entities.ChatMessage.create({
+        conversation_id: convId,
+        sender_email: 'officiel@brenne-aerial.fr',
+        sender_name: 'Brenne Aerial',
+        sender_avatar: '',
+        recipient_email: officialForm.recipient_email,
+        recipient_name: recipient?.full_name || officialForm.recipient_email,
+        content: officialForm.content,
+        is_request: false,
+        request_status: 'accepted',
+        is_read: false,
+        is_official: true,
+      });
+      await base44.entities.Notification.create({
+        user_email: officialForm.recipient_email,
+        title: '📢 Message officiel de Brenne Aerial',
+        content: officialForm.content.substring(0, 80) + (officialForm.content.length > 80 ? '…' : ''),
+        type: 'system',
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['adm-msgs-all'] });
+      setOfficialForm({ recipient_email: '', content: '' });
+      toast.success('Message officiel envoyé');
+    },
+  });
+
   return (
     <div>
       <h1 className="font-grotesk font-bold text-2xl mb-8">Messagerie & Notifications</h1>
 
-      <Tabs defaultValue="notifications" className="space-y-6">
+      <Tabs defaultValue="official" className="space-y-6">
         <TabsList className="bg-card border border-border">
+          <TabsTrigger value="official" className="font-inter text-sm gap-2"><ShieldCheck className="w-4 h-4" />Message Officiel</TabsTrigger>
           <TabsTrigger value="notifications" className="font-inter text-sm gap-2"><Bell className="w-4 h-4" />Notifications</TabsTrigger>
           <TabsTrigger value="messages" className="font-inter text-sm gap-2"><Send className="w-4 h-4" />Messages</TabsTrigger>
         </TabsList>
+
+        {/* ── Official Message Tab ── */}
+        <TabsContent value="official" className="space-y-5">
+          <div className="p-5 rounded-xl bg-card border border-primary/30 space-y-4">
+            <div className="flex items-center gap-3 pb-2 border-b border-border">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-grotesk font-bold text-sm">Message Officiel Brenne Aerial</h3>
+                <p className="font-inter text-xs text-muted-foreground">Envoyé depuis le profil officiel — l'utilisateur ne peut pas répondre</p>
+              </div>
+            </div>
+            <select
+              value={officialForm.recipient_email}
+              onChange={e => setOfficialForm(p => ({ ...p, recipient_email: e.target.value }))}
+              className="w-full bg-secondary border border-border rounded-lg px-3 py-2 font-inter text-sm text-foreground"
+            >
+              <option value="">Sélectionner un destinataire</option>
+              {users.map(u => <option key={u.id} value={u.email}>{u.full_name} ({u.email})</option>)}
+            </select>
+            <Textarea
+              placeholder="Contenu du message officiel..."
+              value={officialForm.content}
+              onChange={e => setOfficialForm(p => ({ ...p, content: e.target.value }))}
+              className="bg-secondary border-border min-h-[100px]"
+            />
+            <div className="bg-primary/5 border border-primary/15 rounded-lg px-3 py-2 font-inter text-xs text-muted-foreground">
+              💡 Ce message apparaîtra dans la messagerie de l'utilisateur sous le nom <strong className="text-primary">Brenne Aerial</strong> avec un badge officiel. La réponse sera désactivée.
+            </div>
+            <Button
+              onClick={() => sendOfficialMsg.mutate()}
+              disabled={!officialForm.recipient_email || !officialForm.content || sendOfficialMsg.isPending}
+              className="bg-primary text-primary-foreground gap-2"
+            >
+              {sendOfficialMsg.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+              Envoyer le message officiel
+            </Button>
+          </div>
+        </TabsContent>
 
         <TabsContent value="notifications" className="space-y-5">
           <div className="p-5 rounded-xl bg-card border border-border space-y-3">

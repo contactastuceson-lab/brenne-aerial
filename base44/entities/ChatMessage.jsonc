@@ -4,7 +4,7 @@
   "properties": {
     "conversation_id": {
       "type": "string",
-      "description": "ID unique de la conversation (ex: emailA_emailB tri\u00e9 alphab\u00e9tiquement)"
+      "description": "ID unique de la conversation (ex: emailA_emailB tri\u00e9s alphab\u00e9tiquement)"
     },
     "sender_email": {
       "type": "string",
@@ -49,6 +49,11 @@
       ],
       "default": "pending",
       "description": "Statut de la demande de contact"
+    },
+    "is_official": {
+      "type": "boolean",
+      "default": false,
+      "description": "Message officiel envoy\u00e9 par l'\u00e9quipe Brenne Aerial \u2014 r\u00e9ponse impossible"
     }
   },
   "required": [

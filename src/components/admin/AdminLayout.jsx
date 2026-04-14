@@ -22,7 +22,7 @@ const NAV = [
   { path: '/admin/maintenance', icon: Shield, label: 'Maintenance' },
   { path: '/admin/emailing', icon: Mail, label: 'Emailing' },
   { path: '/admin/status', icon: Settings, label: 'Statut Site' },
-  { path: '/admin/governance', icon: Crown, label: 'Gouvernance', topOnly: true },
+  { path: '/admin/governance', icon: Crown, label: 'Gouvernance' },
 ];
 
 export default function AdminLayout() {

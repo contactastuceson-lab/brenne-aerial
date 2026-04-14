@@ -200,16 +200,16 @@ export default function DiscoverPage() {
           </div>
         </motion.div>
 
-        {/* Team tab - pole filters */}
+        {/* Team tab - pole filters (scroll horizontal) */}
         {activeTab === 'team' && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            <button onClick={() => setFilterPole('all')} className={`px-3 py-1.5 rounded-full font-inter text-xs border transition-all ${filterPole === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'}`}>
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+            <button onClick={() => setFilterPole('all')} className={`flex-shrink-0 px-3 py-1 rounded-full font-inter text-xs border transition-all ${filterPole === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'}`}>
               Tous
             </button>
             {Object.entries(POLES).map(([k, v]) => (
               <button key={k} onClick={() => setFilterPole(filterPole === k ? 'all' : k)}
-                className={`px-3 py-1.5 rounded-full font-inter text-xs border transition-all flex items-center gap-1 ${filterPole === k ? `${v.bg} ${v.color} ${v.border}` : 'border-border text-muted-foreground hover:text-foreground'}`}>
-                {v.emoji} {v.label}
+                className={`flex-shrink-0 px-3 py-1 rounded-full font-inter text-xs border transition-all flex items-center gap-1 ${filterPole === k ? `${v.bg} ${v.color} ${v.border}` : 'border-border text-muted-foreground hover:text-foreground'}`}>
+                {v.emoji} <span className="hidden sm:inline">{v.label}</span>
               </button>
             ))}
           </div>
@@ -217,60 +217,50 @@ export default function DiscoverPage() {
 
         {/* Grid */}
         {activeTab === 'team' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-2">
             <AnimatePresence>
               {filteredEmployees.map((emp, i) => {
                 const pole = POLES[emp.pole];
                 return (
                   <motion.div
                     key={emp.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: i * 0.04 }}
-                    className="group relative rounded-2xl overflow-hidden hover-lift border border-border bg-card cursor-pointer"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ delay: i * 0.03 }}
+                    className="flex items-center gap-3 bg-card border border-border rounded-xl px-3 py-3 cursor-pointer hover:border-primary/30 transition-colors"
                     onClick={() => setViewEmployee(emp)}
                   >
-                    {/* Cover */}
-                    <div className="h-20 relative overflow-hidden">
-                      {emp.cover_url
-                        ? <img src={emp.cover_url} alt="" className="w-full h-full object-cover" />
-                        : <div className="w-full h-full bg-gradient-to-br from-primary/20 via-accent/10 to-secondary"><div className="absolute inset-0 grid-bg opacity-50" /></div>
+                    {/* Avatar */}
+                    <div className="w-11 h-11 rounded-xl border border-border bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {emp.avatar_url
+                        ? <img src={emp.avatar_url} alt="" className="w-full h-full object-cover" />
+                        : <span className="font-grotesk font-bold text-base text-primary">{emp.full_name?.[0]}</span>
                       }
-                      {pole && (
-                        <div className={`absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[9px] border ${pole.bg} ${pole.color} ${pole.border}`}>
-                          {pole.emoji} {pole.label}
-                        </div>
-                      )}
                     </div>
-                    {/* Content */}
-                    <div className="px-4 -mt-7 pb-4">
-                      <div className="w-14 h-14 rounded-2xl border-2 border-background bg-secondary flex items-center justify-center overflow-hidden mb-2">
-                        {emp.avatar_url
-                          ? <img src={emp.avatar_url} alt="" className="w-full h-full object-cover" />
-                          : <span className="font-grotesk font-bold text-xl text-primary">{emp.full_name?.[0]}</span>
-                        }
-                      </div>
-                      <h3 className="font-grotesk font-semibold text-sm">{emp.full_name}</h3>
-                      <p className="font-inter text-xs text-primary mb-1">{emp.job_title}</p>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-grotesk font-semibold text-sm truncate">{emp.full_name}</p>
+                      <p className="font-inter text-xs text-primary truncate">{emp.job_title}</p>
                       {emp.location && (
-                        <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
-                          <MapPin className="w-2.5 h-2.5" /> {emp.location}
+                        <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-2.5 h-2.5 flex-shrink-0" /> {emp.location}
                         </p>
                       )}
-                      {emp.bio && <p className="font-inter text-[11px] text-muted-foreground mt-1.5 line-clamp-2">{emp.bio}</p>}
-                      <div className="mt-3">
-                        <Button size="sm" variant="outline" className="w-full text-xs h-8 gap-1.5">
-                          <Users className="w-3 h-3" /> Voir le profil
-                        </Button>
-                      </div>
                     </div>
+                    {/* Pole badge */}
+                    {pole && (
+                      <div className={`flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-full font-mono text-[9px] border ${pole.bg} ${pole.color} ${pole.border}`}>
+                        <span>{pole.emoji}</span>
+                        <span className="hidden sm:inline">{pole.label}</span>
+                      </div>
+                    )}
                   </motion.div>
                 );
               })}
             </AnimatePresence>
             {filteredEmployees.length === 0 && (
-              <div className="col-span-3 text-center py-20 text-muted-foreground font-inter text-sm">Aucun membre d'équipe trouvé</div>
+              <div className="text-center py-12 text-muted-foreground font-inter text-sm">Aucun membre d'équipe trouvé</div>
             )}
           </div>
         ) : (

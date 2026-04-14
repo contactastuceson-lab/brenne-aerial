@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   UserPlus, UserCheck, Search, MessageCircle, Users,
-  CheckCircle, Star, Award, Zap, Shield, Flag, MapPin
+  CheckCircle, Star, Award, Zap, Shield, Flag, MapPin, Briefcase, Phone, Calendar
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ import BadgePopup from '@/components/ui/BadgePopup';
 import { Link } from 'react-router-dom';
 import ReportModal from '@/components/shared/ReportModal';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
+import EmployeeProfileModal from '@/components/admin/EmployeeProfileModal';
+import { POLES } from '@/lib/employeeRoles';
 
 function getConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join('_');
@@ -35,6 +37,9 @@ export default function DiscoverPage() {
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
   const [reportTarget, setReportTarget] = useState(null);
+  const [activeTab, setActiveTab] = useState('members');
+  const [filterPole, setFilterPole] = useState('all');
+  const [viewEmployee, setViewEmployee] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -92,6 +97,12 @@ export default function DiscoverPage() {
     enabled: !!user?.email,
   });
 
+  const { data: employees = [] } = useQuery({
+    queryKey: ['public-employees'],
+    queryFn: () => base44.entities.Employee.filter({ is_public: true }),
+    enabled: !!user,
+  });
+
   const followMutation = useMutation({
     mutationFn: async (targetUser) => {
       await base44.entities.Follow.create({
@@ -141,28 +152,45 @@ export default function DiscoverPage() {
       u.email?.toLowerCase().includes(search.toLowerCase())
     );
 
+  const filteredEmployees = employees
+    .filter(e => filterPole === 'all' || e.pole === filterPole)
+    .filter(e => !search || e.full_name?.toLowerCase().includes(search.toLowerCase()) || e.job_title?.toLowerCase().includes(search.toLowerCase()));
+
   return (
     <div className="pt-24 min-h-screen px-5 lg:px-10 pb-20">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
               <Users className="w-4 h-4 text-primary" />
             </div>
             <h1 className="font-grotesk font-bold text-2xl gradient-text">Découvrir</h1>
           </div>
-          <p className="font-inter text-sm text-muted-foreground ml-11">
-            {filtered.length} membre{filtered.length !== 1 ? 's' : ''} dans la communauté
-          </p>
         </motion.div>
 
+        {/* Tabs */}
+        <div className="flex gap-1 mb-6 bg-secondary/50 rounded-xl p-1 w-fit">
+          <button
+            onClick={() => setActiveTab('members')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-inter text-sm font-medium transition-all ${activeTab === 'members' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <Users className="w-4 h-4" /> Membres <span className="font-mono text-xs text-muted-foreground">({filtered.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('team')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-inter text-sm font-medium transition-all ${activeTab === 'team' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <Briefcase className="w-4 h-4" /> Équipe <span className="font-mono text-xs text-muted-foreground">({employees.length})</span>
+          </button>
+        </div>
+
         {/* Search */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Rechercher un profil..."
+              placeholder={activeTab === 'team' ? 'Rechercher dans l\'équipe...' : 'Rechercher un profil...'}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="pl-10 bg-card border-border font-inter"
@@ -170,7 +198,80 @@ export default function DiscoverPage() {
           </div>
         </motion.div>
 
+        {/* Team tab - pole filters */}
+        {activeTab === 'team' && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            <button onClick={() => setFilterPole('all')} className={`px-3 py-1.5 rounded-full font-inter text-xs border transition-all ${filterPole === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'}`}>
+              Tous
+            </button>
+            {Object.entries(POLES).map(([k, v]) => (
+              <button key={k} onClick={() => setFilterPole(filterPole === k ? 'all' : k)}
+                className={`px-3 py-1.5 rounded-full font-inter text-xs border transition-all flex items-center gap-1 ${filterPole === k ? `${v.bg} ${v.color} ${v.border}` : 'border-border text-muted-foreground hover:text-foreground'}`}>
+                {v.emoji} {v.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Grid */}
+        {activeTab === 'team' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <AnimatePresence>
+              {filteredEmployees.map((emp, i) => {
+                const pole = POLES[emp.pole];
+                return (
+                  <motion.div
+                    key={emp.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: i * 0.04 }}
+                    className="group relative rounded-2xl overflow-hidden hover-lift border border-border bg-card cursor-pointer"
+                    onClick={() => setViewEmployee(emp)}
+                  >
+                    {/* Cover */}
+                    <div className="h-20 relative overflow-hidden">
+                      {emp.cover_url
+                        ? <img src={emp.cover_url} alt="" className="w-full h-full object-cover" />
+                        : <div className="w-full h-full bg-gradient-to-br from-primary/20 via-accent/10 to-secondary"><div className="absolute inset-0 grid-bg opacity-50" /></div>
+                      }
+                      {pole && (
+                        <div className={`absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[9px] border ${pole.bg} ${pole.color} ${pole.border}`}>
+                          {pole.emoji} {pole.label}
+                        </div>
+                      )}
+                    </div>
+                    {/* Content */}
+                    <div className="px-4 -mt-7 pb-4">
+                      <div className="w-14 h-14 rounded-2xl border-2 border-background bg-secondary flex items-center justify-center overflow-hidden mb-2">
+                        {emp.avatar_url
+                          ? <img src={emp.avatar_url} alt="" className="w-full h-full object-cover" />
+                          : <span className="font-grotesk font-bold text-xl text-primary">{emp.full_name?.[0]}</span>
+                        }
+                      </div>
+                      <h3 className="font-grotesk font-semibold text-sm">{emp.full_name}</h3>
+                      <p className="font-inter text-xs text-primary mb-1">{emp.job_title}</p>
+                      {emp.location && (
+                        <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
+                          <MapPin className="w-2.5 h-2.5" /> {emp.location}
+                        </p>
+                      )}
+                      {emp.bio && <p className="font-inter text-[11px] text-muted-foreground mt-1.5 line-clamp-2">{emp.bio}</p>}
+                      <div className="mt-3">
+                        <Button size="sm" variant="outline" className="w-full text-xs h-8 gap-1.5">
+                          <Users className="w-3 h-3" /> Voir le profil
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+            {filteredEmployees.length === 0 && (
+              <div className="col-span-3 text-center py-20 text-muted-foreground font-inter text-sm">Aucun membre d'équipe trouvé</div>
+            )}
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <AnimatePresence>
             {filtered.map((profile, i) => {
@@ -350,6 +451,8 @@ export default function DiscoverPage() {
             Aucun profil trouvé
           </div>
         )}
+        </div>
+        )}
       </div>
 
       {/* Report Modal */}
@@ -363,6 +466,10 @@ export default function DiscoverPage() {
           targetEmail={reportTarget.email}
           targetName={reportTarget.full_name}
         />
+      )}
+
+      {viewEmployee && (
+        <EmployeeProfileModal employee={viewEmployee} onClose={() => setViewEmployee(null)} />
       )}
     </div>
   );

@@ -1,0 +1,83 @@
+{
+  "name": "Employee",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur li\u00e9 (optionnel)"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Nom complet"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Photo de profil"
+    },
+    "cover_url": {
+      "type": "string",
+      "description": "Photo de couverture"
+    },
+    "pole": {
+      "type": "string",
+      "enum": [
+        "direction",
+        "operations",
+        "technique",
+        "securite",
+        "commercial",
+        "marketing"
+      ],
+      "description": "P\u00f4le / d\u00e9partement"
+    },
+    "job_title": {
+      "type": "string",
+      "description": "Intitul\u00e9 du poste (ex: Chef Pilote)"
+    },
+    "job_role_key": {
+      "type": "string",
+      "description": "Cl\u00e9 du r\u00f4le pr\u00e9d\u00e9fini"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Liste des permissions accord\u00e9es"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Biographie"
+    },
+    "location": {
+      "type": "string",
+      "description": "Localisation"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Visible sur la page d\u00e9couvrir"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "on_leave"
+      ],
+      "default": "active"
+    },
+    "hire_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "full_name",
+    "pole",
+    "job_title"
+  ]
+}

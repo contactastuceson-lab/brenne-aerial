@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail, Award, Heart, ArrowLeft, Crown, Building2, Settings, Briefcase } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail, Award, Heart, Crown, Building2, Settings, Briefcase } from 'lucide-react';
 import { ROLE_CONFIG, hasAdminAccess, canManageSupreme, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 
 const NAV = [
@@ -24,6 +24,7 @@ const NAV = [
   { path: '/admin/status', icon: Settings, label: 'Statut Site' },
   { path: '/admin/governance', icon: Crown, label: 'Gouvernance', topOnly: true },
   { path: '/admin/employees', icon: Briefcase, label: 'Équipe', topOnly: true },
+  { path: '/admin/site-config', icon: Settings, label: 'Gestion du Site' },
 ];
 
 export default function AdminLayout() {

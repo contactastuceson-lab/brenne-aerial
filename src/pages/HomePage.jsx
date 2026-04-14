@@ -5,6 +5,7 @@ import { ArrowRight, Play, Camera, Building2, HardHat, Video, Wifi, ChevronDown,
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import DroneWeatherWidget from '@/components/home/DronWeatherWidget';
 
 const SERVICES_PREVIEW = [
   { icon: Video,      label: 'Vidéo événement',    desc: 'Captez chaque instant depuis les airs' },
@@ -25,6 +26,35 @@ const STATS = [
 ];
 
 export default function HomePage() {
+  const { data: settings = [] } = useQuery({
+    queryKey: ['app-settings'],
+    queryFn: () => base44.entities.AppSettings.list(),
+  });
+  const sMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
+
+  const heroTitle1 = sMap['hero_title_1'] || 'Services drone';
+  const heroTitle2 = sMap['hero_title_2'] || 'professionnels.';
+  const heroDesc = sMap['hero_desc'] || 'Brenne Aerial propulse votre vision avec des solutions drone 4K de pointe — événements, inspections, chantiers, captations premium. Devis en 48h.';
+  const heroBadge = sMap['hero_badge'] || 'Solutions drone professionnelles';
+  const heroCta1 = sMap['hero_cta_primary'] || 'Demander un devis';
+  const heroCta2 = sMap['hero_cta_secondary'] || 'Voir le portfolio';
+  const heroImage = sMap['hero_image_url'] || 'https://images.unsplash.com/photo-1579829366248-204fe8413f31?w=1800&auto=format&fit=crop&q=80';
+  const weatherEnabled = sMap['weather_widget_enabled'] !== 'false';
+  const weatherLocation = sMap['weather_location'] || 'Brenne, France';
+  const aboutName = sMap['about_name'] || 'Enor Lefoulon Meyer';
+  const aboutTitle = sMap['about_title'] || 'Fondateur & PDG';
+  const aboutPhoto = sMap['about_photo_url'] || 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/69e824fda_IMG_20260108_192238_6241-converti-depuis-webp.png';
+  const aboutHeadline = sMap['about_headline'] || "Expertise aérienne\nau service de vos projets.";
+  const aboutDesc = sMap['about_desc'] || "Brenne Aerial offre des solutions drone complètes pour vos besoins professionnels : vidéo événement, inspections, chantiers, captations spécialisées. Réactivité, qualité 4K et tarifs justes.";
+  const newsletterUrl = sMap['newsletter_url'] || 'https://a4835101.sibforms.com/serve/MUIFAC3C5UXdgrZ-CYR3iV27NCBuTTlUAVw80srFWWQ1uQqa9zEJu_QjFXyxzE_cjXKKN4npfoqMKMs9lLTQwXf3ox21FCxhlCz_wVgMTyX86xIWn29NjWLwDgvg5YGhFZ2acj3HZshol1zV0zwpXdvgB0dhKU6CE25yH20lCqS0cWOYOEXnQyfPG4HwSVpt7onwP66N9DD1OCspXQ==';
+
+  const stats = [
+    { val: sMap['stat_1_val'] || '200+', label: sMap['stat_1_label'] || 'Missions réalisées' },
+    { val: sMap['stat_2_val'] || '4K',   label: sMap['stat_2_label'] || 'Qualité vidéo' },
+    { val: sMap['stat_3_val'] || '99%',  label: sMap['stat_3_label'] || 'Satisfaction client' },
+    { val: sMap['stat_4_val'] || '48h',  label: sMap['stat_4_label'] || 'Délai de réponse' },
+  ];
+
   const { data: projects = [] } = useQuery({
     queryKey: ['featured-projects'],
     queryFn: () => base44.entities.Project.filter({ is_featured: true, is_published: true }, '-created_date', 3),
@@ -38,7 +68,7 @@ export default function HomePage() {
         <div className="absolute inset-0 grid-bg" />
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1579829366248-204fe8413f31?w=1800&auto=format&fit=crop&q=80"
+            src={heroImage}
             alt="Drone aerial view"
             className="w-full h-full object-cover opacity-25"
           />
@@ -57,7 +87,7 @@ export default function HomePage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <div className="inline-flex items-center gap-2 font-mono text-xs text-primary border border-primary/30 bg-primary/5 px-3 py-1.5 rounded-full mb-6">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                Solutions drone professionnelles
+                {heroBadge}
               </div>
             </motion.div>
 
@@ -65,17 +95,16 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
               className="font-grotesk font-bold text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[1.05] tracking-tight mb-6"
             >
-              Services drone
+              {heroTitle1}
               <br />
-              <span className="gradient-text sky-glow-text">professionnels.</span>
+              <span className="gradient-text sky-glow-text">{heroTitle2}</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
               className="font-inter text-lg text-muted-foreground max-w-xl leading-relaxed mb-8"
             >
-              Brenne Aerial propulse votre vision avec des solutions drone 4K de pointe — 
-              événements, inspections, chantiers, captations premium. Devis en 48h.
+              {heroDesc}
             </motion.p>
 
             <motion.div
@@ -84,12 +113,12 @@ export default function HomePage() {
             >
               <Link to="/quote">
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-grotesk font-semibold px-6 sky-glow">
-                  Demander un devis <ArrowRight className="w-4 h-4 ml-2" />
+                  {heroCta1} <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
               <Link to="/portfolio">
                 <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-secondary font-grotesk font-semibold px-6 gap-2">
-                  <Play className="w-4 h-4 text-primary" /> Voir le portfolio
+                  <Play className="w-4 h-4 text-primary" /> {heroCta2}
                 </Button>
               </Link>
             </motion.div>
@@ -99,13 +128,20 @@ export default function HomePage() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
               className="flex flex-wrap gap-6 mt-12"
             >
-              {STATS.map(s => (
+              {stats.map(s => (
                 <div key={s.label}>
                   <div className="font-grotesk font-bold text-2xl text-primary">{s.val}</div>
                   <div className="font-inter text-xs text-muted-foreground">{s.label}</div>
                 </div>
               ))}
             </motion.div>
+
+            {/* Weather widget */}
+            {weatherEnabled && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="mt-6 max-w-xl">
+                <DroneWeatherWidget location={weatherLocation} />
+              </motion.div>
+            )}
           </div>
         </div>
 
@@ -166,8 +202,8 @@ export default function HomePage() {
               <div className="relative">
                 <div className="absolute -inset-4 bg-primary/5 rounded-2xl blur-xl" />
                 <img
-                  src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/69e824fda_IMG_20260108_192238_6241-converti-depuis-webp.png"
-                  alt="Enor Lefoulon Meyer — CEO"
+                  src={aboutPhoto}
+                  alt={`${aboutName} — CEO`}
                   className="relative w-full max-w-sm mx-auto rounded-2xl object-cover aspect-[3/4]"
                   style={{ filter: 'contrast(1.05) saturate(0.9)' }}
                 />
@@ -177,9 +213,9 @@ export default function HomePage() {
                       <span className="font-grotesk font-bold text-primary text-sm">ELM</span>
                     </div>
                     <div>
-                      <p className="font-grotesk font-semibold text-sm">Enor Lefoulon Meyer</p>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="font-mono text-xs text-muted-foreground">Fondateur & PDG</span>
+                      <p className="font-grotesk font-semibold text-sm">{aboutName}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="font-mono text-xs text-muted-foreground">{aboutTitle}</span>
                         <span className="badge-founder font-mono text-[10px] font-bold">★ Fondateur</span>
                       </div>
                     </div>
@@ -191,11 +227,10 @@ export default function HomePage() {
             <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
               <p className="font-mono text-xs text-primary mb-4 tracking-widest uppercase">— À propos</p>
               <h2 className="font-grotesk font-bold text-3xl sm:text-4xl mb-6">
-                Expertise aérienne<br />
-                <span className="gradient-text">au service de vos projets.</span>
+                <span dangerouslySetInnerHTML={{ __html: aboutHeadline.replace(/\n/g, '<br/>') }} />
               </h2>
               <div className="space-y-4 font-inter text-muted-foreground leading-relaxed">
-                <p>Brenne Aerial offre des solutions drone complètes pour vos besoins professionnels : vidéo événement, inspections, chantiers, captations spécialisées. Réactivité, qualité 4K et tarifs justes.</p>
+                <p>{aboutDesc}</p>
               </div>
               <div className="flex flex-wrap gap-4 mt-8">
                 <div className="flex items-center gap-2">
@@ -293,7 +328,7 @@ export default function HomePage() {
               </div>
               <div className="flex-shrink-0">
                 <a
-                  href="https://a4835101.sibforms.com/serve/MUIFAC3C5UXdgrZ-CYR3iV27NCBuTTlUAVw80srFWWQ1uQqa9zEJu_QjFXyxzE_cjXKKN4npfoqMKMs9lLTQwXf3ox21FCxhlCz_wVgMTyX86xIWn29NjWLwDgvg5YGhFZ2acj3HZshol1zV0zwpXdvgB0dhKU6CE25yH20lCqS0cWOYOEXnQyfPG4HwSVpt7onwP66N9DD1OCspXQ=="
+                  href={newsletterUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-3 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-grotesk font-semibold px-8 py-4 rounded-xl sky-glow text-base"

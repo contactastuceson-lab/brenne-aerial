@@ -49,6 +49,13 @@ import AdminDonations from "@/pages/admin/AdminDonations";
 import AdminStatus from "@/pages/admin/AdminStatus";
 import AdminGovernance from "@/pages/admin/AdminGovernance";
 import AdminEmployees from "@/pages/admin/AdminEmployees";
+import AdminSiteConfig from "@/pages/admin/AdminSiteConfig";
+import GaragePage from "@/pages/GaragePage";
+import QuoteCalculatorPage from "@/pages/QuoteCalculatorPage";
+import ReglementationPage from "@/pages/ReglementationPage";
+import FlashDeliveryPage from "@/pages/FlashDeliveryPage";
+import SimulateurVuePage from "@/pages/SimulateurVuePage";
+import ComparateurPage from "@/pages/ComparateurPage";
 import StatusPage from "@/pages/StatusPage";
 import ProfilePage from "@/pages/ProfilePage";
 import CertificationSuccessPage from "@/pages/CertificationSuccessPage";
@@ -97,6 +104,12 @@ const AuthenticatedApp = () => {
         <Route path="/status" element={<StatusPage />} />
         <Route path="/legal/privacy" element={<PrivacyPage />} />
         <Route path="/legal/terms" element={<TermsPage />} />
+        <Route path="/garage" element={<GaragePage />} />
+        <Route path="/calculateur" element={<QuoteCalculatorPage />} />
+        <Route path="/reglementation" element={<ReglementationPage />} />
+        <Route path="/flash-delivery" element={<FlashDeliveryPage />} />
+        <Route path="/simulateur-vue" element={<SimulateurVuePage />} />
+        <Route path="/comparateur" element={<ComparateurPage />} />
       </Route>
 
       {/* Admin */}
@@ -123,6 +136,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/status" element={<AdminStatus />} />
         <Route path="/admin/governance" element={<AdminGovernance />} />
         <Route path="/admin/employees" element={<AdminEmployees />} />
+        <Route path="/admin/site-config" element={<AdminSiteConfig />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

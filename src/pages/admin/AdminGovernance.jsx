@@ -189,7 +189,7 @@ export default function AdminGovernance() {
                   </div>
 
                   {/* Sélecteur de rôle */}
-                  {editable && !isCurrentUser && (
+                  {editable && (
                     <div className="flex-shrink-0">
                       <select
                         value={u.role || 'user'}
@@ -204,7 +204,7 @@ export default function AdminGovernance() {
                       </select>
                     </div>
                   )}
-                  {(!editable || isCurrentUser) && (
+                  {!editable && (
                     <div className="flex-shrink-0">
                       <Shield className="w-4 h-4 text-muted-foreground" title="Non modifiable" />
                     </div>

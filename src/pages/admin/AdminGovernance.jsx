@@ -42,12 +42,13 @@ export default function AdminGovernance() {
   const isPdgAdjoint = currentUser?.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS.includes(currentUser?.email);
   const isTopMgmt = isOwner || isPdgAdjoint;
 
-  // Un PDG-Adjoint ne peut pas modifier le PDG ni un autre PDG-Adjoint
+  // Un PDG-Adjoint ne peut pas modifier le PDG
   const canEditUser = (targetUser) => {
     if (!isTopMgmt) return false;
     if (isOwner) return true; // Le PDG peut tout faire
-    // PDG-Adjoint ne peut pas toucher owner
-    if (targetUser.role === 'owner' || PDG_EMAILS.includes(targetUser.email)) return false;
+    // PDG-Adjoint ne peut pas toucher le PDG
+    if (PDG_EMAILS.includes(targetUser.email)) return false;
+    if (targetUser.role === 'owner' && !PDG_ADJOINT_EMAILS.includes(targetUser.email)) return false;
     return true;
   };
 

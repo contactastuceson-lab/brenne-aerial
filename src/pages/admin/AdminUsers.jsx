@@ -302,7 +302,9 @@ export default function AdminUsers() {
                   )}
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="font-mono text-xs text-muted-foreground hidden sm:block">{u.role || 'user'}</span>
+                  <span className="font-mono text-xs text-muted-foreground hidden sm:block">
+                    {PDG_EMAILS.includes(u.email) ? '👑 PDG' : PDG_ADJOINT_EMAILS.includes(u.email) ? '🥈 PDG-Adj' : u.role || 'user'}
+                  </span>
                   {(() => {
                     const isTargetSupreme = (u.verifications || []).includes('supreme');
                     const blocked = isTargetSupreme && !canManageSupreme;

@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { hasAdminAccess } from '@/lib/roles';
 
 const OFFICIAL_CONV_ID = (recipientEmail) => `brenne_aerial_official_${recipientEmail}`;
 
@@ -100,9 +101,9 @@ export default function AdminMessaging() {
 
         {/* ── Official Message Tab ── */}
          <TabsContent value="official" className="space-y-5">
-           {currentUser?.role !== 'admin' ? (
+           {!hasAdminAccess(currentUser) ? (
              <div className="p-5 rounded-xl bg-destructive/10 border border-destructive/30 text-center">
-               <p className="font-inter text-sm text-destructive">Seuls les administrateurs peuvent envoyer des messages officiels.</p>
+               <p className="font-inter text-sm text-destructive">Vous n'avez pas les permissions nécessaires pour accéder à cette fonctionnalité.</p>
              </div>
            ) : (
            <div className="p-5 rounded-xl bg-card border border-primary/30 space-y-4">

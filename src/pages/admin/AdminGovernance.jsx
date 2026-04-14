@@ -192,7 +192,7 @@ export default function AdminGovernance() {
                   {editable && (
                     <div className="flex-shrink-0">
                       <select
-                        value={u.role || 'user'}
+                        value={effectiveRole || 'user'}
                         onChange={e => setPendingChange({ userId: u.id, userName: u.full_name || u.email, oldRole: u.role, newRole: e.target.value })}
                         className="bg-secondary border border-border text-foreground font-inter text-xs rounded-lg px-2 py-1.5 cursor-pointer hover:border-primary/50 focus:border-primary outline-none"
                       >

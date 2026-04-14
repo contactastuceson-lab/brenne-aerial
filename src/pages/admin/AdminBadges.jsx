@@ -217,7 +217,7 @@ export default function AdminBadges() {
                           <button
                             key={vt.key}
                             onClick={() => toggleVerification(u, vt.key)}
-                            disabled={vt.key === 'supreme' && !isOwner}
+                            disabled={vt.key === 'supreme' && !canManageSupremeAndBadges}
                             title={vt.desc}
                             className={`flex flex-col items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 border transition-all ${active ? `${vt.bg} ${vt.border}` : 'bg-background border-border hover:border-primary/30'}`}
                           >

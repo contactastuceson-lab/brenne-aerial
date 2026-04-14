@@ -8,8 +8,8 @@ const STATUS = {
 };
 
 function getFlightStatus(wind, rain, visibility) {
-  if (wind > 12 || rain > 60 || visibility < 3) return 'forbidden';
-  if (wind > 7  || rain > 30 || visibility < 5) return 'caution';
+  if (wind > 43 || rain > 60 || visibility < 3) return 'forbidden'; // >43 km/h (~12 m/s)
+  if (wind > 25 || rain > 30 || visibility < 5) return 'caution';   // >25 km/h (~7 m/s)
   return 'optimal';
 }
 
@@ -37,12 +37,12 @@ export default function DroneWeatherWidget() {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,precipitation_probability,visibility,weather_code&wind_speed_unit=ms&timezone=Europe%2FParis`;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,precipitation_probability,visibility,weather_code&wind_speed_unit=kmh&timezone=Europe%2FParis`;
         const res = await fetch(url);
         const data = await res.json();
         const c = data.current;
         setWeather({
-          wind_speed: Math.round(c.wind_speed_10m * 10) / 10,
+          wind_speed: Math.round(c.wind_speed_10m),
           rain_probability: c.precipitation_probability ?? 0,
           visibility: Math.round((c.visibility ?? 10000) / 1000),
           temperature: Math.round(c.temperature_2m),
@@ -85,7 +85,7 @@ export default function DroneWeatherWidget() {
         <div className="flex items-center gap-2">
           <Wind className="w-3.5 h-3.5 text-primary flex-shrink-0" />
           <div>
-            <p className="font-grotesk font-bold text-sm">{weather.wind_speed} m/s</p>
+            <p className="font-grotesk font-bold text-sm">{weather.wind_speed} km/h</p>
             <p className="font-mono text-[9px] text-muted-foreground">Vent</p>
           </div>
         </div>

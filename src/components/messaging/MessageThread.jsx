@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Send, Lock, Check, X, Flag, Clock, CheckCircle } from 'lucide-react';
+import {
+  ArrowLeft, Send, Lock, Check, X, Flag, Clock,
+  MoreVertical, Trash2, UserX, Copy, Phone, Video, Info
+} from 'lucide-react';
 import ReportModal from '@/components/shared/ReportModal';
 import BadgeChip from '@/components/ui/BadgeChip';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -19,18 +22,33 @@ function getConversationId(emailA, emailB) {
 export default function MessageThread({ user, conv, onBack }) {
   const [text, setText] = useState('');
   const [reportMsg, setReportMsg] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
+  const [msgMenu, setMsgMenu] = useState(null); // { id, x, y }
   const bottomRef = useRef(null);
   const scrollAreaRef = useRef(null);
+  const optionsRef = useRef(null);
   const queryClient = useQueryClient();
   const prevCountRef = useRef(0);
+  const isInitialLoad = useRef(true);
 
   const convId = conv.convId || getConversationId(user.email, conv.email);
-  // Reset scroll state when conversation changes
-  const isInitialLoad = useRef(true);
+
   useEffect(() => {
     isInitialLoad.current = true;
     prevCountRef.current = 0;
   }, [convId]);
+
+  // Close menus on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (optionsRef.current && !optionsRef.current.contains(e.target)) {
+        setShowOptions(false);
+      }
+      if (msgMenu) setMsgMenu(null);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [msgMenu]);
 
   const { data: messages = [] } = useQuery({
     queryKey: ['thread', convId],
@@ -39,42 +57,32 @@ export default function MessageThread({ user, conv, onBack }) {
     refetchInterval: 2000,
   });
 
-  // Check if there's a pending request from the other person to us
   const pendingRequest = messages.find(
     m => m.is_request && m.request_status === 'pending' && m.sender_email === conv.email && m.recipient_email === user.email
   );
-
-  // Check if there's a request we sent that is still pending
   const myPendingRequest = messages.find(
     m => m.is_request && m.request_status === 'pending' && m.sender_email === user.email
   );
-
-  // Is the conversation open (accepted)?
   const isOpen = messages.some(m => m.is_request && m.request_status === 'accepted');
-
-  // Has there been any request message at all?
   const hasAnyRequest = messages.some(m => m.is_request);
 
-  // Mark messages as read
+  // Mark as read
   useEffect(() => {
     messages
       .filter(m => !m.is_read && m.recipient_email === user.email)
       .forEach(m => base44.entities.ChatMessage.update(m.id, { is_read: true }));
   }, [messages, user.email]);
 
-  // Scroll to bottom only on initial load or when a NEW message arrives while near bottom
+  // Auto-scroll
   useEffect(() => {
     if (!scrollAreaRef.current) return;
     const el = scrollAreaRef.current;
     const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
     const isNewMessage = messages.length > prevCountRef.current;
-
     if (isInitialLoad.current && messages.length > 0) {
-      // First load: scroll to bottom instantly
       el.scrollTop = el.scrollHeight;
       isInitialLoad.current = false;
     } else if (isNewMessage && isAtBottom) {
-      // New message and user was near bottom: scroll smoothly
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
     prevCountRef.current = messages.length;
@@ -151,25 +159,51 @@ export default function MessageThread({ user, conv, onBack }) {
     },
   });
 
+  const deleteConversation = useMutation({
+    mutationFn: async () => {
+      await Promise.all(messages.map(m => base44.entities.ChatMessage.delete(m.id)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-chat-messages'] });
+      toast.success('Conversation supprimée');
+      onBack();
+    },
+  });
+
+  const deleteMessage = useMutation({
+    mutationFn: async (msgId) => {
+      await base44.entities.ChatMessage.delete(msgId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['thread', convId] });
+      queryClient.invalidateQueries({ queryKey: ['all-chat-messages'] });
+      toast.success('Message supprimé');
+    },
+  });
+
   const handleSend = () => {
     if (!text.trim()) return;
-    if (!hasAnyRequest && !isOpen) {
-      sendRequest.mutate();
-    } else if (isOpen) {
-      sendMessage.mutate();
-    }
+    if (!hasAnyRequest && !isOpen) sendRequest.mutate();
+    else if (isOpen) sendMessage.mutate();
+  };
+
+  const handleMsgContextMenu = (e, msg) => {
+    e.preventDefault();
+    setMsgMenu({ id: msg.id, msg, x: e.clientX, y: e.clientY });
   };
 
   const visibleMessages = messages.filter(m => !m.is_request || m.request_status !== 'declined');
 
   return (
-    <div className="flex flex-col h-full bg-card border border-border rounded-2xl overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border flex-shrink-0">
-        <button onClick={onBack} className="md:hidden p-1.5 rounded-lg hover:bg-secondary text-muted-foreground">
+    <div className="flex flex-col h-full bg-card border border-border rounded-2xl overflow-hidden relative">
+
+      {/* ── Header ── */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border flex-shrink-0 bg-card">
+        <button onClick={onBack} className="md:hidden p-1.5 rounded-lg hover:bg-secondary text-muted-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <div className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
+
+        <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden flex-shrink-0 relative">
           {conv.avatar ? (
             <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -178,6 +212,7 @@ export default function MessageThread({ user, conv, onBack }) {
             </span>
           )}
         </div>
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <p className="font-grotesk font-semibold text-sm">{conv.name}</p>
@@ -186,42 +221,101 @@ export default function MessageThread({ user, conv, onBack }) {
               <BadgeChip key={b} badge={b} size="sm" />
             ))}
           </div>
+          {!isOpen && hasAnyRequest && myPendingRequest && (
+            <p className="font-mono text-[10px] text-amber-400/80 flex items-center gap-1 mt-0.5">
+              <Clock className="w-2.5 h-2.5" /> En attente de réponse
+            </p>
+          )}
         </div>
-        {!isOpen && hasAnyRequest && myPendingRequest && (
-          <span className="ml-auto font-mono text-[10px] text-amber-400/80 bg-amber-400/10 border border-amber-400/20 px-2 py-1 rounded-full flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            En attente
-          </span>
-        )}
+
+        {/* Options button */}
+        <div className="relative" ref={optionsRef}>
+          <button
+            onClick={() => setShowOptions(v => !v)}
+            className="p-2 rounded-lg hover:bg-secondary text-muted-foreground transition-colors"
+          >
+            <MoreVertical className="w-4 h-4" />
+          </button>
+
+          <AnimatePresence>
+            {showOptions && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, y: -4 }}
+                transition={{ duration: 0.12 }}
+                className="absolute right-0 top-10 z-50 w-52 bg-popover border border-border rounded-xl shadow-2xl overflow-hidden"
+              >
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(conv.email);
+                      toast.success('Email copié');
+                      setShowOptions(false);
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-foreground hover:bg-secondary transition-colors"
+                  >
+                    <Copy className="w-4 h-4 text-muted-foreground" />
+                    Copier l'email
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowOptions(false);
+                      // scroll to top
+                      if (scrollAreaRef.current) scrollAreaRef.current.scrollTop = 0;
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-foreground hover:bg-secondary transition-colors"
+                  >
+                    <Info className="w-4 h-4 text-muted-foreground" />
+                    Voir le profil
+                  </button>
+                  <div className="h-px bg-border my-1" />
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Supprimer toute la conversation avec ${conv.name} ?`)) {
+                        deleteConversation.mutate();
+                      }
+                      setShowOptions(false);
+                    }}
+                    disabled={deleteConversation.isPending}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Supprimer la conversation
+                  </button>
+                  <button
+                    onClick={() => {
+                      setReportMsg({ sender_email: conv.email, sender_name: conv.name, id: convId, content: '' });
+                      setShowOptions(false);
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <Flag className="w-4 h-4" />
+                    Signaler cet utilisateur
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* Messages */}
-      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-        {/* Pending request banner (for recipient) */}
+      {/* ── Messages ── */}
+      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto p-4 space-y-2">
+
         {pendingRequest && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-primary/10 border border-primary/30 rounded-xl p-4 text-center"
+            className="bg-primary/10 border border-primary/30 rounded-xl p-4 text-center mb-4"
           >
             <p className="font-inter text-sm font-medium mb-1">{conv.name} souhaite vous contacter</p>
             <p className="font-inter text-xs text-muted-foreground mb-3">Acceptez pour ouvrir la conversation</p>
             <div className="flex gap-2 justify-center">
-              <Button
-                size="sm"
-                className="bg-primary text-primary-foreground text-xs gap-1.5"
-                onClick={() => acceptRequest.mutate()}
-                disabled={acceptRequest.isPending}
-              >
+              <Button size="sm" className="bg-primary text-primary-foreground text-xs gap-1.5" onClick={() => acceptRequest.mutate()} disabled={acceptRequest.isPending}>
                 <Check className="w-3 h-3" /> Accepter
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-destructive/40 text-destructive hover:bg-destructive/10 text-xs gap-1.5"
-                onClick={() => declineRequest.mutate()}
-                disabled={declineRequest.isPending}
-              >
+              <Button size="sm" variant="outline" className="border-destructive/40 text-destructive hover:bg-destructive/10 text-xs gap-1.5" onClick={() => declineRequest.mutate()} disabled={declineRequest.isPending}>
                 <X className="w-3 h-3" /> Refuser
               </Button>
             </div>
@@ -234,39 +328,55 @@ export default function MessageThread({ user, conv, onBack }) {
             return (
               <motion.div
                 key={msg.id}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i < 10 ? 0 : 0 }}
                 className={`flex group ${isMine ? 'justify-end' : 'justify-start'}`}
+                onContextMenu={(e) => handleMsgContextMenu(e, msg)}
               >
-                <div className={`max-w-[75%] ${isMine ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                <div className={`max-w-[78%] flex flex-col gap-0.5 ${isMine ? 'items-end' : 'items-start'}`}>
                   {msg.is_request && (
-                    <span className="font-mono text-[9px] text-amber-400/70 flex items-center gap-1">
+                    <span className="font-mono text-[9px] text-amber-400/70 flex items-center gap-1 mb-0.5">
                       <Lock className="w-2.5 h-2.5" />
                       {msg.request_status === 'pending' ? 'Demande de contact' : 'Demande acceptée'}
                     </span>
                   )}
                   <div
-                    className={`px-4 py-2.5 rounded-2xl font-inter text-sm leading-relaxed ${
+                    className={`px-4 py-2.5 rounded-2xl font-inter text-sm leading-relaxed select-text ${
                       isMine
                         ? 'bg-primary text-primary-foreground rounded-tr-sm'
                         : 'bg-secondary text-foreground border border-border rounded-tl-sm'
-                    } ${msg.is_request && msg.request_status === 'pending' ? 'opacity-80' : ''}`}
+                    } ${msg.is_request && msg.request_status === 'pending' ? 'opacity-75' : ''}`}
                   >
                     {msg.content}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className={`flex items-center gap-2 px-1 ${isMine ? 'flex-row-reverse' : ''}`}>
                     <span className="font-mono text-[9px] text-muted-foreground">
                       {msg.created_date ? format(new Date(msg.created_date), 'HH:mm', { locale: fr }) : ''}
                     </span>
-                    {!isMine && (
+                    {/* Quick actions on hover */}
+                    <div className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity`}>
                       <button
-                        onClick={() => setReportMsg(msg)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => { navigator.clipboard.writeText(msg.content); toast.success('Copié'); }}
+                        className="p-0.5 rounded hover:bg-secondary"
+                        title="Copier"
                       >
-                        <Flag className="w-2.5 h-2.5 text-muted-foreground/50 hover:text-destructive" />
+                        <Copy className="w-2.5 h-2.5 text-muted-foreground/60" />
                       </button>
-                    )}
+                      {!isMine && (
+                        <button onClick={() => setReportMsg(msg)} className="p-0.5 rounded hover:bg-secondary" title="Signaler">
+                          <Flag className="w-2.5 h-2.5 text-muted-foreground/60 hover:text-destructive" />
+                        </button>
+                      )}
+                      {isMine && (
+                        <button
+                          onClick={() => { if (window.confirm('Supprimer ce message ?')) deleteMessage.mutate(msg.id); }}
+                          className="p-0.5 rounded hover:bg-secondary"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="w-2.5 h-2.5 text-muted-foreground/60 hover:text-destructive" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -276,36 +386,30 @@ export default function MessageThread({ user, conv, onBack }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div className="p-4 border-t border-border flex-shrink-0">
+      {/* ── Input ── */}
+      <div className="px-4 py-3 border-t border-border flex-shrink-0 bg-card">
         {!isOpen && !hasAnyRequest ? (
-          // First message = request
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-muted-foreground font-inter text-xs bg-secondary/50 rounded-lg px-3 py-2">
-              <Lock className="w-3 h-3 text-primary/60" />
-              Votre premier message sera une demande de contact. La personne devra l'accepter.
+              <Lock className="w-3 h-3 text-primary/60 flex-shrink-0" />
+              <span>Premier message = demande de contact. La personne devra l'accepter.</span>
             </div>
             <div className="flex gap-2">
               <Input
                 value={text}
                 onChange={e => setText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSend()}
-                placeholder="Écrivez votre message de présentation..."
+                placeholder="Votre message de présentation..."
                 className="bg-secondary border-border font-inter text-sm"
               />
-              <Button
-                onClick={handleSend}
-                disabled={!text.trim() || sendRequest.isPending}
-                className="bg-primary text-primary-foreground flex-shrink-0"
-              >
+              <Button onClick={handleSend} disabled={!text.trim() || sendRequest.isPending} className="bg-primary text-primary-foreground flex-shrink-0 px-4">
                 <Send className="w-4 h-4" />
               </Button>
             </div>
           </div>
         ) : myPendingRequest && !isOpen ? (
           <div className="text-center py-2 font-inter text-xs text-muted-foreground flex items-center justify-center gap-2">
-            <Clock className="w-3 h-3 text-amber-400" />
-            En attente d'acceptation...
+            <Clock className="w-3 h-3 text-amber-400" /> En attente d'acceptation...
           </div>
         ) : isOpen ? (
           <div className="flex gap-2">
@@ -316,20 +420,51 @@ export default function MessageThread({ user, conv, onBack }) {
               placeholder="Votre message..."
               className="bg-secondary border-border font-inter text-sm"
             />
-            <Button
-              onClick={handleSend}
-              disabled={!text.trim() || sendMessage.isPending}
-              className="bg-primary text-primary-foreground flex-shrink-0"
-            >
+            <Button onClick={handleSend} disabled={!text.trim() || sendMessage.isPending} className="bg-primary text-primary-foreground flex-shrink-0 px-4">
               <Send className="w-4 h-4" />
             </Button>
           </div>
         ) : (
-          <div className="text-center py-2 font-inter text-xs text-muted-foreground">
-            Cette conversation est fermée.
-          </div>
+          <div className="text-center py-2 font-inter text-xs text-muted-foreground">Cette conversation est fermée.</div>
         )}
       </div>
+
+      {/* Context menu for messages (right-click) */}
+      <AnimatePresence>
+        {msgMenu && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.92 }}
+            transition={{ duration: 0.1 }}
+            style={{ position: 'fixed', top: msgMenu.y, left: Math.min(msgMenu.x, window.innerWidth - 200), zIndex: 100 }}
+            className="w-48 bg-popover border border-border rounded-xl shadow-2xl overflow-hidden"
+          >
+            <button
+              onClick={() => { navigator.clipboard.writeText(msgMenu.msg.content); toast.success('Copié'); setMsgMenu(null); }}
+              className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm hover:bg-secondary transition-colors"
+            >
+              <Copy className="w-4 h-4 text-muted-foreground" /> Copier
+            </button>
+            {msgMenu.msg.sender_email !== user.email && (
+              <button
+                onClick={() => { setReportMsg(msgMenu.msg); setMsgMenu(null); }}
+                className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <Flag className="w-4 h-4" /> Signaler
+              </button>
+            )}
+            {msgMenu.msg.sender_email === user.email && (
+              <button
+                onClick={() => { if (window.confirm('Supprimer ce message ?')) deleteMessage.mutate(msgMenu.msg.id); setMsgMenu(null); }}
+                className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" /> Supprimer
+              </button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {reportMsg && (
         <ReportModal

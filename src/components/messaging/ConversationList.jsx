@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { format } from 'date-fns';
+import { format, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MessageCircle, CheckCircle, Star, Award, Zap, Shield, UserCheck } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -22,6 +22,13 @@ const BADGE_ICONS = {
   'Partenaire':    { icon: Award,       color: 'text-orange-400' },
 };
 
+function formatTime(date) {
+  const d = new Date(date);
+  if (isToday(d)) return format(d, 'HH:mm');
+  if (isYesterday(d)) return 'Hier';
+  return format(d, 'dd/MM', { locale: fr });
+}
+
 export default function ConversationList({ user, selectedConvId, onSelectConv }) {
   const { data: allMessages = [], isLoading, refetch: refetchMessages } = useQuery({
     queryKey: ['all-chat-messages', user.email],
@@ -36,7 +43,6 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
     refetchInterval: 5000,
   });
 
-  // Real-time subscription
   useEffect(() => {
     if (!user.email) return;
     const unsub = base44.entities.ChatMessage.subscribe((event) => {
@@ -96,70 +102,83 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
   if (conversations.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-center py-10">
-        <MessageCircle className="w-8 h-8 text-muted-foreground/40 mb-3" />
-        <p className="font-inter text-xs text-muted-foreground">Aucune conversation</p>
-        <p className="font-inter text-[10px] text-muted-foreground/60 mt-1">Suivez des profils pour les contacter</p>
+        <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-3">
+          <MessageCircle className="w-6 h-6 text-primary/50" />
+        </div>
+        <p className="font-inter text-sm font-medium text-muted-foreground">Aucune conversation</p>
+        <p className="font-inter text-[11px] text-muted-foreground/60 mt-1">Suivez des profils pour les contacter</p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+    <div className="flex-1 overflow-y-auto space-y-1 pr-0.5">
       {conversations.map(conv => {
+        const isSelected = selectedConvId === conv.convId;
         const topBadge = conv.badges?.[0];
         const badgeCfg = topBadge ? BADGE_ICONS[topBadge] : null;
         const BadgeIcon = badgeCfg?.icon;
+        const hasUnread = conv.unread > 0;
 
         return (
           <button
             key={conv.convId}
             onClick={() => onSelectConv(conv)}
-            className={`w-full text-left p-3 rounded-xl transition-all ${
-              selectedConvId === conv.convId
+            className={`w-full text-left px-3 py-3 rounded-xl transition-all relative ${
+              isSelected
                 ? 'bg-primary/15 border border-primary/30'
-                : 'bg-card border border-border hover:border-primary/20 hover:bg-card/80'
+                : hasUnread
+                  ? 'bg-card border border-primary/10 hover:border-primary/25'
+                  : 'bg-card border border-border hover:border-border/80 hover:bg-secondary/30'
             }`}
           >
             <div className="flex items-center gap-3">
               {/* Avatar */}
-              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0 border border-border overflow-hidden relative">
-                {conv.avatar ? (
-                  <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-grotesk font-bold text-sm text-primary">
-                    {conv.name?.[0]?.toUpperCase() || '?'}
-                  </span>
-                )}
-                {conv.is_verified === true && (
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-background rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-3 h-3 text-accent" />
-                  </div>
-                )}
-                {conv.isOnline && !conv.is_verified && (
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+              <div className="relative flex-shrink-0">
+                <div className="w-11 h-11 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden">
+                  {conv.avatar ? (
+                    <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-grotesk font-bold text-base text-primary">
+                      {conv.name?.[0]?.toUpperCase() || '?'}
+                    </span>
+                  )}
+                </div>
+                {conv.isOnline && (
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                 )}
               </div>
 
+              {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-0.5">
-                  <div className="flex items-center gap-1 min-w-0">
-                    <span className="font-inter font-medium text-sm truncate">{conv.name}</span>
+                  <div className="flex items-center gap-1 min-w-0 flex-1">
+                    <span className={`font-inter text-sm truncate ${hasUnread ? 'font-semibold text-foreground' : 'font-medium text-foreground/90'}`}>
+                      {conv.name}
+                    </span>
                     <VerificationIcons verifications={conv.verifications} />
                     {BadgeIcon && (
                       <BadgeIcon className={`w-3 h-3 flex-shrink-0 ${badgeCfg.color}`} />
                     )}
                   </div>
-                  {conv.lastMsg?.created_date && (
-                    <span className="font-mono text-[9px] text-muted-foreground flex-shrink-0 ml-2">
-                      {format(new Date(conv.lastMsg.created_date), 'HH:mm', { locale: fr })}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                    {conv.lastMsg?.created_date && (
+                      <span className={`font-mono text-[10px] ${hasUnread ? 'text-primary' : 'text-muted-foreground'}`}>
+                        {formatTime(conv.lastMsg.created_date)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <p className="font-inter text-[11px] text-muted-foreground truncate">{conv.lastMsg?.content}</p>
-                  {conv.unread > 0 && (
-                    <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground font-mono text-[9px] flex items-center justify-center flex-shrink-0 ml-2">
-                      {conv.unread}
+                <div className="flex items-center justify-between gap-2">
+                  <p className={`font-inter text-xs truncate flex-1 ${hasUnread ? 'text-foreground/80' : 'text-muted-foreground'}`}>
+                    {conv.lastMsg?.sender_email === user.email && (
+                      <span className="text-muted-foreground/60">Vous : </span>
+                    )}
+                    {conv.lastMsg?.content}
+                  </p>
+                  {hasUnread && (
+                    <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground font-mono text-[10px] flex items-center justify-center flex-shrink-0 font-bold">
+                      {conv.unread > 9 ? '9+' : conv.unread}
                     </span>
                   )}
                 </div>

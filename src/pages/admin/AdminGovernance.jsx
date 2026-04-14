@@ -160,7 +160,8 @@ export default function AdminGovernance() {
             </div>
           )}
           {filtered.map(u => {
-            const roleCfg = ROLE_CONFIG[u.role] || ROLE_CONFIG.user;
+            const effectiveRole = PDG_EMAILS.includes(u.email) ? 'owner' : (PDG_ADJOINT_EMAILS.includes(u.email) ? 'pdg_adjoint' : u.role);
+            const roleCfg = ROLE_CONFIG[effectiveRole] || ROLE_CONFIG.user;
             const editable = canEditUser(u);
             const isCurrentUser = u.email === currentUser?.email;
 

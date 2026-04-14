@@ -66,12 +66,15 @@ export default function AdminBadges() {
     toast.success(newVal === 'no' ? 'Vérification retirée' : 'Compte vérifié !');
   };
 
+  const PDG_EMAILS_LIST = ['contact.astuceson@gmail.com'];
   const PDG_ADJOINT_EMAILS_LIST = ['sentenacborys@gmail.com'];
-  const isOwner = currentUser?.role === 'owner' || currentUser?.email === 'contact.astuceson@gmail.com' || currentUser?.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS_LIST.includes(currentUser?.email);
+  const isOwner = currentUser?.role === 'owner' || PDG_EMAILS_LIST.includes(currentUser?.email);
+  const isPdgAdjoint = currentUser?.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS_LIST.includes(currentUser?.email);
+  const canManageSupremeAndBadges = isOwner || isPdgAdjoint;
 
   const toggleVerification = (user, key) => {
-    if (key === 'supreme' && !isOwner) {
-      toast.error('Seul le propriétaire peut attribuer ou retirer le rang Suprême.');
+    if (key === 'supreme' && !canManageSupremeAndBadges) {
+      toast.error('Seul le PDG ou PDG-Adjoint peut attribuer ou retirer le rang Suprême.');
       return;
     }
     const current = user.verifications || [];

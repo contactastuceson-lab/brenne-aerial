@@ -115,12 +115,12 @@ export default function AdminLayout() {
       {/* Main content */}
       <main className="flex-1 ml-14 lg:ml-56 min-h-screen overflow-x-hidden">
         {/* Top banner pour PDG-Adjoint */}
-        {isTopMgmt && user?.role !== 'owner' && (
+        {isTopMgmt && !PDG_EMAILS.includes(user?.email) && user?.role !== 'owner' && (
           <div className="sticky top-0 z-30 px-4 py-1.5 text-center font-mono text-[10px] font-semibold" style={{ background: 'linear-gradient(90deg,#92400e,#d97706,#92400e)', color: '#fde68a', letterSpacing: '0.1em' }}>
             🥈 SESSION PDG-ADJOINT — Accès complet direction activé
           </div>
         )}
-        {isTopMgmt && user?.role === 'owner' && (
+        {(isTopMgmt && (user?.role === 'owner' || PDG_EMAILS.includes(user?.email))) && (
           <div className="sticky top-0 z-30 px-4 py-1.5 text-center font-mono text-[10px] font-semibold" style={{ background: 'linear-gradient(90deg,#78350f,#f59e0b,#78350f)', color: '#fde68a', letterSpacing: '0.1em' }}>
             👑 SESSION PDG — Contrôle total plateforme
           </div>

@@ -54,7 +54,7 @@ export default function MessageThread({ user, conv, onBack }) {
   }, [msgMenu]);
 
   // Official / protected team members cannot be blocked
-  const PROTECTED_BADGES = ['Admin', 'Officiel', 'Collaborateur', 'Pilote'];
+  const PROTECTED_BADGES = ['Officiel'];
   const isProtectedTeamMember = conv.role === 'admin' || conv.badges?.some(b => PROTECTED_BADGES.includes(b));
 
   // Block status

@@ -25,6 +25,7 @@ const NAV = [
   { path: '/admin/governance', icon: Crown, label: 'Gouvernance', topOnly: true },
   { path: '/admin/employees', icon: Briefcase, label: 'Équipe', topOnly: true },
   { path: '/admin/site-config', icon: Settings, label: 'Gestion du Site' },
+  { path: '/admin/pdg', icon: Crown, label: 'Espace PDG', topOnly: true },
 ];
 
 export default function AdminLayout() {

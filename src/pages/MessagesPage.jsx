@@ -57,7 +57,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="pt-16 h-screen flex flex-col">
+    <div className="h-[calc(100vh-4rem)] flex flex-col">
       <div className="flex flex-1 overflow-hidden max-w-6xl mx-auto w-full px-4 py-4 gap-4">
 
         {/* Left panel */}

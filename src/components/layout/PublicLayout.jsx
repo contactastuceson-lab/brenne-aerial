@@ -17,6 +17,7 @@ export default function PublicLayout() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const hideFooter = location.pathname === '/messages';
+  const hideFloatingButton = location.pathname === '/messages';
 
   useEffect(() => {
     const init = async () => {
@@ -102,7 +103,7 @@ export default function PublicLayout() {
       </main>
       {!hideFooter && <Footer />}
       <AnnouncementPopup user={user} />
-      <DonationFloatingButton />
+      {!hideFloatingButton && <DonationFloatingButton />}
     </div>
   );
 }

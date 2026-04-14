@@ -3,9 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft, Send, Lock, Check, X, Flag, Clock,
-  MoreVertical, Trash2, UserX, Copy, Info, ShieldOff, ShieldAlert
+  MoreVertical, Trash2, Copy, Info, ShieldOff, ShieldAlert
 } from 'lucide-react';
 import ReportModal from '@/components/shared/ReportModal';
+import UserProfileModal from '@/components/shared/UserProfileModal';
 import BadgeChip from '@/components/ui/BadgeChip';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ export default function MessageThread({ user, conv, onBack }) {
   const isInitialLoad = useRef(true);
 
   const [showUnblockConfirm, setShowUnblockConfirm] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const convId = conv.convId || getConversationId(user.email, conv.email);
 
   useEffect(() => {
@@ -234,7 +236,7 @@ export default function MessageThread({ user, conv, onBack }) {
           <ArrowLeft className="w-4 h-4" />
         </button>
 
-        <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden flex-shrink-0 relative">
+        <button onClick={() => setShowProfile(true)} className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden flex-shrink-0 relative hover:ring-2 hover:ring-primary/40 transition-all">
           {conv.avatar ? (
             <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -242,11 +244,11 @@ export default function MessageThread({ user, conv, onBack }) {
               {conv.name?.[0]?.toUpperCase() || '?'}
             </span>
           )}
-        </div>
+        </button>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <p className="font-grotesk font-semibold text-sm">{conv.name}</p>
+            <button onClick={() => setShowProfile(true)} className="font-grotesk font-semibold text-sm hover:text-primary transition-colors">{conv.name}</button>
             <VerificationIcons verifications={conv.verifications} />
             {conv.badges?.slice(0, 2).map(b => (
               <BadgeChip key={b} badge={b} size="sm" />
@@ -290,11 +292,7 @@ export default function MessageThread({ user, conv, onBack }) {
                     Copier l'email
                   </button>
                   <button
-                    onClick={() => {
-                      setShowOptions(false);
-                      // scroll to top
-                      if (scrollAreaRef.current) scrollAreaRef.current.scrollTop = 0;
-                    }}
+                    onClick={() => { setShowProfile(true); setShowOptions(false); }}
                     className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-foreground hover:bg-secondary transition-colors"
                   >
                     <Info className="w-4 h-4 text-muted-foreground" />
@@ -573,6 +571,23 @@ export default function MessageThread({ user, conv, onBack }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {showProfile && (
+        <UserProfileModal
+          profile={{
+            full_name: conv.name,
+            email: conv.email,
+            avatar_url: conv.avatar,
+            cover_url: conv.cover_url,
+            bio: conv.bio,
+            location: conv.location,
+            role: conv.role,
+            badges: conv.badges,
+            verifications: conv.verifications,
+          }}
+          onClose={() => setShowProfile(false)}
+        />
+      )}
 
       {reportMsg && (
         <ReportModal

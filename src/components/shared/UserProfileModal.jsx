@@ -1,20 +1,21 @@
 import React from 'react';
-import { X, MapPin, MessageCircle } from 'lucide-react';
+import { X, MapPin, MessageCircle, Star, UserCheck, Award, Shield, Zap, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import BadgePopup from '@/components/ui/BadgePopup';
 import { Link } from 'react-router-dom';
 
 const BADGE_CONFIG = {
-  'Fondateur':      { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
-  'Collaborateur':  { color: 'text-blue-400',   bg: 'bg-blue-400/10',   border: 'border-blue-400/30' },
-  'VIP':            { color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
-  'Admin':          { color: 'text-red-400',    bg: 'bg-red-400/10',    border: 'border-red-400/30' },
-  'Pilote':         { color: 'text-primary',    bg: 'bg-primary/10',    border: 'border-primary/30' },
-  'Officiel':       { color: 'text-accent',     bg: 'bg-accent/10',     border: 'border-accent/30' },
-  'Vérifié':        { color: 'text-green-400',  bg: 'bg-green-400/10',  border: 'border-green-400/30' },
-  'Beta Testeur':   { color: 'text-pink-400',   bg: 'bg-pink-400/10',   border: 'border-pink-400/30' },
-  'Partenaire':     { color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/30' },
+  'Fondateur':      { icon: Star,        color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
+  'Collaborateur':  { icon: UserCheck,   color: 'text-blue-400',   bg: 'bg-blue-400/10',   border: 'border-blue-400/30' },
+  'VIP':            { icon: Award,       color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
+  'Admin':          { icon: Shield,      color: 'text-red-400',    bg: 'bg-red-400/10',    border: 'border-red-400/30' },
+  'Pilote':         { icon: Zap,         color: 'text-primary',    bg: 'bg-primary/10',    border: 'border-primary/30' },
+  'Officiel':       { icon: CheckCircle, color: 'text-accent',     bg: 'bg-accent/10',     border: 'border-accent/30' },
+  'Vérifié':        { icon: CheckCircle, color: 'text-green-400',  bg: 'bg-green-400/10',  border: 'border-green-400/30' },
+  'Beta Testeur':   { icon: Zap,         color: 'text-pink-400',   bg: 'bg-pink-400/10',   border: 'border-pink-400/30' },
+  'Partenaire':     { icon: Award,       color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/30' },
+  'Donateur':       { icon: Star,        color: 'text-amber-400',  bg: 'bg-amber-400/10',  border: 'border-amber-400/30' },
 };
 
 export default function UserProfileModal({ profile, onClose }) {
@@ -88,9 +89,11 @@ export default function UserProfileModal({ profile, onClose }) {
             <div className="flex flex-wrap gap-1.5 mb-4">
               {profile.badges.map(b => {
                 const cfg = BADGE_CONFIG[b];
+                const Icon = cfg?.icon;
                 return (
                   <BadgePopup key={b} badgeKey={b}>
-                    <span className={`flex items-center gap-1 font-inter text-[9px] px-2 py-0.5 rounded-full border cursor-pointer ${cfg ? `${cfg.color} ${cfg.bg} ${cfg.border}` : 'bg-secondary border-border text-muted-foreground'}`}>
+                    <span className={`flex items-center gap-1 font-inter text-xs px-2.5 py-1 rounded-full border cursor-pointer transition-opacity hover:opacity-80 ${cfg ? `${cfg.color} ${cfg.bg} ${cfg.border}` : 'bg-secondary border-border text-muted-foreground'}`}>
+                      {Icon && <Icon className="w-3 h-3" />}
                       {b}
                     </span>
                   </BadgePopup>

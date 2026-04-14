@@ -26,7 +26,13 @@
         "technique",
         "securite",
         "commercial",
-        "marketing"
+        "marketing",
+        "maintenance",
+        "surete",
+        "data_ia",
+        "rh",
+        "relation_client",
+        "creatif"
       ],
       "description": "P\u00f4le / d\u00e9partement"
     },

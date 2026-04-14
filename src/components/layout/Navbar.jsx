@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { hasAdminAccess } from '@/lib/roles';
 
 const NAV_LINKS = [
   { to: '/', label: 'Accueil' },
@@ -136,10 +137,10 @@ export default function Navbar() {
               >
                 <LogOut className="w-4 h-4" />
               </Button>
-              {user.role === 'admin' && (
+              {hasAdminAccess(user) && (
                 <Link to="/admin">
-                  <Button size="sm" className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-inter text-xs">
-                    Admin
+                  <Button size="sm" className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-inter text-xs gap-1.5">
+                    <LayoutDashboard className="w-3.5 h-3.5" /> Admin
                   </Button>
                 </Link>
               )}
@@ -213,7 +214,7 @@ export default function Navbar() {
                     >
                       <LogOut className="w-4 h-4" /> Déconnexion
                     </Button>
-                    {user.role === 'admin' && (
+                    {hasAdminAccess(user) && (
                       <Link to="/admin" onClick={() => setOpen(false)}>
                         <Button size="sm" className="w-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-inter text-sm gap-2">
                           <LayoutDashboard className="w-4 h-4" /> Panel Admin

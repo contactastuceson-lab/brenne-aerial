@@ -124,7 +124,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* ── MAIN CONTENT ── */}
-      <main className="flex-1 lg:ml-56 min-h-screen overflow-x-hidden pb-20 lg:pb-0">
+      <main className="flex-1 lg:ml-56 min-h-screen overflow-x-hidden pb-24 lg:pb-0">
         {/* PDG banners */}
         {isTopMgmt && !PDG_EMAILS.includes(user?.email) && user?.role !== 'owner' && (
           <div className="sticky top-0 z-30 px-4 py-1.5 text-center font-mono text-[10px] font-semibold"
@@ -144,13 +144,13 @@ export default function AdminLayout() {
       </main>
 
       {/* ── MOBILE BOTTOM NAV ── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-sidebar border-t border-sidebar-border flex items-stretch h-16 safe-bottom">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-sidebar border-t border-sidebar-border flex items-stretch h-16" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {bottomNavItems.map(item => {
           const active = isActive(item.path);
           const Icon = item.icon;
           return (
             <Link key={item.path} to={item.path}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-all ${
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-all relative ${
                 active ? 'text-primary' : 'text-muted-foreground'
               }`}>
               <Icon className="w-5 h-5" />

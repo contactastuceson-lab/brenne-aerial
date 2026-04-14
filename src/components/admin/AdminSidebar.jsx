@@ -22,7 +22,7 @@ export default function AdminSidebar() {
   const location = useLocation();
 
   return (
-    <aside className="w-16 lg:w-56 min-h-screen bg-sidebar border-r border-sidebar-border flex flex-col py-6 fixed left-0 top-0 z-40">
+    <aside className="hidden lg:flex w-56 min-h-screen bg-sidebar border-r border-sidebar-border flex-col py-6 fixed left-0 top-0 z-40">
       <div className="px-4 mb-8">
         <Link to="/" className="flex items-center gap-2 text-sidebar-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" />

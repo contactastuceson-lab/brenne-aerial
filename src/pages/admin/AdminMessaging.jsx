@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -97,14 +97,27 @@ export default function AdminMessaging() {
                 <p className="font-inter text-xs text-muted-foreground">Envoyé depuis le profil officiel — l'utilisateur ne peut pas répondre</p>
               </div>
             </div>
-            <Select value={officialForm.recipient_email} onValueChange={val => setOfficialForm(p => ({ ...p, recipient_email: val }))}>
-              <SelectTrigger className="bg-secondary border-border">
-                <SelectValue placeholder="Sélectionner un destinataire" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map(u => <SelectItem key={u.id} value={u.email}>{u.full_name} ({u.email})</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-between border-border bg-secondary">
+                  {officialForm.recipient_email ? users.find(u => u.email === officialForm.recipient_email)?.full_name : 'Sélectionner un destinataire'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="p-2 w-72">
+                <div className="space-y-1 max-h-64 overflow-y-auto">
+                  {users.map(u => (
+                    <button
+                      key={u.id}
+                      onClick={() => setOfficialForm(p => ({ ...p, recipient_email: u.email }))}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-secondary transition-colors font-inter text-sm"
+                    >
+                      <span className="font-medium text-foreground">{u.full_name}</span>
+                      <span className="text-muted-foreground text-xs ml-2">({u.email})</span>
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
             <Textarea
               placeholder="Contenu du message officiel..."
               value={officialForm.content}

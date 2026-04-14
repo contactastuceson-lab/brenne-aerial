@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane, Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail, Award, Heart, ArrowLeft, Crown, Building2, Settings } from 'lucide-react';
-import { ROLE_CONFIG, hasAdminAccess, canManageSupreme, PDG_ADJOINT_EMAILS } from '@/lib/roles';
+import { ROLE_CONFIG, hasAdminAccess, canManageSupreme, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 
 const NAV = [
   { path: '/admin', icon: BarChart3, label: 'Dashboard' },
@@ -22,7 +22,7 @@ const NAV = [
   { path: '/admin/maintenance', icon: Shield, label: 'Maintenance' },
   { path: '/admin/emailing', icon: Mail, label: 'Emailing' },
   { path: '/admin/status', icon: Settings, label: 'Statut Site' },
-  { path: '/admin/governance', icon: Crown, label: 'Gouvernance' },
+  { path: '/admin/governance', icon: Crown, label: 'Gouvernance', topOnly: true },
 ];
 
 export default function AdminLayout() {
@@ -50,7 +50,7 @@ export default function AdminLayout() {
     );
   }
 
-  const isTopMgmt = user?.role === 'owner' || user?.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS.includes(user?.email);
+  const isTopMgmt = user?.role === 'owner' || user?.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS.includes(user?.email) || PDG_EMAILS.includes(user?.email);
   const roleCfg = ROLE_CONFIG[user?.role] || ROLE_CONFIG.admin;
 
   const visibleNav = NAV.filter(item => !item.topOnly || isTopMgmt);

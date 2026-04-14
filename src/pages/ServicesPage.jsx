@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Video, Building2, HardHat, Camera, Briefcase, Wifi, Check, ArrowRight, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Video, Building2, HardHat, Camera, Briefcase, Wifi, Check, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { formatPrice, SERVICE_PRICES } from '@/lib/droneUtils';
+import { formatPrice } from '@/lib/droneUtils';
+import NeedSelector, { PROFILES } from '@/components/services/NeedSelector';
+import SecuritySection from '@/components/services/SecuritySection';
+import WeatherWidget from '@/components/services/WeatherWidget';
+import ComboPacks from '@/components/services/ComboPacks';
 
 const ICON_MAP = {
   Video, Building2, HardHat, Camera, Briefcase, Wifi,
@@ -30,6 +34,8 @@ const SERVICE_DESCRIPTIONS = {
 };
 
 export default function ServicesPage() {
+  const [activeProfile, setActiveProfile] = useState(null);
+
   const { data: services = [], isLoading } = useQuery({
     queryKey: ['services-list'],
     queryFn: () => base44.entities.Service.filter({ is_active: true }, 'order'),
@@ -44,10 +50,15 @@ export default function ServicesPage() {
     );
   }
 
+  const activeProfileData = PROFILES.find(p => p.key === activeProfile);
+  const filteredServices = activeProfileData
+    ? services.filter(svc => activeProfileData.slugs.includes(svc.slug))
+    : services;
+
   return (
     <div className="pt-16">
       {/* Hero */}
-      <section className="relative py-32 px-5 lg:px-10 text-center overflow-hidden">
+      <section className="relative py-28 px-5 lg:px-10 text-center overflow-hidden">
         <div className="absolute inset-0 grid-bg" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         <div className="relative max-w-4xl mx-auto">
@@ -56,77 +67,103 @@ export default function ServicesPage() {
             <h1 className="font-grotesk font-bold text-5xl sm:text-6xl mb-4">
               Solutions <span className="gradient-text">drone</span><br />professionnelles
             </h1>
-            <p className="font-inter text-muted-foreground text-lg max-w-xl mx-auto">
-              De l'inspection technique à la captation cinématographique — six prestations premium 
+            <p className="font-inter text-muted-foreground text-lg max-w-xl mx-auto mb-8">
+              De l'inspection technique à la captation cinématographique — des prestations premium 
               pour répondre à tous vos besoins aériens.
             </p>
+            {/* Weather widget inline in hero */}
+            <div className="max-w-xl mx-auto text-left">
+              <WeatherWidget />
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Services */}
-      <section className="px-5 lg:px-10 max-w-7xl mx-auto pb-24">
-        <div className="space-y-8">
-          {services.map((svc, i) => {
-            const desc = SERVICE_DESCRIPTIONS[svc.slug] || { color: 'text-primary', icon: 'Video', features: [] };
-            const Icon = ICON_MAP[desc.icon] || Video;
-            const price = { base: svc.base_price, per_hour: svc.price_per_hour };
-            return (
-              <motion.div key={svc.key}
-                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                className={`grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-2xl overflow-hidden border border-border bg-card ${
-                  i % 2 !== 0 ? 'lg:grid-flow-dense' : ''
-                }`}
-              >
-                {/* Image */}
-                <div className={`relative overflow-hidden ${i % 2 !== 0 ? 'lg:order-2' : ''}`}>
-                  <img src={desc?.image} alt={svc.name}
-                    className="w-full h-full object-cover min-h-[250px] lg:min-h-0"
-                    style={{ filter: 'brightness(0.7) contrast(1.1) saturate(0.8)' }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent lg:bg-gradient-to-r lg:from-card/40 lg:to-transparent" />
-                  <div className="absolute top-4 left-4">
-                    <div className={`inline-flex items-center gap-2 font-mono text-xs border rounded-full px-3 py-1 bg-background/60 backdrop-blur-sm ${desc?.color} border-current/30`}>
-                      <Icon className="w-3 h-3" />
-                      {svc.name}
-                    </div>
-                  </div>
-                </div>
+      {/* Need selector */}
+      <NeedSelector active={activeProfile} onChange={setActiveProfile} />
 
-                {/* Content */}
-                <div className={`p-8 lg:p-12 flex flex-col justify-center ${i % 2 !== 0 ? 'lg:order-1' : ''}`}>
-                  <Icon className={`w-8 h-8 ${desc?.color} mb-4`} />
-                  <p className="font-mono text-xs text-muted-foreground mb-2">{desc?.tagline}</p>
-                  <h3 className="font-grotesk font-bold text-2xl mb-4">{svc.name}</h3>
-                  <p className="font-inter text-sm text-muted-foreground leading-relaxed mb-6">{desc?.desc}</p>
-                  <ul className="space-y-2 mb-6">
-                    {desc?.features.map(f => (
-                      <li key={f} className="flex items-center gap-2">
-                        <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                        <span className="font-inter text-xs text-muted-foreground">{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-mono text-xs text-muted-foreground">À partir de</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className="font-grotesk font-bold text-xl text-primary">{formatPrice(price?.base || 0)}</p>
-                        <span className="font-mono text-[10px] px-2 py-1 rounded-full bg-chart-5/10 text-chart-5 font-semibold">Bientôt</span>
+      {/* Services */}
+      <section className="px-5 lg:px-10 max-w-7xl mx-auto pb-8">
+        {activeProfile && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6 flex items-center gap-2">
+            <span className="font-inter text-sm text-muted-foreground">
+              {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} pour votre profil
+            </span>
+            <button onClick={() => setActiveProfile(null)} className="font-mono text-xs text-primary hover:underline">
+              Voir tout
+            </button>
+          </motion.div>
+        )}
+        <div className="space-y-8">
+          <AnimatePresence mode="wait">
+            {filteredServices.map((svc, i) => {
+              const desc = SERVICE_DESCRIPTIONS[svc.slug] || { color: 'text-primary', icon: 'Video', features: [] };
+              const Icon = ICON_MAP[desc.icon] || Video;
+              const price = { base: svc.base_price, per_hour: svc.price_per_hour };
+              return (
+                <motion.div key={svc.slug || svc.id}
+                  initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-2xl overflow-hidden border border-border bg-card ${
+                    i % 2 !== 0 ? 'lg:grid-flow-dense' : ''
+                  }`}
+                >
+                  {/* Image */}
+                  <div className={`relative overflow-hidden ${i % 2 !== 0 ? 'lg:order-2' : ''}`}>
+                    <img src={desc?.image} alt={svc.name}
+                      className="w-full h-full object-cover min-h-[250px] lg:min-h-0"
+                      style={{ filter: 'brightness(0.7) contrast(1.1) saturate(0.8)' }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent lg:bg-gradient-to-r lg:from-card/40 lg:to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <div className={`inline-flex items-center gap-2 font-mono text-xs border rounded-full px-3 py-1 bg-background/60 backdrop-blur-sm ${desc?.color} border-current/30`}>
+                        <Icon className="w-3 h-3" />
+                        {svc.name}
                       </div>
                     </div>
-                    <Link to="/quote">
-                      <Button className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-grotesk font-semibold">
-                        Devis <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                      </Button>
-                    </Link>
                   </div>
-                </div>
-              </motion.div>
-            );
-          })}
+
+                  {/* Content */}
+                  <div className={`p-8 lg:p-12 flex flex-col justify-center ${i % 2 !== 0 ? 'lg:order-1' : ''}`}>
+                    <Icon className={`w-8 h-8 ${desc?.color} mb-4`} />
+                    <p className="font-mono text-xs text-muted-foreground mb-2">{desc?.tagline}</p>
+                    <h3 className="font-grotesk font-bold text-2xl mb-4">{svc.name}</h3>
+                    <p className="font-inter text-sm text-muted-foreground leading-relaxed mb-6">{desc?.desc}</p>
+                    <ul className="space-y-2 mb-6">
+                      {desc?.features.map(f => (
+                        <li key={f} className="flex items-center gap-2">
+                          <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                          <span className="font-inter text-xs text-muted-foreground">{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-mono text-xs text-muted-foreground">À partir de</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="font-grotesk font-bold text-xl text-primary">{formatPrice(price?.base || 0)}</p>
+                          <span className="font-mono text-[10px] px-2 py-1 rounded-full bg-chart-5/10 text-chart-5 font-semibold">Bientôt</span>
+                        </div>
+                      </div>
+                      <Link to="/quote">
+                        <Button className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-grotesk font-semibold">
+                          Devis <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </div>
       </section>
+
+      {/* Combo packs */}
+      <ComboPacks />
+
+      {/* Security section */}
+      <SecuritySection />
     </div>
   );
 }

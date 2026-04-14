@@ -48,7 +48,11 @@ export default function AdminUsers() {
   const qc = useQueryClient();
   const [currentUser, setCurrentUser] = useState(null);
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
-  const isOwner = currentUser?.role === 'owner' || currentUser?.email === 'contact.astuceson@gmail.com';
+  const PDG_EMAILS = ['contact.astuceson@gmail.com'];
+  const PDG_ADJOINT_EMAILS = ['sentenacborys@gmail.com'];
+  const isOwner = currentUser?.role === 'owner' || PDG_EMAILS.includes(currentUser?.email);
+  const isPdgAdjoint = currentUser?.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS.includes(currentUser?.email);
+  const canManageSupreme = isOwner || isPdgAdjoint;
   const [editUser, setEditUser] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [search, setSearch] = useState('');
@@ -301,13 +305,13 @@ export default function AdminUsers() {
                   <span className="font-mono text-xs text-muted-foreground hidden sm:block">{u.role || 'user'}</span>
                   {(() => {
                     const isTargetSupreme = (u.verifications || []).includes('supreme');
-                    const blocked = isTargetSupreme && !isOwner;
+                    const blocked = isTargetSupreme && !canManageSupreme;
                     return (
                       <>
                         {status === 'active' ? (
                           <Button size="sm" variant="outline"
                             className={blocked ? 'border-amber-600/30 text-amber-600/50 text-xs gap-1 cursor-not-allowed opacity-50' : 'border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10 text-xs gap-1'}
-                            onClick={() => blocked ? toast.error('Seul le propriétaire peut agir sur un membre Suprême.') : quickAction.mutate({ id: u.id, data: { account_status: 'suspended', suspension_reason: 'Suspension admin' } })}>
+                            onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut agir sur un membre Suprême.') : quickAction.mutate({ id: u.id, data: { account_status: 'suspended', suspension_reason: 'Suspension admin' } })}>
                             <ShieldOff className="w-3 h-3" /> Suspendre
                           </Button>
                         ) : status !== 'active' && (
@@ -317,12 +321,12 @@ export default function AdminUsers() {
                           </Button>
                         )}
                         <Button size="sm" variant="outline"
-                          onClick={() => blocked ? toast.error('Seul le propriétaire peut modifier un membre Suprême.') : openEdit(u)}
+                          onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut modifier un membre Suprême.') : openEdit(u)}
                           className={blocked ? 'border-amber-600/30 text-amber-600/50 text-xs cursor-not-allowed opacity-50' : 'border-border text-xs'}>
                           Modifier
                         </Button>
                         <Button size="sm" variant="outline"
-                          onClick={() => blocked ? toast.error('Seul le propriétaire peut supprimer un membre Suprême.') : (setDeleteConfirm(u), setDeleteReason(''), setEmailSent(false))}
+                          onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut supprimer un membre Suprême.') : (setDeleteConfirm(u), setDeleteReason(''), setEmailSent(false))}
                           className={`text-xs gap-1 ${
                             blocked
                               ? 'border-amber-600/30 text-amber-600/50 cursor-not-allowed opacity-50'

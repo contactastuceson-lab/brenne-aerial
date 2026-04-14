@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft, Send, Lock, Check, X, Flag, Clock,
-  MoreVertical, Trash2, UserX, Copy, Phone, Video, Info
+  MoreVertical, Trash2, UserX, Copy, Info, ShieldOff, ShieldAlert
 } from 'lucide-react';
 import ReportModal from '@/components/shared/ReportModal';
 import BadgeChip from '@/components/ui/BadgeChip';
@@ -31,6 +31,7 @@ export default function MessageThread({ user, conv, onBack }) {
   const prevCountRef = useRef(0);
   const isInitialLoad = useRef(true);
 
+  const [showUnblockConfirm, setShowUnblockConfirm] = useState(false);
   const convId = conv.convId || getConversationId(user.email, conv.email);
 
   useEffect(() => {
@@ -49,6 +50,33 @@ export default function MessageThread({ user, conv, onBack }) {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [msgMenu]);
+
+  // Block status
+  const { data: myBlocks = [] } = useQuery({
+    queryKey: ['my-blocks', user.email],
+    queryFn: () => base44.entities.Block.filter({ blocker_email: user.email }),
+    enabled: !!user.email,
+  });
+  const blockRecord = myBlocks.find(b => b.blocked_email === conv.email);
+  const isBlocked = !!blockRecord;
+
+  const blockUser = useMutation({
+    mutationFn: () => base44.entities.Block.create({ blocker_email: user.email, blocked_email: conv.email }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-blocks', user.email] });
+      toast.success(`${conv.name} a été bloqué`);
+      setShowOptions(false);
+    },
+  });
+
+  const unblockUser = useMutation({
+    mutationFn: () => base44.entities.Block.delete(blockRecord.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-blocks', user.email] });
+      toast.success(`${conv.name} a été débloqué`);
+      setShowUnblockConfirm(false);
+    },
+  });
 
   const { data: messages = [] } = useQuery({
     queryKey: ['thread', convId],
@@ -192,7 +220,10 @@ export default function MessageThread({ user, conv, onBack }) {
     setMsgMenu({ id: msg.id, msg, x: e.clientX, y: e.clientY });
   };
 
-  const visibleMessages = messages.filter(m => !m.is_request || m.request_status !== 'declined');
+  // If I blocked them, hide their messages from my view (they can still send but I don't see)
+  const visibleMessages = messages
+    .filter(m => !m.is_request || m.request_status !== 'declined')
+    .filter(m => !(isBlocked && m.sender_email === conv.email));
 
   return (
     <div className="flex flex-col h-full bg-card border border-border rounded-2xl overflow-hidden relative">
@@ -283,6 +314,24 @@ export default function MessageThread({ user, conv, onBack }) {
                     <Trash2 className="w-4 h-4" />
                     Supprimer la conversation
                   </button>
+                  {!isBlocked ? (
+                    <button
+                      onClick={() => { blockUser.mutate(); }}
+                      disabled={blockUser.isPending}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      <ShieldAlert className="w-4 h-4" />
+                      Bloquer cet utilisateur
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setShowUnblockConfirm(true); setShowOptions(false); }}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-yellow-400 hover:bg-yellow-400/10 transition-colors"
+                    >
+                      <ShieldOff className="w-4 h-4" />
+                      Débloquer cet utilisateur
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setReportMsg({ sender_email: conv.email, sender_name: conv.name, id: convId, content: '' });
@@ -388,7 +437,22 @@ export default function MessageThread({ user, conv, onBack }) {
 
       {/* ── Input ── */}
       <div className="px-4 py-3 border-t border-border flex-shrink-0 bg-card">
-        {!isOpen && !hasAnyRequest ? (
+        {isBlocked ? (
+          <div className="flex items-center justify-between gap-3 bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <ShieldAlert className="w-4 h-4 text-destructive flex-shrink-0" />
+              <span className="font-inter text-sm text-destructive/90">Vous avez bloqué <span className="font-semibold">{conv.name}</span></span>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-destructive/30 text-destructive hover:bg-destructive/10 text-xs flex-shrink-0 gap-1.5"
+              onClick={() => setShowUnblockConfirm(true)}
+            >
+              <ShieldOff className="w-3 h-3" /> Débloquer
+            </Button>
+          </div>
+        ) : !isOpen && !hasAnyRequest ? (
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-muted-foreground font-inter text-xs bg-secondary/50 rounded-lg px-3 py-2">
               <Lock className="w-3 h-3 text-primary/60 flex-shrink-0" />
@@ -462,6 +526,50 @@ export default function MessageThread({ user, conv, onBack }) {
                 <Trash2 className="w-4 h-4" /> Supprimer
               </button>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Unblock confirmation modal ── */}
+      <AnimatePresence>
+        {showUnblockConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+            >
+              <div className="w-12 h-12 rounded-full bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center mx-auto mb-4">
+                <ShieldOff className="w-6 h-6 text-yellow-400" />
+              </div>
+              <h3 className="font-grotesk font-bold text-base text-center mb-2">Débloquer {conv.name} ?</h3>
+              <p className="font-inter text-sm text-muted-foreground text-center mb-6">
+                Cette personne pourra à nouveau vous envoyer des messages et vous verrez ses messages.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1 border-border"
+                  onClick={() => setShowUnblockConfirm(false)}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold gap-1.5"
+                  onClick={() => unblockUser.mutate()}
+                  disabled={unblockUser.isPending}
+                >
+                  <ShieldOff className="w-4 h-4" />
+                  {unblockUser.isPending ? 'Déblocage...' : 'Débloquer'}
+                </Button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

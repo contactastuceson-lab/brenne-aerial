@@ -7,11 +7,10 @@ import {
   Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, Map,
   FolderOpen, Building2, Trash2, ArrowLeft
 } from 'lucide-react';
-import { ROLE_CONFIG, hasAdminAccess, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
+import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 
 // ─── Permission levels ─────────────────────────────────────────────────────
-// 100 = PDG (owner)
-// 90  = PDG-Adjoint
+// 100 = PDG (owner) + PDG-Adjoint (pdg_adjoint)
 // 80  = Conseil d'Administration
 // 70  = Admin
 // 60  = Directeur
@@ -83,22 +82,14 @@ const NAV_GROUPS = [
       { path: '/admin/accounts', icon: Users, label: 'Comptes & Rôles', minLevel: 80 },
       { path: '/admin/governance', icon: Crown, label: 'Gouvernance', minLevel: 80 },
       { path: '/admin/employees', icon: Briefcase, label: 'Équipe', minLevel: 80 },
-      { path: '/admin/pdg', icon: Crown, label: 'Espace PDG', minLevel: 90 },
+      { path: '/admin/pdg', icon: Crown, label: 'Espace PDG', minLevel: 100 },
     ]
   },
 ];
 
 const BOTTOM_NAV_PATHS = ['/admin', '/admin/quotes', '/admin/users', '/admin/conversations'];
 
-function getUserLevel(user) {
-  if (!user) return 0;
-  if (user.role === 'owner' || PDG_EMAILS.includes(user.email)) return 100;
-  if (user.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS.includes(user.email)) return 90;
-  if (user.role === 'conseil_admin') return 80;
-  if (user.role === 'admin') return 70;
-  if (user.role === 'directeur') return 60;
-  return 0;
-}
+// getUserLevel is now imported from lib/roles
 
 export default function AdminLayout() {
   const [user, setUser] = useState(null);
@@ -129,7 +120,7 @@ export default function AdminLayout() {
   }
 
   const userLevel = getUserLevel(user);
-  const isTopMgmt = userLevel >= 90;
+  const isTopMgmt = userLevel >= 100;
   const roleCfg = ROLE_CONFIG[user?.role] || ROLE_CONFIG.admin;
 
   // Filter groups and items by user level
@@ -142,14 +133,21 @@ export default function AdminLayout() {
   const bottomNavItems = visibleNav.filter(i => BOTTOM_NAV_PATHS.includes(i.path));
   const isActive = (path) => location.pathname === path || (path !== '/admin' && location.pathname.startsWith(path));
 
-  // Role badge color for banner
-  const levelBadge = {
-    100: { bg: 'linear-gradient(90deg,#78350f,#f59e0b,#78350f)', color: '#fde68a', text: '👑 SESSION PDG — Contrôle total plateforme' },
-    90:  { bg: 'linear-gradient(90deg,#92400e,#d97706,#92400e)', color: '#fde68a', text: '🥈 SESSION PDG-ADJOINT — Accès complet direction' },
-    80:  { bg: 'linear-gradient(90deg,#3b0764,#7c3aed,#3b0764)', color: '#e9d5ff', text: '🏛️ SESSION CONSEIL D\'ADMINISTRATION' },
-    70:  { bg: 'linear-gradient(90deg,#7f1d1d,#dc2626,#7f1d1d)', color: '#fecaca', text: '🛡️ SESSION ADMINISTRATEUR' },
-    60:  { bg: 'linear-gradient(90deg,#1e3a5f,#2563eb,#1e3a5f)', color: '#bfdbfe', text: '📊 SESSION DIRECTEUR' },
-  }[userLevel];
+  // Role session banners
+  const isOwner = user?.role === 'owner' || PDG_EMAILS.includes(user?.email);
+  const isPdgAdjoint = user?.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS.includes(user?.email);
+
+  const levelBadge = isOwner
+    ? { bg: 'linear-gradient(90deg,#78350f,#f59e0b,#78350f)', color: '#fde68a', text: '👑 SESSION PDG — Contrôle total plateforme' }
+    : isPdgAdjoint
+    ? { bg: 'linear-gradient(90deg,#78350f,#d97706,#78350f)', color: '#fde68a', text: '🥈 SESSION PDG-ADJOINT — Accès direction suprême' }
+    : userLevel === 80
+    ? { bg: 'linear-gradient(90deg,#3b0764,#7c3aed,#3b0764)', color: '#e9d5ff', text: "🏛️ SESSION CONSEIL D'ADMINISTRATION" }
+    : userLevel === 70
+    ? { bg: 'linear-gradient(90deg,#7f1d1d,#dc2626,#7f1d1d)', color: '#fecaca', text: '🛡️ SESSION ADMINISTRATEUR' }
+    : userLevel === 60
+    ? { bg: 'linear-gradient(90deg,#1e3a5f,#2563eb,#1e3a5f)', color: '#bfdbfe', text: '📊 SESSION DIRECTEUR' }
+    : null;
 
   const SidebarNavGroup = ({ group }) => (
     <div className="mb-4">

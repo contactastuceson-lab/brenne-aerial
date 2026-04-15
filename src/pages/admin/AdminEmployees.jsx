@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Users, Plus, Search, Pencil, Trash2, Eye, X, Save, Loader2, MapPin, Phone, Calendar } from 'lucide-react';
 import { POLES, JOB_ROLES, ALL_PERMISSIONS } from '@/lib/employeeRoles';
+import { getAssignableRoles, ROLE_CONFIG } from '@/lib/roles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +17,7 @@ const EMPTY_FORM = {
   user_email: '', full_name: '', avatar_url: '', cover_url: '', pole: 'direction',
   job_title: '', job_role_key: '', bio: '', location: '', phone: '',
   hire_date: '', is_public: true, status: 'active', permissions: [],
+  admin_role: '', // role to assign on the linked User account
 };
 
 export default function AdminEmployees() {
@@ -26,6 +28,8 @@ export default function AdminEmployees() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [viewEmployee, setViewEmployee] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
 
   const { data: employees = [], isLoading } = useQuery({
     queryKey: ['employees'],
@@ -41,11 +45,24 @@ export default function AdminEmployees() {
   });
 
   const saveMutation = useMutation({
-    mutationFn: (data) => editingId
-      ? base44.entities.Employee.update(editingId, data)
-      : base44.entities.Employee.create(data),
+    mutationFn: async (data) => {
+      const { admin_role, ...employeeData } = data;
+      const result = editingId
+        ? await base44.entities.Employee.update(editingId, employeeData)
+        : await base44.entities.Employee.create(employeeData);
+
+      // If a linked user account + a role was specified, update that user's role
+      if (data.user_email && admin_role) {
+        const linkedUser = siteUsers.find(u => u.email === data.user_email);
+        if (linkedUser) {
+          await base44.functions.invoke('adminUpdateUser', { id: linkedUser.id, data: { role: admin_role } });
+        }
+      }
+      return result;
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['employees'] });
+      qc.invalidateQueries({ queryKey: ['admin-users-for-employees'] });
       setShowForm(false);
       setEditingId(null);
       setForm(EMPTY_FORM);
@@ -79,6 +96,7 @@ export default function AdminEmployees() {
       is_public: emp.is_public !== false,
       status: emp.status || 'active',
       permissions: emp.permissions || [],
+      admin_role: '',
     });
     setShowForm(true);
   };
@@ -233,6 +251,36 @@ export default function AdminEmployees() {
                     </SelectContent>
                   </Select>
                 </div>
+                {/* Role to assign on platform */}
+                {form.user_email && form.user_email !== '__custom__' && (
+                  <div className="col-span-2">
+                    <label className="font-inter text-xs text-muted-foreground mb-1 block">
+                      Rôle plateforme à attribuer au compte lié
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Select value={form.admin_role || '__keep__'} onValueChange={v => setForm(p => ({ ...p, admin_role: v === '__keep__' ? '' : v }))}>
+                        <SelectTrigger className="bg-secondary border-border flex-1"><SelectValue placeholder="Choisir un rôle..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__keep__">— Conserver le rôle actuel —</SelectItem>
+                          {getAssignableRoles(currentUser).map(r => (
+                            <SelectItem key={r.role} value={r.role}>
+                              {r.emoji} {r.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {form.admin_role && (
+                        <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-1 rounded-full border border-primary/20 whitespace-nowrap">
+                          ✓ Sera attribué à la sauvegarde
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-inter text-[10px] text-muted-foreground mt-1">
+                      Ce rôle donnera accès au panel admin selon la hiérarchie des permissions.
+                    </p>
+                  </div>
+                )}
+
                 <div className="col-span-2">
                   <label className="font-inter text-xs text-muted-foreground mb-1 block">Nom complet *</label>
                   <Input value={form.full_name} onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))} className="bg-secondary border-border" placeholder="Sera auto-rempli si compte lié" />

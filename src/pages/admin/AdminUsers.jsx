@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { ROLE_CONFIG, getUserLevel, getAssignableRoles, PDG_EMAILS, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 
 const BADGES = ['Fondateur', 'Collaborateur', 'VIP', 'Admin', 'Pilote', 'Officiel', 'Vérifié', 'Beta Testeur', 'Partenaire'];
 
@@ -48,11 +49,12 @@ export default function AdminUsers() {
   const qc = useQueryClient();
   const [currentUser, setCurrentUser] = useState(null);
   useEffect(() => { base44.auth.me().then(setCurrentUser).catch(() => {}); }, []);
-  const PDG_EMAILS = ['contact.astuceson@gmail.com'];
-  const PDG_ADJOINT_EMAILS = ['sentenacborys@gmail.com'];
+  const myLevel = getUserLevel(currentUser);
   const isOwner = currentUser?.role === 'owner' || PDG_EMAILS.includes(currentUser?.email);
   const isPdgAdjoint = currentUser?.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS.includes(currentUser?.email);
-  const canManageSupreme = isOwner || isPdgAdjoint;
+  const canManageSupreme = myLevel >= 100;
+  // Roles this admin can assign
+  const assignableRoles = getAssignableRoles(currentUser);
   const [editUser, setEditUser] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [search, setSearch] = useState('');
@@ -223,11 +225,9 @@ export default function AdminUsers() {
           <SelectTrigger className="bg-card border-border w-36"><SelectValue placeholder="Rôle" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous rôles</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="user">Utilisateur</SelectItem>
-            <SelectItem value="vip">VIP</SelectItem>
-            <SelectItem value="collaborateur">Collaborateur</SelectItem>
-            <SelectItem value="pilote">Pilote</SelectItem>
+            {Object.entries(ROLE_CONFIG).map(([role, cfg]) => (
+              <SelectItem key={role} value={role}>{cfg.emoji} {cfg.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={filterBadge} onValueChange={setFilterBadge}>
@@ -303,7 +303,14 @@ export default function AdminUsers() {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="font-mono text-xs text-muted-foreground hidden sm:block">
-                    {PDG_EMAILS.includes(u.email) ? '👑 PDG' : PDG_ADJOINT_EMAILS.includes(u.email) ? '🥈 PDG-Adj' : u.role || 'user'}
+                    {(() => {
+                      const cfg = ROLE_CONFIG[u.role] || ROLE_CONFIG.user;
+                      const isOwnerUser = PDG_EMAILS.includes(u.email) || u.role === 'owner';
+                      const isPdgAdj = PDG_ADJOINT_EMAILS.includes(u.email) || u.role === 'pdg_adjoint';
+                      if (isOwnerUser) return '👑 PDG';
+                      if (isPdgAdj) return '🥈 PDG-Adj';
+                      return `${cfg.emoji} ${cfg.label}`;
+                    })()}
                   </span>
                   {(() => {
                     const isTargetSupreme = (u.verifications || []).includes('supreme');
@@ -491,17 +498,34 @@ export default function AdminUsers() {
 
               {/* Rôle */}
               <div>
-                <label className="font-inter text-xs text-muted-foreground mb-2 block">Rôle</label>
-                <Select value={editForm.role} onValueChange={v => setEditForm(p => ({ ...p, role: v }))}>
-                  <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="user">Utilisateur</SelectItem>
-                    <SelectItem value="vip">VIP</SelectItem>
-                    <SelectItem value="collaborateur">Collaborateur</SelectItem>
-                    <SelectItem value="pilote">Pilote</SelectItem>
-                  </SelectContent>
-                </Select>
+                <label className="font-inter text-xs text-muted-foreground mb-2 block">
+                  Rôle — vous pouvez attribuer les rôles de niveau inférieur au vôtre
+                </label>
+                {/* Show current role if it can't be changed */}
+                {getUserLevel({ role: editUser?.role, email: editUser?.email }) >= myLevel && getUserLevel(editUser) > 0 ? (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                    <span className="font-mono text-xs text-amber-400">
+                      {ROLE_CONFIG[editUser?.role]?.emoji} {ROLE_CONFIG[editUser?.role]?.label} — rôle non modifiable (niveau ≥ au vôtre)
+                    </span>
+                  </div>
+                ) : (
+                  <Select value={editForm.role} onValueChange={v => setEditForm(p => ({ ...p, role: v }))}>
+                    <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {/* Current role always visible */}
+                      {editUser?.role && !assignableRoles.find(r => r.role === editUser.role) && (
+                        <SelectItem value={editUser.role} disabled>
+                          {ROLE_CONFIG[editUser.role]?.emoji} {ROLE_CONFIG[editUser.role]?.label} (actuel)
+                        </SelectItem>
+                      )}
+                      {assignableRoles.map(r => (
+                        <SelectItem key={r.role} value={r.role}>
+                          {r.emoji} {r.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
               {/* Badges */}

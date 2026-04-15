@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Crown, Download, Code, FileCode, Search, RefreshCw, Lock, ChevronRight, Package, Eye, Copy, Check } from 'lucide-react';
+import { Crown, Download, Code, FileCode, Search, RefreshCw, Lock, ChevronRight, Eye, Copy, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PDG_EMAILS, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 import { toast } from 'sonner';
-import JSZip from 'npm:jszip@3.10.1';
+import PDGAIAgent from '@/components/admin/PDGAIAgent';
 
 // All project files organized by category
 const FILE_TREE = {
@@ -56,6 +56,7 @@ export default function AdminPDGSpace() {
   const [user, setUser] = useState(null);
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('ai');
   const [fileContents, setFileContents] = useState({}); // path -> content
   const [selectedFile, setSelectedFile] = useState(null);
   const [loadingFile, setLoadingFile] = useState(false);
@@ -191,9 +192,9 @@ export default function AdminPDGSpace() {
               <Crown className="w-5 h-5 text-yellow-100" />
             </div>
             <div>
-              <h1 className="font-grotesk font-bold text-2xl">Espace PDG — Code Source</h1>
+              <h1 className="font-grotesk font-bold text-2xl">Espace PDG</h1>
               <p className="font-inter text-sm text-muted-foreground">
-                {ALL_FILES.length} fichiers · Accès exclusif direction
+                IA Super Admin · Code Source · Accès exclusif direction
               </p>
             </div>
           </div>
@@ -216,19 +217,42 @@ export default function AdminPDGSpace() {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-          {Object.entries(FILE_TREE).map(([cat, files]) => (
-            <div key={cat} className="bg-card border border-border rounded-xl p-3 text-center">
-              <p className="font-grotesk font-bold text-xl text-primary">{files.length}</p>
-              <p className="font-mono text-[10px] text-muted-foreground">{cat}</p>
-            </div>
-          ))}
+        {/* Tabs */}
+        <div className="flex gap-2 mt-5">
+          <button
+            onClick={() => setActiveTab('ai')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-grotesk font-semibold text-sm transition-all ${
+              activeTab === 'ai'
+                ? 'text-yellow-100'
+                : 'bg-card border border-border text-muted-foreground hover:text-foreground'
+            }`}
+            style={activeTab === 'ai' ? { background: 'linear-gradient(135deg,#92400e,#d97706)', boxShadow: '0 0 16px rgba(245,158,11,0.3)' } : {}}
+          >
+            <Sparkles className="w-4 h-4" />
+            NEXUS — IA Super Admin
+          </button>
+          <button
+            onClick={() => setActiveTab('code')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-grotesk font-semibold text-sm transition-all ${
+              activeTab === 'code'
+                ? 'bg-primary/10 border border-primary/30 text-primary'
+                : 'bg-card border border-border text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Code className="w-4 h-4" />
+            Code Source
+          </button>
         </div>
       </div>
 
-      {/* Body: file tree + viewer */}
-      <div className="flex gap-4 flex-1 min-h-0" style={{ height: 'calc(100vh - 320px)' }}>
+      {/* AI Tab */}
+      {activeTab === 'ai' && (
+        <PDGAIAgent />
+      )}
+
+      {/* Code Tab */}
+      {activeTab === 'code' && (
+      <div className="flex gap-4 flex-1 min-h-0" style={{ height: 'calc(100vh - 360px)' }}>
         {/* Left: file tree */}
         <div className="w-64 flex-shrink-0 bg-card border border-border rounded-xl flex flex-col overflow-hidden">
           <div className="p-3 border-b border-border">
@@ -316,9 +340,10 @@ export default function AdminPDGSpace() {
       <div className="mt-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-3 flex items-start gap-2">
         <Lock className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
         <p className="font-inter text-xs text-muted-foreground">
-          <span className="text-yellow-500 font-semibold">Accès confidentiel.</span> Ce panneau est visible uniquement par le PDG et le PDG-Adjoint. Le code source est la propriété exclusive de Brenne Aerial. Le ZIP généré contient l'intégralité du code frontend et backend du site.
+          <span className="text-yellow-500 font-semibold">Accès confidentiel.</span> Ce panneau est visible uniquement par le PDG et le PDG-Adjoint.
         </p>
       </div>
+      )}
     </div>
   );
 }

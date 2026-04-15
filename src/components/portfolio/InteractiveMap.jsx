@@ -1,7 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, X, ExternalLink, MapPin, Home, Heart, Plane } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -22,7 +24,7 @@ const CATEGORY_COLORS = {
   tourisme:   '#1dd8b4',
 };
 
-const PROJECTS = [
+const FALLBACK_PROJECTS = [
   {
     id: 1,
     title: 'Villa Prestige Neuilly',
@@ -225,6 +227,18 @@ export default function InteractiveMap() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedProject, setSelectedProject] = useState(null);
 
+  const { data: dbProjects = [] } = useQuery({
+    queryKey: ['map-projects-public'],
+    queryFn: () => base44.entities.MapProject.filter({ is_active: true }),
+  });
+
+  // Normalize DB fields to match component shape
+  const dbNormalized = dbProjects.map(p => ({
+    ...p,
+    videoId: p.video_id || null,
+  }));
+
+  const PROJECTS = dbNormalized.length > 0 ? dbNormalized : FALLBACK_PROJECTS;
   const filtered = activeFilter === 'all' ? PROJECTS : PROJECTS.filter(p => p.category === activeFilter);
 
   return (

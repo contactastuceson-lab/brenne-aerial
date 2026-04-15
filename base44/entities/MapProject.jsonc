@@ -1,0 +1,55 @@
+{
+  "name": "MapProject",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre du projet"
+    },
+    "city": {
+      "type": "string",
+      "description": "Ville"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "immobilier",
+        "mariage",
+        "tourisme"
+      ],
+      "description": "Cat\u00e9gorie du projet"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description courte"
+    },
+    "lat": {
+      "type": "number",
+      "description": "Latitude"
+    },
+    "lng": {
+      "type": "number",
+      "description": "Longitude"
+    },
+    "thumbnail": {
+      "type": "string",
+      "description": "URL de la miniature"
+    },
+    "video_id": {
+      "type": "string",
+      "description": "ID YouTube (optionnel)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Visible sur la carte"
+    }
+  },
+  "required": [
+    "title",
+    "city",
+    "category",
+    "lat",
+    "lng"
+  ]
+}

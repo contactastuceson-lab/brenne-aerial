@@ -51,6 +51,7 @@ import AdminGovernance from "@/pages/admin/AdminGovernance";
 import AdminEmployees from "@/pages/admin/AdminEmployees";
 import AdminSiteConfig from "@/pages/admin/AdminSiteConfig";
 import AdminPDGSpace from "@/pages/admin/AdminPDGSpace";
+import AdminMapProjects from "@/pages/admin/AdminMapProjects";
 import GaragePage from "@/pages/GaragePage";
 import QuoteCalculatorPage from "@/pages/QuoteCalculatorPage";
 import ReglementationPage from "@/pages/ReglementationPage";
@@ -139,6 +140,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/employees" element={<AdminEmployees />} />
         <Route path="/admin/site-config" element={<AdminSiteConfig />} />
         <Route path="/admin/pdg" element={<AdminPDGSpace />} />
+        <Route path="/admin/map" element={<AdminMapProjects />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

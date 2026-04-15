@@ -8,6 +8,7 @@ import {
   FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap
 } from 'lucide-react';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
+import AdminRealtimeSync from '@/components/admin/AdminRealtimeSync';
 
 // ─── Permission levels ─────────────────────────────────────────────────────
 // 100 = PDG (owner) + PDG-Adjoint (pdg_adjoint)
@@ -175,6 +176,7 @@ export default function AdminLayout() {
 
   return (
     <div className="flex min-h-screen bg-background">
+      <AdminRealtimeSync />
 
       {/* ── DESKTOP SIDEBAR ── */}
       <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-52 bg-sidebar border-r border-sidebar-border z-40 flex-col">

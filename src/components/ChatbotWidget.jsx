@@ -448,10 +448,10 @@ export default function ChatbotWidget() {
               background: 'hsl(var(--card))',
               border: '1px solid hsl(var(--primary) / 0.25)',
               boxShadow: '0 25px 80px rgba(0,0,0,0.5), 0 0 60px rgba(56,170,220,0.08)',
-              bottom: '6rem',
+              bottom: '5.5rem',
               left: '1.5rem',
               width: expanded ? 'min(520px, calc(100vw - 2rem))' : 'min(390px, calc(100vw - 2rem))',
-              maxHeight: 'calc(100vh - 8rem)',
+              maxHeight: 'min(600px, calc(100vh - 7rem))',
             }}
           >
             {/* ── Header ── */}

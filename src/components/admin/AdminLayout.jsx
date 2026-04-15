@@ -5,7 +5,8 @@ import {
   BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane,
   Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail,
   Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, Map,
-  FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap
+  FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap,
+  SlidersHorizontal
 } from 'lucide-react';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 import AdminRealtimeSync from '@/components/admin/AdminRealtimeSync';
@@ -55,6 +56,8 @@ const NAV_GROUPS = [
       { path: '/admin/map', icon: Map, label: 'Carte Interactive', minLevel: 60 },
       { path: '/admin/blog', icon: BookOpen, label: 'Blog', minLevel: 60 },
       { path: '/admin/partners', icon: Building2, label: 'Partenaires', minLevel: 60 },
+      { path: '/admin/drones', icon: Zap, label: 'Drones', minLevel: 60 },
+      { path: '/admin/before-after', icon: SlidersHorizontal, label: 'Avant/Après', minLevel: 60 },
       { path: '/admin/pages', icon: LayoutDashboard, label: 'Pages', minLevel: 80 },
     ]
   },

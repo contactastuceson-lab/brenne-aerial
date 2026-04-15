@@ -55,7 +55,10 @@ import AdminDataManager from "@/pages/admin/AdminDataManager";
 import AdminMapProjects from "@/pages/admin/AdminMapProjects";
 import AdminClientFiles from "@/pages/admin/AdminClientFiles";
 import AdminPartners from "@/pages/admin/AdminPartners";
+import AdminDroneMaintenance from "@/pages/admin/AdminDroneMaintenance.jsx";
+import AdminBeforeAfter from "@/pages/admin/AdminBeforeAfter.jsx";
 import ToitureCheckupPage from "@/pages/ToitureCheckupPage";
+import BeforeAfterPage from "@/pages/BeforeAfterPage.jsx";
 import EspaceClientPage from "@/pages/EspaceClientPage";
 import PartenairesPage from "@/pages/PartenairesPage";
 import ParrainagePage from "@/pages/ParrainagePage";
@@ -123,6 +126,7 @@ const AuthenticatedApp = () => {
         <Route path="/espace-client" element={<EspaceClientPage />} />
         <Route path="/partenaires" element={<PartenairesPage />} />
         <Route path="/parrainage" element={<ParrainagePage />} />
+        <Route path="/avant-apres" element={<BeforeAfterPage />} />
       </Route>
 
       {/* Admin */}
@@ -155,6 +159,8 @@ const AuthenticatedApp = () => {
         <Route path="/admin/map" element={<AdminMapProjects />} />
         <Route path="/admin/client-files" element={<AdminClientFiles />} />
         <Route path="/admin/partners" element={<AdminPartners />} />
+        <Route path="/admin/drones" element={<AdminDroneMaintenance />} />
+        <Route path="/admin/before-after" element={<AdminBeforeAfter />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

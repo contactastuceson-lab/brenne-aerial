@@ -51,6 +51,7 @@ import AdminGovernance from "@/pages/admin/AdminGovernance";
 import AdminEmployees from "@/pages/admin/AdminEmployees";
 import AdminSiteConfig from "@/pages/admin/AdminSiteConfig";
 import AdminPDGSpace from "@/pages/admin/AdminPDGSpace";
+import AdminDataManager from "@/pages/admin/AdminDataManager";
 import AdminMapProjects from "@/pages/admin/AdminMapProjects";
 import AdminClientFiles from "@/pages/admin/AdminClientFiles";
 import AdminPartners from "@/pages/admin/AdminPartners";
@@ -150,6 +151,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/employees" element={<AdminEmployees />} />
         <Route path="/admin/site-config" element={<AdminSiteConfig />} />
         <Route path="/admin/pdg" element={<AdminPDGSpace />} />
+        <Route path="/admin/data-manager" element={<AdminDataManager />} />
         <Route path="/admin/map" element={<AdminMapProjects />} />
         <Route path="/admin/client-files" element={<AdminClientFiles />} />
         <Route path="/admin/partners" element={<AdminPartners />} />

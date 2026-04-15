@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane,
   Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail,
   Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, ChevronRight, Map,
-  FolderOpen, Building2, Gift
+  FolderOpen, Building2, Gift, Trash2
 } from 'lucide-react';
 import { ROLE_CONFIG, hasAdminAccess, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 
@@ -33,6 +33,7 @@ const NAV = [
   { path: '/admin/governance', icon: Crown, label: 'Gouvernance', topOnly: true },
   { path: '/admin/employees', icon: Briefcase, label: 'Équipe', topOnly: true },
   { path: '/admin/site-config', icon: Settings, label: 'Gestion du Site' },
+  { path: '/admin/data-manager', icon: Trash2, label: 'Historique & Données' },
   { path: '/admin/pdg', icon: Crown, label: 'Espace PDG', topOnly: true },
 ];
 

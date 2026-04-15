@@ -150,7 +150,7 @@ export default function ContactPage() {
               className="space-y-3">
               {[
                 { icon: Mail, label: 'Email', value: 'contact@brenneaerial.fr', href: 'mailto:contact@brenneaerial.fr', color: 'text-primary' },
-                { icon: Phone, label: 'Téléphone', value: '+33 6 00 00 00 00', href: 'tel:+33600000000', color: 'text-green-400' },
+                { icon: Phone, label: 'Téléphone', value: '📲 Bientôt disponible', href: null, color: 'text-muted-foreground' },
                 { icon: MapPin, label: 'Zone d\'intervention', value: 'Brenne, Indre (36) — Toute la France', href: null, color: 'text-accent' },
               ].map(item => (
                 <a key={item.label} href={item.href || '#'} className={`flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-all group ${!item.href ? 'cursor-default' : ''}`}>

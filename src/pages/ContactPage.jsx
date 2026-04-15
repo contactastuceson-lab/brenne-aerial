@@ -25,11 +25,24 @@ const STATS = [
   { icon: Plane, value: 'France', label: "Zone d'intervention" },
 ];
 
+function useIsOpen() {
+  const now = new Date();
+  const day = now.getDay(); // 0 = dimanche
+  if (day === 0) return false;
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const total = h * 60 + m;
+  const matin = total >= 10 * 60 && total < 12 * 60 + 30;
+  const apresmidi = total >= 14 * 60 + 30 && total < 18 * 60 + 30;
+  return matin || apresmidi;
+}
+
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', subject: 'devis', message: '' });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [activeField, setActiveField] = useState(null);
+  const isOpen = useIsOpen();
   const u = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleSubmit = async (e) => {
@@ -218,7 +231,39 @@ export default function ContactPage() {
           {/* Right column — form */}
           <div className="lg:col-span-3">
             <AnimatePresence mode="wait">
-              {sent ? (
+              {!isOpen ? (
+                <motion.div key="closed"
+                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                  className="min-h-[500px] flex flex-col items-center justify-center text-center p-12 rounded-2xl border border-amber-400/30"
+                  style={{ background: 'linear-gradient(135deg, hsl(38 90% 5%), hsl(38 60% 4%))' }}>
+                  <div className="w-20 h-20 rounded-full bg-amber-400/10 border-2 border-amber-400/30 flex items-center justify-center mb-6">
+                    <Clock className="w-10 h-10 text-amber-400" />
+                  </div>
+                  <h3 className="font-grotesk font-black text-2xl mb-3 text-amber-400">Hors des horaires</h3>
+                  <p className="font-inter text-muted-foreground max-w-sm mb-5 leading-relaxed">
+                    Notre équipe n'est pas disponible pour le moment.<br />
+                    Le formulaire de contact est accessible uniquement pendant nos horaires d'ouverture.
+                  </p>
+                  <div className="bg-card border border-border rounded-xl p-5 text-left w-full max-w-xs space-y-2 mb-6">
+                    <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-3">Horaires d'ouverture</p>
+                    {[
+                      { j: 'Lun — Sam', h: '10h00 — 12h30' },
+                      { j: 'Lun — Sam', h: '14h30 — 18h30' },
+                      { j: 'Dimanche', h: 'Fermé' },
+                    ].map(({ j, h }, i) => (
+                      <div key={i} className="flex justify-between items-center">
+                        <span className="font-inter text-sm text-muted-foreground">{j}</span>
+                        <span className={`font-mono text-xs font-bold ${h === 'Fermé' ? 'text-destructive' : 'text-green-400'}`}>{h}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="font-inter text-xs text-muted-foreground">
+                    Vous pouvez aussi nous écrire à{' '}
+                    <a href="mailto:contact@brenneaerial.fr" className="text-primary underline">contact@brenneaerial.fr</a>
+                  </p>
+                </motion.div>
+              ) : sent ? (
+
                 <motion.div key="success"
                   initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                   className="h-full min-h-[500px] flex flex-col items-center justify-center text-center p-12 rounded-2xl bg-card border border-primary/30"

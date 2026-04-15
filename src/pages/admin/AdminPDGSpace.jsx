@@ -336,6 +336,8 @@ export default function AdminPDGSpace() {
         </div>
       </div>
 
+      )}
+
       {/* Footer note */}
       <div className="mt-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-3 flex items-start gap-2">
         <Lock className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
@@ -343,7 +345,6 @@ export default function AdminPDGSpace() {
           <span className="text-yellow-500 font-semibold">Accès confidentiel.</span> Ce panneau est visible uniquement par le PDG et le PDG-Adjoint.
         </p>
       </div>
-      )}
     </div>
   );
 }

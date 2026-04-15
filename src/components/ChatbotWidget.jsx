@@ -443,12 +443,15 @@ export default function ChatbotWidget() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 16 }}
             transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-            className={`fixed bottom-24 left-6 z-50 ${winWidth} flex flex-col rounded-2xl overflow-hidden shadow-2xl transition-all duration-300`}
+            className={`fixed z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl transition-all duration-300`}
             style={{
               background: 'hsl(var(--card))',
               border: '1px solid hsl(var(--primary) / 0.25)',
-              maxHeight: winHeight,
               boxShadow: '0 25px 80px rgba(0,0,0,0.5), 0 0 60px rgba(56,170,220,0.08)',
+              bottom: '6rem',
+              left: '1.5rem',
+              width: expanded ? 'min(520px, calc(100vw - 2rem))' : 'min(390px, calc(100vw - 2rem))',
+              maxHeight: 'calc(100vh - 8rem)',
             }}
           >
             {/* ── Header ── */}

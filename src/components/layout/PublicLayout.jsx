@@ -7,6 +7,7 @@ import Footer from './Footer';
 import AnnouncementBanner from '@/components/shared/AnnouncementBanner';
 import AnnouncementPopup from '@/components/shared/AnnouncementPopup';
 import DonationFloatingButton from '@/components/DonationFloatingButton';
+import ChatbotWidget from '@/components/ChatbotWidget';
 import MaintenancePage from '@/pages/MaintenancePage';
 import BannedPage from '@/pages/BannedPage';
 import { base44 } from '@/api/base44Client';
@@ -104,6 +105,7 @@ export default function PublicLayout() {
       {!hideFooter && <Footer />}
       <AnnouncementPopup user={user} />
       {!hideFloatingButton && <DonationFloatingButton />}
+      {!hideFloatingButton && <ChatbotWidget />}
     </div>
   );
 }

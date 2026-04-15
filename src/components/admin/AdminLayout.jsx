@@ -4,79 +4,101 @@ import { base44 } from '@/api/base44Client';
 import {
   BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane,
   Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail,
-  Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, ChevronRight, Map,
-  FolderOpen, Building2, Trash2, Home, ArrowLeft
+  Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, Map,
+  FolderOpen, Building2, Trash2, ArrowLeft
 } from 'lucide-react';
 import { ROLE_CONFIG, hasAdminAccess, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 
-// ─── NAV grouped by category ───────────────────────────────────────────────
+// ─── Permission levels ─────────────────────────────────────────────────────
+// 100 = PDG (owner)
+// 90  = PDG-Adjoint
+// 80  = Conseil d'Administration
+// 70  = Admin
+// 60  = Directeur
+
+// minLevel: minimum level required to see the item
 const NAV_GROUPS = [
   {
     label: 'Vue générale',
+    minLevel: 60,
     items: [
-      { path: '/admin', icon: BarChart3, label: 'Dashboard' },
+      { path: '/admin', icon: BarChart3, label: 'Dashboard', minLevel: 60 },
     ]
   },
   {
     label: 'Commercial',
+    minLevel: 60,
     items: [
-      { path: '/admin/quotes', icon: FileText, label: 'Devis' },
-      { path: '/admin/appointments', icon: Calendar, label: 'Planning' },
-      { path: '/admin/client-files', icon: FolderOpen, label: 'Fichiers Clients' },
+      { path: '/admin/quotes', icon: FileText, label: 'Devis', minLevel: 60 },
+      { path: '/admin/appointments', icon: Calendar, label: 'Planning', minLevel: 60 },
+      { path: '/admin/client-files', icon: FolderOpen, label: 'Fichiers Clients', minLevel: 60 },
     ]
   },
   {
     label: 'Communauté',
+    minLevel: 60,
     items: [
-      { path: '/admin/users', icon: Users, label: 'Utilisateurs' },
-      { path: '/admin/badges', icon: BadgeCheck, label: 'Badges' },
-      { path: '/admin/certifications', icon: Award, label: 'Certifications' },
-      { path: '/admin/conversations', icon: MessageCircle, label: 'Conversations' },
-      { path: '/admin/messaging', icon: MessageSquare, label: 'Messagerie' },
-      { path: '/admin/reports', icon: Flag, label: 'Signalements' },
-      { path: '/admin/donations', icon: Heart, label: 'Donations' },
+      { path: '/admin/users', icon: Users, label: 'Utilisateurs', minLevel: 70 },
+      { path: '/admin/badges', icon: BadgeCheck, label: 'Badges', minLevel: 70 },
+      { path: '/admin/certifications', icon: Award, label: 'Certifications', minLevel: 70 },
+      { path: '/admin/conversations', icon: MessageCircle, label: 'Conversations', minLevel: 70 },
+      { path: '/admin/messaging', icon: MessageSquare, label: 'Messagerie', minLevel: 70 },
+      { path: '/admin/reports', icon: Flag, label: 'Signalements', minLevel: 70 },
+      { path: '/admin/donations', icon: Heart, label: 'Donations', minLevel: 70 },
     ]
   },
   {
     label: 'Contenu du site',
+    minLevel: 60,
     items: [
-      { path: '/admin/portfolio', icon: Image, label: 'Portfolio' },
-      { path: '/admin/map', icon: Map, label: 'Carte Interactive' },
-      { path: '/admin/blog', icon: BookOpen, label: 'Blog' },
-      { path: '/admin/partners', icon: Building2, label: 'Partenaires' },
-      { path: '/admin/pages', icon: LayoutDashboard, label: 'Pages' },
+      { path: '/admin/portfolio', icon: Image, label: 'Portfolio', minLevel: 60 },
+      { path: '/admin/map', icon: Map, label: 'Carte Interactive', minLevel: 60 },
+      { path: '/admin/blog', icon: BookOpen, label: 'Blog', minLevel: 60 },
+      { path: '/admin/partners', icon: Building2, label: 'Partenaires', minLevel: 60 },
+      { path: '/admin/pages', icon: LayoutDashboard, label: 'Pages', minLevel: 80 },
     ]
   },
   {
     label: 'Communication',
+    minLevel: 70,
     items: [
-      { path: '/admin/announcements', icon: Megaphone, label: 'Annonces' },
-      { path: '/admin/emailing', icon: Mail, label: 'Emailing' },
+      { path: '/admin/announcements', icon: Megaphone, label: 'Annonces', minLevel: 70 },
+      { path: '/admin/emailing', icon: Mail, label: 'Emailing', minLevel: 80 },
     ]
   },
   {
     label: 'Système',
+    minLevel: 80,
     items: [
-      { path: '/admin/maintenance', icon: Shield, label: 'Maintenance' },
-      { path: '/admin/status', icon: Settings, label: 'Statut Site' },
-      { path: '/admin/site-config', icon: Settings, label: 'Config. Site' },
-      { path: '/admin/data-manager', icon: Trash2, label: 'Données' },
+      { path: '/admin/maintenance', icon: Shield, label: 'Maintenance', minLevel: 80 },
+      { path: '/admin/status', icon: Settings, label: 'Statut Site', minLevel: 70 },
+      { path: '/admin/site-config', icon: Settings, label: 'Config. Site', minLevel: 90 },
+      { path: '/admin/data-manager', icon: Trash2, label: 'Données', minLevel: 90 },
     ]
   },
   {
     label: 'Direction',
-    topOnly: true,
+    minLevel: 80,
     items: [
-      { path: '/admin/governance', icon: Crown, label: 'Gouvernance', topOnly: true },
-      { path: '/admin/employees', icon: Briefcase, label: 'Équipe', topOnly: true },
-      { path: '/admin/pdg', icon: Crown, label: 'Espace PDG', topOnly: true },
+      { path: '/admin/accounts', icon: Users, label: 'Comptes & Rôles', minLevel: 80 },
+      { path: '/admin/governance', icon: Crown, label: 'Gouvernance', minLevel: 80 },
+      { path: '/admin/employees', icon: Briefcase, label: 'Équipe', minLevel: 80 },
+      { path: '/admin/pdg', icon: Crown, label: 'Espace PDG', minLevel: 90 },
     ]
   },
 ];
 
-// Flat list for various lookups
-const ALL_NAV = NAV_GROUPS.flatMap(g => g.items);
 const BOTTOM_NAV_PATHS = ['/admin', '/admin/quotes', '/admin/users', '/admin/conversations'];
+
+function getUserLevel(user) {
+  if (!user) return 0;
+  if (user.role === 'owner' || PDG_EMAILS.includes(user.email)) return 100;
+  if (user.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS.includes(user.email)) return 90;
+  if (user.role === 'conseil_admin') return 80;
+  if (user.role === 'admin') return 70;
+  if (user.role === 'directeur') return 60;
+  return 0;
+}
 
 export default function AdminLayout() {
   const [user, setUser] = useState(null);
@@ -106,22 +128,32 @@ export default function AdminLayout() {
     );
   }
 
-  const isTopMgmt = user?.role === 'owner' || user?.role === 'pdg_adjoint' ||
-    PDG_ADJOINT_EMAILS.includes(user?.email) || PDG_EMAILS.includes(user?.email);
+  const userLevel = getUserLevel(user);
+  const isTopMgmt = userLevel >= 90;
   const roleCfg = ROLE_CONFIG[user?.role] || ROLE_CONFIG.admin;
 
+  // Filter groups and items by user level
   const visibleGroups = NAV_GROUPS
-    .filter(g => !g.topOnly || isTopMgmt)
-    .map(g => ({ ...g, items: g.items.filter(i => !i.topOnly || isTopMgmt) }))
+    .filter(g => userLevel >= g.minLevel)
+    .map(g => ({ ...g, items: g.items.filter(i => userLevel >= i.minLevel) }))
     .filter(g => g.items.length > 0);
 
   const visibleNav = visibleGroups.flatMap(g => g.items);
   const bottomNavItems = visibleNav.filter(i => BOTTOM_NAV_PATHS.includes(i.path));
   const isActive = (path) => location.pathname === path || (path !== '/admin' && location.pathname.startsWith(path));
 
+  // Role badge color for banner
+  const levelBadge = {
+    100: { bg: 'linear-gradient(90deg,#78350f,#f59e0b,#78350f)', color: '#fde68a', text: '👑 SESSION PDG — Contrôle total plateforme' },
+    90:  { bg: 'linear-gradient(90deg,#92400e,#d97706,#92400e)', color: '#fde68a', text: '🥈 SESSION PDG-ADJOINT — Accès complet direction' },
+    80:  { bg: 'linear-gradient(90deg,#3b0764,#7c3aed,#3b0764)', color: '#e9d5ff', text: '🏛️ SESSION CONSEIL D\'ADMINISTRATION' },
+    70:  { bg: 'linear-gradient(90deg,#7f1d1d,#dc2626,#7f1d1d)', color: '#fecaca', text: '🛡️ SESSION ADMINISTRATEUR' },
+    60:  { bg: 'linear-gradient(90deg,#1e3a5f,#2563eb,#1e3a5f)', color: '#bfdbfe', text: '📊 SESSION DIRECTEUR' },
+  }[userLevel];
+
   const SidebarNavGroup = ({ group }) => (
-    <div className="mb-3">
-      <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground/50 px-3 mb-1">
+    <div className="mb-4">
+      <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground/40 px-3 mb-1.5">
         {group.label}
       </p>
       {group.items.map(item => {
@@ -131,7 +163,7 @@ export default function AdminLayout() {
           <Link key={item.path} to={item.path}
             className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all mb-0.5 ${
               active
-                ? 'bg-primary/12 text-primary font-semibold'
+                ? 'bg-primary/10 text-primary'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             }`}>
             <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -162,6 +194,16 @@ export default function AdminLayout() {
           </Link>
         </div>
 
+        {/* Role badge in sidebar */}
+        {levelBadge && (
+          <div className="mx-3 mt-3 px-2.5 py-1.5 rounded-lg text-center flex-shrink-0"
+            style={{ background: levelBadge.bg.replace('linear-gradient(90deg,', 'linear-gradient(135deg,') }}>
+            <p className="font-mono text-[9px] font-bold" style={{ color: levelBadge.color }}>
+              {ROLE_CONFIG[user?.role]?.emoji} {ROLE_CONFIG[user?.role]?.label}
+            </p>
+          </div>
+        )}
+
         {/* Nav groups */}
         <nav className="flex-1 overflow-y-auto px-2 py-3">
           {visibleGroups.map(group => (
@@ -169,7 +211,7 @@ export default function AdminLayout() {
           ))}
 
           {/* Back to site */}
-          <div className="mt-2 pt-2 border-t border-sidebar-border">
+          <div className="mt-1 pt-2 border-t border-sidebar-border">
             <Link to="/" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-all">
               <ArrowLeft className="w-3.5 h-3.5" />
               <span className="font-inter text-xs">Retour au site</span>
@@ -197,21 +239,15 @@ export default function AdminLayout() {
 
       {/* ── MAIN CONTENT ── */}
       <main className="flex-1 lg:ml-52 min-h-screen overflow-x-hidden pb-24 lg:pb-0">
-        {/* PDG banners */}
-        {isTopMgmt && !PDG_EMAILS.includes(user?.email) && user?.role !== 'owner' && (
+        {/* Role session banner */}
+        {levelBadge && (
           <div className="sticky top-0 z-30 px-4 py-1.5 text-center font-mono text-[10px] font-semibold"
-            style={{ background: 'linear-gradient(90deg,#92400e,#d97706,#92400e)', color: '#fde68a', letterSpacing: '0.1em' }}>
-            🥈 SESSION PDG-ADJOINT — Accès complet direction activé
-          </div>
-        )}
-        {isTopMgmt && (user?.role === 'owner' || PDG_EMAILS.includes(user?.email)) && (
-          <div className="sticky top-0 z-30 px-4 py-1.5 text-center font-mono text-[10px] font-semibold"
-            style={{ background: 'linear-gradient(90deg,#78350f,#f59e0b,#78350f)', color: '#fde68a', letterSpacing: '0.1em' }}>
-            👑 SESSION PDG — Contrôle total plateforme
+            style={{ background: levelBadge.bg, color: levelBadge.color, letterSpacing: '0.08em' }}>
+            {levelBadge.text}
           </div>
         )}
         <div className="p-3 sm:p-5 lg:p-8 max-w-full">
-          <Outlet context={{ user }} />
+          <Outlet context={{ user, userLevel }} />
         </div>
       </main>
 
@@ -223,9 +259,7 @@ export default function AdminLayout() {
           const Icon = item.icon;
           return (
             <Link key={item.path} to={item.path}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-all relative ${
-                active ? 'text-primary' : 'text-muted-foreground'
-              }`}>
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-all relative ${active ? 'text-primary' : 'text-muted-foreground'}`}>
               <Icon className="w-5 h-5" />
               <span className="font-inter text-[9px]">{item.label}</span>
               {active && <span className="absolute bottom-0 w-8 h-0.5 bg-primary rounded-t-full" />}
@@ -255,6 +289,7 @@ export default function AdminLayout() {
               </button>
             </div>
 
+            {/* User + role */}
             <div className="px-4 py-2.5 border-b border-sidebar-border flex-shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
@@ -266,7 +301,7 @@ export default function AdminLayout() {
                 </div>
                 <div>
                   <p className="font-inter text-sm font-semibold">{user?.full_name}</p>
-                  <p className="font-mono text-[10px] text-muted-foreground">{roleCfg.emoji} {roleCfg.label}</p>
+                  <p className="font-mono text-[10px] text-muted-foreground">{roleCfg.emoji} {roleCfg.label} — niveau {userLevel}</p>
                 </div>
               </div>
             </div>
@@ -274,7 +309,7 @@ export default function AdminLayout() {
             <div className="overflow-y-auto flex-1 p-3 space-y-3">
               {visibleGroups.map(group => (
                 <div key={group.label}>
-                  <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground/50 px-2 mb-1.5">{group.label}</p>
+                  <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground/40 px-2 mb-1.5">{group.label}</p>
                   <div className="grid grid-cols-2 gap-1">
                     {group.items.map(item => {
                       const active = isActive(item.path);

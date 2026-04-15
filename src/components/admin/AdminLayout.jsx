@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import {
   BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane,
   Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail,
-  Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, ChevronRight, Map
+  Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, ChevronRight, Map,
+  FolderOpen, Building2, Gift
 } from 'lucide-react';
 import { ROLE_CONFIG, hasAdminAccess, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 
@@ -22,6 +23,8 @@ const NAV = [
   { path: '/admin/pages', icon: LayoutDashboard, label: 'Pages' },
   { path: '/admin/portfolio', icon: Image, label: 'Portfolio' },
   { path: '/admin/map', icon: Map, label: 'Carte Interactive' },
+  { path: '/admin/client-files', icon: FolderOpen, label: 'Fichiers Clients' },
+  { path: '/admin/partners', icon: Building2, label: 'Partenaires' },
   { path: '/admin/blog', icon: BookOpen, label: 'Blog' },
   { path: '/admin/messaging', icon: MessageSquare, label: 'Messagerie' },
   { path: '/admin/maintenance', icon: Shield, label: 'Maintenance' },

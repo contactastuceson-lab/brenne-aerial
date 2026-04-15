@@ -1,0 +1,55 @@
+{
+  "name": "ClientFile",
+  "type": "object",
+  "properties": {
+    "client_email": {
+      "type": "string",
+      "description": "Email du client"
+    },
+    "client_name": {
+      "type": "string"
+    },
+    "mission_name": {
+      "type": "string",
+      "description": "Nom de la mission / chantier"
+    },
+    "mission_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL du fichier"
+    },
+    "file_name": {
+      "type": "string"
+    },
+    "file_type": {
+      "type": "string",
+      "enum": [
+        "photo",
+        "video",
+        "rapport",
+        "attestation",
+        "autre"
+      ]
+    },
+    "file_size_mb": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false,
+      "description": "Accessible sans connexion"
+    }
+  },
+  "required": [
+    "client_email",
+    "mission_name",
+    "file_url",
+    "file_name"
+  ]
+}

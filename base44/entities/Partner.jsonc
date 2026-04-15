@@ -1,0 +1,55 @@
+{
+  "name": "Partner",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nom de l'entreprise"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "couvreur",
+        "architecte",
+        "geometre",
+        "btp",
+        "immobilier",
+        "autre"
+      ],
+      "description": "Cat\u00e9gorie"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description"
+    },
+    "website": {
+      "type": "string",
+      "description": "Site web"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string",
+      "description": "Ville / R\u00e9gion"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ]
+}

@@ -52,6 +52,12 @@ import AdminEmployees from "@/pages/admin/AdminEmployees";
 import AdminSiteConfig from "@/pages/admin/AdminSiteConfig";
 import AdminPDGSpace from "@/pages/admin/AdminPDGSpace";
 import AdminMapProjects from "@/pages/admin/AdminMapProjects";
+import AdminClientFiles from "@/pages/admin/AdminClientFiles";
+import AdminPartners from "@/pages/admin/AdminPartners";
+import ToitureCheckupPage from "@/pages/ToitureCheckupPage";
+import EspaceClientPage from "@/pages/EspaceClientPage";
+import PartenairesPage from "@/pages/PartenairesPage";
+import ParrainagePage from "@/pages/ParrainagePage";
 import GaragePage from "@/pages/GaragePage";
 import QuoteCalculatorPage from "@/pages/QuoteCalculatorPage";
 import ReglementationPage from "@/pages/ReglementationPage";
@@ -112,6 +118,10 @@ const AuthenticatedApp = () => {
         <Route path="/flash-delivery" element={<FlashDeliveryPage />} />
         <Route path="/simulateur-vue" element={<SimulateurVuePage />} />
         <Route path="/comparateur" element={<ComparateurPage />} />
+        <Route path="/toiture-checkup" element={<ToitureCheckupPage />} />
+        <Route path="/espace-client" element={<EspaceClientPage />} />
+        <Route path="/partenaires" element={<PartenairesPage />} />
+        <Route path="/parrainage" element={<ParrainagePage />} />
       </Route>
 
       {/* Admin */}
@@ -141,6 +151,8 @@ const AuthenticatedApp = () => {
         <Route path="/admin/site-config" element={<AdminSiteConfig />} />
         <Route path="/admin/pdg" element={<AdminPDGSpace />} />
         <Route path="/admin/map" element={<AdminMapProjects />} />
+        <Route path="/admin/client-files" element={<AdminClientFiles />} />
+        <Route path="/admin/partners" element={<AdminPartners />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play, Camera, Building2, HardHat, Video, Wifi, ChevronDown, Star, Award, Zap, Mail } from 'lucide-react';
+import { ArrowRight, Play, Camera, Building2, HardHat, Video, Wifi, ChevronDown, Star, Award, Zap, Mail, FolderOpen, ScanSearch, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -339,6 +339,62 @@ export default function HomePage() {
                 </a>
                 <p className="font-mono text-xs text-muted-foreground mt-3 text-center">Gratuit — Désinscription en 1 clic</p>
               </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── MODE CLIENT ─── */}
+      <section className="py-16 px-5 lg:px-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="relative rounded-2xl overflow-hidden border border-primary/30 p-8 lg:p-12"
+            style={{ background: 'linear-gradient(135deg, hsl(205 90% 6%) 0%, hsl(214 50% 5%) 50%, hsl(195 80% 7%) 100%)' }}
+          >
+            <div className="absolute inset-0 grid-bg opacity-30" />
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+            <div className="relative flex flex-col lg:flex-row items-center gap-8 justify-between">
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 sky-glow">
+                  <FolderOpen className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <p className="font-mono text-xs text-primary mb-1 tracking-widest uppercase">— Espace Client</p>
+                  <h2 className="font-grotesk font-bold text-2xl sm:text-3xl">Accéder à mes relevés aériens</h2>
+                  <p className="font-inter text-sm text-muted-foreground mt-1 max-w-md">Photos 4K, vidéos, rapports et attestations de vol — disponibles en permanence dans votre espace personnel.</p>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                <Link to="/espace-client">
+                  <Button size="lg" className="bg-primary text-primary-foreground font-grotesk font-semibold gap-2 sky-glow w-full sm:w-auto">
+                    <FolderOpen className="w-4 h-4" /> Mon espace client
+                  </Button>
+                </Link>
+                <Link to="/toiture-checkup">
+                  <Button size="lg" variant="outline" className="border-primary/30 text-foreground font-grotesk font-semibold gap-2 w-full sm:w-auto">
+                    <ScanSearch className="w-4 h-4 text-primary" /> Check-up toiture gratuit
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Quick links row */}
+            <div className="relative mt-8 pt-6 border-t border-primary/10 grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                { href: '/toiture-checkup', icon: ScanSearch, label: 'Check-up toiture IA', desc: 'Analyse gratuite' },
+                { href: '/partenaires', icon: Building2, label: 'Annuaire partenaires', desc: 'Notre réseau' },
+                { href: '/parrainage', icon: Users, label: 'Parrainage Pro', desc: 'Gagnez des crédits' },
+                { href: '/quote', icon: Zap, label: 'Devis en 2 min', desc: 'Réponse sous 48h' },
+              ].map(({ href, icon: Icon, label, desc }) => (
+                <Link key={href} to={href} className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 border border-transparent hover:border-primary/15 transition-all group">
+                  <Icon className="w-4 h-4 text-primary flex-shrink-0" />
+                  <div>
+                    <p className="font-inter text-xs font-semibold group-hover:text-primary transition-colors">{label}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground">{desc}</p>
+                  </div>
+                </Link>
+              ))}
             </div>
           </motion.div>
         </div>

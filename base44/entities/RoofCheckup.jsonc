@@ -1,0 +1,56 @@
+{
+  "name": "RoofCheckup",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string",
+      "description": "Nom complet"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email"
+    },
+    "phone": {
+      "type": "string",
+      "description": "T\u00e9l\u00e9phone"
+    },
+    "address": {
+      "type": "string",
+      "description": "Adresse du bien"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "URL de la photo upload\u00e9e"
+    },
+    "ai_analysis": {
+      "type": "string",
+      "description": "Analyse IA des zones \u00e0 risque"
+    },
+    "ai_risk_level": {
+      "type": "string",
+      "enum": [
+        "faible",
+        "mod\u00e9r\u00e9",
+        "\u00e9lev\u00e9"
+      ],
+      "description": "Niveau de risque d\u00e9tect\u00e9"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "analyzed",
+        "contacted"
+      ],
+      "default": "pending"
+    },
+    "admin_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "full_name",
+    "email",
+    "address"
+  ]
+}

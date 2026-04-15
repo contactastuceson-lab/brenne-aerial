@@ -1,0 +1,29 @@
+{
+  "name": "NexusConversation",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre de la conversation (g\u00e9n\u00e9r\u00e9 automatiquement)"
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Historique des messages"
+    },
+    "created_by_name": {
+      "type": "string",
+      "description": "Nom de l'auteur"
+    },
+    "last_message_at": {
+      "type": "string",
+      "description": "Date du dernier message"
+    }
+  },
+  "required": [
+    "title",
+    "messages"
+  ]
+}

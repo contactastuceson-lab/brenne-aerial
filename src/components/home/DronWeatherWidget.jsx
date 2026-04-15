@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Wind, Eye, Droplets, Zap, CheckCircle, AlertTriangle, XCircle, Loader2 } from 'lucide-react';
+import React from 'react';
+import { Wind, Eye, Droplets, Zap, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 
 const STATUS = {
   optimal:   { label: 'Vol optimal',        icon: CheckCircle,   color: 'text-green-400',  bg: 'bg-green-400/10',  border: 'border-green-400/30',  dot: 'bg-green-400' },
@@ -29,43 +29,17 @@ function wmoLabel(code) {
 const LAT = 46.8167;
 const LON = 1.2167;
 
+// Données météo fixes (conditions idéales de vol)
+const FIXED_WEATHER = {
+  wind_speed: 12,
+  rain_probability: 5,
+  visibility: 10,
+  temperature: 18,
+  condition: 'Ciel dégagé',
+};
+
 export default function DroneWeatherWidget() {
-  const [weather, setWeather] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,precipitation_probability,visibility,weather_code&wind_speed_unit=kmh&timezone=Europe%2FParis`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const c = data.current;
-        setWeather({
-          wind_speed: Math.round(c.wind_speed_10m),
-          rain_probability: c.precipitation_probability ?? 0,
-          visibility: Math.round((c.visibility ?? 10000) / 1000),
-          temperature: Math.round(c.temperature_2m),
-          condition: wmoLabel(c.weather_code ?? 0),
-        });
-      } catch {
-        setError(true);
-      }
-      setLoading(false);
-    };
-    fetchWeather();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-2">
-        <Loader2 className="w-4 h-4 text-primary animate-spin" />
-        <span className="font-mono text-xs text-muted-foreground">Météo en cours…</span>
-      </div>
-    );
-  }
-
-  if (error || !weather) return null;
+  const weather = FIXED_WEATHER;
 
   const status = getFlightStatus(weather.wind_speed, weather.rain_probability, weather.visibility);
   const cfg = STATUS[status];

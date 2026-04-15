@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Calendar, Users, MessageSquare, Image, BookOpen, Plane,
   Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail,
   Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, Map,
-  FolderOpen, Building2, Trash2, ArrowLeft
+  FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap
 } from 'lucide-react';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 
@@ -244,6 +244,41 @@ export default function AdminLayout() {
             {levelBadge.text}
           </div>
         )}
+
+        {/* ── DIRECTION TOOLBAR (PDG / PDG-Adjoint only) ── */}
+        {isTopMgmt && (
+          <div className="sticky top-[28px] z-20 flex items-center gap-1.5 px-4 py-2 overflow-x-auto scrollbar-none flex-shrink-0"
+            style={{ background: 'linear-gradient(90deg,rgba(120,53,15,0.18),rgba(180,83,9,0.10),rgba(120,53,15,0.18))', borderBottom: '1px solid rgba(245,158,11,0.15)' }}>
+            <span className="font-mono text-[9px] text-yellow-500/60 uppercase tracking-widest whitespace-nowrap mr-1 flex-shrink-0">
+              ⚡ Direction
+            </span>
+            {[
+              { to: '/admin/pdg', icon: Sparkles, label: 'NEXUS IA' },
+              { to: '/admin/accounts', icon: UserCog, label: 'Comptes & Rôles' },
+              { to: '/admin/governance', icon: Scroll, label: 'Gouvernance' },
+              { to: '/admin/employees', icon: Users, label: 'Équipe' },
+              { to: '/admin/site-config', icon: Settings, label: 'Config. Site' },
+              { to: '/admin/data-manager', icon: Database, label: 'Données' },
+              { to: '/admin/emailing', icon: Mail, label: 'Emailing' },
+              { to: '/admin/maintenance', icon: Shield, label: 'Maintenance' },
+            ].map(({ to, icon: Icon, label }) => {
+              const active = location.pathname === to || (to !== '/admin' && location.pathname.startsWith(to));
+              return (
+                <Link key={to} to={to}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-inter text-[11px] whitespace-nowrap flex-shrink-0 transition-all ${
+                    active
+                      ? 'text-yellow-200'
+                      : 'text-yellow-600/70 hover:text-yellow-300'
+                  }`}
+                  style={active ? { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)' } : { border: '1px solid transparent' }}>
+                  <Icon className="w-3 h-3 flex-shrink-0" />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
         <div className="p-3 sm:p-5 lg:p-8 max-w-full">
           <Outlet context={{ user, userLevel }} />
         </div>

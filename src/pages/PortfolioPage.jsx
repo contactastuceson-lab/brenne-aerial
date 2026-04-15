@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { getYoutubeThumbnail } from '@/lib/droneUtils';
 import ReviewsSection from '@/components/portfolio/ReviewsSection';
+import InteractiveMap from '@/components/portfolio/InteractiveMap';
 
 const CATEGORIES = [
   { key: 'all', label: 'Tout' },
@@ -64,6 +65,9 @@ export default function PortfolioPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Interactive Map */}
+      <InteractiveMap />
 
       {/* Filters */}
       <div className="sticky top-16 z-40 glass border-b border-border">

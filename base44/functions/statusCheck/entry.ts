@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const moduleName = url.searchParams.get('module');
 
     if (!moduleName) {
-      // Return all modules status summary (for BetterStack dashboard info)
+      // Return all modules status summary
       const modules = await base44.asServiceRole.entities.AppModuleStatus.list();
       const summary = modules.map(m => ({
         module: m.module_name,
@@ -37,6 +37,23 @@ Deno.serve(async (req) => {
         operational: m.is_active && m.status === 'operational',
       }));
       return Response.json({ ok: true, modules: summary });
+    }
+
+    // Special: monitor the whole site via maintenance_mode setting
+    if (moduleName === 'site') {
+      const settings = await base44.asServiceRole.entities.AppSettings.list();
+      const maintenanceSetting = settings.find(s => s.key === 'maintenance_mode');
+      const isInMaintenance = maintenanceSetting?.value === 'true';
+      if (isInMaintenance) {
+        return Response.json(
+          { ok: false, module: 'site', status: 'maintenance', message: 'Site Brenne Aerial en maintenance' },
+          { status: 503 }
+        );
+      }
+      return Response.json(
+        { ok: true, module: 'site', status: 'operational', message: 'Site Brenne Aerial opérationnel' },
+        { status: 200 }
+      );
     }
 
     // Check specific module status

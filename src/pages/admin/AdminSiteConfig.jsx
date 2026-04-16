@@ -190,16 +190,14 @@ export default function AdminSiteConfig() {
   const togglePage = async (key, val) => {
     setLocal(p => ({ ...p, [key]: val ? 'true' : 'false' }));
     await saveSetting(key, val ? 'true' : 'false');
-    // Notify users when a page is disabled
-    if (!val) {
-      base44.functions.invoke('notifyPageDisabled', { settingKey: key, enabled: false })
-        .then(res => {
-          if (res?.data?.notified > 0) {
-            toast.info(`📧 ${res.data.notified} utilisateur(s) notifié(s) par email`);
-          }
-        })
-        .catch(err => toast.error(`Erreur notification email: ${err.message}`));
-    }
+    // Notify users when a page is disabled or re-enabled
+    base44.functions.invoke('notifyPageDisabled', { settingKey: key, enabled: val })
+      .then(res => {
+        if (res?.data?.notified > 0) {
+          toast.info(`📧 ${res.data.notified} utilisateur(s) notifié(s) par email`);
+        }
+      })
+      .catch(err => toast.error(`Erreur notification email: ${err.message}`));
   };
 
   const getVal = (key, def = 'true') => (local[key] ?? def) === 'true';

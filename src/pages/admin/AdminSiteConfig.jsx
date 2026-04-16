@@ -187,9 +187,19 @@ export default function AdminSiteConfig() {
     toast.success('Sauvegardé');
   };
 
-  const togglePage = (key, val) => {
+  const togglePage = async (key, val) => {
     setLocal(p => ({ ...p, [key]: val ? 'true' : 'false' }));
-    saveSetting(key, val ? 'true' : 'false');
+    await saveSetting(key, val ? 'true' : 'false');
+    // Notify users when a page is disabled
+    if (!val) {
+      base44.functions.invoke('notifyPageDisabled', { settingKey: key, enabled: false })
+        .then(res => {
+          if (res?.data?.notified > 0) {
+            toast.info(`📧 ${res.data.notified} utilisateur(s) notifié(s) par email`);
+          }
+        })
+        .catch(() => {}); // silent fail
+    }
   };
 
   const getVal = (key, def = 'true') => (local[key] ?? def) === 'true';

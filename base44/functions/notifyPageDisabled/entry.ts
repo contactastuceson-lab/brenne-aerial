@@ -34,7 +34,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { settingKey, enabled } = await req.json();
+    const body = await req.json();
+    const { settingKey, enabled } = body.payload ?? body;
 
     // Only send email when disabling
     if (enabled) {

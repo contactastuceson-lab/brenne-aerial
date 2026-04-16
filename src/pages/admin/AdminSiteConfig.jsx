@@ -198,7 +198,7 @@ export default function AdminSiteConfig() {
             toast.info(`📧 ${res.data.notified} utilisateur(s) notifié(s) par email`);
           }
         })
-        .catch(() => {}); // silent fail
+        .catch(err => toast.error(`Erreur notification email: ${err.message}`));
     }
   };
 

@@ -103,7 +103,18 @@ export default function Footer() {
           <p className="font-mono text-xs text-muted-foreground">
             © {year} Brenne Aerial — Enor Lefoulon Meyer. Tous droits réservés.
           </p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <Link to="/uptime" title="Statut des services">
+              <iframe
+                src="https://statut.brenneaerial.org/badge?theme=dark"
+                width="250"
+                height="30"
+                frameBorder="0"
+                scrolling="no"
+                style={{ colorScheme: 'normal', display: 'block' }}
+                title="Statut Brenne Aerial"
+              />
+            </Link>
             <Link to="/legal/privacy" className="font-inter text-xs text-muted-foreground hover:text-primary transition-colors">Politique de confidentialité</Link>
             <Link to="/legal/terms" className="font-inter text-xs text-muted-foreground hover:text-primary transition-colors">CGU</Link>
           </div>

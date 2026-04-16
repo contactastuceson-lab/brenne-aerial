@@ -99,19 +99,19 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="pt-6 border-t border-border flex flex-col items-center sm:flex-row sm:justify-between gap-4">
           <p className="font-mono text-xs text-muted-foreground">
             © {year} Brenne Aerial — Enor Lefoulon Meyer. Tous droits réservés.
           </p>
           <div className="flex flex-wrap items-center gap-4">
-            <Link to="/uptime" title="Statut des services">
+            <Link to="/uptime" title="Statut des services" className="max-w-full overflow-hidden">
               <iframe
                 src="https://statut.brenneaerial.org/badge?theme=dark"
                 width="250"
                 height="30"
                 frameBorder="0"
                 scrolling="no"
-                style={{ colorScheme: 'normal', display: 'block' }}
+                style={{ colorScheme: 'normal', display: 'block', maxWidth: '100%' }}
                 title="Statut Brenne Aerial"
               />
             </Link>

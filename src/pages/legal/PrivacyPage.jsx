@@ -1,45 +1,394 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import {
+  Shield, User, Database, Target, Scale, Clock, Share2, Lock,
+  Cookie, Settings, Bell, ChevronDown, ChevronUp, Mail, ExternalLink,
+  Eye, Trash2, Download, AlertTriangle, CheckCircle, Globe, FileText
+} from 'lucide-react';
+
+const ACCENT_COLORS = [
+  { bg: 'bg-primary/10', border: 'border-primary/30', text: 'text-primary', icon: 'text-primary' },
+  { bg: 'bg-accent/10', border: 'border-accent/30', text: 'text-accent', icon: 'text-accent' },
+  { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400', icon: 'text-purple-400' },
+  { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400', icon: 'text-green-400' },
+  { bg: 'bg-orange-500/10', border: 'border-orange-500/30', text: 'text-orange-400', icon: 'text-orange-400' },
+  { bg: 'bg-rose-500/10', border: 'border-rose-500/30', text: 'text-rose-400', icon: 'text-rose-400' },
+  { bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400', icon: 'text-cyan-400' },
+  { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', icon: 'text-amber-400' },
+  { bg: 'bg-indigo-500/10', border: 'border-indigo-500/30', text: 'text-indigo-400', icon: 'text-indigo-400' },
+  { bg: 'bg-teal-500/10', border: 'border-teal-500/30', text: 'text-teal-400', icon: 'text-teal-400' },
+];
 
 const SECTIONS = [
-  { title: '1. Responsable du traitement', content: `Brenne Aerial, représentée par Enor Lefoulon Meyer, est responsable du traitement de vos données personnelles.\n\nCoordonnées :\n• Adresse : Brenne, Indre (36), France\n• Email : contact@brenne-aerial.fr\n• Téléphone : +33 6 00 00 00 00\n\nConformément au Règlement Général sur la Protection des Données (RGPD - Règlement UE 2016/679) et à la loi n°78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés, Brenne Aerial s'engage à protéger la vie privée de ses utilisateurs.` },
-  { title: '2. Données collectées', content: `Brenne Aerial collecte les catégories de données personnelles suivantes :\n\n2.1 Données d'identification\n• Nom et prénom\n• Adresse email\n• Numéro de téléphone\n• Adresse postale\n• Raison sociale (pour les professionnels)\n\n2.2 Données de navigation\n• Adresse IP\n• Type et version de navigateur\n• Système d'exploitation\n• Pages visitées et durée de visite\n• Provenance du trafic\n• Date et heure de connexion\n\n2.3 Données de communication\n• Contenu des messages envoyés via le formulaire de contact\n• Échanges par email\n• Demandes de devis\n• Réclamations et demandes de service après-vente\n\n2.4 Données financières\n• Informations de facturation (pour les clients)\n• Montants des prestations\n• Aucune donnée bancaire n'est stockée sur nos serveurs\n\n2.5 Données de contenu\n• Fichiers et photos uploadés lors des demandes de devis\n• Préférences de prestation` },
-  { title: '3. Finalités du traitement', content: `Vos données sont collectées et traitées pour les finalités suivantes :\n\n3.1 Exécution contractuelle\n• Traitement et suivi de vos demandes de devis\n• Gestion de vos réservations et rendez-vous\n• Fourniture des prestations drone commandées\n• Facturation et comptabilité\n\n3.2 Relation client\n• Réponse à vos demandes de contact\n• Envoi de confirmations de commande\n• Information sur l'avancement de vos projets\n• Service après-vente et gestion des litiges\n\n3.3 Communication commerciale (avec votre consentement)\n• Newsletter et actualités de Brenne Aerial\n• Promotions et offres spéciales\n• Invitation aux événements\n\n3.4 Amélioration de nos services\n• Analyse des statistiques de navigation\n• Évaluation de la satisfaction client\n• Développement de nouvelles fonctionnalités\n\n3.5 Obligations légales\n• Conservation des documents comptables\n• Réponse aux demandes des autorités compétentes\n• Prévention de la fraude` },
-  { title: '4. Base légale du traitement', content: `Le traitement de vos données repose sur les bases légales suivantes :\n\n• Exécution d'un contrat : lorsque vous passez commande ou demandez un devis, le traitement est nécessaire à l'exécution du contrat\n• Consentement : pour l'envoi de communications commerciales, vous pouvez retirer votre consentement à tout moment\n• Intérêt légitime : pour améliorer nos services, prévenir la fraude et assurer la sécurité de notre site\n• Obligation légale : pour respecter nos obligations fiscales et comptables` },
-  { title: '5. Durée de conservation', content: `Nous conservons vos données personnelles pendant les durées suivantes :\n\n• Données clients et devis : 5 ans à compter de la dernière prestation\n• Données de facturation : 10 ans (obligation légale comptable)\n• Données de contact : 3 ans à compter du dernier contact\n• Données de navigation : 13 mois maximum (cookies)\n• Données de connexion : 1 an\n• Fichiers uploadés : 12 mois après la prestation, puis suppression sécurisée\n• Données marketing (newsletter) : jusqu'au retrait du consentement\n\nPassé ces délais, vos données sont supprimées de manière sécurisée ou anonymisées.` },
-  { title: '6. Partage avec des tiers', content: `Brenne Aerial ne vend pas vos données personnelles à des tiers. Nous pouvons partager vos données avec :\n\n6.1 Prestataires techniques\n• Hébergeur web : serveurs sécurisés en Union Européenne\n• Outil d'emailing : plateforme conforme RGPD\n• Outil d'analyse : statistiques anonymisées\n\n6.2 Partenaires commerciaux\n• Sous-traitants drone (pilotes certifiés DGAC) en cas de mission déléguée\n• Tous nos partenaires sont liés par des clauses de confidentialité strictes\n\n6.3 Autorités légales\n• Administration fiscale et douanière si requis\n• Autorités judiciaires en cas de litige\n• CNIL en cas d'enquête\n\nAucun transfert de données hors Union Européenne n'est effectué sans garanties appropriées.` },
-  { title: '7. Vos droits RGPD', content: `Conformément au RGPD, vous disposez des droits suivants :\n\n7.1 Droit d'accès\nVous pouvez obtenir une copie de toutes les données personnelles que nous détenons sur vous.\n\n7.2 Droit de rectification\nVous pouvez demander la correction de données inexactes ou incomplètes.\n\n7.3 Droit à l'effacement ("droit à l'oubli")\nVous pouvez demander la suppression de vos données, sous réserve de nos obligations légales de conservation.\n\n7.4 Droit à la limitation\nVous pouvez demander la limitation du traitement de vos données dans certaines circonstances.\n\n7.5 Droit à la portabilité\nVous pouvez récupérer vos données dans un format structuré et lisible.\n\n7.6 Droit d'opposition\nVous pouvez vous opposer au traitement de vos données à des fins de prospection commerciale.\n\n7.7 Droit de retrait du consentement\nVous pouvez retirer votre consentement à tout moment sans affecter la licéité du traitement antérieur.\n\nExercice de vos droits : contact@brenne-aerial.fr\nDélai de réponse : 30 jours maximum.\nRéclamation : CNIL — www.cnil.fr` },
-  { title: '8. Politique des cookies', content: `Notre site utilise des cookies et technologies similaires.\n\n8.1 Cookies strictement nécessaires (pas de consentement requis)\n• Session utilisateur\n• Préférences de langue\n• Panier / formulaires en cours\n\n8.2 Cookies analytiques (avec consentement)\n• Mesure d'audience anonymisée\n• Analyse du comportement de navigation\n• Amélioration de l'expérience utilisateur\n\n8.3 Cookies marketing (avec consentement)\n• Personnalisation des contenus\n• Retargeting publicitaire\n• Réseaux sociaux (YouTube, TikTok, Instagram)\n\nGestion des cookies : vous pouvez modifier vos préférences à tout moment via le bandeau cookie ou les paramètres de votre navigateur. Le refus des cookies non essentiels n'affecte pas l'accès au site.` },
-  { title: '9. Sécurité des données', content: `Brenne Aerial met en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données :\n\n• Chiffrement SSL/TLS de toutes les communications\n• Stockage sécurisé avec chiffrement au repos\n• Accès restreint aux données (principe du moindre privilège)\n• Authentification forte pour l'accès admin\n• Sauvegardes régulières et sécurisées\n• Formation du personnel aux bonnes pratiques\n• Audit de sécurité régulier\n• Plan de réponse aux incidents de sécurité\n\nEn cas de violation de données susceptible d'engendrer un risque élevé pour vos droits, vous serez notifié dans les 72 heures conformément à l'article 34 du RGPD.` },
-  { title: '10. Modifications de la politique', content: `Brenne Aerial se réserve le droit de modifier cette politique de confidentialité à tout moment pour refléter les changements législatifs, réglementaires ou opérationnels.\n\nToute modification substantielle vous sera notifiée par :\n• Email si vous êtes client ou abonné à notre newsletter\n• Bandeau d'information sur le site web\n• Mise à jour de la date de dernière révision\n\nDate de dernière mise à jour : ${new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}\n\nNous vous encourageons à consulter régulièrement cette page pour vous tenir informé de nos pratiques de protection des données.` },
+  {
+    icon: User,
+    num: '01',
+    title: 'Responsable du traitement',
+    summary: 'Brenne Aerial — Enor Lefoulon Meyer',
+    subsections: [
+      {
+        label: 'Identité',
+        content: 'Brenne Aerial, représentée par Enor Lefoulon Meyer, est responsable du traitement de vos données personnelles. Conformément au Règlement Général sur la Protection des Données (RGPD — Règlement UE 2016/679) et à la loi n°78-17 du 6 janvier 1978, Brenne Aerial s\'engage à protéger la vie privée de ses utilisateurs.',
+      },
+      {
+        label: 'Coordonnées',
+        list: ['📍 Brenne, Indre (36), France', '✉️ contact@brenne-aerial.fr', '📞 +33 6 00 00 00 00'],
+      },
+    ],
+  },
+  {
+    icon: Database,
+    num: '02',
+    title: 'Données collectées',
+    summary: '5 catégories de données traitées',
+    subsections: [
+      { label: 'Identification', list: ['Nom et prénom', 'Adresse email', 'Numéro de téléphone', 'Adresse postale', 'Raison sociale (professionnels)'] },
+      { label: 'Navigation', list: ['Adresse IP', 'Type de navigateur et version', 'Système d\'exploitation', 'Pages visitées et durée', 'Provenance du trafic', 'Date et heure de connexion'] },
+      { label: 'Communication', list: ['Messages via formulaire de contact', 'Échanges par email', 'Demandes de devis', 'Réclamations et SAV'] },
+      { label: 'Financières', list: ['Informations de facturation', 'Montants des prestations', '⚠️ Aucune donnée bancaire stockée sur nos serveurs'] },
+      { label: 'Contenu', list: ['Fichiers et photos uploadés lors des devis', 'Préférences de prestation'] },
+    ],
+  },
+  {
+    icon: Target,
+    num: '03',
+    title: 'Finalités du traitement',
+    summary: '5 usages distincts et encadrés',
+    subsections: [
+      { label: 'Exécution contractuelle', list: ['Traitement et suivi des devis', 'Gestion des réservations et RDV', 'Fourniture des prestations drone', 'Facturation et comptabilité'] },
+      { label: 'Relation client', list: ['Réponse aux demandes de contact', 'Confirmations de commande', 'Suivi de l\'avancement des projets', 'SAV et gestion des litiges'] },
+      { label: 'Communication commerciale', content: 'Uniquement avec votre consentement : newsletter, promotions, actualités, invitations aux événements Brenne Aerial.' },
+      { label: 'Amélioration des services', list: ['Analyse des statistiques de navigation', 'Évaluation de la satisfaction client', 'Développement de nouvelles fonctionnalités'] },
+      { label: 'Obligations légales', list: ['Conservation des documents comptables', 'Réponse aux autorités compétentes', 'Prévention de la fraude'] },
+    ],
+  },
+  {
+    icon: Scale,
+    num: '04',
+    title: 'Base légale du traitement',
+    summary: '4 fondements juridiques RGPD',
+    subsections: [
+      {
+        label: 'Les 4 bases légales',
+        cards: [
+          { icon: '📜', title: 'Exécution d\'un contrat', desc: 'Traitement nécessaire lors d\'une commande ou demande de devis.' },
+          { icon: '✅', title: 'Consentement', desc: 'Pour les communications commerciales — retrait possible à tout moment.' },
+          { icon: '⚖️', title: 'Intérêt légitime', desc: 'Amélioration de nos services, prévention de la fraude, sécurité du site.' },
+          { icon: '🏛️', title: 'Obligation légale', desc: 'Respect de nos obligations fiscales et comptables.' },
+        ],
+      },
+    ],
+  },
+  {
+    icon: Clock,
+    num: '05',
+    title: 'Durée de conservation',
+    summary: 'Des délais précis pour chaque type de donnée',
+    subsections: [
+      {
+        label: 'Tableau de conservation',
+        table: [
+          { type: 'Données clients & devis', duree: '5 ans', detail: 'À compter de la dernière prestation' },
+          { type: 'Données de facturation', duree: '10 ans', detail: 'Obligation légale comptable' },
+          { type: 'Données de contact', duree: '3 ans', detail: 'À compter du dernier contact' },
+          { type: 'Données de navigation', duree: '13 mois', detail: 'Cookies — durée maximale légale' },
+          { type: 'Données de connexion', duree: '1 an', detail: 'Journaux de sécurité' },
+          { type: 'Fichiers uploadés', duree: '12 mois', detail: 'Après la prestation, puis suppression sécurisée' },
+          { type: 'Données marketing', duree: 'Jusqu\'au retrait', detail: 'Newsletter — consentement révocable' },
+        ],
+      },
+    ],
+  },
+  {
+    icon: Share2,
+    num: '06',
+    title: 'Partage avec des tiers',
+    summary: 'Zéro vente de données — transparence totale',
+    subsections: [
+      { label: 'Prestataires techniques', list: ['Hébergeur web : serveurs sécurisés en UE', 'Outil d\'emailing : plateforme conforme RGPD', 'Outil d\'analyse : statistiques anonymisées'] },
+      { label: 'Partenaires commerciaux', content: 'Sous-traitants drone (pilotes certifiés DGAC) en cas de mission déléguée. Tous nos partenaires sont liés par des clauses de confidentialité strictes.' },
+      { label: 'Autorités légales', list: ['Administration fiscale et douanière si requis', 'Autorités judiciaires en cas de litige', 'CNIL en cas d\'enquête'] },
+      { label: '🌍 Transferts internationaux', content: 'Aucun transfert de données hors Union Européenne n\'est effectué sans garanties appropriées conformément au RGPD (Chapitre V).' },
+    ],
+  },
+  {
+    icon: Eye,
+    num: '07',
+    title: 'Vos droits RGPD',
+    summary: '7 droits fondamentaux garantis',
+    subsections: [
+      {
+        label: 'Droits disponibles',
+        rights: [
+          { icon: Eye, label: 'Accès', desc: 'Obtenir une copie de toutes vos données personnelles.' },
+          { icon: Settings, label: 'Rectification', desc: 'Corriger des données inexactes ou incomplètes.' },
+          { icon: Trash2, label: 'Effacement', desc: 'Supprimer vos données sous réserve des obligations légales.' },
+          { icon: Lock, label: 'Limitation', desc: 'Restreindre le traitement dans certaines circonstances.' },
+          { icon: Download, label: 'Portabilité', desc: 'Récupérer vos données dans un format structuré.' },
+          { icon: AlertTriangle, label: 'Opposition', desc: 'Vous opposer au traitement à des fins de prospection.' },
+          { icon: Bell, label: 'Retrait du consentement', desc: 'Retirer votre consentement à tout moment.' },
+        ],
+      },
+      { label: 'Comment exercer vos droits ?', content: '✉️ contact@brenne-aerial.fr — Délai de réponse : 30 jours maximum.\n🏛️ Réclamation possible auprès de la CNIL : www.cnil.fr' },
+    ],
+  },
+  {
+    icon: Cookie,
+    num: '08',
+    title: 'Politique des cookies',
+    summary: '3 catégories clairement définies',
+    subsections: [
+      { label: '🟢 Cookies strictement nécessaires', content: 'Pas de consentement requis. Incluent : session utilisateur, préférences de langue, formulaires en cours de saisie.' },
+      { label: '🟡 Cookies analytiques', content: 'Avec votre consentement : mesure d\'audience anonymisée, analyse du comportement de navigation, amélioration de l\'expérience utilisateur.' },
+      { label: '🔵 Cookies marketing', content: 'Avec votre consentement : personnalisation des contenus, retargeting publicitaire, intégrations réseaux sociaux (YouTube, TikTok, Instagram).' },
+      { label: 'Gestion', content: 'Vous pouvez modifier vos préférences à tout moment via le bandeau cookie ou les paramètres de votre navigateur. Le refus des cookies non essentiels n\'affecte pas l\'accès au site.' },
+    ],
+  },
+  {
+    icon: Lock,
+    num: '09',
+    title: 'Sécurité des données',
+    summary: 'Architecture sécurisée de bout en bout',
+    subsections: [
+      {
+        label: 'Mesures techniques & organisationnelles',
+        security: [
+          { icon: '🔒', label: 'Chiffrement SSL/TLS', desc: 'Toutes les communications chiffrées' },
+          { icon: '💾', label: 'Stockage sécurisé', desc: 'Chiffrement des données au repos' },
+          { icon: '👁️', label: 'Accès restreint', desc: 'Principe du moindre privilège' },
+          { icon: '🔑', label: 'Auth forte', desc: 'Authentification multifacteur admin' },
+          { icon: '💿', label: 'Sauvegardes', desc: 'Backups réguliers et sécurisés' },
+          { icon: '📋', label: 'Audit régulier', desc: 'Tests de sécurité périodiques' },
+        ],
+      },
+      { label: '⚠️ Notification en cas de violation', content: 'En cas de violation de données susceptible d\'engendrer un risque élevé pour vos droits, vous serez notifié dans les 72 heures conformément à l\'article 34 du RGPD.' },
+    ],
+  },
+  {
+    icon: Bell,
+    num: '10',
+    title: 'Modifications de la politique',
+    summary: 'Transparence sur les évolutions',
+    subsections: [
+      { label: 'En cas de modification substantielle, vous serez informé par :', list: ['📧 Email si vous êtes client ou abonné à notre newsletter', '🔔 Bandeau d\'information sur le site web', '📅 Mise à jour de la date de dernière révision'] },
+      { label: 'Date de dernière mise à jour', content: new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) },
+    ],
+  },
 ];
+
+function Accordion({ section, index }) {
+  const [open, setOpen] = useState(false);
+  const color = ACCENT_COLORS[index % ACCENT_COLORS.length];
+  const Icon = section.icon;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.04 }}
+      className={`rounded-2xl border ${color.border} bg-card overflow-hidden`}
+    >
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center gap-4 p-6 text-left hover:bg-secondary/30 transition-colors"
+      >
+        <div className={`w-10 h-10 rounded-xl ${color.bg} border ${color.border} flex items-center justify-center flex-shrink-0`}>
+          <Icon className={`w-5 h-5 ${color.icon}`} />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className={`font-mono text-xs ${color.text} font-bold`}>{section.num}</span>
+            <h2 className="font-grotesk font-bold text-base sm:text-lg">{section.title}</h2>
+          </div>
+          <p className="font-inter text-xs text-muted-foreground">{section.summary}</p>
+        </div>
+        <div className={`w-7 h-7 rounded-full ${color.bg} border ${color.border} flex items-center justify-center flex-shrink-0`}>
+          {open ? <ChevronUp className={`w-4 h-4 ${color.text}`} /> : <ChevronDown className={`w-4 h-4 ${color.text}`} />}
+        </div>
+      </button>
+
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="px-6 pb-6 space-y-5"
+        >
+          <div className={`h-px w-full ${color.bg}`} />
+          {section.subsections.map((sub, si) => (
+            <div key={si} className="space-y-3">
+              <p className={`font-grotesk font-semibold text-sm ${color.text}`}>{sub.label}</p>
+
+              {sub.content && (
+                <p className="font-inter text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{sub.content}</p>
+              )}
+
+              {sub.list && (
+                <ul className="space-y-1.5">
+                  {sub.list.map((item, li) => (
+                    <li key={li} className="flex items-start gap-2.5 font-inter text-sm text-muted-foreground">
+                      <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${color.text} bg-current`} />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {sub.cards && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {sub.cards.map((card, ci) => (
+                    <div key={ci} className={`rounded-xl p-4 ${color.bg} border ${color.border}`}>
+                      <p className="text-xl mb-1">{card.icon}</p>
+                      <p className="font-grotesk font-semibold text-sm mb-1">{card.title}</p>
+                      <p className="font-inter text-xs text-muted-foreground">{card.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {sub.table && (
+                <div className="overflow-x-auto rounded-xl border border-border">
+                  <table className="w-full min-w-[500px]">
+                    <thead>
+                      <tr className={`${color.bg}`}>
+                        <th className="px-4 py-2.5 text-left font-grotesk text-xs font-bold">Type de donnée</th>
+                        <th className="px-4 py-2.5 text-left font-grotesk text-xs font-bold">Durée</th>
+                        <th className="px-4 py-2.5 text-left font-grotesk text-xs font-bold">Détail</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sub.table.map((row, ri) => (
+                        <tr key={ri} className="border-t border-border">
+                          <td className="px-4 py-2.5 font-inter text-xs font-medium">{row.type}</td>
+                          <td className={`px-4 py-2.5 font-mono text-xs font-bold ${color.text}`}>{row.duree}</td>
+                          <td className="px-4 py-2.5 font-inter text-xs text-muted-foreground">{row.detail}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {sub.rights && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {sub.rights.map((right, ri) => {
+                    const RIcon = right.icon;
+                    return (
+                      <div key={ri} className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40 border border-border">
+                        <div className={`w-7 h-7 rounded-lg ${color.bg} flex items-center justify-center flex-shrink-0`}>
+                          <RIcon className={`w-3.5 h-3.5 ${color.icon}`} />
+                        </div>
+                        <div>
+                          <p className="font-grotesk font-semibold text-xs mb-0.5">{right.label}</p>
+                          <p className="font-inter text-xs text-muted-foreground">{right.desc}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {sub.security && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {sub.security.map((item, ii) => (
+                    <div key={ii} className={`rounded-xl p-3 text-center ${color.bg} border ${color.border}`}>
+                      <p className="text-2xl mb-1">{item.icon}</p>
+                      <p className="font-grotesk font-semibold text-xs mb-0.5">{item.label}</p>
+                      <p className="font-inter text-xs text-muted-foreground">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
 
 export default function PrivacyPage() {
   return (
-    <div className="pt-16">
-      <section className="py-24 px-5 lg:px-10 max-w-4xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-3 mb-6">
-            <Shield className="w-7 h-7 text-primary" />
-            <div>
-              <p className="font-mono text-xs text-primary tracking-widest uppercase">Légal</p>
-              <h1 className="font-grotesk font-bold text-3xl sm:text-4xl">Politique de confidentialité</h1>
+    <div className="pt-16 min-h-screen">
+      {/* Hero */}
+      <section className="relative py-20 px-5 overflow-hidden">
+        <div className="absolute inset-0 grid-bg" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-primary/10 rounded-full blur-3xl" />
+        <div className="relative max-w-4xl mx-auto text-center">
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="inline-flex items-center gap-2 font-mono text-xs text-primary border border-primary/30 bg-primary/5 px-4 py-2 rounded-full mb-6">
+              <Shield className="w-3.5 h-3.5" /> Document légal — RGPD
             </div>
-          </div>
-          <p className="font-inter text-sm text-muted-foreground mb-12">
-            Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+            <h1 className="font-grotesk font-bold text-4xl sm:text-6xl mb-4">
+              Politique de <span className="gradient-text">confidentialité</span>
+            </h1>
+            <p className="font-inter text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
+              Chez Brenne Aerial, la protection de vos données est une priorité absolue. Cette politique détaille avec transparence la façon dont vos informations sont collectées, utilisées et protégées.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-mono text-muted-foreground">
+              <span className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 text-green-400 px-3 py-1.5 rounded-full">
+                <CheckCircle className="w-3 h-3" /> Conforme RGPD UE 2016/679
+              </span>
+              <span className="flex items-center gap-1.5 bg-primary/10 border border-primary/30 text-primary px-3 py-1.5 rounded-full">
+                <Globe className="w-3 h-3" /> Données hébergées en UE
+              </span>
+              <span className="flex items-center gap-1.5 bg-purple-500/10 border border-purple-500/30 text-purple-400 px-3 py-1.5 rounded-full">
+                <Lock className="w-3 h-3" /> 0 vente de données tierces
+              </span>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Summary bar */}
+      <div className="bg-card border-y border-border py-4 px-5 mb-12">
+        <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs font-inter text-muted-foreground">
+          <span>📅 Mise à jour : {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+          <span>📄 {SECTIONS.length} sections — Cliquez pour développer</span>
+          <a href="mailto:contact@brenne-aerial.fr" className="flex items-center gap-1.5 text-primary hover:underline">
+            <Mail className="w-3 h-3" /> contact@brenne-aerial.fr
+          </a>
+        </div>
+      </div>
+
+      {/* Sections accordion */}
+      <section className="px-5 pb-24 max-w-4xl mx-auto space-y-4">
+        {SECTIONS.map((section, i) => (
+          <Accordion key={i} section={section} index={i} />
+        ))}
+
+        {/* Contact CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-8 p-8 rounded-2xl bg-gradient-to-br from-primary/10 via-card to-accent/10 border border-primary/20 text-center sky-glow"
+        >
+          <Shield className="w-10 h-10 text-primary mx-auto mb-4" />
+          <h3 className="font-grotesk font-bold text-xl mb-2">Une question sur vos données ?</h3>
+          <p className="font-inter text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+            Notre équipe est disponible pour répondre à toute demande relative à vos droits RGPD dans un délai de 30 jours.
           </p>
-          <div className="prose prose-invert max-w-none space-y-10">
-            {SECTIONS.map((s, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                className="p-6 rounded-xl bg-card border border-border">
-                <h2 className="font-grotesk font-bold text-lg mb-4 text-foreground">{s.title}</h2>
-                <div className="font-inter text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{s.content}</div>
-              </motion.div>
-            ))}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <a href="mailto:contact@brenne-aerial.fr"
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-grotesk font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors">
+              <Mail className="w-4 h-4" /> Contacter la DPO
+            </a>
+            <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-secondary border border-border text-sm px-5 py-2.5 rounded-xl hover:border-primary/30 transition-colors">
+              <ExternalLink className="w-4 h-4" /> CNIL — www.cnil.fr
+            </a>
           </div>
         </motion.div>
+
+        <div className="flex items-center justify-center gap-4 pt-4 text-xs font-inter text-muted-foreground">
+          <Link to="/legal/terms" className="hover:text-primary transition-colors flex items-center gap-1.5">
+            <FileText className="w-3 h-3" /> Conditions d'utilisation
+          </Link>
+          <span>·</span>
+          <Link to="/" className="hover:text-primary transition-colors">Retour à l'accueil</Link>
+        </div>
       </section>
     </div>
   );

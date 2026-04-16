@@ -27,7 +27,7 @@ const SECTIONS = [
     subsections: [
       {
         label: 'À propos de ce document',
-        content: 'Les présentes Conditions Générales d\'Utilisation (CGU) régissent l\'utilisation du site internet www.brenne-aerial.fr et des services proposés par Brenne Aerial, représentée par Enor Lefoulon Meyer.\n\nEn accédant et en utilisant le Site, vous acceptez sans réserve les présentes CGU. Si vous n\'acceptez pas ces conditions, veuillez cesser d\'utiliser le Site immédiatement.',
+        content: 'Les présentes Conditions Générales d\'Utilisation (CGU) régissent l\'utilisation du site internet brenneaerial.fr et des services proposés par Brenne Aerial, représentée par Enor Lefoulon Meyer.\n\nEn accédant et en utilisant le Site, vous acceptez sans réserve les présentes CGU. Si vous n\'acceptez pas ces conditions, veuillez cesser d\'utiliser le Site immédiatement.',
       },
       {
         label: 'Évolution des CGU',
@@ -374,8 +374,8 @@ export default function TermsPage() {
         <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs font-inter text-muted-foreground">
           <span>📅 Mise à jour : {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
           <span>📄 {SECTIONS.length} sections — Cliquez pour développer</span>
-          <a href="mailto:contact@brenne-aerial.fr" className="flex items-center gap-1.5 text-primary hover:underline">
-            <Mail className="w-3 h-3" /> contact@brenne-aerial.fr
+          <a href="mailto:contact@brenneaerial.fr" className="flex items-center gap-1.5 text-primary hover:underline">
+            <Mail className="w-3 h-3" /> contact@brenneaerial.fr
           </a>
         </div>
       </div>
@@ -399,7 +399,7 @@ export default function TermsPage() {
             Notre équipe répond à toute demande de clarification juridique ou commerciale dans les meilleurs délais.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <a href="mailto:contact@brenne-aerial.fr"
+            <a href="mailto:contact@brenneaerial.fr"
               className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-grotesk font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors">
               <Mail className="w-4 h-4" /> Nous contacter
             </a>

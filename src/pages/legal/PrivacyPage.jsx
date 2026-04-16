@@ -33,7 +33,7 @@ const SECTIONS = [
       },
       {
         label: 'Coordonnées',
-        list: ['📍 Brenne, Indre (36), France', '✉️ contact@brenne-aerial.fr', '📞 +33 6 00 00 00 00'],
+        list: ['📍 Brenne, Indre (36), France', '✉️ contact@brenneaerial.fr', '📞 +33 6 00 00 00 00'],
       },
     ],
   },
@@ -130,7 +130,7 @@ const SECTIONS = [
           { icon: Bell, label: 'Retrait du consentement', desc: 'Retirer votre consentement à tout moment.' },
         ],
       },
-      { label: 'Comment exercer vos droits ?', content: '✉️ contact@brenne-aerial.fr — Délai de réponse : 30 jours maximum.\n🏛️ Réclamation possible auprès de la CNIL : www.cnil.fr' },
+      { label: 'Comment exercer vos droits ?', content: '✉️ contact@brenneaerial.fr — Délai de réponse : 30 jours maximum.\n🏛️ Réclamation possible auprès de la CNIL : www.cnil.fr' },
     ],
   },
   {
@@ -346,8 +346,8 @@ export default function PrivacyPage() {
         <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs font-inter text-muted-foreground">
           <span>📅 Mise à jour : {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
           <span>📄 {SECTIONS.length} sections — Cliquez pour développer</span>
-          <a href="mailto:contact@brenne-aerial.fr" className="flex items-center gap-1.5 text-primary hover:underline">
-            <Mail className="w-3 h-3" /> contact@brenne-aerial.fr
+          <a href="mailto:contact@brenneaerial.fr" className="flex items-center gap-1.5 text-primary hover:underline">
+            <Mail className="w-3 h-3" /> contact@brenneaerial.fr
           </a>
         </div>
       </div>
@@ -371,7 +371,7 @@ export default function PrivacyPage() {
             Notre équipe est disponible pour répondre à toute demande relative à vos droits RGPD dans un délai de 30 jours.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <a href="mailto:contact@brenne-aerial.fr"
+            <a href="mailto:contact@brenneaerial.fr"
               className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-grotesk font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors">
               <Mail className="w-4 h-4" /> Contacter la DPO
             </a>

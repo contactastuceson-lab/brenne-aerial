@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
       <a href="https://statut.brenneaerial.org" class="btn">🔍 Voir le statut des services</a>
 
       <p style="margin-top:20px;">Vous pouvez également consulter la page statut de notre plateforme :</p>
-      <a href="https://brenneaerial.base44.app/uptime" class="btn" style="background:#1a2a3d;color:#38aadc;">📊 Statut Brenne Aerial</a>
+      <a href="https://brenneaerial.fr/uptime" class="btn" style="background:#1a2a3d;color:#38aadc;">📊 Statut Brenne Aerial</a>
     </div>
 
     <div class="card" style="background:#070d1a;">

@@ -20,9 +20,6 @@ export default function PlanningPage() {
   const [booking, setBooking] = useState(null);
   const [bookForm, setBookForm] = useState({ client_name: '', client_email: '', notes: '' });
 
-  if (checkingEnabled) return null;
-  if (!enabled) return <FeatureDisabled title="Planning indisponible" message="Le planning et la réservation en ligne sont temporairement désactivés." />;
-
   const weekStart = startOfWeek(addWeeks(startOfToday(), weekOffset), { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -52,6 +49,9 @@ export default function PlanningPage() {
       toast.success('Créneau réservé ! Confirmation envoyée par email.');
     },
   });
+
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Planning indisponible" message="Le planning et la réservation en ligne sont temporairement désactivés." />;
 
   const available = appointments.filter(a => a.status === 'confirmed' && !a.client_email);
   const getForDay = (day) => {

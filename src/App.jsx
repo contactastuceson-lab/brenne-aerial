@@ -69,6 +69,7 @@ import FlashDeliveryPage from "@/pages/FlashDeliveryPage";
 import SimulateurVuePage from "@/pages/SimulateurVuePage";
 import ComparateurPage from "@/pages/ComparateurPage";
 import StatusPage from "@/pages/StatusPage";
+import UptimePage from "@/pages/UptimePage";
 import ProfilePage from "@/pages/ProfilePage";
 import CertificationSuccessPage from "@/pages/CertificationSuccessPage";
 import DonationPage from "@/pages/DonationPage";
@@ -114,6 +115,7 @@ const AuthenticatedApp = () => {
         <Route path="/donation" element={<DonationPage />} />
         <Route path="/donation-success" element={<DonationSuccessPage />} />
         <Route path="/status" element={<StatusPage />} />
+        <Route path="/uptime" element={<UptimePage />} />
         <Route path="/legal/privacy" element={<PrivacyPage />} />
         <Route path="/legal/terms" element={<TermsPage />} />
         <Route path="/garage" element={<GaragePage />} />

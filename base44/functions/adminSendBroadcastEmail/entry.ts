@@ -70,17 +70,11 @@ Deno.serve(async (req) => {
 
     const base44 = createClientFromRequest(req);
 
-    let user = null;
-    try {
-      user = await base44.auth.me();
-      console.log('User:', user?.email, user?.role);
-    } catch (authErr) {
-      console.error('Auth error:', authErr.message);
-      // In test mode, allow proceeding
-    }
+    const user = await base44.auth.me();
+    console.log('User:', user?.email, user?.role);
 
-    if (user && user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
     const { subject, message, senderName, senderRole, recipients, attachments = [] } = body;

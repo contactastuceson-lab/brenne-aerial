@@ -119,8 +119,8 @@ Deno.serve(async (req) => {
 </html>
     `.trim();
 
-    // Send to all users (bulk - up to 50)
-    const emailPromises = usersToNotify.slice(0, 50).map(u =>
+    // Send to all users
+    const emailPromises = usersToNotify.map(u =>
       base44.asServiceRole.integrations.Core.SendEmail({
         to: u.email,
         subject: `⚠️ Service indisponible — ${pageLabel} | Brenne Aerial`,
@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
 
     await Promise.allSettled(emailPromises);
 
-    return Response.json({ ok: true, notified: Math.min(usersToNotify.length, 50) });
+    return Response.json({ ok: true, notified: usersToNotify.length });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -9,10 +9,11 @@ import FeatureDisabled from '@/components/shared/FeatureDisabled';
 
 export default function DonationPage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_donation_enabled');
-  if (checkingEnabled) return null;
-  if (!enabled) return <FeatureDisabled title="Page Donation indisponible" message="La plateforme de dons est temporairement désactivée." />;
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Page Donation indisponible" message="La plateforme de dons est temporairement désactivée." />;
 
   const donationTiers = [
     { amount: 10, label: '10€', description: 'Supporter la mission', emoji: '🙏' },

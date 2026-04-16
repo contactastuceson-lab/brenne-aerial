@@ -63,14 +63,15 @@ const DEFAULT_DRONES = [
 export default function GaragePage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_garage_enabled');
   const [selected, setSelected] = useState(null);
-  if (checkingEnabled) return null;
-  if (!enabled) return <FeatureDisabled title="Garage indisponible" message="La page Garage est temporairement désactivée." />;
 
   const { data: settings = [] } = useQuery({
     queryKey: ['app-settings'],
     queryFn: () => base44.entities.AppSettings.list(),
   });
   const sMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
+
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Garage indisponible" message="La page Garage est temporairement désactivée." />;
 
   const drones = DEFAULT_DRONES.map(d => ({
     ...d,

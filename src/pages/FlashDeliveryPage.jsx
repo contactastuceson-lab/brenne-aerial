@@ -12,17 +12,17 @@ import { Link } from 'react-router-dom';
 export default function FlashDeliveryPage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_flash_enabled');
   const [user, setUser] = useState(null);
-  if (checkingEnabled) return null;
-  if (!enabled) return <FeatureDisabled title="Flash Delivery indisponible" message="Le service Flash Delivery est temporairement désactivé." />;
   const [code, setCode] = useState('');
   const [checking, setChecking] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
-    // Parse code from URL if coming from QR
     const params = new URLSearchParams(window.location.search);
     if (params.get('code')) setCode(params.get('code'));
   }, []);
+
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Flash Delivery indisponible" message="Le service Flash Delivery est temporairement désactivé." />;
 
   const handleCheck = () => {
     setChecking(true);

@@ -37,13 +37,14 @@ const DEMO_PARTNERS = [
 export default function PartenairesPage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_partenaires_enabled');
   const [filter, setFilter] = useState('all');
-  if (checkingEnabled) return null;
-  if (!enabled) return <FeatureDisabled title="Partenaires indisponible" message="L'annuaire des partenaires est temporairement désactivé." />;
 
   const { data: dbPartners = [] } = useQuery({
     queryKey: ['partners-public'],
     queryFn: () => base44.entities.Partner.filter({ is_active: true }),
   });
+
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Partenaires indisponible" message="L'annuaire des partenaires est temporairement désactivé." />;
 
   const partners = dbPartners.length > 0 ? dbPartners : DEMO_PARTNERS;
   const filtered = filter === 'all' ? partners : partners.filter(p => p.category === filter);

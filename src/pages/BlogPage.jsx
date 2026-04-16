@@ -40,13 +40,14 @@ export default function BlogPage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_blog_enabled');
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
-  if (checkingEnabled) return null;
-  if (!enabled) return <FeatureDisabled title="Blog indisponible" message="Le blog est temporairement désactivé." />;
 
   const { data: dbPosts = [] } = useQuery({
     queryKey: ['blog-posts'],
     queryFn: () => base44.entities.BlogPost.filter({ is_published: true }, '-created_date', 20),
   });
+
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Blog indisponible" message="Le blog est temporairement désactivé." />;
 
   const posts = dbPosts.length > 0 ? dbPosts : DEMO_POSTS;
   const filtered = posts

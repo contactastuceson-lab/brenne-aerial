@@ -40,14 +40,15 @@ const FAQ = [
 export default function ReglementationPage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_reglementation_enabled');
   const [openFaq, setOpenFaq] = useState(null);
-  if (checkingEnabled) return null;
-  if (!enabled) return <FeatureDisabled title="Réglementation indisponible" message="Cette page est temporairement désactivée." />;
 
   const { data: settings = [] } = useQuery({
     queryKey: ['app-settings'],
     queryFn: () => base44.entities.AppSettings.list(),
   });
   const sMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
+
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Réglementation indisponible" message="Cette page est temporairement désactivée." />;
 
   return (
     <div className="pt-24 min-h-screen pb-20">

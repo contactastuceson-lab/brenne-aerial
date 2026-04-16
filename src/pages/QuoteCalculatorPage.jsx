@@ -47,8 +47,6 @@ const DETAIL_MULTIPLIER = { photo: 1, video4k: 1.3, model3d: 1.6, thermal: 1.8, 
 export default function QuoteCalculatorPage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_calculator_enabled');
   const [step, setStep] = useState(0);
-  if (checkingEnabled) return null;
-  if (!enabled) return <FeatureDisabled title="Calculateur indisponible" message="Le calculateur de devis est temporairement désactivé." />;
   const [sector, setSector] = useState(null);
   const [surface, setSurface] = useState(null);
   const [detail, setDetail] = useState(null);
@@ -58,6 +56,9 @@ export default function QuoteCalculatorPage() {
     queryFn: () => base44.entities.AppSettings.list(),
   });
   const sMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
+
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Calculateur indisponible" message="Le calculateur de devis est temporairement désactivé." />;
 
   const pageTitle = sMap['calc_title'] || 'Calculateur de Devis Express';
   const pageDesc = sMap['calc_desc'] || 'Obtenez une estimation de prix en moins de 60 secondes.';

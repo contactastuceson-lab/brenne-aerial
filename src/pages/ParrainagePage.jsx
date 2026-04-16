@@ -21,8 +21,6 @@ const HOW_IT_WORKS = [
 export default function ParrainagePage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_parrainage_enabled');
   const [user, setUser] = useState(null);
-  if (checkingEnabled) return null;
-  if (!enabled) return <FeatureDisabled title="Parrainage indisponible" message="Le programme de parrainage est temporairement désactivé." />;
   const [authChecked, setAuthChecked] = useState(false);
   const [form, setForm] = useState({ referred_name: '', referred_email: '', referred_phone: '', mission_description: '' });
   const [submitting, setSubmitting] = useState(false);
@@ -39,6 +37,9 @@ export default function ParrainagePage() {
     queryFn: () => base44.entities.Referral.filter({ referrer_email: user.email }, '-created_date'),
     enabled: !!user?.email,
   });
+
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Parrainage indisponible" message="Le programme de parrainage est temporairement désactivé." />;
 
   const totalCredits = myReferrals.filter(r => r.status === 'rewarded').reduce((a, r) => a + (r.credits_earned || 0), 0);
   const pendingCount = myReferrals.filter(r => r.status === 'pending').length;

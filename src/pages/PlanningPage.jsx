@@ -16,11 +16,12 @@ import { toast } from 'sonner';
 export default function PlanningPage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_planning_enabled');
   const queryClient = useQueryClient();
-  if (checkingEnabled) return null;
-  if (!enabled) return <FeatureDisabled title="Planning indisponible" message="Le planning et la réservation en ligne sont temporairement désactivés." />;
   const [weekOffset, setWeekOffset] = useState(0);
   const [booking, setBooking] = useState(null);
   const [bookForm, setBookForm] = useState({ client_name: '', client_email: '', notes: '' });
+
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Planning indisponible" message="Le planning et la réservation en ligne sont temporairement désactivés." />;
 
   const weekStart = startOfWeek(addWeeks(startOfToday(), weekOffset), { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));

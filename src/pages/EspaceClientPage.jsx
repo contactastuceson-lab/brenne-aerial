@@ -76,8 +76,6 @@ export default function EspaceClientPage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_espace_client_enabled');
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
-  if (checkingEnabled) return null;
-  if (!enabled) return <FeatureDisabled title="Espace Client indisponible" message="L'espace client est temporairement désactivé." />;
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(async (authed) => {
@@ -87,6 +85,7 @@ export default function EspaceClientPage() {
   }, []);
 
   const { data: files = [], isLoading } = useQuery({
+
     queryKey: ['client-files', user?.email],
     queryFn: () => base44.entities.ClientFile.filter({ client_email: user.email }, '-mission_date'),
     enabled: !!user?.email,
@@ -98,6 +97,9 @@ export default function EspaceClientPage() {
     acc[f.mission_name].push(f);
     return acc;
   }, {});
+
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Espace Client indisponible" message="L'espace client est temporairement désactivé." />;
 
   if (!authChecked) return (
     <div className="min-h-screen flex items-center justify-center">

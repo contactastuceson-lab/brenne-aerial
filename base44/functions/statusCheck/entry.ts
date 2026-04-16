@@ -1,49 +1,42 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// Map of module names to their paths on the main site
-const MODULE_PATHS = {
-  'messagerie':    '/messages',
-  'portfolio':     '/portfolio',
-  'blog':          '/blog',
-  'certification': '/certification-success',
-  'donation':      '/donation',
-  'planning':      '/planning',
-  'quote':         '/quote',
-  'discover':      '/discover',
-  'homepage':      '/',
-  'espace_client': '/espace-client',
-  'partenaires':   '/partenaires',
-  'parrainage':    '/parrainage',
-  'avant_apres':   '/avant-apres',
-  'services':      '/services',
-  'contact':       '/contact',
+// Map: module name → AppSettings key
+const MODULE_TO_SETTING = {
+  'homepage':      'page_homepage_enabled',
+  'services':      'page_services_enabled',
+  'portfolio':     'page_portfolio_enabled',
+  'blog':          'page_blog_enabled',
+  'contact':       'page_contact_enabled',
+  'quote':         'page_quote_enabled',
+  'planning':      'page_planning_enabled',
+  'discover':      'page_discover_enabled',
+  'messagerie':    'page_messages_enabled',
+  'espace_client': 'page_espace_client_enabled',
+  'partenaires':   'page_partenaires_enabled',
+  'parrainage':    'page_parrainage_enabled',
+  'avant_apres':   'page_avant_apres_enabled',
+  'certification': 'page_certification_enabled',
+  'donation':      'page_donation_enabled',
+  'garage':        'page_garage_enabled',
+  'calculateur':   'page_calculator_enabled',
+  'reglementation':'page_reglementation_enabled',
+  'simulateur':    'page_simulateur_enabled',
+  'comparateur':   'page_comparateur_enabled',
+  'flash':         'page_flash_enabled',
 };
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-
-    // Extract module name from query param
     const url = new URL(req.url);
     const moduleName = url.searchParams.get('module');
 
-    if (!moduleName) {
-      // Return all modules status summary
-      const modules = await base44.asServiceRole.entities.AppModuleStatus.list();
-      const summary = modules.map(m => ({
-        module: m.module_name,
-        status: m.status,
-        is_active: m.is_active,
-        operational: m.is_active && m.status === 'operational',
-      }));
-      return Response.json({ ok: true, modules: summary });
-    }
+    const settings = await base44.asServiceRole.entities.AppSettings.list();
+    const sMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
 
     // Special: monitor the whole site via maintenance_mode setting
     if (moduleName === 'site') {
-      const settings = await base44.asServiceRole.entities.AppSettings.list();
-      const maintenanceSetting = settings.find(s => s.key === 'maintenance_mode');
-      const isInMaintenance = maintenanceSetting?.value === 'true';
+      const isInMaintenance = sMap['maintenance_mode'] === 'true';
       if (isInMaintenance) {
         return Response.json(
           { ok: false, module: 'site', status: 'maintenance', message: 'Site Brenne Aerial en maintenance' },
@@ -56,46 +49,33 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check specific module status
-    const modules = await base44.asServiceRole.entities.AppModuleStatus.list();
-    const mod = modules.find(m => m.module_name === moduleName);
-
-    // If module not found in DB → consider it operational
-    if (!mod) {
-      return Response.json(
-        { ok: true, module: moduleName, status: 'operational', message: 'Service opérationnel' },
-        { status: 200 }
-      );
+    // No module specified → return summary of all
+    if (!moduleName) {
+      const summary = Object.entries(MODULE_TO_SETTING).map(([mod, key]) => ({
+        module: mod,
+        enabled: sMap[key] !== 'false',
+      }));
+      return Response.json({ ok: true, modules: summary });
     }
 
-    // If module is disabled / in maintenance / offline → return 503
-    if (!mod.is_active || mod.status === 'offline' || mod.status === 'maintenance') {
-      const statusMessages = {
-        offline: 'Service hors ligne',
-        maintenance: 'Service en maintenance',
-      };
+    // Check specific module
+    const settingKey = MODULE_TO_SETTING[moduleName];
+    if (!settingKey) {
+      return Response.json({ ok: false, error: `Module inconnu: ${moduleName}` }, { status: 404 });
+    }
+
+    // Default is enabled unless explicitly set to 'false'
+    const isEnabled = sMap[settingKey] !== 'false';
+
+    if (!isEnabled) {
       return Response.json(
-        {
-          ok: false,
-          module: moduleName,
-          status: mod.status,
-          message: mod.message || statusMessages[mod.status] || 'Service indisponible',
-        },
+        { ok: false, module: moduleName, status: 'disabled', message: 'Module désactivé' },
         { status: 503 }
       );
     }
 
-    // degraded → return 200 but with degraded flag (BetterStack still sees it as "up")
-    if (mod.status === 'degraded') {
-      return Response.json(
-        { ok: true, module: moduleName, status: 'degraded', message: mod.message || 'Performances dégradées' },
-        { status: 200 }
-      );
-    }
-
-    // operational
     return Response.json(
-      { ok: true, module: moduleName, status: 'operational', message: 'Service opérationnel' },
+      { ok: true, module: moduleName, status: 'operational', message: 'Module opérationnel' },
       { status: 200 }
     );
 

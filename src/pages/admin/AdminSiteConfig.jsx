@@ -24,20 +24,34 @@ const TABS = [
 ];
 
 const PAGE_SETTINGS = [
-  { key: 'page_discover_enabled', label: 'Page Découvrir', icon: Compass, description: 'Page de découverte des membres', default: 'true' },
-  { key: 'page_messages_enabled', label: 'Page Messages', icon: MessageCircle, description: 'Système de messagerie', default: 'true' },
-  { key: 'page_quote_enabled', label: 'Page Devis', icon: FileText, description: 'Demandes de devis', default: 'true' },
+  // Pages principales
+  { key: 'page_homepage_enabled', label: 'Page Accueil', icon: Home, description: 'Page d\'accueil principale', default: 'true' },
+  { key: 'page_services_enabled', label: 'Page Services', icon: Zap, description: 'Présentation des services', default: 'true' },
+  { key: 'page_portfolio_enabled', label: 'Page Portfolio', icon: Star, description: 'Galerie de projets', default: 'true' },
   { key: 'page_blog_enabled', label: 'Page Blog', icon: BookOpen, description: 'Blog & actualités', default: 'true' },
-  { key: 'page_planning_enabled', label: 'Page Planning', icon: Calendar, description: 'Page de planning', default: 'true' },
+  { key: 'page_contact_enabled', label: 'Page Contact', icon: Globe, description: 'Formulaire de contact', default: 'true' },
+  { key: 'page_quote_enabled', label: 'Page Devis', icon: FileText, description: 'Demandes de devis', default: 'true' },
+  { key: 'page_planning_enabled', label: 'Page Planning', icon: Calendar, description: 'Calendrier & rendez-vous', default: 'true' },
+  // Communauté & espace client
+  { key: 'page_discover_enabled', label: 'Page Découvrir', icon: Compass, description: 'Répertoire social des membres', default: 'true' },
+  { key: 'page_messages_enabled', label: 'Page Messages', icon: MessageCircle, description: 'Messagerie entre membres', default: 'true' },
+  { key: 'page_espace_client_enabled', label: 'Espace Client', icon: Users, description: 'Portail fichiers clients', default: 'true' },
+  { key: 'page_partenaires_enabled', label: 'Page Partenaires', icon: Building2, description: 'Annuaire des partenaires', default: 'true' },
+  { key: 'page_parrainage_enabled', label: 'Page Parrainage', icon: Users, description: 'Programme de parrainage', default: 'true' },
+  { key: 'page_avant_apres_enabled', label: 'Page Avant/Après', icon: ZoomIn, description: 'Galerie comparaisons', default: 'true' },
+  { key: 'page_certification_enabled', label: 'Page Certification', icon: Shield, description: 'Système de certification', default: 'true' },
+  { key: 'page_donation_enabled', label: 'Page Donation', icon: Star, description: 'Plateforme de dons', default: 'true' },
+  // Outils
   { key: 'page_garage_enabled', label: 'Page Garage', icon: Warehouse, description: 'Fiches techniques drones', default: 'true' },
   { key: 'page_calculator_enabled', label: 'Calculateur de devis', icon: Calculator, description: 'Estimateur de prix', default: 'true' },
-  { key: 'page_reglementation_enabled', label: 'Réglementation', icon: Shield, description: 'Guide réglementaire', default: 'true' },
+  { key: 'page_reglementation_enabled', label: 'Réglementation', icon: Shield, description: 'Guide réglementaire drone', default: 'true' },
   { key: 'page_simulateur_enabled', label: 'Simulateur de Vue', icon: Building2, description: 'Outil immobilier étages', default: 'true' },
   { key: 'page_comparateur_enabled', label: 'Comparateur de Résolution', icon: ZoomIn, description: 'Comparaison qualité photo', default: 'true' },
   { key: 'page_flash_enabled', label: 'Flash Delivery', icon: QrCode, description: 'Portail livraison rapide', default: 'true' },
-  { key: 'registration_open', label: 'Inscriptions ouvertes', icon: Users, description: 'Nouvelles inscriptions', default: 'true' },
+  // Paramètres globaux
+  { key: 'registration_open', label: 'Inscriptions ouvertes', icon: Users, description: 'Autoriser les nouvelles inscriptions', default: 'true' },
   { key: 'messaging_enabled', label: 'Messagerie inter-membres', icon: MessageCircle, description: 'Chat entre utilisateurs', default: 'true' },
-  { key: 'weather_widget_enabled', label: 'Widget Météo Drone', icon: Globe, description: 'Afficher la météo en temps réel sur l\'accueil', default: 'true' },
+  { key: 'weather_widget_enabled', label: 'Widget Météo Drone', icon: Globe, description: 'Météo en temps réel sur l\'accueil', default: 'true' },
 ];
 
 const TEXT_FIELDS = {

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { usePageEnabled } from '@/hooks/usePageEnabled';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion } from 'framer-motion';
 import { Shield, AlertTriangle, CheckCircle, FileText, MapPin, Plane, Lock, Info } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -36,7 +38,10 @@ const FAQ = [
 ];
 
 export default function ReglementationPage() {
+  const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_reglementation_enabled');
   const [openFaq, setOpenFaq] = useState(null);
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Réglementation indisponible" message="Cette page est temporairement désactivée." />;
 
   const { data: settings = [] } = useQuery({
     queryKey: ['app-settings'],

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { usePageEnabled } from '@/hooks/usePageEnabled';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion } from 'framer-motion';
 import { Gift, Users, CheckCircle, ArrowRight, Star, Clock, LogIn, Loader2, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,7 +19,10 @@ const HOW_IT_WORKS = [
 ];
 
 export default function ParrainagePage() {
+  const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_parrainage_enabled');
   const [user, setUser] = useState(null);
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Parrainage indisponible" message="Le programme de parrainage est temporairement désactivé." />;
   const [authChecked, setAuthChecked] = useState(false);
   const [form, setForm] = useState({ referred_name: '', referred_email: '', referred_phone: '', mission_description: '' });
   const [submitting, setSubmitting] = useState(false);

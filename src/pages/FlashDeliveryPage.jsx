@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { usePageEnabled } from '@/hooks/usePageEnabled';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion } from 'framer-motion';
 import { Zap, QrCode, Download, Clock, CheckCircle, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +10,10 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 
 export default function FlashDeliveryPage() {
+  const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_flash_enabled');
   const [user, setUser] = useState(null);
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Flash Delivery indisponible" message="Le service Flash Delivery est temporairement désactivé." />;
   const [code, setCode] = useState('');
   const [checking, setChecking] = useState(false);
 

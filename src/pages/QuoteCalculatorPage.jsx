@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { usePageEnabled } from '@/hooks/usePageEnabled';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Calculator, CheckCircle, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,7 +45,10 @@ const PRICE_MATRIX = {
 const DETAIL_MULTIPLIER = { photo: 1, video4k: 1.3, model3d: 1.6, thermal: 1.8, live: 1.5 };
 
 export default function QuoteCalculatorPage() {
+  const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_calculator_enabled');
   const [step, setStep] = useState(0);
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Calculateur indisponible" message="Le calculateur de devis est temporairement désactivé." />;
   const [sector, setSector] = useState(null);
   const [surface, setSurface] = useState(null);
   const [detail, setDetail] = useState(null);

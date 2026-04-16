@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { usePageEnabled } from '@/hooks/usePageEnabled';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion } from 'framer-motion';
 import { ExternalLink, Phone, Mail, MapPin, Star, Users, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,7 +35,10 @@ const DEMO_PARTNERS = [
 ];
 
 export default function PartenairesPage() {
+  const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_partenaires_enabled');
   const [filter, setFilter] = useState('all');
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Partenaires indisponible" message="L'annuaire des partenaires est temporairement désactivé." />;
 
   const { data: dbPartners = [] } = useQuery({
     queryKey: ['partners-public'],

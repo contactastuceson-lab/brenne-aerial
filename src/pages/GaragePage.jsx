@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { usePageEnabled } from '@/hooks/usePageEnabled';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Shield, Camera, Wind, Battery, Cpu, ChevronRight, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -59,7 +61,10 @@ const DEFAULT_DRONES = [
 ];
 
 export default function GaragePage() {
+  const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_garage_enabled');
   const [selected, setSelected] = useState(null);
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Garage indisponible" message="La page Garage est temporairement désactivée." />;
 
   const { data: settings = [] } = useQuery({
     queryKey: ['app-settings'],

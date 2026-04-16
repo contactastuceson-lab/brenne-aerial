@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react';
+import { usePageEnabled } from '@/hooks/usePageEnabled';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion } from 'framer-motion';
 import { ZoomIn, Camera, ArrowRight, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -77,7 +79,10 @@ function SliderComparator({ before, after, beforeDesc, afterDesc }) {
 }
 
 export default function ComparateurPage() {
+  const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_comparateur_enabled');
   const [active, setActive] = useState(0);
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Comparateur indisponible" message="Le comparateur de résolution est temporairement désactivé." />;
   const comp = COMPARISONS[active];
 
   return (

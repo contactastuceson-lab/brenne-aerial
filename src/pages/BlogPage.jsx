@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { usePageEnabled } from '@/hooks/usePageEnabled';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -35,8 +37,11 @@ const CAT_COLORS = {
 };
 
 export default function BlogPage() {
+  const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_blog_enabled');
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Blog indisponible" message="Le blog est temporairement désactivé." />;
 
   const { data: dbPosts = [] } = useQuery({
     queryKey: ['blog-posts'],

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { usePageEnabled } from '@/hooks/usePageEnabled';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion } from 'framer-motion';
 import { Building2, ChevronUp, ChevronDown, Eye, ArrowRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,7 +16,10 @@ const FLOORS = [
 ];
 
 export default function SimulateurVuePage() {
+  const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_simulateur_enabled');
   const [floor, setFloor] = useState(3);
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Simulateur indisponible" message="Le simulateur de vue est temporairement désactivé." />;
   const current = FLOORS[floor - 1];
 
   return (

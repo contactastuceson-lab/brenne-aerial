@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { usePageEnabled } from '@/hooks/usePageEnabled';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion } from 'framer-motion';
 import { FolderOpen, Download, FileVideo, FileImage, FileText, File, Lock, LogIn, Calendar, ChevronDown, ChevronUp, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -71,8 +73,11 @@ function MissionFolder({ mission, files }) {
 }
 
 export default function EspaceClientPage() {
+  const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_espace_client_enabled');
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Espace Client indisponible" message="L'espace client est temporairement désactivé." />;
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(async (authed) => {

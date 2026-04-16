@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { usePageEnabled } from '@/hooks/usePageEnabled';
+import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -12,7 +14,10 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { toast } from 'sonner';
 
 export default function PlanningPage() {
+  const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_planning_enabled');
   const queryClient = useQueryClient();
+  if (checkingEnabled) return null;
+  if (!enabled) return <FeatureDisabled title="Planning indisponible" message="Le planning et la réservation en ligne sont temporairement désactivés." />;
   const [weekOffset, setWeekOffset] = useState(0);
   const [booking, setBooking] = useState(null);
   const [bookForm, setBookForm] = useState({ client_name: '', client_email: '', notes: '' });

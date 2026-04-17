@@ -140,8 +140,8 @@ Deno.serve(async (req) => {
     </div>
     <div class="card">
       <div class="badge">⚠️ Service temporairement indisponible</div>
-      <h2>Un service a été désactivé</h2>
-      <p>Notre équipe technique vient de désactiver temporairement le service suivant sur la plateforme Brenne Aerial :</p>
+      <h2>Un service est tombé en panne</h2>
+      <p>Le service suivant est tombé en panne sur la plateforme Brenne Aerial :</p>
       <div class="module-box">
         <div class="module-name">🔴 ${pageLabel}</div>
         <div class="status-row">
@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
           <div class="status-label">Désactivé le ${now}</div>
         </div>
       </div>
-      <p>Cette action peut intervenir dans le cadre d'une <span class="highlight">maintenance planifiée</span>, d'une mise à jour technique ou d'une intervention d'urgence. Nous mettons tout en œuvre pour rétablir ce service dans les meilleurs délais.</p>
+      <p>Ce service est <span class="highlight">tombé en panne</span> et nos équipes techniques sont immédiatement mobilisées pour le rétablir dans les meilleurs délais. Nous nous excusons pour la gêne occasionnée.</p>
       <hr class="divider"/>
       <p><span class="highlight">Suivez l'état en temps réel</span> de tous nos services sur notre page de statut officielle :</p>
       <a href="https://statut.brenneaerial.org" class="btn">🔍 Voir le statut des services</a>

@@ -192,16 +192,6 @@ export default function AdminSiteConfig() {
   const togglePage = async (key, val) => {
     setLocal(p => ({ ...p, [key]: val ? 'true' : 'false' }));
     await saveSetting(key, val ? 'true' : 'false');
-    // Si on réactive un service, envoyer un mail "panne résolue"
-    if (val) {
-      base44.functions.invoke('notifyPageDisabled', { mode: 'restored', settingKey: key, enabled: true })
-        .then(res => {
-          if (res?.data?.notified > 0) {
-            toast.success(`✅ Panne résolue — ${res.data.notified} utilisateur(s) notifié(s)`);
-          }
-        })
-        .catch(() => {});
-    }
   };
 
   const [sendingUp, setSendingUp] = useState(false);

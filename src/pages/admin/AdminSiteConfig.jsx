@@ -115,7 +115,7 @@ const TEXT_FIELDS = {
   ],
 };
 
-const APP_URL = import.meta.env.VITE_APP_URL || window.location.origin;
+const APP_URL = 'https://brenneaerial.fr';
 
 const MONITORING_LINKS = [
   {

@@ -155,16 +155,41 @@ export default function HomePage() {
       </section>
 
       {/* ─── STATUS BADGE ─── */}
+      {(() => {
+        const PAGE_KEYS = [
+          'page_homepage_enabled','page_services_enabled','page_portfolio_enabled','page_blog_enabled',
+          'page_contact_enabled','page_quote_enabled','page_planning_enabled','page_discover_enabled',
+          'page_messages_enabled','page_espace_client_enabled','page_partenaires_enabled',
+          'page_parrainage_enabled','page_avant_apres_enabled','page_certification_enabled',
+          'page_donation_enabled','page_garage_enabled','page_calculator_enabled',
+          'page_reglementation_enabled','page_simulateur_enabled','page_comparateur_enabled',
+          'page_flash_enabled','messaging_enabled','registration_open',
+        ];
+        const hasDisabled = PAGE_KEYS.some(k => sMap[k] === 'false');
+        const isOffline = sMap['site_offline'] === 'true';
+        const isAllGood = !hasDisabled && !isOffline;
+        const color = isOffline ? 'red' : hasDisabled ? 'yellow' : 'green';
+        const statusText = isOffline
+          ? 'Site temporairement hors ligne'
+          : hasDisabled
+          ? 'Certains services indisponibles'
+          : 'Tous les systèmes opérationnels';
+        const dotColor = isOffline ? 'bg-red-500' : hasDisabled ? 'bg-yellow-400' : 'bg-green-500';
+        const pingColor = isOffline ? 'bg-red-400' : hasDisabled ? 'bg-yellow-300' : 'bg-green-400';
+        const textColor = isOffline ? 'text-red-400' : hasDisabled ? 'text-yellow-400' : 'text-green-400';
+        const borderColor = isOffline ? 'border-red-500/20 hover:border-red-500/40' : hasDisabled ? 'border-yellow-400/20 hover:border-yellow-400/40' : 'border-green-500/20 hover:border-green-500/40';
+        const bgColor = isOffline ? 'bg-red-500/5 hover:bg-red-500/10' : hasDisabled ? 'bg-yellow-400/5 hover:bg-yellow-400/10' : 'bg-green-500/5 hover:bg-green-500/10';
+        return (
       <div className="px-5 lg:px-10 pt-4">
         <div className="max-w-7xl mx-auto">
-          <a href="/uptime" className="flex items-center justify-between gap-4 px-5 py-3 rounded-xl border border-green-500/20 bg-green-500/5 hover:border-green-500/40 hover:bg-green-500/10 transition-all duration-300 group">
+          <a href="/uptime" className={`flex items-center justify-between gap-4 px-5 py-3 rounded-xl border ${borderColor} ${bgColor} transition-all duration-300 group`}>
             <div className="flex items-center gap-3">
               <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${pingColor} opacity-75`} />
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${dotColor}`} />
               </span>
-              <span className="font-inter text-sm font-medium text-green-400">État des services</span>
-              <span className="hidden sm:inline font-mono text-xs text-muted-foreground">— Tous les systèmes opérationnels</span>
+              <span className={`font-inter text-sm font-medium ${textColor}`}>État des services</span>
+              <span className="hidden sm:inline font-mono text-xs text-muted-foreground">— {statusText}</span>
             </div>
             <div className="hidden sm:block pointer-events-none">
               <iframe
@@ -177,10 +202,12 @@ export default function HomePage() {
                 title="Statut Brenne Aerial"
               />
             </div>
-            <span className="sm:hidden font-mono text-xs text-green-400 group-hover:underline flex-shrink-0">Voir →</span>
+            <span className={`sm:hidden font-mono text-xs ${textColor} group-hover:underline flex-shrink-0`}>Voir →</span>
           </a>
         </div>
       </div>
+        );
+      })()}
 
       {/* ─── TELEGRAM BANNER ─── */}
       <div className="px-5 lg:px-10 py-4">

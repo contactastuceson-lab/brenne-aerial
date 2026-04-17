@@ -41,6 +41,7 @@ const TARGET_GROUPS = [
   { value: 'unverified', label: '⚠️ Comptes non vérifiés', group: 'Général' },
   { value: 'new', label: '🆕 Inscrits récemment (30 jours)', group: 'Général' },
   // Par rôle
+  { value: 'owner', label: '👑 Suprême (Owner)', group: 'Par rôle' },
   { value: 'user', label: '👤 Utilisateurs standard', group: 'Par rôle' },
   { value: 'vip', label: '⭐ VIP', group: 'Par rôle' },
   { value: 'collaborateur', label: '🤝 Collaborateurs', group: 'Par rôle' },
@@ -58,6 +59,13 @@ const TARGET_GROUPS = [
   { value: 'badge_donateur', label: '💛 Donateurs', group: 'Par badge' },
   { value: 'badge_certifie', label: '🏅 Certifiés', group: 'Par badge' },
   { value: 'badge_fondateur', label: '🌟 Membres Fondateurs', group: 'Par badge' },
+  // Par vérification
+  { value: 'verif_identite', label: '🪪 Identité vérifiée', group: 'Par vérification' },
+  { value: 'verif_professionnel', label: '💼 Professionnel vérifié', group: 'Par vérification' },
+  { value: 'verif_pilote', label: '🎮 Pilote vérifié', group: 'Par vérification' },
+  { value: 'verif_certifie', label: '🏅 Certifié Brenne Aerial', group: 'Par vérification' },
+  { value: 'verif_fondateur', label: '🌟 Fondateur vérifié', group: 'Par vérification' },
+  { value: 'verif_partenaire', label: '🤝 Partenaire vérifié', group: 'Par vérification' },
   // Interne
   { value: 'equipe', label: '🏢 Toute l\'équipe interne', group: 'Interne' },
   { value: 'custom', label: '✏️ Sélection manuelle', group: 'Manuel' },
@@ -101,6 +109,13 @@ export default function AdminEmailing() {
       case 'badge_donateur': return activeUsers.filter(u => (u.badges || []).includes('donateur'));
       case 'badge_certifie': return activeUsers.filter(u => (u.badges || []).includes('certifie') || (u.verifications || []).includes('certifie'));
       case 'badge_fondateur': return activeUsers.filter(u => (u.badges || []).includes('fondateur') || (u.verifications || []).includes('fondateur'));
+      case 'verif_identite': return activeUsers.filter(u => (u.verifications || []).includes('identite'));
+      case 'verif_professionnel': return activeUsers.filter(u => (u.verifications || []).includes('professionnel'));
+      case 'verif_pilote': return activeUsers.filter(u => (u.verifications || []).includes('pilote'));
+      case 'verif_certifie': return activeUsers.filter(u => (u.verifications || []).includes('certifie'));
+      case 'verif_fondateur': return activeUsers.filter(u => (u.verifications || []).includes('fondateur'));
+      case 'verif_partenaire': return activeUsers.filter(u => (u.verifications || []).includes('partenaire'));
+      case 'owner': return users.filter(u => u.role === 'owner');
       case 'equipe': return activeUsers.filter(u => ['admin','owner','pdg_adjoint','conseil_admin','directeur','responsable','collaborateur_interne'].includes(u.role));
       case 'custom': return activeUsers.filter(u => selectedEmails.includes(u.email));
       default: return activeUsers.filter(u => (u.role || 'user') === target);

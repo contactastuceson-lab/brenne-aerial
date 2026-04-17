@@ -117,25 +117,50 @@ const TEXT_FIELDS = {
 
 const APP_URL = 'https://brenneaerial.fr';
 
-const MONITORING_LINKS = [
+const MONITORING_CATEGORIES = [
   {
-    label: 'Résumé de tous les modules',
-    url: `${APP_URL}/api/functions/statusCheck`,
-    desc: 'Retourne l\'état (activé/désactivé) de tous les modules de la plateforme.',
-    method: 'GET',
+    category: 'Général',
+    links: [
+      { label: 'Résumé de tous les modules', url: `${APP_URL}/api/functions/statusCheck`, desc: 'Retourne l\'état (activé/désactivé) de tous les modules de la plateforme.' },
+      { label: 'État global du site', url: `${APP_URL}/api/functions/statusCheck?module=site`, desc: 'Vérifie si le site est en maintenance (503) ou opérationnel (200).' },
+    ],
   },
   {
-    label: 'État global du site',
-    url: `${APP_URL}/api/functions/statusCheck?module=site`,
-    desc: 'Vérifie si le site est en maintenance (503) ou opérationnel (200).',
-    method: 'GET',
+    category: 'Pages principales',
+    links: [
+      { label: 'Accueil', url: `${APP_URL}/api/functions/statusCheck?module=homepage`, desc: 'Page d\'accueil principale.' },
+      { label: 'Services', url: `${APP_URL}/api/functions/statusCheck?module=services`, desc: 'Page des services drone.' },
+      { label: 'Portfolio', url: `${APP_URL}/api/functions/statusCheck?module=portfolio`, desc: 'Galerie de projets.' },
+      { label: 'Blog', url: `${APP_URL}/api/functions/statusCheck?module=blog`, desc: 'Blog & actualités.' },
+      { label: 'Contact', url: `${APP_URL}/api/functions/statusCheck?module=contact`, desc: 'Formulaire de contact.' },
+      { label: 'Devis', url: `${APP_URL}/api/functions/statusCheck?module=quote`, desc: 'Demandes de devis.' },
+      { label: 'Planning', url: `${APP_URL}/api/functions/statusCheck?module=planning`, desc: 'Calendrier & rendez-vous.' },
+    ],
   },
-  ...['homepage','services','portfolio','blog','contact','quote','planning','discover','messagerie','espace_client','partenaires','parrainage','avant_apres','certification','donation','garage','calculateur','reglementation','simulateur','comparateur','flash'].map(mod => ({
-    label: `Module : ${mod}`,
-    url: `${APP_URL}/api/functions/statusCheck?module=${mod}`,
-    desc: `État du module "${mod}" — 200 si actif, 503 si désactivé.`,
-    method: 'GET',
-  })),
+  {
+    category: 'Communauté & Espace client',
+    links: [
+      { label: 'Découvrir', url: `${APP_URL}/api/functions/statusCheck?module=discover`, desc: 'Répertoire social des membres.' },
+      { label: 'Messagerie', url: `${APP_URL}/api/functions/statusCheck?module=messagerie`, desc: 'Messagerie entre membres.' },
+      { label: 'Espace Client', url: `${APP_URL}/api/functions/statusCheck?module=espace_client`, desc: 'Portail fichiers clients.' },
+      { label: 'Partenaires', url: `${APP_URL}/api/functions/statusCheck?module=partenaires`, desc: 'Annuaire des partenaires.' },
+      { label: 'Parrainage', url: `${APP_URL}/api/functions/statusCheck?module=parrainage`, desc: 'Programme de parrainage.' },
+      { label: 'Avant / Après', url: `${APP_URL}/api/functions/statusCheck?module=avant_apres`, desc: 'Galerie comparaisons.' },
+      { label: 'Certification', url: `${APP_URL}/api/functions/statusCheck?module=certification`, desc: 'Système de certification.' },
+      { label: 'Donation', url: `${APP_URL}/api/functions/statusCheck?module=donation`, desc: 'Plateforme de dons.' },
+    ],
+  },
+  {
+    category: 'Outils',
+    links: [
+      { label: 'Garage', url: `${APP_URL}/api/functions/statusCheck?module=garage`, desc: 'Fiches techniques drones.' },
+      { label: 'Calculateur', url: `${APP_URL}/api/functions/statusCheck?module=calculateur`, desc: 'Estimateur de prix.' },
+      { label: 'Réglementation', url: `${APP_URL}/api/functions/statusCheck?module=reglementation`, desc: 'Guide réglementaire drone.' },
+      { label: 'Simulateur de Vue', url: `${APP_URL}/api/functions/statusCheck?module=simulateur`, desc: 'Outil immobilier étages.' },
+      { label: 'Comparateur Résolution', url: `${APP_URL}/api/functions/statusCheck?module=comparateur`, desc: 'Comparaison qualité photo.' },
+      { label: 'Flash Delivery', url: `${APP_URL}/api/functions/statusCheck?module=flash`, desc: 'Portail livraison rapide.' },
+    ],
+  },
 ];
 
 function CopyButton({ text }) {
@@ -158,10 +183,14 @@ function CopyButton({ text }) {
 
 function MonitoringAPISection() {
   const [filter, setFilter] = useState('');
-  const filtered = MONITORING_LINKS.filter(l =>
-    l.label.toLowerCase().includes(filter.toLowerCase()) ||
-    l.url.toLowerCase().includes(filter.toLowerCase())
-  );
+
+  const filteredCategories = MONITORING_CATEGORIES.map(cat => ({
+    ...cat,
+    links: cat.links.filter(l =>
+      l.label.toLowerCase().includes(filter.toLowerCase()) ||
+      l.url.toLowerCase().includes(filter.toLowerCase())
+    ),
+  })).filter(cat => cat.links.length > 0);
 
   return (
     <div className="space-y-5 max-w-3xl">
@@ -175,12 +204,8 @@ function MonitoringAPISection() {
             Un code <span className="font-mono text-green-400 bg-green-400/10 px-1 rounded">200</span> indique un service actif,
             un code <span className="font-mono text-destructive bg-destructive/10 px-1 rounded">503</span> indique qu'il est désactivé.
           </p>
-          <a
-            href="https://statut.brenneaerial.org"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-2 font-inter text-xs text-primary hover:underline"
-          >
+          <a href="https://statut.brenneaerial.org" target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 mt-2 font-inter text-xs text-primary hover:underline">
             <ExternalLink className="w-3 h-3" /> Tableau de bord Better Stack
           </a>
         </div>
@@ -194,20 +219,30 @@ function MonitoringAPISection() {
         className="bg-secondary border-border text-sm"
       />
 
-      {/* Links list */}
-      <div className="space-y-2">
-        {filtered.map((link, i) => (
-          <div key={i} className="bg-card border border-border rounded-xl p-4 hover:border-primary/20 transition-colors">
-            <div className="flex items-start justify-between gap-3 mb-2">
-              <div>
-                <p className="font-inter font-medium text-sm">{link.label}</p>
-                <p className="font-inter text-xs text-muted-foreground mt-0.5">{link.desc}</p>
-              </div>
-              <span className="font-mono text-[10px] px-2 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary flex-shrink-0">{link.method}</span>
-            </div>
-            <div className="flex items-center gap-2 bg-secondary/60 rounded-lg px-3 py-2">
-              <code className="font-mono text-xs text-muted-foreground flex-1 truncate">{link.url}</code>
-              <CopyButton text={link.url} />
+      {/* Links by category */}
+      <div className="space-y-6">
+        {filteredCategories.map(cat => (
+          <div key={cat.category}>
+            <p className="font-grotesk font-semibold text-sm mb-2 text-foreground flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+              {cat.category}
+            </p>
+            <div className="space-y-2">
+              {cat.links.map((link, i) => (
+                <div key={i} className="bg-card border border-border rounded-xl p-4 hover:border-primary/20 transition-colors">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div>
+                      <p className="font-inter font-medium text-sm">{link.label}</p>
+                      <p className="font-inter text-xs text-muted-foreground mt-0.5">{link.desc}</p>
+                    </div>
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary flex-shrink-0">GET</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-secondary/60 rounded-lg px-3 py-2">
+                    <code className="font-mono text-xs text-muted-foreground flex-1 truncate">{link.url}</code>
+                    <CopyButton text={link.url} />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}

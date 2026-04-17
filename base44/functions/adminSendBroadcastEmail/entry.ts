@@ -2,100 +2,229 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const LOGO_URL = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/6de51adde_1775602844308.png';
 
-function buildEmail(userName, subject, message, senderName, senderRole, attachments = []) {
+// Theme configs per sender type
+const THEMES = {
+  gold: {
+    topBorder: '#d4a017',
+    accent: '#e6b422',
+    accentLight: '#2a1f00',
+    headerBg: 'linear-gradient(135deg, #1a1200 0%, #0f0c00 50%, #0d1218 100%)',
+    badgeBg: '#2a1f00',
+    badgeColor: '#e6b422',
+    badgeBorder: '#d4a01760',
+    btnBg: '#d4a017',
+    btnColor: '#0a0800',
+    signature: '— Fondateur & PDG de Brenne Aerial',
+    icon: '👔',
+  },
+  blue: {
+    topBorder: '#38aadc',
+    accent: '#38aadc',
+    accentLight: '#020d18',
+    headerBg: 'linear-gradient(135deg, #020d18 0%, #060e18 50%, #0d1218 100%)',
+    badgeBg: '#061624',
+    badgeColor: '#7dd3fc',
+    badgeBorder: '#38aadc60',
+    btnBg: '#38aadc',
+    btnColor: '#03080f',
+    signature: '— Service Client Brenne Aerial',
+    icon: '🎧',
+  },
+  green: {
+    topBorder: '#22c55e',
+    accent: '#22c55e',
+    accentLight: '#011209',
+    headerBg: 'linear-gradient(135deg, #011209 0%, #061a0e 50%, #0d1218 100%)',
+    badgeBg: '#061a0e',
+    badgeColor: '#86efac',
+    badgeBorder: '#22c55e60',
+    btnBg: '#22c55e',
+    btnColor: '#011209',
+    signature: '— Pôle Commercial Brenne Aerial',
+    icon: '💼',
+  },
+  purple: {
+    topBorder: '#a855f7',
+    accent: '#a855f7',
+    accentLight: '#0d0118',
+    headerBg: 'linear-gradient(135deg, #0d0118 0%, #120620 50%, #0d1218 100%)',
+    badgeBg: '#120620',
+    badgeColor: '#d8b4fe',
+    badgeBorder: '#a855f760',
+    btnBg: '#a855f7',
+    btnColor: '#0d0118',
+    signature: '— Pôle Opérations Brenne Aerial',
+    icon: '🚁',
+  },
+};
+
+function buildEmail(userName, subject, message, senderName, senderRole, senderTheme = 'blue', attachments = []) {
+  const t = THEMES[senderTheme] || THEMES.blue;
   const images = attachments.filter(a => a.type?.startsWith('image/'));
   const files = attachments.filter(a => !a.type?.startsWith('image/'));
 
   const imagesBlock = images.length ? `
-    <div style="margin:20px 0;display:flex;flex-wrap:wrap;gap:10px;">
-      ${images.map(img => `<img src="${img.url}" style="max-width:100%;border-radius:10px;border:1px solid #1e3048;" alt="${img.name}" />`).join('')}
+    <div style="margin:24px 0;">
+      ${images.map(img => `
+        <div style="margin-bottom:12px;">
+          <img src="${img.url}" style="max-width:100%;border-radius:10px;border:1px solid ${t.topBorder}30;" alt="${img.name}" />
+        </div>`).join('')}
     </div>` : '';
 
   const filesBlock = files.length ? `
-    <div style="margin:16px 0;">
-      <p style="margin:0 0 8px;font-size:13px;color:#4a6a8a;">Pièces jointes :</p>
-      ${files.map(f => `<a href="${f.url}" style="display:inline-block;margin:4px;padding:8px 14px;background:#1a3050;border:1px solid #1e3048;border-radius:8px;color:#3ab0dc;font-size:13px;text-decoration:none;">📎 ${f.name}</a>`).join('')}
+    <div style="margin:20px 0;padding:16px;background:${t.accentLight};border:1px solid ${t.topBorder}30;border-radius:10px;">
+      <p style="margin:0 0 10px;font-size:11px;color:${t.accent};font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">📎 Pièces jointes</p>
+      ${files.map(f => `<a href="${f.url}" style="display:block;margin:6px 0;padding:8px 14px;background:#111823;border:1px solid ${t.topBorder}20;border-radius:6px;color:${t.accent};font-size:13px;text-decoration:none;font-family:monospace;">${f.name}</a>`).join('')}
     </div>` : '';
 
-  const paragraphs = message.split('\n').filter(l => l.trim()).map(l =>
-    `<p style="margin:0 0 14px;color:#8aaec8;font-size:15px;line-height:1.8;">${l}</p>`
-  ).join('');
+  const paragraphs = message.split('\n').map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return `<div style="height:10px;"></div>`;
+    return `<p style="margin:0 0 16px;color:#c4daf0;font-size:15px;line-height:1.85;font-family:'Helvetica Neue',Arial,sans-serif;">${trimmed}</p>`;
+  }).join('');
 
   return `<!DOCTYPE html>
 <html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${subject}</title></head>
-<body style="margin:0;padding:0;background:#0a1120;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a1120;padding:40px 16px;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background:#080d16;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#080d16;padding:48px 16px;">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-        <tr><td align="center" style="background:#0d1a2e;border-radius:16px 16px 0 0;padding:32px 40px 24px;border-bottom:1px solid #1e3048;">
-          <img src="${LOGO_URL}" width="110" alt="Brenne Aerial" style="display:block;margin:0 auto 12px;border-radius:50%;" />
-          <p style="margin:0;font-size:11px;letter-spacing:3px;color:#3ab0dc;font-weight:700;text-transform:uppercase;">Brenne Aerial — Premium Drone Services</p>
+
+        <!-- TOP ACCENT LINE -->
+        <tr><td style="height:3px;background:linear-gradient(90deg, transparent, ${t.topBorder}, transparent);border-radius:3px 3px 0 0;"></td></tr>
+
+        <!-- HEADER -->
+        <tr><td style="background:${t.headerBg};padding:36px 44px 28px;border-left:1px solid ${t.topBorder}20;border-right:1px solid ${t.topBorder}20;">
+          <table cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td style="vertical-align:middle;">
+                <img src="${LOGO_URL}" width="48" height="48" alt="Brenne Aerial"
+                  style="display:block;border-radius:12px;border:2px solid ${t.topBorder}40;" />
+              </td>
+              <td style="vertical-align:middle;padding-left:14px;">
+                <p style="margin:0;font-size:15px;font-weight:800;color:#ffffff;letter-spacing:0.02em;">Brenne Aerial</p>
+                <p style="margin:3px 0 0;font-size:10px;color:${t.accent};letter-spacing:0.12em;text-transform:uppercase;font-weight:600;">Premium Drone Services</p>
+              </td>
+              <td align="right" style="vertical-align:middle;">
+                <div style="display:inline-block;padding:5px 12px;background:${t.badgeBg};border:1px solid ${t.badgeBorder};border-radius:20px;">
+                  <span style="font-size:10px;color:${t.badgeColor};font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">${t.icon} ${senderRole}</span>
+                </div>
+              </td>
+            </tr>
+          </table>
         </td></tr>
-        <tr><td style="background:#0f1f36;padding:40px;">
-          <p style="margin:0 0 8px;font-size:13px;color:#4a6a8a;">Bonjour ${userName},</p>
-          <h1 style="margin:0 0 24px;font-size:22px;font-weight:700;color:#e8f4fc;">${subject}</h1>
-          ${paragraphs}
+
+        <!-- DIVIDER LINE -->
+        <tr><td style="height:1px;background:linear-gradient(90deg, transparent, ${t.topBorder}60, transparent);"></td></tr>
+
+        <!-- GREETING BAND -->
+        <tr><td style="background:#0a1220;padding:28px 44px 0;border-left:1px solid ${t.topBorder}15;border-right:1px solid ${t.topBorder}15;">
+          <p style="margin:0;font-size:13px;color:#4a7a9b;font-style:italic;">Message de <strong style="color:${t.accent}">${senderName}</strong></p>
+          <h1 style="margin:10px 0 0;font-size:24px;font-weight:800;color:#ffffff;line-height:1.3;">${subject}</h1>
+        </td></tr>
+
+        <!-- BODY -->
+        <tr><td style="background:#0a1220;padding:24px 44px 32px;border-left:1px solid ${t.topBorder}15;border-right:1px solid ${t.topBorder}15;">
+
+          <p style="margin:0 0 22px;font-size:14px;color:#5a8aaa;">Bonjour <strong style="color:#c4daf0;">${userName}</strong>,</p>
+
+          <div style="padding:24px;background:#060d1a;border:1px solid ${t.topBorder}20;border-left:3px solid ${t.topBorder};border-radius:0 10px 10px 0;margin-bottom:24px;">
+            ${paragraphs}
+          </div>
+
           ${imagesBlock}
           ${filesBlock}
-          <div style="margin:32px 0 0;border-top:1px solid #1e3048;padding-top:24px;">
-            <table cellpadding="0" cellspacing="0"><tr>
-              <td style="padding-right:14px;vertical-align:middle;">
-                <div style="width:44px;height:44px;border-radius:50%;background:#1a3050;border:2px solid #3ab0dc;text-align:center;font-size:20px;line-height:44px;">✈️</div>
-              </td>
-              <td>
-                <p style="margin:0;font-size:14px;font-weight:700;color:#e8f4fc;">${senderName}</p>
-                <p style="margin:2px 0 0;font-size:12px;color:#3ab0dc;">${senderRole} · Brenne Aerial</p>
-              </td>
-            </tr></table>
-          </div>
-          <div style="text-align:center;margin:28px 0 0;">
-            <a href="https://brenneaerial.fr/dashboard" style="display:inline-block;background:#3ab0dc;color:#0a1120;font-weight:700;font-size:14px;padding:14px 32px;border-radius:10px;text-decoration:none;">Accéder à mon espace →</a>
+
+          <!-- CTA BUTTON -->
+          <div style="text-align:center;margin:32px 0 8px;">
+            <a href="https://brenneaerial.fr/dashboard"
+              style="display:inline-block;background:${t.btnBg};color:${t.btnColor};font-weight:800;font-size:14px;padding:15px 36px;border-radius:10px;text-decoration:none;letter-spacing:0.02em;">
+              Accéder à mon espace →
+            </a>
           </div>
         </td></tr>
-        <tr><td align="center" style="background:#0d1a2e;border-radius:0 0 16px 16px;padding:24px 40px;border-top:1px solid #1e3048;">
-          <p style="margin:0 0 6px;font-size:12px;color:#4a6a8a;">© 2026 Brenne Aerial · Premium Drone Services</p>
-          <p style="margin:0;font-size:11px;color:#3a5a7a;">Brenne, Creuse, France · <a href="mailto:contact@brenneaerial.fr" style="color:#3ab0dc;text-decoration:none;">contact@brenneaerial.fr</a></p>
+
+        <!-- SIGNATURE -->
+        <tr><td style="background:#060d18;padding:24px 44px;border:1px solid ${t.topBorder}15;border-top:1px solid ${t.topBorder}30;">
+          <table cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding-right:16px;vertical-align:middle;">
+                <div style="width:48px;height:48px;border-radius:12px;background:${t.badgeBg};border:1px solid ${t.topBorder}40;text-align:center;font-size:22px;line-height:48px;">${t.icon}</div>
+              </td>
+              <td style="vertical-align:middle;">
+                <p style="margin:0;font-size:15px;font-weight:800;color:#ffffff;">${senderName}</p>
+                <p style="margin:3px 0 0;font-size:12px;color:${t.accent};">${t.signature}</p>
+                <p style="margin:3px 0 0;font-size:11px;color:#3d5a7a;">contact@brenneaerial.fr</p>
+              </td>
+            </tr>
+          </table>
         </td></tr>
+
+        <!-- FOOTER -->
+        <tr><td align="center" style="background:#040810;padding:24px 40px;border-left:1px solid ${t.topBorder}10;border-right:1px solid ${t.topBorder}10;">
+          <p style="margin:0 0 8px;font-size:11px;color:#2d4a6a;letter-spacing:0.04em;">
+            © ${new Date().getFullYear()} Brenne Aerial · Premium Drone Services
+          </p>
+          <p style="margin:0 0 8px;font-size:11px;color:#1e3040;">
+            Brenne, Indre (36) · France ·
+            <a href="mailto:contact@brenneaerial.fr" style="color:${t.accent};text-decoration:none;">contact@brenneaerial.fr</a>
+          </p>
+          <p style="margin:0;font-size:10px;color:#1a2a3a;">
+            <a href="https://brenneaerial.fr/legal/privacy" style="color:#2d4a6a;text-decoration:none;">Politique de confidentialité</a>
+            &nbsp;·&nbsp;
+            <a href="https://brenneaerial.fr" style="color:#2d4a6a;text-decoration:none;">brenneaerial.fr</a>
+          </p>
+        </td></tr>
+
+        <!-- BOTTOM ACCENT LINE -->
+        <tr><td style="height:3px;background:linear-gradient(90deg, transparent, ${t.topBorder}, transparent);border-radius:0 0 3px 3px;"></td></tr>
+
       </table>
     </td></tr>
   </table>
+
 </body></html>`;
 }
 
 Deno.serve(async (req) => {
   try {
     const body = await req.json();
-    console.log('Body parsed:', JSON.stringify(body).slice(0, 100));
-
     const base44 = createClientFromRequest(req);
 
     const user = await base44.auth.me();
-    console.log('User:', user?.email, user?.role);
-
     if (!user || (user.role !== 'admin' && user.role !== 'owner')) {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { subject, message, senderName, senderRole, recipients, attachments = [] } = body;
+    const { subject, message, senderName, senderRole, senderTheme = 'blue', recipients, attachments = [] } = body;
 
     if (!subject || !message || !recipients?.length) {
       return Response.json({ error: 'Paramètres manquants' }, { status: 400 });
     }
 
-    console.log(`Sending to ${recipients.length} recipients...`);
-
     let sent = 0;
     for (const recipient of recipients) {
-      console.log('Sending to:', recipient.email);
-      const html = buildEmail(recipient.name || 'cher client', subject, message, senderName, senderRole, attachments);
+      const html = buildEmail(
+        recipient.name || 'cher client',
+        subject,
+        message,
+        senderName,
+        senderRole,
+        senderTheme,
+        attachments
+      );
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: recipient.email,
         subject,
         body: html,
       });
       sent++;
-      console.log('Sent to:', recipient.email);
     }
 
     return Response.json({ success: true, sent });

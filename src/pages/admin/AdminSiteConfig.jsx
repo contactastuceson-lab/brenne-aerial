@@ -327,9 +327,20 @@ export default function AdminSiteConfig() {
 
   const [sendingAlert, setSendingAlert] = useState(false);
 
+  const [sendingOfflineAlert, setSendingOfflineAlert] = useState(false);
+
   const togglePage = async (key, val) => {
     setLocal(p => ({ ...p, [key]: val ? 'true' : 'false' }));
     await saveSetting(key, val ? 'true' : 'false');
+
+    // Si on active le mode hors ligne → notifier tous les utilisateurs
+    if (key === 'site_offline' && val === true) {
+      setSendingOfflineAlert(true);
+      base44.functions.invoke('notifyPageDisabled', { mode: 'site_offline' })
+        .then(res => toast.success(`🚨 Panne générale détectée — ${res?.data?.notified ?? 0} utilisateur(s) notifié(s)`))
+        .catch(() => {})
+        .finally(() => setSendingOfflineAlert(false));
+    }
   };
 
   const [sendingUp, setSendingUp] = useState(false);

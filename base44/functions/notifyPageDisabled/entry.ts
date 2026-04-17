@@ -222,6 +222,66 @@ Deno.serve(async (req) => {
   </div>
 </div>
 </body></html>`.trim();
+    // ── MODE SITE_OFFLINE : panne générale détectée ──
+    } else if (mode === 'site_offline') {
+
+      subject = `🚨 Panne générale détectée — Brenne Aerial est temporairement hors ligne`;
+      emailBody = `
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/>
+<style>
+  body{font-family:'Inter',Arial,sans-serif;background:#0a0a0a;color:#e0eaf5;margin:0;padding:0;}
+  .wrapper{max-width:600px;margin:0 auto;padding:40px 20px;}
+  .header{text-align:center;margin-bottom:32px;}
+  .logo{font-size:22px;font-weight:800;letter-spacing:-0.5px;color:#38aadc;}
+  .logo span{color:#e0eaf5;}
+  .card{background:#111;border:1px solid #1f1f1f;border-radius:16px;padding:32px;margin-bottom:24px;}
+  .badge{display:inline-block;background:#7f1d1d;color:#fca5a5;border:1px solid #ef4444;border-radius:999px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:20px;}
+  h2{font-size:20px;font-weight:700;color:#e0eaf5;margin:0 0 12px;}
+  p{font-size:14px;color:#8fafc9;line-height:1.7;margin:0 0 16px;}
+  .highlight{color:#e0eaf5;font-weight:600;}
+  .status-box{background:#1a0000;border:1px solid #ef444440;border-radius:10px;padding:20px;margin:20px 0;display:flex;align-items:center;gap:16px;}
+  .dot-wrap{flex-shrink:0;}
+  .dot{width:14px;height:14px;border-radius:50%;background:#ef4444;}
+  .status-label{font-size:15px;font-weight:700;color:#fca5a5;}
+  .status-sub{font-size:12px;color:#8fafc9;margin-top:4px;}
+  .btn{display:inline-block;background:#38aadc;color:#07111f;font-weight:700;font-size:14px;padding:12px 28px;border-radius:10px;text-decoration:none;margin-top:8px;}
+  .divider{border:none;border-top:1px solid #1f1f1f;margin:24px 0;}
+  .footer{text-align:center;font-size:11px;color:#3d5a7a;margin-top:32px;}
+  .err{font-family:monospace;font-size:11px;background:#1a0000;border:1px solid #ef444430;padding:8px 14px;border-radius:6px;color:#ef4444;display:inline-block;margin-top:12px;}
+</style>
+</head><body>
+<div class="wrapper">
+  <div class="header">
+    <div class="logo">Brenne <span>Aerial</span></div>
+    <p style="font-size:12px;color:#3d5a7a;margin-top:4px;">Alerte automatique — ${now}</p>
+  </div>
+  <div class="card">
+    <div class="badge">🚨 Panne générale</div>
+    <h2>Une panne générale a été détectée</h2>
+    <div class="status-box">
+      <div class="dot-wrap"><div class="dot"></div></div>
+      <div>
+        <div class="status-label">brenneaerial.fr — Hors ligne</div>
+        <div class="status-sub">Détecté le ${now}</div>
+      </div>
+    </div>
+    <p>La plateforme <span class="highlight">Brenne Aerial</span> est actuellement inaccessible. Nos équipes techniques ont été alertées automatiquement et travaillent au rétablissement du service dans les meilleurs délais.</p>
+    <p>Vous recevrez une notification dès que le service sera rétabli.</p>
+    <div class="err">ERR_CONNECTION_REFUSED &nbsp;·&nbsp; 503 Service Unavailable</div>
+    <hr class="divider"/>
+    <p><span class="highlight">Suivez l'état en temps réel</span> sur notre page de statut :</p>
+    <a href="https://statut.brenneaerial.org" class="btn">🔍 Voir le statut des services</a>
+  </div>
+  <div class="card" style="background:#0a0a0a;">
+    <p style="margin:0;"><strong style="color:#e0eaf5;">Une question urgente ?</strong> Contactez-nous à <a href="mailto:contact@brenneaerial.fr" style="color:#38aadc;">contact@brenneaerial.fr</a>.</p>
+  </div>
+  <div class="footer">
+    <p>© ${new Date().getFullYear()} Brenne Aerial — Tous droits réservés<br/>Brenne, Indre, France</p>
+    <p style="margin-top:8px;">Vous recevez cet email car vous êtes inscrit sur la plateforme Brenne Aerial.</p>
+  </div>
+</div>
+</body></html>`.trim();
+
     } else {
       return Response.json({ ok: true, skipped: true, message: 'Aucun email envoyé (appel sans mode).' });
     }

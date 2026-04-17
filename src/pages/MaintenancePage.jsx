@@ -187,6 +187,17 @@ export default function MaintenancePage({ message: propMessage }) {
           </div>
         </div>
 
+        {/* Status button */}
+        <a
+          href="https://statut.brenneaerial.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 text-primary font-grotesk font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-primary/20 transition-colors mb-4"
+        >
+          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          Voir le statut des services
+        </a>
+
         {/* Contact */}
         <div className="flex items-center gap-2 text-muted-foreground/60">
           <Zap className="w-3.5 h-3.5 text-primary/50" />

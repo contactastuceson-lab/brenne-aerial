@@ -12,20 +12,55 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 
 const SENDER_PROFILES = [
-  { id: 'pdg', label: '👔 PDG — Direction', name: 'Enor Lefoulon Meyer', role: 'PDG & Fondateur', theme: 'gold' },
-  { id: 'support', label: '🎧 Support Client', name: 'Support Brenne Aerial', role: 'Service Client', theme: 'blue' },
-  { id: 'commercial', label: '💼 Commercial', name: 'Équipe Commerciale', role: 'Pôle Commercial', theme: 'green' },
-  { id: 'ops', label: '🚁 Opérations', name: 'Équipe Opérations', role: 'Pôle Opérations', theme: 'purple' },
+  // Direction
+  { id: 'pdg', label: '👔 PDG', name: 'Enor Lefoulon Meyer', role: 'PDG & Fondateur', theme: 'gold', group: 'Direction' },
+  { id: 'pdg_adjoint', label: '🤝 PDG-Adjoint', name: 'Direction Générale', role: 'PDG-Adjoint', theme: 'gold2', group: 'Direction' },
+  { id: 'conseil', label: '🏛️ Conseil d\'Admin', name: 'Conseil d\'Administration', role: 'Conseil d\'Administration', theme: 'platinum', group: 'Direction' },
+  { id: 'direction', label: '📋 Direction', name: 'Direction Brenne Aerial', role: 'Direction Générale', theme: 'navy', group: 'Direction' },
+  // Pôles opérationnels
+  { id: 'ops', label: '🚁 Opérations', name: 'Pôle Opérations', role: 'Chef des Opérations', theme: 'purple', group: 'Opérations' },
+  { id: 'technique', label: '🔧 Technique', name: 'Pôle Technique', role: 'Responsable Technique', theme: 'orange', group: 'Opérations' },
+  { id: 'securite', label: '🛡️ Sécurité', name: 'Pôle Sécurité & Conformité', role: 'Responsable Sécurité', theme: 'red', group: 'Opérations' },
+  { id: 'pilotes', label: '🎮 Pilotes', name: 'Équipe Pilotes', role: 'Chef Pilote', theme: 'cyan', group: 'Opérations' },
+  // Commercial & Client
+  { id: 'commercial', label: '💼 Commercial', name: 'Équipe Commerciale', role: 'Pôle Commercial', theme: 'green', group: 'Commercial' },
+  { id: 'support', label: '🎧 Support', name: 'Support Client', role: 'Service Client', theme: 'blue', group: 'Commercial' },
+  { id: 'marketing', label: '📣 Marketing', name: 'Pôle Marketing & Comm', role: 'Responsable Marketing', theme: 'pink', group: 'Commercial' },
+  { id: 'facturation', label: '🧾 Facturation', name: 'Service Facturation', role: 'Pôle Financier', theme: 'teal', group: 'Commercial' },
+  // Spéciaux
+  { id: 'rh', label: '👥 RH', name: 'Ressources Humaines', role: 'Pôle RH', theme: 'indigo', group: 'Interne' },
+  { id: 'data', label: '📊 Data & IA', name: 'Pôle Data & Intelligence', role: 'Data & IA', theme: 'violet', group: 'Interne' },
+  { id: 'systeme', label: '⚙️ Système', name: 'Système Brenne Aerial', role: 'Notification Automatique', theme: 'slate', group: 'Système' },
+  { id: 'urgence', label: '🚨 Urgence', name: 'Cellule de Crise', role: 'Alerte Critique', theme: 'emergency', group: 'Système' },
 ];
 
 const TARGET_GROUPS = [
-  { value: 'all', label: 'Tous les utilisateurs actifs' },
-  { value: 'user', label: 'Utilisateurs standard' },
-  { value: 'admin', label: 'Administrateurs' },
-  { value: 'vip', label: 'VIP uniquement' },
-  { value: 'collaborateur', label: 'Collaborateurs' },
-  { value: 'pilote', label: 'Pilotes' },
-  { value: 'custom', label: '✏️ Sélection manuelle' },
+  // Larges
+  { value: 'all', label: '🌐 Tous les utilisateurs actifs', group: 'Général' },
+  { value: 'verified', label: '✅ Utilisateurs vérifiés uniquement', group: 'Général' },
+  { value: 'unverified', label: '⚠️ Comptes non vérifiés', group: 'Général' },
+  { value: 'new', label: '🆕 Inscrits récemment (30 jours)', group: 'Général' },
+  // Par rôle
+  { value: 'user', label: '👤 Utilisateurs standard', group: 'Par rôle' },
+  { value: 'vip', label: '⭐ VIP', group: 'Par rôle' },
+  { value: 'collaborateur', label: '🤝 Collaborateurs', group: 'Par rôle' },
+  { value: 'pilote', label: '🎮 Pilotes', group: 'Par rôle' },
+  { value: 'collaborateur_interne', label: '🏢 Collaborateurs internes', group: 'Par rôle' },
+  { value: 'responsable', label: '📋 Responsables', group: 'Par rôle' },
+  { value: 'directeur', label: '🎯 Directeurs', group: 'Par rôle' },
+  { value: 'conseil_admin', label: '🏛️ Conseil d\'Administration', group: 'Par rôle' },
+  { value: 'admin', label: '🔐 Administrateurs', group: 'Par rôle' },
+  // Par statut
+  { value: 'active', label: '🟢 Comptes actifs', group: 'Par statut' },
+  { value: 'suspended', label: '🔴 Comptes suspendus', group: 'Par statut' },
+  { value: 'restricted', label: '🟠 Comptes restreints', group: 'Par statut' },
+  // Par badge
+  { value: 'badge_donateur', label: '💛 Donateurs', group: 'Par badge' },
+  { value: 'badge_certifie', label: '🏅 Certifiés', group: 'Par badge' },
+  { value: 'badge_fondateur', label: '🌟 Membres Fondateurs', group: 'Par badge' },
+  // Interne
+  { value: 'equipe', label: '🏢 Toute l\'équipe interne', group: 'Interne' },
+  { value: 'custom', label: '✏️ Sélection manuelle', group: 'Manuel' },
 ];
 
 export default function AdminEmailing() {
@@ -52,14 +87,27 @@ export default function AdminEmailing() {
   });
 
   const activeUsers = users.filter(u => (u.account_status || 'active') === 'active');
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-  const groupTargetUsers = target === 'all'
-    ? activeUsers
-    : target === 'custom'
-    ? activeUsers.filter(u => selectedEmails.includes(u.email))
-    : activeUsers.filter(u => (u.role || 'user') === target);
+  const getTargetUsers = () => {
+    switch (target) {
+      case 'all': return users.filter(u => (u.account_status || 'active') === 'active');
+      case 'verified': return activeUsers.filter(u => u.verified_status === 'yes' || u.email_verified);
+      case 'unverified': return activeUsers.filter(u => u.verified_status !== 'yes' && !u.email_verified);
+      case 'new': return activeUsers.filter(u => u.created_date > thirtyDaysAgo);
+      case 'active': return users.filter(u => (u.account_status || 'active') === 'active');
+      case 'suspended': return users.filter(u => u.account_status === 'suspended');
+      case 'restricted': return users.filter(u => u.account_status === 'restricted');
+      case 'badge_donateur': return activeUsers.filter(u => (u.badges || []).includes('donateur'));
+      case 'badge_certifie': return activeUsers.filter(u => (u.badges || []).includes('certifie') || (u.verifications || []).includes('certifie'));
+      case 'badge_fondateur': return activeUsers.filter(u => (u.badges || []).includes('fondateur') || (u.verifications || []).includes('fondateur'));
+      case 'equipe': return activeUsers.filter(u => ['admin','owner','pdg_adjoint','conseil_admin','directeur','responsable','collaborateur_interne'].includes(u.role));
+      case 'custom': return activeUsers.filter(u => selectedEmails.includes(u.email));
+      default: return activeUsers.filter(u => (u.role || 'user') === target);
+    }
+  };
 
-  const targetUsers = groupTargetUsers;
+  const targetUsers = getTargetUsers();
 
   const filteredUsers = activeUsers.filter(u =>
     (u.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -115,12 +163,31 @@ export default function AdminEmailing() {
   };
 
   const themeColors = {
-    gold: { dot: 'bg-yellow-400', text: 'text-yellow-400', border: 'border-yellow-400/30', bg: 'bg-yellow-400/5' },
-    blue: { dot: 'bg-primary', text: 'text-primary', border: 'border-primary/30', bg: 'bg-primary/5' },
-    green: { dot: 'bg-green-400', text: 'text-green-400', border: 'border-green-400/30', bg: 'bg-green-400/5' },
-    purple: { dot: 'bg-purple-400', text: 'text-purple-400', border: 'border-purple-400/30', bg: 'bg-purple-400/5' },
+    gold:      { dot: 'bg-yellow-400',  text: 'text-yellow-400',  border: 'border-yellow-400/30',  bg: 'bg-yellow-400/5' },
+    gold2:     { dot: 'bg-amber-300',   text: 'text-amber-300',   border: 'border-amber-300/30',   bg: 'bg-amber-300/5' },
+    platinum:  { dot: 'bg-slate-300',   text: 'text-slate-300',   border: 'border-slate-300/30',   bg: 'bg-slate-300/5' },
+    navy:      { dot: 'bg-blue-300',    text: 'text-blue-300',    border: 'border-blue-300/30',    bg: 'bg-blue-300/5' },
+    blue:      { dot: 'bg-primary',     text: 'text-primary',     border: 'border-primary/30',     bg: 'bg-primary/5' },
+    green:     { dot: 'bg-green-400',   text: 'text-green-400',   border: 'border-green-400/30',   bg: 'bg-green-400/5' },
+    purple:    { dot: 'bg-purple-400',  text: 'text-purple-400',  border: 'border-purple-400/30',  bg: 'bg-purple-400/5' },
+    orange:    { dot: 'bg-orange-400',  text: 'text-orange-400',  border: 'border-orange-400/30',  bg: 'bg-orange-400/5' },
+    red:       { dot: 'bg-red-400',     text: 'text-red-400',     border: 'border-red-400/30',     bg: 'bg-red-400/5' },
+    cyan:      { dot: 'bg-cyan-400',    text: 'text-cyan-400',    border: 'border-cyan-400/30',    bg: 'bg-cyan-400/5' },
+    pink:      { dot: 'bg-pink-400',    text: 'text-pink-400',    border: 'border-pink-400/30',    bg: 'bg-pink-400/5' },
+    teal:      { dot: 'bg-teal-400',    text: 'text-teal-400',    border: 'border-teal-400/30',    bg: 'bg-teal-400/5' },
+    indigo:    { dot: 'bg-indigo-400',  text: 'text-indigo-400',  border: 'border-indigo-400/30',  bg: 'bg-indigo-400/5' },
+    violet:    { dot: 'bg-violet-400',  text: 'text-violet-400',  border: 'border-violet-400/30',  bg: 'bg-violet-400/5' },
+    slate:     { dot: 'bg-slate-400',   text: 'text-slate-400',   border: 'border-slate-400/30',   bg: 'bg-slate-400/5' },
+    emergency: { dot: 'bg-red-500',     text: 'text-red-500',     border: 'border-red-500/40',     bg: 'bg-red-500/8' },
   };
-  const tc = themeColors[senderProfile.theme] || themeColors.blue;
+  const tc = themeColors[senderProfile?.theme] || themeColors.blue;
+
+  const senderGroups = [...new Set(SENDER_PROFILES.map(p => p.group))];
+  const targetGroupsGrouped = TARGET_GROUPS.reduce((acc, t) => {
+    if (!acc[t.group]) acc[t.group] = [];
+    acc[t.group].push(t);
+    return acc;
+  }, {});
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -134,27 +201,32 @@ export default function AdminEmailing() {
       {/* Sender */}
       <div className="bg-card border border-border rounded-xl p-5 space-y-4">
         <p className="font-inter text-xs font-semibold text-muted-foreground uppercase tracking-wider">Expéditeur</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {SENDER_PROFILES.map(p => {
-            const tc2 = themeColors[p.theme];
-            const isSelected = sender === p.id;
-            return (
-              <button
-                key={p.id}
-                onClick={() => setSender(p.id)}
-                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all text-center ${
-                  isSelected
-                    ? `${tc2.border} ${tc2.bg} ${tc2.text}`
-                    : 'border-border text-muted-foreground hover:border-border/80 hover:bg-secondary'
-                }`}
-              >
-                <div className={`w-2 h-2 rounded-full ${isSelected ? tc2.dot : 'bg-muted-foreground/40'}`} />
-                <span className="font-inter text-xs font-semibold leading-tight">{p.label}</span>
-                <span className="font-mono text-[9px] opacity-70">{p.name}</span>
-              </button>
-            );
-          })}
-        </div>
+        {senderGroups.map(group => (
+          <div key={group}>
+            <p className="font-mono text-[10px] text-muted-foreground/50 uppercase tracking-widest mb-2">{group}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+              {SENDER_PROFILES.filter(p => p.group === group).map(p => {
+                const tc2 = themeColors[p.theme] || themeColors.blue;
+                const isSelected = sender === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => setSender(p.id)}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all text-center ${
+                      isSelected
+                        ? `${tc2.border} ${tc2.bg} ${tc2.text}`
+                        : 'border-border text-muted-foreground hover:border-border/80 hover:bg-secondary'
+                    }`}
+                  >
+                    <div className={`w-2 h-2 rounded-full ${isSelected ? tc2.dot : 'bg-muted-foreground/40'}`} />
+                    <span className="font-inter text-xs font-semibold leading-tight">{p.label}</span>
+                    <span className="font-mono text-[9px] opacity-70 truncate w-full">{p.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Target */}
@@ -165,8 +237,15 @@ export default function AdminEmailing() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {TARGET_GROUPS.map(g => (
-              <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
+            {Object.entries(targetGroupsGrouped).map(([group, items]) => (
+              <React.Fragment key={group}>
+                <div className="px-2 py-1.5">
+                  <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">{group}</p>
+                </div>
+                {items.map(g => (
+                  <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
+                ))}
+              </React.Fragment>
             ))}
           </SelectContent>
         </Select>

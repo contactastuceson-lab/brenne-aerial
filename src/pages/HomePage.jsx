@@ -155,20 +155,47 @@ export default function HomePage() {
       </section>
 
       {/* ─── TELEGRAM BANNER ─── */}
-      <div className="w-full bg-[#229ED9] py-3 px-5">
+      <div className="w-full py-6 px-5 flex items-center justify-center" style={{ background: '#0a0f1a' }}>
         <a
           href="https://t.me/brenneaerialfr"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-3 text-white font-inter font-semibold text-sm hover:opacity-90 transition-opacity"
+          className="inline-flex items-center gap-6 px-8 py-5 rounded-2xl transition-all duration-300 hover:scale-[1.015] cursor-pointer"
+          style={{
+            background: '#111820',
+            border: '2px solid #1ab8f0',
+            borderRadius: '18px',
+            boxShadow: '0 0 0 1px #1ab8f0, 0 0 30px rgba(26,184,240,0.7), 0 0 80px rgba(26,184,240,0.35), 0 0 120px rgba(26,184,240,0.15)',
+          }}
         >
-          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white flex-shrink-0" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-          </svg>
-          Rejoignez notre canal Telegram — Actualités &amp; offres exclusives
-          <svg viewBox="0 0 20 20" className="w-4 h-4 fill-white opacity-80" xmlns="http://www.w3.org/2000/svg">
-            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
-          </svg>
+          {/* Telegram logo */}
+          <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center"
+            style={{
+              background: 'transparent',
+              border: '2.5px solid #1ab8f0',
+              boxShadow: '0 0 16px rgba(26,184,240,0.9), 0 0 32px rgba(26,184,240,0.5)',
+            }}>
+            <svg viewBox="0 0 24 24" className="w-8 h-8 fill-white" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+            </svg>
+          </div>
+
+          {/* Text */}
+          <div>
+            <p className="font-grotesk font-bold text-xl text-white leading-snug">
+              Rejoignez notre canal Telegram —
+            </p>
+            <div className="flex items-center gap-3 mt-0.5">
+              <p className="font-grotesk font-semibold text-lg" style={{ color: '#1ab8f0' }}>
+                Actualités &amp; offres exclusives
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-white font-bold text-[11px] px-3 py-1 rounded-full flex-shrink-0"
+                style={{ background: '#e53e3e' }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                LIVE
+              </span>
+            </div>
+          </div>
         </a>
       </div>
 

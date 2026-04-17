@@ -308,11 +308,28 @@ export default function AdminEmailing() {
           </div>
         )}
 
-        <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl ${tc.bg} border ${tc.border}`}>
-          <Users className={`w-4 h-4 ${tc.text}`} />
-          <span className="font-inter text-sm">
-            <strong className={tc.text}>{targetUsers.length}</strong> destinataire{targetUsers.length > 1 ? 's' : ''} sélectionné{targetUsers.length > 1 ? 's' : ''}
-          </span>
+        <div className={`rounded-xl ${tc.bg} border ${tc.border} overflow-hidden`}>
+          <div className={`flex items-center gap-2 px-4 py-2.5`}>
+            <Users className={`w-4 h-4 ${tc.text} flex-shrink-0`} />
+            <span className="font-inter text-sm">
+              <strong className={tc.text}>{targetUsers.length}</strong> destinataire{targetUsers.length > 1 ? 's' : ''} sélectionné{targetUsers.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          {targetUsers.length > 0 && (
+            <div className="px-4 pb-3 flex flex-wrap gap-1.5">
+              {targetUsers.slice(0, 20).map(u => (
+                <span key={u.email} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-background/60 border border-border font-inter text-xs text-muted-foreground">
+                  <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 flex-shrink-0" />
+                  {u.full_name || u.email}
+                </span>
+              ))}
+              {targetUsers.length > 20 && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-background/60 border border-border font-mono text-xs text-muted-foreground">
+                  +{targetUsers.length - 20} autres
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

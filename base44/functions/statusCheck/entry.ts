@@ -34,6 +34,16 @@ Deno.serve(async (req) => {
     const settings = await base44.asServiceRole.entities.AppSettings.list();
     const sMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
 
+    // If site_offline is active → everything returns 503
+    const isSiteOffline = sMap['site_offline'] === 'true';
+    if (isSiteOffline) {
+      const module = moduleName || 'all';
+      return Response.json(
+        { ok: false, module, status: 'offline', message: 'Site Brenne Aerial hors ligne' },
+        { status: 503 }
+      );
+    }
+
     // Special: monitor the whole site via maintenance_mode setting
     if (moduleName === 'site') {
       const isInMaintenance = sMap['maintenance_mode'] === 'true';

@@ -9,6 +9,7 @@ import AnnouncementPopup from '@/components/shared/AnnouncementPopup';
 import DonationFloatingButton from '@/components/DonationFloatingButton';
 import ChatbotWidget from '@/components/ChatbotWidget';
 import MaintenancePage from '@/pages/MaintenancePage';
+import SiteOfflinePage from '@/pages/SiteOfflinePage';
 import BannedPage from '@/pages/BannedPage';
 import { base44 } from '@/api/base44Client';
 
@@ -88,9 +89,15 @@ export default function PublicLayout() {
     }
   }
 
+  // Site offline mode — shows dead-site grey screen to everyone except admins
+  const isSiteOffline = settings['site_offline'] === 'true';
+  const hasHighAccess = user && (user.role === 'admin' || user.role === 'owner' || user.role === 'pdg_adjoint' || user?.email === 'sentenacborys@gmail.com');
+  if (isSiteOffline && !hasHighAccess) {
+    return <SiteOfflinePage />;
+  }
+
   // Maintenance mode — block non-admins (but allow /status for everyone)
   const isMaintenance = settings['maintenance_mode'] === 'true';
-  const hasHighAccess = user && (user.role === 'admin' || user.role === 'owner' || user.role === 'pdg_adjoint' || user?.email === 'sentenacborys@gmail.com');
   if (isMaintenance && location.pathname !== '/status' && !hasHighAccess) {
     return <MaintenancePage message={settings['site_notice'] || undefined} />;
   }

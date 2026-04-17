@@ -5,7 +5,7 @@ import {
   Settings, Globe, LayoutDashboard, MessageCircle, Compass, FileText, BookOpen,
   Calendar, Save, Loader2, AlertTriangle, Plane, Users, Star, Zap, Home,
   Warehouse, Calculator, Shield, Building2, ZoomIn, QrCode, Pencil, Check, BellRing,
-  Copy, CheckCheck, ExternalLink
+  Copy, CheckCheck, ExternalLink, WifiOff
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -409,6 +409,40 @@ export default function AdminSiteConfig() {
       {/* Pages tab */}
       {activeTab === 'pages' && (
         <div className="space-y-2">
+          {/* ── SITE OFFLINE TOGGLE ── */}
+          {(() => {
+            const isOffline = getVal('site_offline', 'false');
+            return (
+              <div className={`flex items-center justify-between p-4 rounded-xl border mb-2 transition-all ${isOffline ? 'bg-red-950/40 border-red-500/50' : 'bg-card border-border'}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isOffline ? 'bg-red-500/20' : 'bg-muted'}`}>
+                    <WifiOff className={`w-5 h-5 ${isOffline ? 'text-red-400' : 'text-muted-foreground'}`} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-inter font-bold text-sm">Mode hors ligne</p>
+                      {isOffline && (
+                        <span className="font-mono text-[9px] px-2 py-0.5 rounded-full bg-red-500 text-white font-bold animate-pulse">
+                          ACTIF
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-inter text-xs text-muted-foreground">
+                      {isOffline
+                        ? '⚠️ Le site affiche une page grise "hors service" à tous les visiteurs. Seuls les admins voient le site normal.'
+                        : 'Active un écran gris de panne pour tous les visiteurs + retourne 503 sur tous les endpoints de monitoring.'
+                      }
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={isOffline}
+                  onCheckedChange={v => togglePage('site_offline', v)}
+                />
+              </div>
+            );
+          })()}
+
           {/* Bouton alerte panne */}
           <div className="flex items-center justify-between p-4 rounded-xl bg-destructive/5 border border-destructive/20 mb-4">
             <div className="flex items-center gap-3">

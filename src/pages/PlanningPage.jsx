@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { toast } from 'sonner';
+import SchedulerChat from '@/components/planning/SchedulerChat';
 
 export default function PlanningPage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_planning_enabled');
@@ -130,6 +131,8 @@ export default function PlanningPage() {
           </div>
         </div>
       </section>
+
+      <SchedulerChat />
 
       {/* Booking dialog */}
       <Dialog open={!!booking} onOpenChange={() => setBooking(null)}>

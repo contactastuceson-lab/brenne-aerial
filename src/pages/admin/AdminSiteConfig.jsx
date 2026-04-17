@@ -204,6 +204,8 @@ export default function AdminSiteConfig() {
     }
   };
 
+  const [sendingUp, setSendingUp] = useState(false);
+
   const sendPanneAlert = async () => {
     const downServices = PAGE_SETTINGS
       .map(s => s.key)
@@ -221,6 +223,25 @@ export default function AdminSiteConfig() {
       })
       .catch(err => toast.error(`Erreur: ${err.message}`))
       .finally(() => setSendingAlert(false));
+  };
+
+  const sendRetablissementAlert = async () => {
+    const upServices = PAGE_SETTINGS
+      .map(s => s.key)
+      .filter(key => (local[key] ?? 'true') === 'true');
+
+    if (upServices.length === 0) {
+      toast.info('Aucun service actif en ce moment.');
+      return;
+    }
+
+    setSendingUp(true);
+    base44.functions.invoke('notifyPageDisabled', { mode: 'retablissement', upServices })
+      .then(res => {
+        toast.success(`✅ Email retour envoyé à ${res?.data?.notified ?? 0} utilisateur(s)`);
+      })
+      .catch(err => toast.error(`Erreur: ${err.message}`))
+      .finally(() => setSendingUp(false));
   };
 
   const getVal = (key, def = 'true') => (local[key] ?? def) === 'true';
@@ -269,16 +290,28 @@ export default function AdminSiteConfig() {
                 <p className="font-inter text-xs text-muted-foreground">Envoie un email récapitulatif de tous les services actuellement désactivés</p>
               </div>
             </div>
-            <Button
-              variant="destructive"
-              size="sm"
-              className="flex-shrink-0 gap-2"
-              onClick={sendPanneAlert}
-              disabled={sendingAlert}
-            >
-              {sendingAlert ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BellRing className="w-3.5 h-3.5" />}
-              {sendingAlert ? 'Envoi...' : 'Envoyer alerte'}
-            </Button>
+            <div className="flex gap-2 flex-shrink-0">
+              <Button
+                variant="destructive"
+                size="sm"
+                className="gap-2"
+                onClick={sendPanneAlert}
+                disabled={sendingAlert}
+              >
+                {sendingAlert ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BellRing className="w-3.5 h-3.5" />}
+                {sendingAlert ? 'Envoi...' : 'Alerte panne'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 border-green-500/40 text-green-400 hover:bg-green-500/10"
+                onClick={sendRetablissementAlert}
+                disabled={sendingUp}
+              >
+                {sendingUp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BellRing className="w-3.5 h-3.5" />}
+                {sendingUp ? 'Envoi...' : 'Retour des systèmes'}
+              </Button>
+            </div>
           </div>
           {PAGE_SETTINGS.map(item => {
             const Icon = item.icon;

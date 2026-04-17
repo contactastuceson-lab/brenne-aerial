@@ -105,6 +105,69 @@ Deno.serve(async (req) => {
 </body></html>`.trim();
 
     // ── MODE RESTORED : panne résolue ──
+    // ── MODE RETABLISSEMENT : récap de tous les systèmes en marche ──
+    } else if (mode === 'retablissement') {
+      const { upServices = [] } = body.payload ?? body;
+
+      const rows = upServices.map(key => {
+        const label = PAGE_LABELS[key] || key;
+        return `<tr>
+          <td style="padding:10px 16px;border-bottom:1px solid #1a2a3d;">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:8px;"></span>
+            <span style="color:#86efac;font-weight:600;">${label}</span>
+          </td>
+          <td style="padding:10px 16px;border-bottom:1px solid #1a2a3d;color:#22c55e;font-weight:700;text-align:right;">OPÉRATIONNEL</td>
+        </tr>`;
+      }).join('');
+
+      subject = `✅ Retour des systèmes — ${upServices.length} service(s) opérationnel(s) | Brenne Aerial`;
+      emailBody = `
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/>
+<style>
+  body{font-family:'Inter',Arial,sans-serif;background:#070d1a;color:#e0eaf5;margin:0;padding:0;}
+  .wrapper{max-width:600px;margin:0 auto;padding:40px 20px;}
+  .header{text-align:center;margin-bottom:32px;}
+  .logo{font-size:22px;font-weight:800;letter-spacing:-0.5px;color:#38aadc;}
+  .logo span{color:#e0eaf5;}
+  .card{background:#0d1829;border:1px solid #1a2a3d;border-radius:16px;padding:32px;margin-bottom:24px;}
+  .badge{display:inline-block;background:#14532d;color:#86efac;border:1px solid #22c55e;border-radius:999px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:20px;}
+  h2{font-size:20px;font-weight:700;color:#e0eaf5;margin:0 0 12px;}
+  p{font-size:14px;color:#8fafc9;line-height:1.7;margin:0 0 16px;}
+  .highlight{color:#e0eaf5;font-weight:600;}
+  .btn{display:inline-block;background:#22c55e;color:#052e16;font-weight:700;font-size:14px;padding:12px 28px;border-radius:10px;text-decoration:none;margin-top:8px;}
+  table{width:100%;border-collapse:collapse;background:#0a1525;border-radius:10px;overflow:hidden;margin:20px 0;}
+  th{padding:10px 16px;background:#0f1e30;color:#8fafc9;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;text-align:left;}
+  .footer{text-align:center;font-size:11px;color:#3d5a7a;margin-top:32px;}
+  .divider{border:none;border-top:1px solid #1a2a3d;margin:24px 0;}
+</style>
+</head><body>
+<div class="wrapper">
+  <div class="header">
+    <div class="logo">Brenne <span>Aerial</span></div>
+    <p style="font-size:12px;color:#3d5a7a;margin-top:4px;">Mise à jour des systèmes — ${now}</p>
+  </div>
+  <div class="card">
+    <div class="badge">✅ ${upServices.length} service(s) opérationnel(s)</div>
+    <h2>Retour des systèmes</h2>
+    <p>Voici l'état actuel des services <span class="highlight">opérationnels</span> sur la plateforme Brenne Aerial :</p>
+    <table>
+      <thead><tr><th>Service</th><th style="text-align:right;">Statut</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p>Tous ces services sont pleinement fonctionnels et accessibles normalement. Merci pour votre confiance.</p>
+    <hr class="divider"/>
+    <a href="https://brenneaerial.fr" class="btn">🚀 Accéder à la plateforme</a>
+  </div>
+  <div class="card" style="background:#070d1a;">
+    <p style="margin:0;"><strong style="color:#e0eaf5;">Une question ?</strong> Contactez-nous à <a href="mailto:contact@brenneaerial.fr" style="color:#38aadc;">contact@brenneaerial.fr</a>.</p>
+  </div>
+  <div class="footer">
+    <p>© ${new Date().getFullYear()} Brenne Aerial — Tous droits réservés<br/>Brenne, Indre, France</p>
+    <p style="margin-top:8px;">Vous recevez cet email car vous êtes inscrit sur la plateforme Brenne Aerial.</p>
+  </div>
+</div>
+</body></html>`.trim();
+
     } else if (mode === 'restored' || enabled === true) {
       const pageLabel = PAGE_LABELS[settingKey] || settingKey;
       subject = `✅ Panne résolue — ${pageLabel} | Brenne Aerial`;

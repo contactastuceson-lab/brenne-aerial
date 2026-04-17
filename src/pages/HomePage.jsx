@@ -155,48 +155,37 @@ export default function HomePage() {
       </section>
 
       {/* ─── TELEGRAM BANNER ─── */}
-      <div className="w-full py-6 px-5 flex items-center justify-center" style={{ background: '#0a0f1a' }}>
-        <a
-          href="https://t.me/brenneaerialfr"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-6 px-8 py-5 rounded-2xl transition-all duration-300 hover:scale-[1.015] cursor-pointer"
-          style={{
-            background: '#111820',
-            border: '2px solid #1ab8f0',
-            borderRadius: '18px',
-            boxShadow: '0 0 0 1px #1ab8f0, 0 0 30px rgba(26,184,240,0.7), 0 0 80px rgba(26,184,240,0.35), 0 0 120px rgba(26,184,240,0.15)',
-          }}
-        >
-          {/* Telegram logo */}
-          <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center"
-            style={{
-              background: 'transparent',
-              border: '2.5px solid #1ab8f0',
-              boxShadow: '0 0 16px rgba(26,184,240,0.9), 0 0 32px rgba(26,184,240,0.5)',
-            }}>
-            <svg viewBox="0 0 24 24" className="w-8 h-8 fill-white" xmlns="http://www.w3.org/2000/svg">
-              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-            </svg>
-          </div>
-
-          {/* Text */}
-          <div>
-            <p className="font-grotesk font-bold text-xl text-white leading-snug">
-              Rejoignez notre canal Telegram —
-            </p>
-            <div className="flex items-center gap-3 mt-0.5">
-              <p className="font-grotesk font-semibold text-lg" style={{ color: '#1ab8f0' }}>
-                Actualités &amp; offres exclusives
-              </p>
-              <span className="inline-flex items-center gap-1.5 text-white font-bold text-[11px] px-3 py-1 rounded-full flex-shrink-0"
-                style={{ background: '#e53e3e' }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                LIVE
-              </span>
+      <div className="px-5 lg:px-10 py-4">
+        <div className="max-w-7xl mx-auto">
+          <a
+            href="https://t.me/brenneaerialfr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between gap-4 px-6 py-4 rounded-xl border border-primary/20 bg-card hover:border-primary/40 hover:bg-card/80 transition-all duration-300 group"
+          >
+            <div className="flex items-center gap-4">
+              {/* Telegram icon */}
+              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/15 transition-colors">
+                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-primary" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                </svg>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-grotesk font-semibold text-sm">Rejoignez notre canal Telegram</span>
+                  <span className="inline-flex items-center gap-1 font-mono text-[9px] font-bold px-2 py-0.5 rounded-full bg-destructive/15 text-destructive border border-destructive/30">
+                    <span className="w-1 h-1 rounded-full bg-destructive animate-pulse" />
+                    LIVE
+                  </span>
+                </div>
+                <p className="font-inter text-xs text-muted-foreground mt-0.5">Actualités, offres exclusives &amp; coulisses des missions</p>
+              </div>
             </div>
-          </div>
-        </a>
+            <div className="hidden sm:flex items-center gap-1.5 font-mono text-xs text-primary group-hover:gap-2.5 transition-all flex-shrink-0">
+              Rejoindre <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </a>
+        </div>
       </div>
 
       {/* ─── SERVICES PREVIEW ─── */}

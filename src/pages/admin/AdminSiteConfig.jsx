@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import {
   Settings, Globe, LayoutDashboard, MessageCircle, Compass, FileText, BookOpen,
   Calendar, Save, Loader2, AlertTriangle, Plane, Users, Star, Zap, Home,
-  Warehouse, Calculator, Shield, Building2, ZoomIn, QrCode, Pencil, Check
+  Warehouse, Calculator, Shield, Building2, ZoomIn, QrCode, Pencil, Check, BellRing
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -187,17 +187,40 @@ export default function AdminSiteConfig() {
     toast.success('Sauvegardé');
   };
 
+  const [sendingAlert, setSendingAlert] = useState(false);
+
   const togglePage = async (key, val) => {
     setLocal(p => ({ ...p, [key]: val ? 'true' : 'false' }));
     await saveSetting(key, val ? 'true' : 'false');
-    // Notify users when a page is disabled or re-enabled
-    base44.functions.invoke('notifyPageDisabled', { settingKey: key, enabled: val })
+    // Si on réactive un service, envoyer un mail "panne résolue"
+    if (val) {
+      base44.functions.invoke('notifyPageDisabled', { mode: 'restored', settingKey: key, enabled: true })
+        .then(res => {
+          if (res?.data?.notified > 0) {
+            toast.success(`✅ Panne résolue — ${res.data.notified} utilisateur(s) notifié(s)`);
+          }
+        })
+        .catch(() => {});
+    }
+  };
+
+  const sendPanneAlert = async () => {
+    const downServices = PAGE_SETTINGS
+      .map(s => s.key)
+      .filter(key => (local[key] ?? 'true') === 'false');
+
+    if (downServices.length === 0) {
+      toast.info('Aucun service désactivé en ce moment.');
+      return;
+    }
+
+    setSendingAlert(true);
+    base44.functions.invoke('notifyPageDisabled', { mode: 'summary', downServices })
       .then(res => {
-        if (res?.data?.notified > 0) {
-          toast.info(`📧 ${res.data.notified} utilisateur(s) notifié(s) par email`);
-        }
+        toast.success(`🚨 Alerte envoyée à ${res?.data?.notified ?? 0} utilisateur(s)`);
       })
-      .catch(err => toast.error(`Erreur notification email: ${err.message}`));
+      .catch(err => toast.error(`Erreur: ${err.message}`))
+      .finally(() => setSendingAlert(false));
   };
 
   const getVal = (key, def = 'true') => (local[key] ?? def) === 'true';
@@ -237,6 +260,26 @@ export default function AdminSiteConfig() {
       {/* Pages tab */}
       {activeTab === 'pages' && (
         <div className="space-y-2">
+          {/* Bouton alerte panne */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-destructive/5 border border-destructive/20 mb-4">
+            <div className="flex items-center gap-3">
+              <BellRing className="w-5 h-5 text-destructive flex-shrink-0" />
+              <div>
+                <p className="font-inter font-semibold text-sm">Envoyer une alerte de panne</p>
+                <p className="font-inter text-xs text-muted-foreground">Envoie un email récapitulatif de tous les services actuellement désactivés</p>
+              </div>
+            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="flex-shrink-0 gap-2"
+              onClick={sendPanneAlert}
+              disabled={sendingAlert}
+            >
+              {sendingAlert ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BellRing className="w-3.5 h-3.5" />}
+              {sendingAlert ? 'Envoi...' : 'Envoyer alerte'}
+            </Button>
+          </div>
           {PAGE_SETTINGS.map(item => {
             const Icon = item.icon;
             const enabled = getVal(item.key, item.default);

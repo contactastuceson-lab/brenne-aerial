@@ -30,7 +30,8 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { mode, settingKey, enabled } = body.payload ?? body;
+    const data = body.payload ?? body;
+    const { mode, settingKey, enabled, downServices = [], upServices = [] } = data;
 
     const users = await base44.asServiceRole.entities.User.list();
     const usersToNotify = users.filter(u => u.email);
@@ -40,7 +41,6 @@ Deno.serve(async (req) => {
 
     // ── MODE SUMMARY : récap de tous les systèmes en panne ──
     if (mode === 'summary') {
-      const { downServices = [] } = body.payload ?? body;
 
       const rows = downServices.map(key => {
         const label = PAGE_LABELS[key] || key;
@@ -107,7 +107,6 @@ Deno.serve(async (req) => {
     // ── MODE RESTORED : panne résolue ──
     // ── MODE RETABLISSEMENT : récap de tous les systèmes en marche ──
     } else if (mode === 'retablissement') {
-      const { upServices = [] } = body.payload ?? body;
 
       const rows = upServices.map(key => {
         const label = PAGE_LABELS[key] || key;

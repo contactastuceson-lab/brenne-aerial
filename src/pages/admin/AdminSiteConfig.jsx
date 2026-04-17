@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import {
   Settings, Globe, LayoutDashboard, MessageCircle, Compass, FileText, BookOpen,
   Calendar, Save, Loader2, AlertTriangle, Plane, Users, Star, Zap, Home,
-  Warehouse, Calculator, Shield, Building2, ZoomIn, QrCode, Pencil, Check, BellRing
+  Warehouse, Calculator, Shield, Building2, ZoomIn, QrCode, Pencil, Check, BellRing,
+  Copy, CheckCheck, ExternalLink
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ const TABS = [
   { id: 'calc', label: 'Calculateur', icon: Calculator },
   { id: 'regle', label: 'Réglementation', icon: Shield },
   { id: 'tools', label: 'Outils spéciaux', icon: Zap },
+  { id: 'monitoring', label: 'API Monitoring', icon: Globe },
 ];
 
 const PAGE_SETTINGS = [
@@ -112,6 +114,107 @@ const TEXT_FIELDS = {
     { key: 'flash_intro', label: 'Texte intro Flash Delivery', placeholder: 'Votre contenu livré en quelques minutes...', textarea: true },
   ],
 };
+
+const APP_URL = import.meta.env.VITE_APP_URL || window.location.origin;
+
+const MONITORING_LINKS = [
+  {
+    label: 'Résumé de tous les modules',
+    url: `${APP_URL}/api/functions/statusCheck`,
+    desc: 'Retourne l\'état (activé/désactivé) de tous les modules de la plateforme.',
+    method: 'GET',
+  },
+  {
+    label: 'État global du site',
+    url: `${APP_URL}/api/functions/statusCheck?module=site`,
+    desc: 'Vérifie si le site est en maintenance (503) ou opérationnel (200).',
+    method: 'GET',
+  },
+  ...['homepage','services','portfolio','blog','contact','quote','planning','discover','messagerie','espace_client','partenaires','parrainage','avant_apres','certification','donation','garage','calculateur','reglementation','simulateur','comparateur','flash'].map(mod => ({
+    label: `Module : ${mod}`,
+    url: `${APP_URL}/api/functions/statusCheck?module=${mod}`,
+    desc: `État du module "${mod}" — 200 si actif, 503 si désactivé.`,
+    method: 'GET',
+  })),
+];
+
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <button
+      onClick={handleCopy}
+      className="flex-shrink-0 p-1.5 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors text-muted-foreground hover:text-primary"
+      title="Copier"
+    >
+      {copied ? <CheckCheck className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+    </button>
+  );
+}
+
+function MonitoringAPISection() {
+  const [filter, setFilter] = useState('');
+  const filtered = MONITORING_LINKS.filter(l =>
+    l.label.toLowerCase().includes(filter.toLowerCase()) ||
+    l.url.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-5 max-w-3xl">
+      {/* Header info */}
+      <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-3">
+        <Globe className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+        <div>
+          <p className="font-inter font-semibold text-sm mb-1">Endpoints de monitoring API</p>
+          <p className="font-inter text-xs text-muted-foreground leading-relaxed">
+            Ces URLs peuvent être utilisées par Better Stack, UptimeRobot ou tout autre outil de monitoring externe.
+            Un code <span className="font-mono text-green-400 bg-green-400/10 px-1 rounded">200</span> indique un service actif,
+            un code <span className="font-mono text-destructive bg-destructive/10 px-1 rounded">503</span> indique qu'il est désactivé.
+          </p>
+          <a
+            href="https://statut.brenneaerial.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 mt-2 font-inter text-xs text-primary hover:underline"
+          >
+            <ExternalLink className="w-3 h-3" /> Tableau de bord Better Stack
+          </a>
+        </div>
+      </div>
+
+      {/* Search */}
+      <Input
+        placeholder="Rechercher un endpoint..."
+        value={filter}
+        onChange={e => setFilter(e.target.value)}
+        className="bg-secondary border-border text-sm"
+      />
+
+      {/* Links list */}
+      <div className="space-y-2">
+        {filtered.map((link, i) => (
+          <div key={i} className="bg-card border border-border rounded-xl p-4 hover:border-primary/20 transition-colors">
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div>
+                <p className="font-inter font-medium text-sm">{link.label}</p>
+                <p className="font-inter text-xs text-muted-foreground mt-0.5">{link.desc}</p>
+              </div>
+              <span className="font-mono text-[10px] px-2 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary flex-shrink-0">{link.method}</span>
+            </div>
+            <div className="flex items-center gap-2 bg-secondary/60 rounded-lg px-3 py-2">
+              <code className="font-mono text-xs text-muted-foreground flex-1 truncate">{link.url}</code>
+              <CopyButton text={link.url} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function SettingField({ field, value, onChange, onSave, saving }) {
   const [local, setLocal] = useState(value || '');
@@ -331,8 +434,11 @@ export default function AdminSiteConfig() {
         </div>
       )}
 
+      {/* Monitoring API tab */}
+      {activeTab === 'monitoring' && <MonitoringAPISection />}
+
       {/* Text content tabs */}
-      {activeTab !== 'pages' && fieldsForTab.length > 0 && (
+      {activeTab !== 'pages' && activeTab !== 'monitoring' && fieldsForTab.length > 0 && (
         <div className="space-y-5 max-w-2xl">
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center gap-2 mb-5">

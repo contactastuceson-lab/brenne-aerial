@@ -1,11 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Bell, User, MessageCircle, Compass, LayoutDashboard, LogOut } from 'lucide-react';
+import { Menu, X, Bell, User, MessageCircle, Compass, LayoutDashboard, LogOut, ChevronDown, FolderOpen, Warehouse, Building2, Users, Shield, Building, ZoomIn, SlidersHorizontal, ArrowLeftRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
+
+const EXTRA_LINKS = [
+  { to: '/espace-client',   label: 'Espace Client',         icon: FolderOpen,      desc: 'Vos fichiers & rapports' },
+  { to: '/garage',          label: 'Garage Drones',         icon: Warehouse,       desc: 'Notre flotte' },
+  { to: '/partenaires',     label: 'Partenaires',           icon: Building2,       desc: 'Notre réseau' },
+  { to: '/parrainage',      label: 'Parrainage',            icon: Users,           desc: 'Gagnez des crédits' },
+  { to: '/avant-apres',     label: 'Avant / Après',         icon: ArrowLeftRight,  desc: 'Galerie comparaisons' },
+  { to: '/reglementation',  label: 'Réglementation',        icon: Shield,          desc: 'Guide vol drone' },
+  { to: '/simulateur-vue',  label: 'Simulateur de vue',     icon: Building,        desc: 'Outil immobilier' },
+  { to: '/comparateur',     label: 'Comparateur résolution',icon: ZoomIn,          desc: 'Qualité photo' },
+];
 
 const NAV_LINKS = [
   { to: '/', label: 'Accueil' },
@@ -21,7 +32,18 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
+  const [extraOpen, setExtraOpen] = useState(false);
+  const [mobileExtraOpen, setMobileExtraOpen] = useState(false);
+  const extraRef = useRef(null);
   const location = useLocation();
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (extraRef.current && !extraRef.current.contains(e.target)) setExtraOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -90,6 +112,49 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+
+          {/* Dropdown "Outils & Plus" */}
+          <div className="relative" ref={extraRef}>
+            <button
+              onClick={() => setExtraOpen(v => !v)}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-inter text-sm transition-all duration-200 ${
+                extraOpen ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+              }`}
+            >
+              Outils & Plus <ChevronDown className={`w-3.5 h-3.5 transition-transform ${extraOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence>
+              {extraOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full left-0 mt-2 w-64 glass border border-border rounded-xl shadow-xl overflow-hidden z-50"
+                >
+                  {EXTRA_LINKS.map(link => {
+                    const Icon = link.icon;
+                    return (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        onClick={() => setExtraOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-primary/5 transition-colors group"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                          <Icon className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-inter text-sm font-medium text-foreground">{link.label}</p>
+                          <p className="font-mono text-[10px] text-muted-foreground">{link.desc}</p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Right */}
@@ -186,6 +251,45 @@ export default function Navbar() {
                     {link.label}
                   </Link>
                 ))}
+              </div>
+
+              {/* Outils & Plus — accordion mobile */}
+              <div className="mb-3 border border-border rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setMobileExtraOpen(v => !v)}
+                  className="w-full flex items-center justify-between px-4 py-2.5 bg-secondary/40 font-inter text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <span>Outils & Plus</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${mobileExtraOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {mobileExtraOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="grid grid-cols-2 gap-1 p-2">
+                        {EXTRA_LINKS.map(link => {
+                          const Icon = link.icon;
+                          return (
+                            <Link
+                              key={link.to}
+                              to={link.to}
+                              onClick={() => { setOpen(false); setMobileExtraOpen(false); }}
+                              className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-primary/5 border border-transparent hover:border-primary/15 transition-all"
+                            >
+                              <Icon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                              <span className="font-inter text-xs text-foreground leading-tight">{link.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Actions utilisateur */}

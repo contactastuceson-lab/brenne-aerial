@@ -333,11 +333,18 @@ export default function AdminSiteConfig() {
     setLocal(p => ({ ...p, [key]: val ? 'true' : 'false' }));
     await saveSetting(key, val ? 'true' : 'false');
 
-    // Si on active le mode hors ligne → notifier tous les utilisateurs
-    if (key === 'site_offline' && val === true) {
+    // Notifications automatiques pour le mode hors ligne
+    if (key === 'site_offline') {
       setSendingOfflineAlert(true);
-      base44.functions.invoke('notifyPageDisabled', { mode: 'site_offline' })
-        .then(res => toast.success(`🚨 Panne générale détectée — ${res?.data?.notified ?? 0} utilisateur(s) notifié(s)`))
+      const mode = val ? 'site_offline' : 'site_restored';
+      base44.functions.invoke('notifyPageDisabled', { mode })
+        .then(res => {
+          if (val) {
+            toast.error(`🚨 Panne générale — ${res?.data?.notified ?? 0} utilisateur(s) notifié(s)`);
+          } else {
+            toast.success(`✅ Rétablissement confirmé — ${res?.data?.notified ?? 0} utilisateur(s) notifié(s)`);
+          }
+        })
         .catch(() => {})
         .finally(() => setSendingOfflineAlert(false));
     }

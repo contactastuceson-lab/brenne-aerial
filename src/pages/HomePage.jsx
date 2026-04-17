@@ -154,6 +154,34 @@ export default function HomePage() {
         </motion.div>
       </section>
 
+      {/* ─── STATUS BADGE ─── */}
+      <div className="px-5 lg:px-10 pt-4">
+        <div className="max-w-7xl mx-auto">
+          <a href="/uptime" className="flex items-center justify-between gap-4 px-5 py-3 rounded-xl border border-green-500/20 bg-green-500/5 hover:border-green-500/40 hover:bg-green-500/10 transition-all duration-300 group">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+              </span>
+              <span className="font-inter text-sm font-medium text-green-400">État des services</span>
+              <span className="hidden sm:inline font-mono text-xs text-muted-foreground">— Tous les systèmes opérationnels</span>
+            </div>
+            <div className="hidden sm:block pointer-events-none">
+              <iframe
+                src="https://statut.brenneaerial.org/badge?theme=dark"
+                width="250"
+                height="30"
+                frameBorder="0"
+                scrolling="no"
+                style={{ colorScheme: 'normal', display: 'block' }}
+                title="Statut Brenne Aerial"
+              />
+            </div>
+            <span className="sm:hidden font-mono text-xs text-green-400 group-hover:underline flex-shrink-0">Voir →</span>
+          </a>
+        </div>
+      </div>
+
       {/* ─── TELEGRAM BANNER ─── */}
       <div className="px-5 lg:px-10 py-4">
         <div className="max-w-7xl mx-auto">

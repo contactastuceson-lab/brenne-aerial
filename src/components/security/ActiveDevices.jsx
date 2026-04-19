@@ -10,10 +10,20 @@ export default function ActiveDevices({ user }) {
   const queryClient = useQueryClient();
   const [confirmDisconnect, setConfirmDisconnect] = useState(null);
 
-  // Fetch active device sessions
+  // Fetch active device sessions using backend function
   const { data: devices = [], isLoading } = useQuery({
     queryKey: ['active-devices', user?.email],
-    queryFn: () => base44.entities.DeviceSession.filter({ user_email: user.email }),
+    queryFn: async () => {
+      try {
+        const result = await base44.functions.invoke('getDeviceSessions', {
+          user_email: user.email,
+        });
+        return result.sessions || [];
+      } catch (error) {
+        console.error('Error fetching devices:', error);
+        return [];
+      }
+    },
     enabled: !!user?.email,
     refetchInterval: 60000, // Refresh every minute
   });
@@ -24,18 +34,11 @@ export default function ActiveDevices({ user }) {
   // Disconnect device mutation
   const disconnectMutation = useMutation({
     mutationFn: async (sessionId) => {
-      // Delete the session record
+      // Use backend function to disconnect device
       const deviceToDelete = devices.find(d => d.id === sessionId);
-      if (deviceToDelete) {
-        await base44.entities.DeviceSession.delete(sessionId);
-      }
-
-      // Log this action
-      await base44.functions.invoke('logAuditAction', {
+      await base44.functions.invoke('disconnectDevice', {
         user_email: user.email,
-        action_type: 'device_disconnected',
-        description: `Appareil déconnecté: ${deviceToDelete?.device_name}`,
-        is_sensitive: true,
+        session_id: deviceToDelete?.session_id,
       });
     },
     onSuccess: () => {
@@ -43,7 +46,8 @@ export default function ActiveDevices({ user }) {
       toast.success('Appareil déconnecté');
       setConfirmDisconnect(null);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Disconnect error:', error);
       toast.error('Erreur lors de la déconnexion');
     },
   });
@@ -51,25 +55,17 @@ export default function ActiveDevices({ user }) {
   // Disconnect all other devices
   const disconnectAllMutation = useMutation({
     mutationFn: async () => {
-      // Delete all sessions except current
-      const deletePromises = otherDevices.map(device =>
-        base44.entities.DeviceSession.delete(device.id)
-      );
-      await Promise.all(deletePromises);
-
-      // Log this action
-      await base44.functions.invoke('logAuditAction', {
+      // Use backend function to disconnect all other devices
+      await base44.functions.invoke('disconnectAllOtherDevices', {
         user_email: user.email,
-        action_type: 'all_devices_disconnected',
-        description: `${otherDevices.length} appareils déconnectés`,
-        is_sensitive: true,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-devices'] });
       toast.success('Tous les autres appareils ont été déconnectés');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Disconnect all error:', error);
       toast.error('Erreur lors de la déconnexion');
     },
   });

@@ -11,6 +11,7 @@ import ChatbotWidget from '@/components/ChatbotWidget';
 import MaintenancePage from '@/pages/MaintenancePage';
 import SiteOfflinePage from '@/pages/SiteOfflinePage';
 import BannedPage from '@/pages/BannedPage';
+import { useRegisterDevice } from '@/hooks/useRegisterDevice';
 import { base44 } from '@/api/base44Client';
 
 export default function PublicLayout() {
@@ -20,6 +21,9 @@ export default function PublicLayout() {
   const location = useLocation();
   const hideFooter = location.pathname === '/messages';
   const hideFloatingButton = location.pathname === '/messages';
+
+  // Register device session when user logs in
+  useRegisterDevice(user);
 
   useEffect(() => {
     const init = async () => {

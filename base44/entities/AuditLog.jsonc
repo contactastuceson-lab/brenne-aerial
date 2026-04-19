@@ -1,0 +1,88 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur ayant effectué l'action"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "login",
+        "logout",
+        "profile_update",
+        "password_change",
+        "2fa_enabled",
+        "2fa_disabled",
+        "2fa_method_added",
+        "data_export",
+        "data_deleted",
+        "user_created",
+        "user_deleted",
+        "permission_changed",
+        "badge_awarded",
+        "badge_removed",
+        "role_changed",
+        "suspension",
+        "ban",
+        "admin_action",
+        "file_uploaded",
+        "file_deleted",
+        "quote_accepted",
+        "quote_refused",
+        "payment_processed",
+        "donation_received"
+      ],
+      "description": "Type d'action"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description détaillée de l'action"
+    },
+    "resource_type": {
+      "type": "string",
+      "description": "Type de ressource affectée (User, Project, Quote, etc.)"
+    },
+    "resource_id": {
+      "type": "string",
+      "description": "ID de la ressource"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "Adresse IP"
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "User agent du navigateur"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "attempted"
+      ],
+      "default": "success"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Données additionnelles (ancien/nouveau valeur, etc.)"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp de l'action"
+    },
+    "is_sensitive": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si c'est une opération sensible"
+    }
+  },
+  "required": [
+    "user_email",
+    "action_type",
+    "timestamp"
+  ]
+}

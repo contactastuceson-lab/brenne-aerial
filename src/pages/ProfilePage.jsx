@@ -15,6 +15,8 @@ import VerificationIcons from '@/components/ui/VerificationIcon';
 import DangerZone from '@/components/profile/DangerZone';
 import CertificationRequest from '@/components/profile/CertificationRequest';
 import ThemeSelector from '@/components/profile/ThemeSelector';
+import TwoFactorSetup from '@/components/security/TwoFactorSetup';
+import RGPDDashboard from '@/components/security/RGPDDashboard';
 import { ROLE_CONFIG, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 
 const BADGE_CONFIG = {
@@ -394,6 +396,26 @@ export default function ProfilePage() {
             </div>
           </motion.div>
         )}
+
+        {/* Two-Factor Authentication */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mt-6"
+        >
+          <TwoFactorSetup user={user} />
+        </motion.div>
+
+        {/* RGPD Dashboard */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-6"
+        >
+          <RGPDDashboard user={user} />
+        </motion.div>
 
         {/* Danger zone */}
         <DangerZone user={user} />

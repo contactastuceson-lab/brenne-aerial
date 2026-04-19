@@ -1,0 +1,86 @@
+{
+  "name": "DeviceSession",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Identifiant unique de la session"
+    },
+    "device_name": {
+      "type": "string",
+      "description": "Nom du navigateur/appareil (ex: Chrome sur Windows)"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": [
+        "mobile",
+        "tablet",
+        "desktop"
+      ],
+      "description": "Type d'appareil"
+    },
+    "browser": {
+      "type": "string",
+      "description": "Navigateur (Chrome, Firefox, Safari, etc.)"
+    },
+    "os": {
+      "type": "string",
+      "description": "Système d'exploitation"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "Adresse IP"
+    },
+    "country": {
+      "type": "string",
+      "description": "Pays détecté"
+    },
+    "city": {
+      "type": "string",
+      "description": "Ville détectée"
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "User agent complet"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de connexion"
+    },
+    "last_activity": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Dernière activité"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Expiration de la session"
+    },
+    "is_current": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si c'est la session actuelle"
+    },
+    "is_trusted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Appareil approuvé/de confiance"
+    },
+    "token": {
+      "type": "string",
+      "description": "Token de session chiffré"
+    }
+  },
+  "required": [
+    "user_email",
+    "session_id",
+    "ip_address",
+    "created_at"
+  ]
+}

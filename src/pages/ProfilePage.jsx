@@ -17,6 +17,7 @@ import CertificationRequest from '@/components/profile/CertificationRequest';
 import ThemeSelector from '@/components/profile/ThemeSelector';
 import TwoFactorSetup from '@/components/security/TwoFactorSetup';
 import RGPDDashboard from '@/components/security/RGPDDashboard';
+import ActiveDevices from '@/components/security/ActiveDevices';
 import { ROLE_CONFIG, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 
 const BADGE_CONFIG = {
@@ -405,6 +406,16 @@ export default function ProfilePage() {
           className="mt-6"
         >
           <TwoFactorSetup user={user} />
+        </motion.div>
+
+        {/* Active Devices */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mt-6"
+        >
+          <ActiveDevices user={user} />
         </motion.div>
 
         {/* RGPD Dashboard */}

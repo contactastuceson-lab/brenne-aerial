@@ -1,0 +1,295 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Monitor, Smartphone, Tablet, LogOut, MapPin, Clock, CheckCircle, Loader2, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+export default function ActiveDevices({ user }) {
+  const queryClient = useQueryClient();
+  const [confirmDisconnect, setConfirmDisconnect] = useState(null);
+
+  // Fetch active device sessions
+  const { data: devices = [], isLoading } = useQuery({
+    queryKey: ['active-devices', user?.email],
+    queryFn: () => base44.entities.DeviceSession.filter({ user_email: user.email }),
+    enabled: !!user?.email,
+    refetchInterval: 60000, // Refresh every minute
+  });
+
+  const currentDevice = devices.find(d => d.is_current);
+  const otherDevices = devices.filter(d => !d.is_current);
+
+  // Disconnect device mutation
+  const disconnectMutation = useMutation({
+    mutationFn: async (sessionId) => {
+      // Delete the session record
+      const deviceToDelete = devices.find(d => d.id === sessionId);
+      if (deviceToDelete) {
+        await base44.entities.DeviceSession.delete(sessionId);
+      }
+
+      // Log this action
+      await base44.functions.invoke('logAuditAction', {
+        user_email: user.email,
+        action_type: 'device_disconnected',
+        description: `Appareil déconnecté: ${deviceToDelete?.device_name}`,
+        is_sensitive: true,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['active-devices'] });
+      toast.success('Appareil déconnecté');
+      setConfirmDisconnect(null);
+    },
+    onError: () => {
+      toast.error('Erreur lors de la déconnexion');
+    },
+  });
+
+  // Disconnect all other devices
+  const disconnectAllMutation = useMutation({
+    mutationFn: async () => {
+      // Delete all sessions except current
+      const deletePromises = otherDevices.map(device =>
+        base44.entities.DeviceSession.delete(device.id)
+      );
+      await Promise.all(deletePromises);
+
+      // Log this action
+      await base44.functions.invoke('logAuditAction', {
+        user_email: user.email,
+        action_type: 'all_devices_disconnected',
+        description: `${otherDevices.length} appareils déconnectés`,
+        is_sensitive: true,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['active-devices'] });
+      toast.success('Tous les autres appareils ont été déconnectés');
+    },
+    onError: () => {
+      toast.error('Erreur lors de la déconnexion');
+    },
+  });
+
+  const getDeviceIcon = (deviceType) => {
+    switch (deviceType) {
+      case 'mobile':
+        return Smartphone;
+      case 'tablet':
+        return Tablet;
+      default:
+        return Monitor;
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'À l\'instant';
+    if (diffMins < 60) return `Il y a ${diffMins}m`;
+    if (diffHours < 24) return `Il y a ${diffHours}h`;
+    if (diffDays < 7) return `Il y a ${diffDays}j`;
+    return date.toLocaleDateString('fr-FR');
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl p-6 space-y-5"
+      style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+    >
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+            <Zap className="w-5 h-5 text-blue-500" />
+          </div>
+          <div>
+            <h2 className="font-grotesk font-semibold text-base">Appareils connectés</h2>
+            <p className="font-inter text-xs text-muted-foreground">{devices.length} appareil{devices.length > 1 ? 's' : ''} actif{devices.length > 1 ? 's' : ''}</p>
+          </div>
+        </div>
+        {otherDevices.length > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => disconnectAllMutation.mutate()}
+            disabled={disconnectAllMutation.isPending}
+            className="gap-2"
+          >
+            {disconnectAllMutation.isPending ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <LogOut className="w-3.5 h-3.5" />
+            )}
+            Déco tout
+          </Button>
+        )}
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : devices.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="font-inter text-sm text-muted-foreground">Aucun appareil actif</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {/* Current Device */}
+          {currentDevice && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-xl border border-green-400/30 bg-green-400/10"
+            >
+              <div className="flex items-start gap-4">
+                <div className="mt-1">
+                  {React.createElement(getDeviceIcon(currentDevice.device_type), {
+                    className: 'w-5 h-5 text-green-500',
+                  })}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-grotesk font-semibold text-sm">{currentDevice.device_name}</p>
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/20 border border-green-500/30 text-[9px] font-mono text-green-600">
+                      <CheckCircle className="w-2.5 h-2.5" /> Cet appareil
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    {currentDevice.ip_address && (
+                      <p className="font-inter text-xs text-muted-foreground">
+                        IP: <span className="font-mono">{currentDevice.ip_address}</span>
+                      </p>
+                    )}
+                    {currentDevice.city && (
+                      <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {currentDevice.city}, {currentDevice.country}
+                      </p>
+                    )}
+                    <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      Connecté: {new Date(currentDevice.created_at).toLocaleDateString('fr-FR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Other Devices */}
+          <AnimatePresence>
+            {otherDevices.map((device, i) => (
+              <motion.div
+                key={device.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ delay: i * 0.05 }}
+                className="p-4 rounded-xl border border-border bg-secondary/30 hover:bg-secondary/50 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="mt-1">
+                      {React.createElement(getDeviceIcon(device.device_type), {
+                        className: 'w-5 h-5 text-muted-foreground',
+                      })}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-grotesk font-semibold text-sm truncate">{device.device_name}</p>
+                      <div className="space-y-1 mt-1">
+                        {device.ip_address && (
+                          <p className="font-inter text-xs text-muted-foreground">
+                            IP: <span className="font-mono">{device.ip_address}</span>
+                          </p>
+                        )}
+                        {device.city && (
+                          <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {device.city}, {device.country}
+                          </p>
+                        )}
+                        <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {formatDate(device.last_activity || device.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setConfirmDisconnect(device.id)}
+                    className="gap-2 text-red-400 hover:text-red-500 hover:bg-red-500/10"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+
+                {/* Confirmation */}
+                <AnimatePresence>
+                  {confirmDisconnect === device.id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-3 pt-3 border-t border-border/50 space-y-2"
+                    >
+                      <p className="font-inter text-xs text-muted-foreground">
+                        Êtes-vous sûr? Cet appareil sera déconnecté.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => disconnectMutation.mutate(device.id)}
+                          disabled={disconnectMutation.isPending}
+                          className="flex-1 text-xs"
+                        >
+                          {disconnectMutation.isPending ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            'Déconnecter'
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setConfirmDisconnect(null)}
+                          className="flex-1 text-xs"
+                        >
+                          Annuler
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* Info */}
+      <div className="p-3 rounded-lg bg-blue-400/10 border border-blue-400/20">
+        <p className="font-inter text-xs text-blue-600">
+          💡 Votre session actuelle est automatiquement marquée. Vous pouvez déconnecter les autres appareils ou les marquer comme de confiance.
+        </p>
+      </div>
+    </motion.div>
+  );
+}

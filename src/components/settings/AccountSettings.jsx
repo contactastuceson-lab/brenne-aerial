@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, Upload, Loader2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,20 +23,32 @@ export default function AccountSettings({ user }) {
   const [passwordErrors, setPasswordErrors] = useState({});
   const [showPasswordForm, setShowPasswordForm] = useState(false);
 
+  // Update formData when user changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        display_name: user.display_name || '',
+        bio: user.bio || '',
+      });
+    }
+  }, [user]);
+
   const updateMutation = useMutation({
     mutationFn: async (updates) => {
-      await base44.auth.updateMe(updates);
-      await base44.functions.invoke('logAuditAction', {
+      // Use the backend function instead of direct auth update
+      const result = await base44.functions.invoke('updateAccountInfo', {
         user_email: user.email,
-        action_type: 'profile_updated',
-        description: 'Profil mis à jour',
-        is_sensitive: false,
+        ...updates,
       });
+      return result;
     },
     onSuccess: () => {
       toast.success('Profil mis à jour');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Update error:', error);
       toast.error('Erreur lors de la mise à jour');
     },
   });
@@ -53,19 +65,20 @@ export default function AccountSettings({ user }) {
         throw err;
       }
 
-      // Verify current password and update
-      await base44.auth.changePassword({
+      // Validate password strength
+      const validation = validatePassword(passwords.new_password);
+      if (Object.keys(validation).length > 0) {
+        const err = new Error('Le mot de passe ne respecte pas les critères de sécurité');
+        throw err;
+      }
+
+      // Call backend function to change password
+      const result = await base44.functions.invoke('changeUserPassword', {
+        user_email: user.email,
         current_password: passwords.current_password,
         new_password: passwords.new_password,
       });
-
-      // Log the password change
-      await base44.functions.invoke('logAuditAction', {
-        user_email: user.email,
-        action_type: 'password_changed',
-        description: 'Mot de passe modifié',
-        is_sensitive: true,
-      });
+      return result;
     },
     onSuccess: () => {
       toast.success('Mot de passe mis à jour');
@@ -78,6 +91,7 @@ export default function AccountSettings({ user }) {
       setPasswordErrors({});
     },
     onError: (error) => {
+      console.error('Password error:', error);
       toast.error(error.message || 'Erreur lors de la mise à jour du mot de passe');
       setPasswordErrors({
         submit: error.message,

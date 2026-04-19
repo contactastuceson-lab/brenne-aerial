@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Bell, Mail, Smartphone, MessageSquare, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,57 +6,71 @@ import { toast } from 'sonner';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
+const getDefaultPrefs = () => ({
+  email_notifications: true,
+  push_notifications: true,
+  quote_updates: true,
+  appointment_reminders: true,
+  new_messages: true,
+  badge_awarded: true,
+  donation_updates: true,
+  newsletter: false,
+  marketing_emails: false,
+});
+
 export default function NotificationSettings({ user }) {
   const queryClient = useQueryClient();
 
   // Fetch notification preferences
-  const { data: preferences = {} } = useQuery({
+  const { data: fetchedPrefs = null } = useQuery({
     queryKey: ['notification-preferences', user?.email],
     queryFn: async () => {
       try {
-        const prefs = await base44.entities.AppSettings.filter({
-          key: `notif_prefs_${user.email}`,
+        const result = await base44.functions.invoke('getUserPreferences', {
+          user_email: user.email,
         });
-        return prefs.length > 0 ? JSON.parse(prefs[0].value) : getDefaultPrefs();
-      } catch {
-        return getDefaultPrefs();
+        return result.preferences || null;
+      } catch (error) {
+        console.error('Error fetching preferences:', error);
+        return null;
       }
     },
     enabled: !!user?.email,
   });
 
-  const [localPrefs, setLocalPrefs] = useState(preferences);
+  const [localPrefs, setLocalPrefs] = useState(getDefaultPrefs());
 
-  const getDefaultPrefs = () => ({
-    email_notifications: true,
-    push_notifications: true,
-    quote_updates: true,
-    appointment_reminders: true,
-    new_messages: true,
-    badge_awarded: true,
-    donation_updates: true,
-    newsletter: false,
-    marketing_emails: false,
-  });
+  // Load fetched preferences
+  useEffect(() => {
+    if (fetchedPrefs) {
+      setLocalPrefs({
+        email_notifications: fetchedPrefs.email_notifications !== undefined ? fetchedPrefs.email_notifications : true,
+        push_notifications: fetchedPrefs.push_notifications !== undefined ? fetchedPrefs.push_notifications : true,
+        quote_updates: fetchedPrefs.quote_updates !== undefined ? fetchedPrefs.quote_updates : true,
+        appointment_reminders: fetchedPrefs.appointment_reminders !== undefined ? fetchedPrefs.appointment_reminders : true,
+        new_messages: fetchedPrefs.new_messages !== undefined ? fetchedPrefs.new_messages : true,
+        badge_awarded: fetchedPrefs.badge_awarded !== undefined ? fetchedPrefs.badge_awarded : true,
+        donation_updates: fetchedPrefs.donation_updates !== undefined ? fetchedPrefs.donation_updates : true,
+        newsletter: fetchedPrefs.newsletter || false,
+        marketing_emails: fetchedPrefs.marketing_emails || false,
+      });
+    }
+  }, [fetchedPrefs]);
 
   const saveMutation = useMutation({
     mutationFn: async (newPrefs) => {
-      // Save preferences (implement based on your backend)
-      setLocalPrefs(newPrefs);
-      
-      // Log this action
-      await base44.functions.invoke('logAuditAction', {
+      const result = await base44.functions.invoke('updateUserPreferences', {
         user_email: user.email,
-        action_type: 'notification_preferences_changed',
-        description: 'Préférences de notifications mises à jour',
-        is_sensitive: false,
+        preferences: newPrefs,
       });
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
       toast.success('Préférences sauvegardées');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error saving preferences:', error);
       toast.error('Erreur lors de la sauvegarde');
     },
   });

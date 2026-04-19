@@ -7,6 +7,7 @@ import PageNotFound from "./lib/PageNotFound";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import UserNotRegisteredError from "@/components/UserNotRegisteredError";
+import PreferencesApplier from "@/components/settings/PreferencesApplier";
 
 // Layout
 import PublicLayout from "@/components/layout/PublicLayout";
@@ -76,7 +77,7 @@ import DonationPage from "@/pages/DonationPage";
 import DonationSuccessPage from "@/pages/DonationSuccessPage";
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -95,7 +96,11 @@ const AuthenticatedApp = () => {
   if (authError?.type === "auth_required") { navigateToLogin(); return null; }
 
   return (
-    <Routes>
+    <>
+      {/* Apply user preferences globally */}
+      <PreferencesApplier user={user} />
+      
+      <Routes>
       {/* Public */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
@@ -166,7 +171,8 @@ const AuthenticatedApp = () => {
       </Route>
 
       <Route path="*" element={<PageNotFound />} />
-    </Routes>
+      </Routes>
+    </>
   );
 };
 

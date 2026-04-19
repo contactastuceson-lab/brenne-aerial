@@ -1,12 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Settings, Globe, Eye, Palette, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 export default function PreferencesSettings({ user }) {
+  const queryClient = useQueryClient();
+  
+  // Fetch user preferences
+  const { data: fetchedPrefs = null } = useQuery({
+    queryKey: ['user-preferences', user?.email],
+    queryFn: async () => {
+      const result = await base44.functions.invoke('getUserPreferences', {
+        user_email: user.email,
+      });
+      return result.preferences || null;
+    },
+    enabled: !!user?.email,
+  });
+
   const [preferences, setPreferences] = useState({
     language: 'fr',
     theme: 'auto',
@@ -14,28 +28,59 @@ export default function PreferencesSettings({ user }) {
     show_online_status: true,
   });
 
+  // Load fetched preferences
+  useEffect(() => {
+    if (fetchedPrefs) {
+      setPreferences({
+        language: fetchedPrefs.language || 'fr',
+        theme: fetchedPrefs.theme || 'auto',
+        compact_mode: fetchedPrefs.compact_mode || false,
+        show_online_status: fetchedPrefs.show_online_status !== undefined ? fetchedPrefs.show_online_status : true,
+      });
+    }
+  }, [fetchedPrefs]);
+
   const saveMutation = useMutation({
     mutationFn: async (newPrefs) => {
-      // Save preferences
-      await base44.auth.updateMe({
+      // Save preferences to database
+      const result = await base44.functions.invoke('updateUserPreferences', {
+        user_email: user.email,
         preferences: newPrefs,
       });
-
-      // Log this action
-      await base44.functions.invoke('logAuditAction', {
-        user_email: user.email,
-        action_type: 'preferences_changed',
-        description: 'Préférences générales mises à jour',
-        is_sensitive: false,
-      });
+      return result;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-preferences'] });
       toast.success('Préférences sauvegardées');
+      // Apply theme change immediately
+      applyTheme(preferences.theme);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error saving preferences:', error);
       toast.error('Erreur lors de la sauvegarde');
     },
   });
+
+  // Apply theme to document
+  const applyTheme = (theme) => {
+    const html = document.documentElement;
+    if (theme === 'light') {
+      html.classList.remove('dark');
+      html.style.colorScheme = 'light';
+    } else if (theme === 'dark') {
+      html.classList.add('dark');
+      html.style.colorScheme = 'dark';
+    } else {
+      // auto - use system preference
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        html.classList.add('dark');
+        html.style.colorScheme = 'dark';
+      } else {
+        html.classList.remove('dark');
+        html.style.colorScheme = 'light';
+      }
+    }
+  };
 
   const handleChange = (key, value) => {
     setPreferences(prev => ({ ...prev, [key]: value }));

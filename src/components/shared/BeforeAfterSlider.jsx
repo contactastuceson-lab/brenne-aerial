@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import { GripVertical } from 'lucide-react';
 
 export default function BeforeAfterSlider({ beforeUrl, afterUrl, beforeLabel = 'Avant', afterLabel = 'Après' }) {

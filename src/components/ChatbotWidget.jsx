@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Loader2, Bot, ChevronRight, RotateCcw, Maximize2, Minimize2, Sparkles } from 'lucide-react';
+import { X, Send, Loader2, ChevronRight, RotateCcw, Maximize2, Minimize2, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';

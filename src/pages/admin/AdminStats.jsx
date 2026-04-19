@@ -3,7 +3,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { FileText, Users, MessageSquare, Calendar, TrendingUp, Clock } from 'lucide-react';
+import { FileText, Users, MessageSquare, Calendar } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['hsl(68 100% 50%)', 'hsl(174 72% 51%)', 'hsl(0 72% 51%)', 'hsl(240 5% 65%)'];

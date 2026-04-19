@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Users, Plus, Search, Pencil, Trash2, Eye, X, Save, Loader2, MapPin, Phone, Calendar } from 'lucide-react';
+import { Users, Plus, Search, Pencil, Trash2, Eye, X, Save, Loader2 } from 'lucide-react';
 import { POLES, JOB_ROLES, ALL_PERMISSIONS } from '@/lib/employeeRoles';
-import { getAssignableRoles, ROLE_CONFIG } from '@/lib/roles';
+import { getAssignableRoles } from '@/lib/roles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

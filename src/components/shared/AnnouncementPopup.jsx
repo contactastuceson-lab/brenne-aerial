@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info, AlertTriangle, CheckCircle, AlertCircle, Megaphone } from 'lucide-react';
+import { X, Info, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // Parse text and make URLs + emails clickable

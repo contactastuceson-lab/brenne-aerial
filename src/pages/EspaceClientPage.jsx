@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { usePageEnabled } from '@/hooks/usePageEnabled';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion } from 'framer-motion';
-import { FolderOpen, Download, FileVideo, FileImage, FileText, File, Lock, LogIn, Calendar, ChevronDown, ChevronUp, Play } from 'lucide-react';
+import { FolderOpen, Download, FileVideo, FileImage, FileText, File, Lock, LogIn, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';

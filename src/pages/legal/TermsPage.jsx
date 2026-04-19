@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import {
   FileText, Globe, Plane, UserCheck, ShoppingCart, CreditCard,
   Copyright, AlertTriangle, Scale, ChevronDown, ChevronUp, Mail,
-  ExternalLink, CheckCircle, Shield, Star, Clock, Wrench
+  ExternalLink, CheckCircle, Shield
 } from 'lucide-react';
 
 const ACCENT_COLORS = [

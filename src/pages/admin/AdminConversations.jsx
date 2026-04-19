@@ -2,9 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
-  MessageCircle, Search, Lock, Eye, Trash2, Users, Clock,
-  CheckCircle, XCircle, AlertTriangle, ChevronLeft, Copy,
-  Filter, TrendingUp, MessageSquare, Ban, Flag
+  MessageCircle, Search, Lock, Eye, Trash2, Clock,
+  CheckCircle, XCircle, ChevronLeft, Copy, MessageSquare
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

@@ -6,9 +6,6 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Clock, Eye, ArrowRight, Search, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 const DEMO_POSTS = [
   { id: 'b1', title: 'Comment choisir votre prestataire drone : 5 critères essentiels', excerpt: 'Certifications DGAC, équipement, expérience, assurance... voici tout ce que vous devez vérifier avant de signer.', category: 'conseil', cover_url: 'https://images.unsplash.com/photo-1579829366248-204fe8413f31?w=800&q=60', author: 'Enor Lefoulon Meyer', reading_time: 5, views: 1247, created_date: '2024-11-15' },

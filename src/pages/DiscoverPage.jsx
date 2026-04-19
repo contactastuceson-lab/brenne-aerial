@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   UserPlus, UserCheck, Search, MessageCircle, Users,
-  CheckCircle, Star, Award, Zap, Shield, Flag, MapPin, Briefcase, Phone, Calendar
+  CheckCircle, Star, Award, Zap, Shield, Flag, MapPin, Briefcase
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -99,6 +99,12 @@ export default function DiscoverPage() {
     enabled: !!user?.email,
   });
 
+  const { data: allFollows = [] } = useQuery({
+    queryKey: ['all-follows'],
+    queryFn: () => base44.entities.Follow.list(),
+    enabled: !!user,
+  });
+
   const { data: employees = [] } = useQuery({
     queryKey: ['public-employees'],
     queryFn: () => base44.entities.Employee.filter({ is_public: true }),
@@ -145,6 +151,11 @@ export default function DiscoverPage() {
 
   const followingEmails = new Set(follows.map(f => f.following_email));
   const requestedEmails = new Set(myRequests.map(r => r.recipient_email));
+  
+  // Helper function to count followers for a user
+  const getFollowersCount = (email) => {
+    return allFollows.filter(f => f.following_email === email).length;
+  };
 
   const filtered = allUsers
     .filter(u => u.email !== user.email)
@@ -242,11 +253,16 @@ export default function DiscoverPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-grotesk font-semibold text-sm truncate">{emp.full_name}</p>
                       <p className="font-inter text-xs text-primary truncate">{emp.job_title}</p>
-                      {emp.location && (
-                        <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                          <MapPin className="w-2.5 h-2.5 flex-shrink-0" /> {emp.location}
+                      <div className="flex items-center gap-3 mt-0.5">
+                        {emp.location && (
+                          <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-2.5 h-2.5 flex-shrink-0" /> {emp.location}
+                          </p>
+                        )}
+                        <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
+                          <Users className="w-2.5 h-2.5 flex-shrink-0" /> {getFollowersCount(emp.email || emp.user_email)} abonné{getFollowersCount(emp.email || emp.user_email) > 1 ? 's' : ''}
                         </p>
-                      )}
+                      </div>
                     </div>
                     {/* Pole badge */}
                     {pole && (
@@ -340,11 +356,16 @@ export default function DiscoverPage() {
                       >{profile.full_name}</h3>
                       <VerificationIcons verifications={profile.verifications} />
                     </div>
-                    {profile.location && (
-                      <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1 mb-1">
-                        <MapPin className="w-2.5 h-2.5" /> {profile.location}
+                    <div className="flex flex-col gap-1 mb-2">
+                      {profile.location && (
+                        <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
+                          <MapPin className="w-2.5 h-2.5" /> {profile.location}
+                        </p>
+                      )}
+                      <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
+                        <Users className="w-2.5 h-2.5" /> {getFollowersCount(profile.email)} abonné{getFollowersCount(profile.email) > 1 ? 's' : ''}
                       </p>
-                    )}
+                    </div>
 
                     {profile.role && (
                       <span className="inline-block font-mono text-[9px] text-primary/80 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full mb-2 capitalize">

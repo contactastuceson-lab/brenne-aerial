@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Check, Star, ArrowRight, Building2, HardHat } from 'lucide-react';
+import { Check, ArrowRight, Building2, HardHat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const PACKS = [

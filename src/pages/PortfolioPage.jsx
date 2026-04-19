@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, ExternalLink, Filter, Star } from 'lucide-react';
+import { Play, Filter } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { getYoutubeThumbnail } from '@/lib/droneUtils';

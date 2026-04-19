@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { usePageEnabled } from '@/hooks/usePageEnabled';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Calculator, CheckCircle, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, Calculator, CheckCircle, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';

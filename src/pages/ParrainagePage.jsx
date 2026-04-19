@@ -2,15 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { usePageEnabled } from '@/hooks/usePageEnabled';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion } from 'framer-motion';
-import { Gift, Users, CheckCircle, ArrowRight, Star, Clock, LogIn, Loader2, Trophy } from 'lucide-react';
+import { Gift, Users, CheckCircle, ArrowRight, Clock, LogIn, Loader2, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 const HOW_IT_WORKS = [
   { step: '01', title: 'Vous parrainez', desc: 'Vous nous présentez un ami, collègue ou client qui a besoin de nos services drone.' },

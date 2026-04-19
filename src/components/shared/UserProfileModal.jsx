@@ -1,6 +1,8 @@
 import React from 'react';
-import { X, MapPin, MessageCircle, Star, UserCheck, Award, Shield, Zap, CheckCircle } from 'lucide-react';
+import { X, MapPin, MessageCircle, Star, UserCheck, Award, Shield, Zap, CheckCircle, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import BadgePopup from '@/components/ui/BadgePopup';
 import { Link } from 'react-router-dom';
@@ -19,6 +21,12 @@ const BADGE_CONFIG = {
 };
 
 export default function UserProfileModal({ profile, onClose }) {
+  const { data: followers = [] } = useQuery({
+    queryKey: ['followers', profile?.email],
+    queryFn: () => base44.entities.Follow.filter({ following_email: profile.email }),
+    enabled: !!profile?.email,
+  });
+
   if (!profile) return null;
   const isSupreme = profile.verifications?.includes('supreme');
 
@@ -101,6 +109,14 @@ export default function UserProfileModal({ profile, onClose }) {
               })}
             </div>
           )}
+
+          <div className="flex items-center gap-2 py-2 px-2.5 rounded-lg bg-secondary/50 mb-4 border border-border/50">
+            <Users className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+            <span className="font-grotesk font-semibold text-sm">{followers.length}</span>
+            <span className="font-inter text-xs text-muted-foreground">
+              abonné{followers.length > 1 ? 's' : ''}
+            </span>
+          </div>
 
           <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`} onClick={onClose}>
             <Button className="w-full gap-2" size="sm"

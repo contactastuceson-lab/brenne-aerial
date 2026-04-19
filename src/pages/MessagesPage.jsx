@@ -1,13 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, ArrowLeft, Check, X, MessageCircle, Clock, Users } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { useQueryClient } from '@tanstack/react-query';
+import { MessageCircle, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import ConversationList from '@/components/messaging/ConversationList';
 import MessageThread from '@/components/messaging/MessageThread';

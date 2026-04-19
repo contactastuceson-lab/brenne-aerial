@@ -1,8 +1,16 @@
 import React from 'react';
-import { X, MapPin, Phone, Calendar, Shield } from 'lucide-react';
+import { X, MapPin, Phone, Calendar, Shield, Users } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { POLES, JOB_ROLES, ALL_PERMISSIONS } from '@/lib/employeeRoles';
 
 export default function EmployeeProfileModal({ employee, onClose }) {
+  const { data: followers = [] } = useQuery({
+    queryKey: ['followers', employee?.email, employee?.user_email],
+    queryFn: () => base44.entities.Follow.filter({ following_email: employee.email || employee.user_email }),
+    enabled: !!employee?.email || !!employee?.user_email,
+  });
+
   if (!employee) return null;
   const pole = POLES[employee.pole];
   const jobRole = JOB_ROLES[employee.job_role_key];
@@ -47,7 +55,7 @@ export default function EmployeeProfileModal({ employee, onClose }) {
 
           <div className="px-4 pb-5 space-y-3">
             {/* Meta info */}
-            {(employee.location || employee.phone || employee.hire_date) && (
+            {(employee.location || employee.phone || employee.hire_date || followers.length > 0) && (
               <div className="flex flex-wrap gap-x-4 gap-y-1">
                 {employee.location && (
                   <span className="flex items-center gap-1 font-inter text-[11px] text-muted-foreground">
@@ -62,6 +70,11 @@ export default function EmployeeProfileModal({ employee, onClose }) {
                 {employee.hire_date && (
                   <span className="flex items-center gap-1 font-inter text-[11px] text-muted-foreground">
                     <Calendar className="w-3 h-3" /> {new Date(employee.hire_date).toLocaleDateString('fr-FR')}
+                  </span>
+                )}
+                {followers.length > 0 && (
+                  <span className="flex items-center gap-1 font-inter text-[11px] text-muted-foreground">
+                    <Users className="w-3 h-3" /> {followers.length} abonné{followers.length > 1 ? 's' : ''}
                   </span>
                 )}
               </div>

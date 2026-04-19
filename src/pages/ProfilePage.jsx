@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useAnimationFrame } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Camera, Save, Loader2, MapPin, Globe, Phone,
-  CheckCircle, Shield, Star, Zap, Award, UserCheck, Trash2, AlertTriangle, Heart, Crown, Sparkles
+  CheckCircle, Shield, Star, Zap, Award, UserCheck, Heart, Crown, Sparkles, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,6 +70,12 @@ export default function ProfilePage() {
       setUser(updated);
       toast.success('Profil mis à jour !');
     },
+  });
+
+  const { data: followers = [] } = useQuery({
+    queryKey: ['my-followers', user?.email],
+    queryFn: () => base44.entities.Follow.filter({ following_email: user.email }),
+    enabled: !!user?.email,
   });
 
   const handleAvatarUpload = async (e) => {
@@ -269,6 +275,21 @@ export default function ProfilePage() {
               })}
             </div>
           )}
+
+          {/* Followers stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 flex items-center gap-3 py-3 px-3 rounded-xl bg-secondary/50 border border-border"
+          >
+            <div className="flex items-center gap-1.5 text-foreground">
+              <Users className="w-4 h-4 text-primary" />
+              <span className="font-grotesk font-semibold">{followers.length}</span>
+              <span className="font-inter text-sm text-muted-foreground">
+                abonné{followers.length > 1 ? 's' : ''}
+              </span>
+            </div>
+          </motion.div>
         </div>
 
         {/* Form */}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { LayoutDashboard, MessageCircle, Compass, FileText, BookOpen, Calendar, Save, Loader2, Globe, Lock, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, MessageCircle, Compass, FileText, BookOpen, Calendar, Save, Loader2, Globe, AlertTriangle } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';

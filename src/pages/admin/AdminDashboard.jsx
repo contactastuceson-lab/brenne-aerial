@@ -2,12 +2,10 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { FileText, Users, Calendar, MessageSquare, TrendingUp, Clock, CheckCircle, XCircle, Download, Flag, Percent } from 'lucide-react';
+import { FileText, Users, Calendar, MessageSquare, TrendingUp, Clock, CheckCircle, Download, Flag, Percent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { formatPrice, SERVICE_PRICES } from '@/lib/droneUtils';
 import { Link } from 'react-router-dom';
 

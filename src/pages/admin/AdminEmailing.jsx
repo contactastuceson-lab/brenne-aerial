@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
-  Mail, Send, Users, User, Loader2, CheckCircle, Paperclip, X,
-  ImageIcon, Plus, Search, UserCheck, ChevronDown
+  Mail, Send, Users, Loader2, CheckCircle, Paperclip, X,
+  ImageIcon, Search, UserCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -10,7 +10,6 @@ import { ChevronLeft, ChevronRight, Calendar, Clock, Check, Loader2 } from 'luci
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import StatusBadge from '@/components/ui/StatusBadge';
 import { toast } from 'sonner';
 import SchedulerChat from '@/components/planning/SchedulerChat';
 

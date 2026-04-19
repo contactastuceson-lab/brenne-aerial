@@ -4,8 +4,8 @@ import {
   X, Loader2, Check, Award, AlertCircle, ChevronRight, ChevronLeft,
   CheckCircle, BadgeCheck, Building2, Gem, ShieldCheck,
   Link2, FileText, Users, Star, Camera, Globe, User, Phone,
-  MapPin, Briefcase, BookOpen, Trophy, Heart, Linkedin, Instagram,
-  Youtube, ExternalLink, Upload, Calendar, Hash
+  MapPin, Briefcase, Trophy, Heart, Linkedin, Instagram,
+  Youtube, ExternalLink, Calendar, Hash
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

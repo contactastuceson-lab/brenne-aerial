@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle, Clock, XCircle, Award } from 'lucide-react';
+import { CheckCircle, Clock, Award } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 

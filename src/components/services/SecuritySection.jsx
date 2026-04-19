@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Award, FileCheck, BadgeCheck, Plane } from 'lucide-react';
+import { ShieldCheck, FileCheck, BadgeCheck, Plane } from 'lucide-react';
 
 const ITEMS = [
   {

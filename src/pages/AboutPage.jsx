@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Crown, Target, Rocket, Shield, Users, Award, Plane, ArrowRight } from 'lucide-react';
+import { Crown, Target, Rocket, Shield, Users, Award, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BadgeChip from '@/components/ui/BadgeChip';
 

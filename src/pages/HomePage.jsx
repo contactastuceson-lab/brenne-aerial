@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, Camera, Building2, HardHat, Video, Wifi, ChevronDown, Star, Award, Zap, Mail, FolderOpen, ScanSearch, Users } from 'lucide-react';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Settings, Power, AlertTriangle, Save, Loader2, Wrench, Eye, Plane, Plus, Trash2 } from 'lucide-react';
+import { Settings, AlertTriangle, Save, Loader2, Wrench, Eye, Plane } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';

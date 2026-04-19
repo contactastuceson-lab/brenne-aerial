@@ -3,11 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Search, CheckCircle, ShieldCheck, Award, Star, Zap, Shield, Users, Crown, BadgeCheck, Gem, Building2 } from 'lucide-react';
 import VerificationChip from '@/components/ui/VerificationChip';
-import VerificationIcons from '@/components/ui/VerificationIcon';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { toast } from 'sonner';
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Bell, User, MessageCircle, Compass, LayoutDashboard, LogOut, ChevronDown, FolderOpen, Warehouse, Building2, Users, Shield, Building, ZoomIn, SlidersHorizontal, ArrowLeftRight } from 'lucide-react';
+import { Menu, X, Bell, User, MessageCircle, Compass, LayoutDashboard, LogOut, ChevronDown, FolderOpen, Warehouse, Building2, Users, Shield, Building, ZoomIn, ArrowLeftRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';

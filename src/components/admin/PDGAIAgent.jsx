@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import ReactMarkdown from 'react-markdown';
 import {
-  Sparkles, Send, Loader2, RotateCcw, ChevronDown, ChevronRight,
+  Sparkles, Send, Loader2, ChevronDown, ChevronRight,
   Terminal, Zap, Users, BarChart3, FileText, Megaphone, Mail, Flag,
   Plus, Trash2, MessageSquare, Clock
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';

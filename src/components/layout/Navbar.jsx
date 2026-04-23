@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
 
 const EXTRA_LINKS = [
+  { to: '/forum',           label: 'Forum',                 icon: MessageCircle,   desc: 'Communauté & discussions' },
   { to: '/espace-client',   label: 'Espace Client',         icon: FolderOpen,      desc: 'Vos fichiers & rapports' },
   { to: '/garage',          label: 'Garage Drones',         icon: Warehouse,       desc: 'Notre flotte' },
   { to: '/partenaires',     label: 'Partenaires',           icon: Building2,       desc: 'Notre réseau' },

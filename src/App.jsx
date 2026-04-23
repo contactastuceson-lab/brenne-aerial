@@ -75,6 +75,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import CertificationSuccessPage from "@/pages/CertificationSuccessPage";
 import DonationPage from "@/pages/DonationPage";
 import DonationSuccessPage from "@/pages/DonationSuccessPage";
+import ForumPage from "@/pages/ForumPage";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
@@ -134,6 +135,7 @@ const AuthenticatedApp = () => {
         <Route path="/partenaires" element={<PartenairesPage />} />
         <Route path="/parrainage" element={<ParrainagePage />} />
         <Route path="/avant-apres" element={<BeforeAfterPage />} />
+        <Route path="/forum" element={<ForumPage />} />
       </Route>
 
       {/* Admin */}

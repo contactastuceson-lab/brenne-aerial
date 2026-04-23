@@ -1,0 +1,9 @@
+export { default as Forum } from './Forum';
+export { default as ForumTopicCard } from './ForumTopicCard';
+export { default as ForumTopicDetail } from './ForumTopicDetail';
+export { default as ForumTopicList } from './ForumTopicList';
+export { default as ForumPostItem } from './ForumPostItem';
+export { default as ForumFilters } from './ForumFilters';
+export { default as CreateForumTopic } from './CreateForumTopic';
+export { default as CreateForumPost } from './CreateForumPost';
+export { default as UserBadgeProfile } from './UserBadgeProfile';

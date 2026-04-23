@@ -1,0 +1,54 @@
+{
+  "name": "ForumPost",
+  "type": "object",
+  "description": "Réponse dans un sujet du forum",
+  "properties": {
+    "topic_id": {
+      "type": "string",
+      "description": "ID du sujet parent (référence ForumTopic)"
+    },
+    "content": {
+      "type": "string",
+      "description": "Contenu de la réponse"
+    },
+    "author": {
+      "type": "string",
+      "description": "ID de l'auteur (référence User)"
+    },
+    "is_solution": {
+      "type": "boolean",
+      "default": false,
+      "description": "Marquer comme solution au problème"
+    },
+    "likes_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de likes"
+    },
+    "liked_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs des utilisateurs qui ont aimé"
+    },
+    "edited": {
+      "type": "boolean",
+      "default": false,
+      "description": "Le message a été édité"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "topic_id",
+    "content",
+    "author"
+  ]
+}

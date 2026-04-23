@@ -11,22 +11,37 @@ export default function ActiveDevices({ user }) {
   const [confirmDisconnect, setConfirmDisconnect] = useState(null);
 
   // Fetch active device sessions using backend function
-  const { data: devices = [], isLoading } = useQuery({
+  const { data: devices = [], isLoading, error: fetchError } = useQuery({
     queryKey: ['active-devices', user?.email],
     queryFn: async () => {
       try {
+        console.log('[ActiveDevices] Fetching devices for:', user.email);
         const result = await base44.functions.invoke('getDeviceSessions', {
           user_email: user.email,
         });
+        console.log('[ActiveDevices] Got result:', result);
         return result.sessions || [];
       } catch (error) {
-        console.error('Error fetching devices:', error);
-        return [];
+        console.error('[ActiveDevices] Error fetching via function:', error);
+        // Fallback: query entity directly
+        try {
+          console.log('[ActiveDevices] Trying entity fallback...');
+          const sessions = await base44.entities.DeviceSession.filter({ 
+            user_email: user.email 
+          });
+          console.log('[ActiveDevices] Fallback got:', sessions);
+          return sessions || [];
+        } catch (fallbackError) {
+          console.error('[ActiveDevices] Fallback also failed:', fallbackError);
+          return [];
+        }
       }
     },
     enabled: !!user?.email,
     refetchInterval: 60000, // Refresh every minute
   });
+
+  console.log('[ActiveDevices] State:', { devicesCount: devices.length, isLoading, fetchError });
 
   const currentDevice = devices.find(d => d.is_current);
   const otherDevices = devices.filter(d => !d.is_current);

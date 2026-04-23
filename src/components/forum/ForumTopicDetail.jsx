@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44Client } from '@/api/base44Client';
+import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { ArrowLeft, Lock, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,10 +19,7 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
   const { data: topic, isLoading: topicLoading } = useQuery({
     queryKey: ['forumTopic', topicId],
     queryFn: async () => {
-      const response = await base44Client.records.get({
-        table: 'ForumTopic',
-        id: topicId,
-      });
+      const response = await base44.entities.ForumTopic.get(topicId);
       return response;
     },
     enabled: !!topicId,
@@ -32,13 +29,10 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
   const { data: posts = [], isLoading: postsLoading } = useQuery({
     queryKey: ['forumPosts', topicId],
     queryFn: async () => {
-      const response = await base44Client.records.filter({
-        table: 'ForumPost',
-        where: {
-          topic_id: topicId,
-        },
+      const response = await base44.entities.ForumPost.filter({
+        topic_id: topicId,
       });
-      return response.records || [];
+      return response || [];
     },
     enabled: !!topicId,
   });
@@ -46,24 +40,16 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
   // Increment view count
   useEffect(() => {
     if (topic && user) {
-      base44Client.records.update({
-        table: 'ForumTopic',
-        id: topicId,
-        data: {
-          views_count: (topic.views_count || 0) + 1,
-        },
+      base44.entities.ForumTopic.update(topicId, {
+        views_count: (topic.views_count || 0) + 1,
       });
     }
   }, [topicId, user]);
 
   const markSolutionMutation = useMutation({
     mutationFn: async ({ postId, isSolution }) => {
-      await base44Client.records.update({
-        table: 'ForumPost',
-        id: postId,
-        data: {
-          is_solution: !isSolution,
-        },
+      await base44.entities.ForumPost.update(postId, {
+        is_solution: !isSolution,
       });
     },
     onSuccess: () => {

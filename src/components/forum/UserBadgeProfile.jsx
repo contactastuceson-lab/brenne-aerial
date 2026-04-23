@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44Client } from '@/api/base44Client';
+import { base44 } from '@/api/base44Client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   HoverCard,
@@ -16,7 +16,7 @@ const UserBadgeProfile = ({ userId, small = false }) => {
   const { data: user, isLoading } = useQuery({
     queryKey: ['user', userId],
     queryFn: async () => {
-      const response = await base44Client.records.get({ table: 'User', id: userId });
+      const response = await base44.entities.User.get(userId);
       return response;
     },
     enabled: !!userId,

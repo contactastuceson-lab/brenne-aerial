@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44Client } from '@/api/base44Client';
+import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { MessageSquare, Heart, Lock, Pin, TrendingUp } from 'lucide-react';
 import UserBadgeProfile from './UserBadgeProfile';

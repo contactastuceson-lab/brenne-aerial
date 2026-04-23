@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44Client } from '@/api/base44Client';
+import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,9 +35,7 @@ const CreateForumTopic = ({ onSuccess }) => {
   const createMutation = useMutation({
     mutationFn: async () => {
       const now = new Date().toISOString();
-      const response = await base44Client.records.create({
-        table: 'ForumTopic',
-        data: {
+      const response = await base44.entities.ForumTopic.create({
           title,
           content,
           category,
@@ -45,11 +43,10 @@ const CreateForumTopic = ({ onSuccess }) => {
           tags: tagList,
           views_count: 0,
           replies_count: 0,
-          is_pinned: false,
-          is_locked: false,
-          created_at: now,
-          updated_at: now,
-        },
+        is_pinned: false,
+        is_locked: false,
+        created_at: now,
+        updated_at: now,
       });
       return response;
     },

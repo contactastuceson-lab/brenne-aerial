@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44Client } from '@/api/base44Client';
+import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,29 +15,22 @@ const CreateForumPost = ({ topicId, currentRepliesCount = 0, onSuccess }) => {
   const createMutation = useMutation({
     mutationFn: async () => {
       const now = new Date().toISOString();
-      const response = await base44Client.records.create({
-        table: 'ForumPost',
-        data: {
+      const response = await base44.entities.ForumPost.create({
           topic_id: topicId,
           content,
           author: user.id,
           is_solution: false,
           likes_count: 0,
           liked_by: [],
-          edited: false,
-          created_at: now,
-          updated_at: now,
-        },
+        edited: false,
+        created_at: now,
+        updated_at: now,
       });
 
       // Update topic replies count
-      await base44Client.records.update({
-        table: 'ForumTopic',
-        id: topicId,
-        data: {
-          replies_count: (currentRepliesCount || 0) + 1,
-          last_reply_at: now,
-        },
+      await base44.entities.ForumTopic.update(topicId, {
+        replies_count: (currentRepliesCount || 0) + 1,
+        last_reply_at: now,
       });
 
       return response;

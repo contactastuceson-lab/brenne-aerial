@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44Client } from '@/api/base44Client';
+import { base44 } from '@/api/base44Client';
 import ForumTopicCard from './ForumTopicCard';
 import ForumFilters from './ForumFilters';
 import CreateForumTopic from './CreateForumTopic';
@@ -16,10 +16,8 @@ const ForumTopicList = ({ selectedTopicId, onSelectTopic }) => {
   const { data: topics = [], isLoading, error } = useQuery({
     queryKey: ['forumTopics'],
     queryFn: async () => {
-      const response = await base44Client.records.filter({
-        table: 'ForumTopic',
-      });
-      return (response.records || []).sort(
+      const response = await base44.entities.ForumTopic.filter({});
+      return (response || []).sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at)
       );
     },

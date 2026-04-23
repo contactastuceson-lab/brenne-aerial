@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44Client } from '@/api/base44Client';
+import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Heart, MessageSquare, Check, Edit2, Trash2 } from 'lucide-react';
 import UserBadgeProfile from './UserBadgeProfile';
@@ -18,7 +18,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
   const { data: author } = useQuery({
     queryKey: ['user', post.author],
     queryFn: async () => {
-      const response = await base44Client.records.get({ table: 'User', id: post.author });
+      const response = await base44.entities.User.get(post.author);
       return response;
     },
     enabled: !!post.author,
@@ -30,13 +30,9 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
         ? post.liked_by?.filter((id) => id !== user.id) || []
         : [...(post.liked_by || []), user.id];
 
-      await base44Client.records.update({
-        table: 'ForumPost',
-        id: post.id,
-        data: {
-          liked_by: newLikedBy,
-          likes_count: newLikedBy.length,
-        },
+      await base44.entities.ForumPost.update(post.id, {
+        liked_by: newLikedBy,
+        likes_count: newLikedBy.length,
       });
 
       return newLikedBy;

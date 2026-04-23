@@ -6,7 +6,7 @@ import ForumFilters from './ForumFilters';
 import CreateForumTopic from './CreateForumTopic';
 import { useAuth } from '@/lib/AuthContext';
 
-const ForumTopicList = ({ selectedTopicId, onSelectTopic }) => {
+const ForumTopicList = ({ onSelectTopic }) => {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -16,11 +16,27 @@ const ForumTopicList = ({ selectedTopicId, onSelectTopic }) => {
   const { data: topics = [], isLoading, error } = useQuery({
     queryKey: ['forumTopics'],
     queryFn: async () => {
-      const response = await base44.entities.ForumTopic.filter({});
-      return (response || []).sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      );
+      try {
+        const response = await base44.entities.ForumTopic.filter({});
+        return (response || []).sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+      } catch (err) {
+        if (err?.status === 404 || err?.response?.status === 404) {
+          return [];
+        }
+
+        if (typeof base44.entities.ForumTopic.list === 'function') {
+          const fallback = await base44.entities.ForumTopic.list('-created_at', 100);
+          return (fallback || []).sort(
+            (a, b) => new Date(b.created_at) - new Date(a.created_at)
+          );
+        }
+
+        throw err;
+      }
     },
+    retry: false,
   });
 
   // Filter and sort topics
@@ -75,10 +91,10 @@ const ForumTopicList = ({ selectedTopicId, onSelectTopic }) => {
     <div className="space-y-6">
       {/* Header Section */}
       <div className="space-y-2">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
           Forum de la Communauté
         </h1>
-        <p className="text-gray-600 text-lg">
+        <p className="text-gray-400 text-lg">
           Posez des questions, partagez vos connaissances et connectez-vous avec la communauté
         </p>
       </div>

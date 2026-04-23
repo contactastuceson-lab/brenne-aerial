@@ -53,8 +53,8 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
       className={cn(
         'p-4 rounded-lg border transition-all duration-300',
         post.is_solution
-          ? 'bg-green-50 border-green-300 shadow-md'
-          : 'bg-white border-gray-200 hover:border-gray-300'
+          ? 'bg-slate-800 border-green-600 shadow-md shadow-green-500/20'
+          : 'bg-slate-800 border-slate-700 hover:border-slate-600'
       )}
     >
       {/* Header avec auteur et date */}
@@ -69,7 +69,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
 
         {/* Badge Solution */}
         {post.is_solution && (
-          <div className="flex items-center gap-1 px-3 py-1 bg-green-200 text-green-800 rounded-full font-semibold text-sm">
+          <div className="flex items-center gap-1 px-3 py-1 bg-green-900 text-green-200 rounded-full font-semibold text-sm">
             <Check size={16} />
             Solution
           </div>
@@ -78,11 +78,11 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
 
       {/* Contenu */}
       <div className="prose prose-sm max-w-none mb-4">
-        <p className="text-gray-800 whitespace-pre-wrap">{post.content}</p>
+        <p className="text-gray-300 whitespace-pre-wrap">{post.content}</p>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+      <div className="flex items-center justify-between pt-3 border-t border-slate-700">
         <div className="flex items-center gap-3">
           <button
             onClick={handleLike}
@@ -90,8 +90,8 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
             className={cn(
               'flex items-center gap-2 px-3 py-1 rounded-lg transition-all duration-200',
               isLiked
-                ? 'bg-red-100 text-red-600 font-semibold'
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'bg-red-900 text-red-200 font-semibold'
+                : 'text-gray-400 hover:bg-slate-700'
             )}
           >
             <Heart
@@ -107,8 +107,8 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
               className={cn(
                 'flex items-center gap-2 px-3 py-1 rounded-lg transition-all duration-200',
                 post.is_solution
-                  ? 'bg-green-100 text-green-600 font-semibold'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-green-900 text-green-200 font-semibold'
+                  : 'text-gray-400 hover:bg-slate-700'
               )}
             >
               <Check size={18} />
@@ -125,14 +125,14 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-500 hover:text-gray-300"
             >
               <Edit2 size={16} />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-red-600"
+              className="text-gray-500 hover:text-red-400"
             >
               <Trash2 size={16} />
             </Button>

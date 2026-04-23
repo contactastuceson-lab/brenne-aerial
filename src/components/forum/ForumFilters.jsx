@@ -39,44 +39,44 @@ const ForumFilters = ({
   const hasActiveFilters = searchQuery || selectedCategory !== 'all' || sortBy !== 'recent';
 
   return (
-    <div className="space-y-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+    <div className="space-y-4 p-4 bg-slate-800 rounded-lg border border-slate-700">
       <div className="flex items-center gap-2 mb-2">
-        <Filter size={18} className="text-blue-600" />
-        <h3 className="font-bold text-gray-900">Filtrer et Rechercher</h3>
+        <Filter size={18} className="text-blue-400" />
+        <h3 className="font-bold text-white">Filtrer et Rechercher</h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Recherche */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-2">
+          <label className="block text-sm font-semibold text-gray-300 mb-2">
             Rechercher
           </label>
           <div className="relative">
             <Search
               size={16}
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
             />
             <Input
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Chercher un sujet..."
-              className="pl-10 bg-white"
+              className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-500"
             />
           </div>
         </div>
 
         {/* Catégorie */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-2">
+          <label className="block text-sm font-semibold text-gray-300 mb-2">
             Catégorie
           </label>
           <Select value={selectedCategory} onValueChange={onCategoryChange}>
-            <SelectTrigger className="bg-white">
+            <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-slate-700 border-slate-600">
               {categories.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value}>
+                <SelectItem key={cat.value} value={cat.value} className="text-white focus:bg-slate-600">
                   {cat.label}
                 </SelectItem>
               ))}
@@ -86,16 +86,16 @@ const ForumFilters = ({
 
         {/* Tri */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-2">
+          <label className="block text-sm font-semibold text-gray-300 mb-2">
             Trier par
           </label>
           <Select value={sortBy} onValueChange={onSortChange}>
-            <SelectTrigger className="bg-white">
+            <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-slate-700 border-slate-600">
               {sorts.map((sort) => (
-                <SelectItem key={sort.value} value={sort.value}>
+                <SelectItem key={sort.value} value={sort.value} className="text-white focus:bg-slate-600">
                   {sort.label}
                 </SelectItem>
               ))}
@@ -106,12 +106,12 @@ const ForumFilters = ({
 
       {/* Bouton Clear */}
       {hasActiveFilters && (
-        <div className="flex justify-end pt-2 border-t border-blue-200">
+        <div className="flex justify-end pt-2 border-t border-slate-700">
           <Button
             variant="ghost"
             size="sm"
             onClick={onClearFilters}
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 gap-2"
+            className="text-blue-400 hover:text-blue-300 hover:bg-slate-700 gap-2"
           >
             <X size={16} />
             Réinitialiser les filtres

@@ -41,10 +41,26 @@
       "default": false,
       "description": "Épingler en haut du forum"
     },
-    "is_locked": {
-      "type": "boolean",
-      "default": false,
-      "description": "Les réponses sont fermées"
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed",
+        "solved"
+      ],
+      "default": "open",
+      "description": "Statut du sujet"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "urgent"
+      ],
+      "default": "normal",
+      "description": "Priorité du sujet"
     },
     "views_count": {
       "type": "number",

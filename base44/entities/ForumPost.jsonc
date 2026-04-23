@@ -11,9 +11,9 @@
       "type": "string",
       "description": "Contenu de la réponse"
     },
-    "author": {
+    "parent_post_id": {
       "type": "string",
-      "description": "ID de l'auteur (référence User)"
+      "description": "ID du post parent (pour les réponses imbriquées)"
     },
     "is_solution": {
       "type": "boolean",

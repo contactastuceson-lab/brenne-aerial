@@ -75,6 +75,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import CertificationSuccessPage from "@/pages/CertificationSuccessPage";
 import DonationPage from "@/pages/DonationPage";
 import DonationSuccessPage from "@/pages/DonationSuccessPage";
+import AccountDeletionPage from "@/pages/AccountDeletionPage";
 import ForumPage from "@/pages/ForumPage";
 
 const AuthenticatedApp = () => {
@@ -122,6 +123,7 @@ const AuthenticatedApp = () => {
         <Route path="/donation-success" element={<DonationSuccessPage />} />
         <Route path="/status" element={<StatusPage />} />
         <Route path="/uptime" element={<UptimePage />} />
+        <Route path="/account-deletion" element={<AccountDeletionPage />} />
         <Route path="/legal/privacy" element={<PrivacyPage />} />
         <Route path="/legal/terms" element={<TermsPage />} />
         <Route path="/garage" element={<GaragePage />} />

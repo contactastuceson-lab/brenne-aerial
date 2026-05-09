@@ -14,7 +14,7 @@ export default function FeatureDisabled({ title = 'Service temporairement indisp
           Consultez notre page de statut pour suivre l'avancement en temps réel.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <a href="https://statut.brenneaerial.org" target="_blank" rel="noopener noreferrer">
+          <a href="https://status.brenneaerial.fr" target="_blank" rel="noopener noreferrer">
             <Button className="gap-2 w-full sm:w-auto">
               <ExternalLink className="w-4 h-4" />
               Voir le statut des services

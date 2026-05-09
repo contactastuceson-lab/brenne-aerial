@@ -28,7 +28,7 @@ export default function UptimePage() {
             {/* Badge uptime */}
             <div className="flex justify-center">
               <iframe
-                src="https://statut.brenneaerial.org/badge?theme=dark"
+                src="https://status.brenneaerial.fr/badge?theme=dark"
                 width="250"
                 height="30"
                 frameBorder="0"
@@ -50,7 +50,7 @@ export default function UptimePage() {
           className="bg-card border border-border rounded-2xl overflow-hidden"
         >
           <iframe
-            src="https://statut.brenneaerial.org"
+            src="https://status.brenneaerial.fr"
             width="100%"
             height="800"
             frameBorder="0"

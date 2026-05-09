@@ -106,7 +106,7 @@ export default function Footer() {
           <div className="flex flex-wrap items-center gap-4">
             <Link to="/uptime" title="Statut des services" className="hidden sm:block">
               <iframe
-                src="https://statut.brenneaerial.org/badge?theme=dark"
+                src="https://status.brenneaerial.fr/badge?theme=dark"
                 width="250"
                 height="30"
                 frameBorder="0"

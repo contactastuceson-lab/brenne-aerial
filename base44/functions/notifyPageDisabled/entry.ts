@@ -240,7 +240,7 @@ Deno.serve(async (req) => {
     <div class="section-title">Ressources & Suivi</div>
     <p>Vous pouvez suivre l'évolution de l'incident en temps réel via notre page de statut officielle, gérée par Better Stack :</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
-      <a href="https://statut.brenneaerial.org" class="btn-red">🔴 Statut en direct</a>
+      <a href="https://status.brenneaerial.fr" class="btn-red">🔴 Statut en direct</a>
       <a href="https://brenneaerial.fr/uptime" class="btn-outline">📊 Historique uptime</a>
     </div>
     <div class="alert-box-blue" style="margin-top:20px;">
@@ -381,7 +381,7 @@ Deno.serve(async (req) => {
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
       <a href="https://brenneaerial.fr" class="btn-green">🚀 Accéder à la plateforme</a>
-      <a href="https://statut.brenneaerial.org" class="btn-outline">📊 Voir le statut</a>
+      <a href="https://status.brenneaerial.fr" class="btn-outline">📊 Voir le statut</a>
     </div>
   </div>
 
@@ -442,7 +442,7 @@ Deno.serve(async (req) => {
     </table>
     <p style="margin-top:16px;">Les services non mentionnés dans ce rapport restent pleinement opérationnels. Nos équipes travaillent au rétablissement des modules affectés. Vous serez notifié par email dès leur remise en ligne.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
-      <a href="https://statut.brenneaerial.org" class="btn-red">🔴 Statut en direct</a>
+      <a href="https://status.brenneaerial.fr" class="btn-red">🔴 Statut en direct</a>
       <a href="https://brenneaerial.fr/uptime" class="btn-outline">📊 Historique</a>
     </div>
   </div>
@@ -502,7 +502,7 @@ Deno.serve(async (req) => {
     </table>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
       <a href="https://brenneaerial.fr" class="btn-green">🚀 Accéder à la plateforme</a>
-      <a href="https://statut.brenneaerial.org" class="btn-outline">📊 Voir le statut</a>
+      <a href="https://status.brenneaerial.fr" class="btn-outline">📊 Voir le statut</a>
     </div>
   </div>
   <div class="footer">

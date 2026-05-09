@@ -193,7 +193,7 @@ export default function HomePage() {
             </div>
             <div className="hidden sm:block pointer-events-none">
               <iframe
-                src="https://statut.brenneaerial.org/badge?theme=dark"
+                src="https://status.brenneaerial.fr/badge?theme=dark"
                 width="250"
                 height="30"
                 frameBorder="0"

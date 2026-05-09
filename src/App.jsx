@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClientInstance } from "@/lib/query-client";
+import { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import PageNotFound from "./lib/PageNotFound";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
@@ -78,6 +79,14 @@ import DonationSuccessPage from "@/pages/DonationSuccessPage";
 import AccountDeletionPage from "@/pages/AccountDeletionPage";
 import ForumPage from "@/pages/ForumPage";
 
+function ExternalRedirect({ to }) {
+  useEffect(() => {
+    window.location.replace(to);
+  }, [to]);
+
+  return null;
+}
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
 
@@ -121,7 +130,7 @@ const AuthenticatedApp = () => {
         <Route path="/certification-success" element={<CertificationSuccessPage />} />
         <Route path="/donation" element={<DonationPage />} />
         <Route path="/donation-success" element={<DonationSuccessPage />} />
-        <Route path="/status" element={<Navigate to="https://status.brenneaerial.fr" replace />} />
+        <Route path="/status" element={<ExternalRedirect to="https://status.brenneaerial.fr" />} />
         <Route path="/uptime" element={<UptimePage />} />
         <Route path="/account-deletion" element={<AccountDeletionPage />} />
         <Route path="/legal/privacy" element={<PrivacyPage />} />

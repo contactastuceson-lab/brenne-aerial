@@ -69,7 +69,7 @@ import ReglementationPage from "@/pages/ReglementationPage";
 import FlashDeliveryPage from "@/pages/FlashDeliveryPage";
 import SimulateurVuePage from "@/pages/SimulateurVuePage";
 import ComparateurPage from "@/pages/ComparateurPage";
-import StatusPage from "@/pages/StatusPage";
+import { Navigate } from "react-router-dom";
 import UptimePage from "@/pages/UptimePage";
 import ProfilePage from "@/pages/ProfilePage";
 import CertificationSuccessPage from "@/pages/CertificationSuccessPage";
@@ -121,7 +121,7 @@ const AuthenticatedApp = () => {
         <Route path="/certification-success" element={<CertificationSuccessPage />} />
         <Route path="/donation" element={<DonationPage />} />
         <Route path="/donation-success" element={<DonationSuccessPage />} />
-        <Route path="/status" element={<StatusPage />} />
+        <Route path="/status" element={<Navigate to="https://status.brenneaerial.fr" replace />} />
         <Route path="/uptime" element={<UptimePage />} />
         <Route path="/account-deletion" element={<AccountDeletionPage />} />
         <Route path="/legal/privacy" element={<PrivacyPage />} />

@@ -14,8 +14,8 @@ export function useRegisterDevice(user) {
       return;
     }
 
-    // Only register once per user session
-    if (hasRegisteredRef.current && localStorage.getItem(`device_registered_${user.email}`) === 'true') {
+    // Only register once per session in memory (not localStorage, to allow re-registration on new tabs)
+    if (hasRegisteredRef.current) {
       return;
     }
 

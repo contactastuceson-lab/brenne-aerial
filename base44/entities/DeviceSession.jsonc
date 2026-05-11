@@ -2,85 +2,64 @@
   "name": "DeviceSession",
   "type": "object",
   "properties": {
-    "user_email": {
-      "type": "string",
-      "description": "Email de l'utilisateur"
-    },
     "session_id": {
       "type": "string",
       "description": "Identifiant unique de la session"
     },
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
     "device_name": {
       "type": "string",
-      "description": "Nom du navigateur/appareil (ex: Chrome sur Windows)"
+      "description": "Nom de l'appareil (ex: macOS Chrome)"
     },
     "device_type": {
       "type": "string",
       "enum": [
+        "desktop",
         "mobile",
-        "tablet",
-        "desktop"
+        "tablet"
       ],
-      "description": "Type d'appareil"
+      "default": "desktop"
     },
     "browser": {
-      "type": "string",
-      "description": "Navigateur (Chrome, Firefox, Safari, etc.)"
+      "type": "string"
     },
     "os": {
-      "type": "string",
-      "description": "Système d'exploitation"
+      "type": "string"
     },
     "ip_address": {
-      "type": "string",
-      "description": "Adresse IP"
-    },
-    "country": {
-      "type": "string",
-      "description": "Pays détecté"
+      "type": "string"
     },
     "city": {
-      "type": "string",
-      "description": "Ville détectée"
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
     },
     "user_agent": {
-      "type": "string",
-      "description": "User agent complet"
-    },
-    "created_at": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Date de connexion"
-    },
-    "last_activity": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Dernière activité"
-    },
-    "expires_at": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Expiration de la session"
+      "type": "string"
     },
     "is_current": {
       "type": "boolean",
-      "default": false,
-      "description": "Si c'est la session actuelle"
+      "default": false
     },
     "is_trusted": {
       "type": "boolean",
-      "default": false,
-      "description": "Appareil approuvé/de confiance"
+      "default": false
     },
-    "token": {
+    "last_activity": {
       "type": "string",
-      "description": "Token de session chiffré"
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [
     "user_email",
-    "session_id",
-    "ip_address",
-    "created_at"
+    "session_id"
   ]
 }

@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
 
     // Find the session and verify it belongs to this user
     const sessions = await base44.asServiceRole.entities.DeviceSession.filter({ user_email: user.email });
-    const session = sessions.find(s => s.id === session_id);
+    const session = sessions.find(s => s.session_id === session_id || s.id === session_id);
 
     if (!session) return Response.json({ error: 'Session introuvable' }, { status: 404 });
 

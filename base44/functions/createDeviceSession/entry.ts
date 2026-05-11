@@ -32,8 +32,28 @@ Deno.serve(async (req) => {
       } catch (_) { /* silently ignore */ }
     }
 
-    // Mark all previous sessions for this user as not current
+    // Get all existing sessions for this user
     const existing = await base44.asServiceRole.entities.DeviceSession.filter({ user_email });
+
+    // Find if there's already a session with same device_name + ip
+    const duplicate = existing.find(s => s.device_name === (device_name || 'Appareil inconnu') && s.ip_address === ip);
+
+    if (duplicate) {
+      // Just update last_activity and mark as current
+      await base44.asServiceRole.entities.DeviceSession.update(duplicate.id, {
+        is_current: true,
+        last_activity: now,
+      });
+      // Mark all others as not current
+      for (const s of existing) {
+        if (s.id !== duplicate.id && s.is_current) {
+          await base44.asServiceRole.entities.DeviceSession.update(s.id, { is_current: false });
+        }
+      }
+      return Response.json({ success: true, session: { ...duplicate, is_current: true, last_activity: now } });
+    }
+
+    // No duplicate — mark all others as not current
     for (const s of existing) {
       if (s.is_current) {
         await base44.asServiceRole.entities.DeviceSession.update(s.id, { is_current: false });

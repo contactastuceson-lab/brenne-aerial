@@ -16,16 +16,30 @@ Deno.serve(async (req) => {
     // Get IP from headers
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
 
-    // Geolocate IP
+    // Geolocate IP using ipinfo.io (more precise)
     let city = null;
     let country = null;
     if (ip && ip !== 'unknown') {
       try {
-        const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=city,country,status`);
+        const geoRes = await fetch(`https://ipinfo.io/${ip}/json`);
         const geo = await geoRes.json();
-        if (geo.status === 'success') {
+        if (geo && !geo.error) {
           city = geo.city || null;
           country = geo.country || null;
+          // ipinfo returns country code (FR), convert to full name
+          if (country) {
+            const countryNames = {
+              FR: 'France', BE: 'Belgique', CH: 'Suisse', DE: 'Allemagne',
+              ES: 'Espagne', IT: 'Italie', GB: 'Royaume-Uni', US: 'États-Unis',
+              CA: 'Canada', NL: 'Pays-Bas', PT: 'Portugal', LU: 'Luxembourg',
+            };
+            country = countryNames[country] || country;
+          }
+          // region (more precise than city alone) — use it to refine
+          if (geo.region && geo.city) {
+            // keep city as returned by ipinfo (already precise)
+            city = geo.city;
+          }
         }
       } catch (_) { /* silently ignore */ }
     }
@@ -45,8 +59,8 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.DeviceSession.update(duplicate.id, {
         last_activity: now,
         ip_address: ip,
-        city: city || duplicate.city,
-        country: country || duplicate.country,
+        city: city ?? duplicate.city,
+        country: country ?? duplicate.country,
       });
       return Response.json({ success: true, session: { ...duplicate, last_activity: now } });
     }

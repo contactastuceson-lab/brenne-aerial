@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Monitor, Smartphone, Tablet, LogOut, MapPin, Clock, CheckCircle, Loader2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,19 @@ export default function ActiveDevices({ user }) {
   const [confirmDisconnect, setConfirmDisconnect] = useState(null);
 
   const currentSessionId = sessionStorage.getItem(SESSION_KEY);
+
+  // Subscription: when admin revokes current session → force logout instantly
+  useEffect(() => {
+    if (!user?.email || !currentSessionId) return;
+    const unsubscribe = base44.entities.DeviceSession.subscribe((event) => {
+      if (event.type === 'delete' && event.data?.session_id === currentSessionId) {
+        base44.auth.logout('/');
+      } else if (event.type === 'delete' || event.type === 'create' || event.type === 'update') {
+        queryClient.invalidateQueries({ queryKey: ['active-devices'] });
+      }
+    });
+    return () => unsubscribe();
+  }, [user?.email, currentSessionId, queryClient]);
 
   const { data: devices = [], isLoading } = useQuery({
     queryKey: ['active-devices', user?.email],

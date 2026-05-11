@@ -14,10 +14,25 @@ export default function RGPDDashboard({ user }) {
   const [filterType, setFilterType] = useState('all');
   const [showDetails, setShowDetails] = useState({});
 
-  // Fetch audit logs
+  // Audit logs: use DeviceSession as connexion history (AuditLog entity doesn't exist)
   const { data: auditLogs = [], isLoading: logsLoading } = useQuery({
     queryKey: ['audit-logs', user?.email],
-    queryFn: () => base44.entities.AuditLog.filter({ user_email: user.email }),
+    queryFn: async () => {
+      try {
+        const sessions = await base44.entities.DeviceSession.filter({ user_email: user.email });
+        return sessions.map(s => ({
+          id: s.id,
+          action_type: 'login',
+          description: `Connexion depuis ${s.device_name || 'appareil inconnu'}`,
+          timestamp: s.created_at || s.created_date,
+          ip_address: s.ip_address,
+          status: 'success',
+          is_sensitive: false,
+        }));
+      } catch {
+        return [];
+      }
+    },
     enabled: !!user?.email,
   });
 
@@ -68,14 +83,6 @@ export default function RGPDDashboard({ user }) {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-
-        // Log this action
-        await base44.functions.invoke('logAuditAction', {
-          user_email: user.email,
-          action_type: 'data_export',
-          description: 'Export des données personnelles',
-          is_sensitive: true,
-        });
 
         toast.success('Vos données ont été exportées');
       } catch (error) {

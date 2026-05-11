@@ -10,90 +10,43 @@ export default function ActiveDevices({ user }) {
   const queryClient = useQueryClient();
   const [confirmDisconnect, setConfirmDisconnect] = useState(null);
 
-  // Fetch active device sessions using backend function
-  const { data: devices = [], isLoading, error: fetchError } = useQuery({
+  const { data: devices = [], isLoading } = useQuery({
     queryKey: ['active-devices', user?.email],
-    queryFn: async () => {
-      try {
-        console.log('[ActiveDevices] Fetching devices for:', user.email);
-        const result = await base44.functions.invoke('getDeviceSessions', {
-          user_email: user.email,
-        });
-        console.log('[ActiveDevices] Got result:', result);
-        return result.sessions || [];
-      } catch (error) {
-        console.error('[ActiveDevices] Error fetching via function:', error);
-        // Fallback: query entity directly
-        try {
-          console.log('[ActiveDevices] Trying entity fallback...');
-          const sessions = await base44.entities.DeviceSession.filter({ 
-            user_email: user.email 
-          });
-          console.log('[ActiveDevices] Fallback got:', sessions);
-          return sessions || [];
-        } catch (fallbackError) {
-          console.error('[ActiveDevices] Fallback also failed:', fallbackError);
-          return [];
-        }
-      }
-    },
+    queryFn: () => base44.entities.DeviceSession.filter({ user_email: user.email }),
     enabled: !!user?.email,
-    refetchInterval: 60000, // Refresh every minute
+    refetchInterval: 60000,
   });
-
-  console.log('[ActiveDevices] State:', { devicesCount: devices.length, isLoading, fetchError });
 
   const currentDevice = devices.find(d => d.is_current);
   const otherDevices = devices.filter(d => !d.is_current);
 
-  // Disconnect device mutation
   const disconnectMutation = useMutation({
-    mutationFn: async (sessionId) => {
-      // Use backend function to disconnect device
-      const deviceToDelete = devices.find(d => d.id === sessionId);
-      await base44.functions.invoke('disconnectDevice', {
-        user_email: user.email,
-        session_id: deviceToDelete?.session_id,
-      });
-    },
+    mutationFn: (deviceId) => base44.entities.DeviceSession.delete(deviceId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-devices'] });
       toast.success('Appareil déconnecté');
       setConfirmDisconnect(null);
     },
-    onError: (error) => {
-      console.error('Disconnect error:', error);
-      toast.error('Erreur lors de la déconnexion');
-    },
+    onError: () => toast.error('Erreur lors de la déconnexion'),
   });
 
-  // Disconnect all other devices
   const disconnectAllMutation = useMutation({
     mutationFn: async () => {
-      // Use backend function to disconnect all other devices
-      await base44.functions.invoke('disconnectAllOtherDevices', {
-        user_email: user.email,
-      });
+      for (const d of otherDevices) {
+        await base44.entities.DeviceSession.delete(d.id);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-devices'] });
       toast.success('Tous les autres appareils ont été déconnectés');
     },
-    onError: (error) => {
-      console.error('Disconnect all error:', error);
-      toast.error('Erreur lors de la déconnexion');
-    },
+    onError: () => toast.error('Erreur lors de la déconnexion'),
   });
 
   const getDeviceIcon = (deviceType) => {
-    switch (deviceType) {
-      case 'mobile':
-        return Smartphone;
-      case 'tablet':
-        return Tablet;
-      default:
-        return Monitor;
-    }
+    if (deviceType === 'mobile') return Smartphone;
+    if (deviceType === 'tablet') return Tablet;
+    return Monitor;
   };
 
   const formatDate = (dateStr) => {
@@ -104,7 +57,6 @@ export default function ActiveDevices({ user }) {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-
     if (diffMins < 1) return 'À l\'instant';
     if (diffMins < 60) return `Il y a ${diffMins}m`;
     if (diffHours < 24) return `Il y a ${diffHours}h`;
@@ -119,7 +71,7 @@ export default function ActiveDevices({ user }) {
       className="rounded-2xl p-6 space-y-5"
       style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
             <Zap className="w-5 h-5 text-blue-500" />
@@ -153,11 +105,10 @@ export default function ActiveDevices({ user }) {
         </div>
       ) : devices.length === 0 ? (
         <div className="text-center py-8">
-          <p className="font-inter text-sm text-muted-foreground">Aucun appareil actif</p>
+          <p className="font-inter text-sm text-muted-foreground">Aucun appareil enregistré</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {/* Current Device */}
           {currentDevice && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -178,7 +129,7 @@ export default function ActiveDevices({ user }) {
                     </span>
                   </div>
                   <div className="space-y-1">
-                    {currentDevice.ip_address && (
+                    {currentDevice.ip_address && currentDevice.ip_address !== 'unknown' && (
                       <p className="font-inter text-xs text-muted-foreground">
                         IP: <span className="font-mono">{currentDevice.ip_address}</span>
                       </p>
@@ -186,15 +137,12 @@ export default function ActiveDevices({ user }) {
                     {currentDevice.city && (
                       <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
-                        {currentDevice.city}, {currentDevice.country}
+                        {currentDevice.city}{currentDevice.country ? `, ${currentDevice.country}` : ''}
                       </p>
                     )}
                     <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      Connecté: {new Date(currentDevice.created_at).toLocaleDateString('fr-FR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {formatDate(currentDevice.last_activity || currentDevice.created_at)}
                     </p>
                   </div>
                 </div>
@@ -202,7 +150,6 @@ export default function ActiveDevices({ user }) {
             </motion.div>
           )}
 
-          {/* Other Devices */}
           <AnimatePresence>
             {otherDevices.map((device, i) => (
               <motion.div
@@ -223,7 +170,7 @@ export default function ActiveDevices({ user }) {
                     <div className="flex-1 min-w-0">
                       <p className="font-grotesk font-semibold text-sm truncate">{device.device_name}</p>
                       <div className="space-y-1 mt-1">
-                        {device.ip_address && (
+                        {device.ip_address && device.ip_address !== 'unknown' && (
                           <p className="font-inter text-xs text-muted-foreground">
                             IP: <span className="font-mono">{device.ip_address}</span>
                           </p>
@@ -231,7 +178,7 @@ export default function ActiveDevices({ user }) {
                         {device.city && (
                           <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
-                            {device.city}, {device.country}
+                            {device.city}{device.country ? `, ${device.country}` : ''}
                           </p>
                         )}
                         <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
@@ -251,7 +198,6 @@ export default function ActiveDevices({ user }) {
                   </Button>
                 </div>
 
-                {/* Confirmation */}
                 <AnimatePresence>
                   {confirmDisconnect === device.id && (
                     <motion.div
@@ -260,9 +206,7 @@ export default function ActiveDevices({ user }) {
                       exit={{ opacity: 0, height: 0 }}
                       className="mt-3 pt-3 border-t border-border/50 space-y-2"
                     >
-                      <p className="font-inter text-xs text-muted-foreground">
-                        Êtes-vous sûr? Cet appareil sera déconnecté.
-                      </p>
+                      <p className="font-inter text-xs text-muted-foreground">Êtes-vous sûr ? Cet appareil sera déconnecté.</p>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -271,11 +215,7 @@ export default function ActiveDevices({ user }) {
                           disabled={disconnectMutation.isPending}
                           className="flex-1 text-xs"
                         >
-                          {disconnectMutation.isPending ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            'Déconnecter'
-                          )}
+                          {disconnectMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Déconnecter'}
                         </Button>
                         <Button
                           size="sm"
@@ -295,10 +235,9 @@ export default function ActiveDevices({ user }) {
         </div>
       )}
 
-      {/* Info */}
       <div className="p-3 rounded-lg bg-blue-400/10 border border-blue-400/20">
         <p className="font-inter text-xs text-blue-600">
-          💡 Votre session actuelle est automatiquement marquée. Vous pouvez déconnecter les autres appareils ou les marquer comme de confiance.
+          💡 Votre session actuelle est automatiquement marquée. Vous pouvez déconnecter les autres appareils.
         </p>
       </div>
     </motion.div>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Mail, Smartphone, MessageSquare, Loader2 } from 'lucide-react';
+import { Bell, Mail, MessageSquare, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 const getDefaultPrefs = () => ({
@@ -19,65 +19,31 @@ const getDefaultPrefs = () => ({
 });
 
 export default function NotificationSettings({ user }) {
-  const queryClient = useQueryClient();
+  const [localPrefs, setLocalPrefs] = useState(() => ({
+    ...getDefaultPrefs(),
+    ...(user?.notification_prefs || {}),
+  }));
 
-  // Fetch notification preferences
-  const { data: fetchedPrefs = null } = useQuery({
-    queryKey: ['notification-preferences', user?.email],
-    queryFn: async () => {
-      try {
-        const result = await base44.functions.invoke('getUserPreferences', {
-          user_email: user.email,
-        });
-        return result.preferences || null;
-      } catch (error) {
-        console.error('Error fetching preferences:', error);
-        return null;
-      }
-    },
-    enabled: !!user?.email,
-  });
-
-  const [localPrefs, setLocalPrefs] = useState(getDefaultPrefs());
-
-  // Load fetched preferences
   useEffect(() => {
-    if (fetchedPrefs) {
-      setLocalPrefs({
-        email_notifications: fetchedPrefs.email_notifications !== undefined ? fetchedPrefs.email_notifications : true,
-        push_notifications: fetchedPrefs.push_notifications !== undefined ? fetchedPrefs.push_notifications : true,
-        quote_updates: fetchedPrefs.quote_updates !== undefined ? fetchedPrefs.quote_updates : true,
-        appointment_reminders: fetchedPrefs.appointment_reminders !== undefined ? fetchedPrefs.appointment_reminders : true,
-        new_messages: fetchedPrefs.new_messages !== undefined ? fetchedPrefs.new_messages : true,
-        badge_awarded: fetchedPrefs.badge_awarded !== undefined ? fetchedPrefs.badge_awarded : true,
-        donation_updates: fetchedPrefs.donation_updates !== undefined ? fetchedPrefs.donation_updates : true,
-        newsletter: fetchedPrefs.newsletter || false,
-        marketing_emails: fetchedPrefs.marketing_emails || false,
-      });
+    if (user?.notification_prefs) {
+      setLocalPrefs({ ...getDefaultPrefs(), ...user.notification_prefs });
     }
-  }, [fetchedPrefs]);
+  }, [user]);
 
   const saveMutation = useMutation({
-    mutationFn: async (newPrefs) => {
-      const result = await base44.functions.invoke('updateUserPreferences', {
-        user_email: user.email,
-        preferences: newPrefs,
-      });
-      return result;
+    mutationFn: async (prefs) => {
+      return await base44.auth.updateMe({ notification_prefs: prefs });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
       toast.success('Préférences sauvegardées');
     },
-    onError: (error) => {
-      console.error('Error saving preferences:', error);
+    onError: () => {
       toast.error('Erreur lors de la sauvegarde');
     },
   });
 
   const togglePref = (key) => {
-    const newPrefs = { ...localPrefs, [key]: !localPrefs[key] };
-    setLocalPrefs(newPrefs);
+    setLocalPrefs(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const notificationOptions = [
@@ -164,7 +130,6 @@ export default function NotificationSettings({ user }) {
         );
       })}
 
-      {/* Save Button */}
       <div className="flex gap-2">
         <Button
           onClick={() => saveMutation.mutate(localPrefs)}
@@ -186,7 +151,6 @@ export default function NotificationSettings({ user }) {
         </Button>
       </div>
 
-      {/* Info */}
       <div className="p-3 rounded-lg bg-blue-400/10 border border-blue-400/20">
         <p className="font-inter text-xs text-blue-600">
           💡 Vous pouvez contrôler entièrement comment vous recevez les notifications. Ces paramètres ne s'appliquent qu'à vous.

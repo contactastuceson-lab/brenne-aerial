@@ -39,6 +39,8 @@ export default function ProfilePage() {
   const [certificationsEnabled, setCertificationsEnabled] = useState(true);
 
   useEffect(() => {
+    let unsubscribe = () => {};
+
     const loadUser = async () => {
       const u = await base44.auth.me();
       setUser(u);
@@ -48,30 +50,33 @@ export default function ProfilePage() {
         location: u.location || '',
         website: u.website || '',
       });
-    };
-    
-    loadUser().catch(() => base44.auth.redirectToLogin('/profile'));
 
-    // Surveiller les changements de l'entité User en temps réel
-    const unsubscribe = base44.entities.User.subscribe((event) => {
-      if (event.type === 'update' && event.data?.email === user?.email) {
-        setUser(event.data);
-      }
-    });
+      // Subscribe after user is loaded so we have the email
+      unsubscribe = base44.entities.User.subscribe((event) => {
+        if (event.type === 'update' && event.data?.email === u.email) {
+          setUser(event.data);
+        }
+      });
+    };
+
+    loadUser().catch(() => base44.auth.redirectToLogin('/profile'));
 
     base44.entities.AppSettings.filter({ key: 'certifications_enabled' }).then(settings => {
       if (settings.length > 0) {
         setCertificationsEnabled(settings[0].value === 'true');
       }
     });
+
+    return () => unsubscribe();
   }, []);
 
   const saveMutation = useMutation({
     mutationFn: () => base44.auth.updateMe(form),
     onSuccess: (updated) => {
-      setUser(updated);
+      if (updated) setUser(updated);
       toast.success('Profil mis à jour !');
     },
+    onError: () => toast.error('Erreur lors de la sauvegarde'),
   });
 
   const { data: followers = [] } = useQuery({

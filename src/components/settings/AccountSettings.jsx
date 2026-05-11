@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, Upload, Loader2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,10 +9,9 @@ import { base44 } from '@/api/base44Client';
 
 export default function AccountSettings({ user }) {
   const [formData, setFormData] = useState({
-    first_name: user?.first_name || '',
-    last_name: user?.last_name || '',
-    display_name: user?.display_name || '',
     bio: user?.bio || '',
+    phone: user?.phone || '',
+    location: user?.location || '',
   });
 
   const [passwordForm, setPasswordForm] = useState({
@@ -19,7 +19,6 @@ export default function AccountSettings({ user }) {
     new_password: '',
     confirm_password: '',
   });
-
   const [passwordErrors, setPasswordErrors] = useState({});
   const [showPasswordForm, setShowPasswordForm] = useState(false);
 
@@ -27,22 +26,16 @@ export default function AccountSettings({ user }) {
   useEffect(() => {
     if (user) {
       setFormData({
-        first_name: user.first_name || '',
-        last_name: user.last_name || '',
-        display_name: user.display_name || '',
         bio: user.bio || '',
+        phone: user.phone || '',
+        location: user.location || '',
       });
     }
   }, [user]);
 
   const updateMutation = useMutation({
     mutationFn: async (updates) => {
-      // Use the backend function instead of direct auth update
-      const result = await base44.functions.invoke('updateAccountInfo', {
-        user_email: user.email,
-        ...updates,
-      });
-      return result;
+      return await base44.auth.updateMe(updates);
     },
     onSuccess: () => {
       toast.success('Profil mis à jour');
@@ -56,29 +49,17 @@ export default function AccountSettings({ user }) {
   const passwordMutation = useMutation({
     mutationFn: async (passwords) => {
       if (passwords.new_password !== passwords.confirm_password) {
-        const err = new Error('Les mots de passe ne correspondent pas');
-        throw err;
+        throw new Error('Les mots de passe ne correspondent pas');
       }
-
       if (passwords.new_password.length < 8) {
-        const err = new Error('Le mot de passe doit contenir au moins 8 caractères');
-        throw err;
+        throw new Error('Le mot de passe doit contenir au moins 8 caractères');
       }
-
-      // Validate password strength
       const validation = validatePassword(passwords.new_password);
       if (Object.keys(validation).length > 0) {
-        const err = new Error('Le mot de passe ne respecte pas les critères de sécurité');
-        throw err;
+        throw new Error('Le mot de passe ne respecte pas les critères de sécurité');
       }
-
-      // Call backend function to change password
-      const result = await base44.functions.invoke('changeUserPassword', {
-        user_email: user.email,
-        current_password: passwords.current_password,
-        new_password: passwords.new_password,
-      });
-      return result;
+      // Base44 doesn't expose a password change API — inform the user
+      throw new Error('Le changement de mot de passe n\'est pas disponible depuis cette interface. Utilisez la page de connexion.');
     },
     onSuccess: () => {
       toast.success('Mot de passe mis à jour');
@@ -153,41 +134,15 @@ export default function AccountSettings({ user }) {
         </div>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block font-inter text-sm font-medium mb-2">Prénom</label>
-              <input
-                type="text"
-                name="first_name"
-                value={formData.first_name}
-                onChange={handleInputChange}
-                placeholder="Votre prénom"
-                className="w-full px-4 py-2 rounded-lg border border-border bg-background/50 font-inter text-sm focus:outline-none focus:border-primary"
-              />
-            </div>
-            <div>
-              <label className="block font-inter text-sm font-medium mb-2">Nom</label>
-              <input
-                type="text"
-                name="last_name"
-                value={formData.last_name}
-                onChange={handleInputChange}
-                placeholder="Votre nom"
-                className="w-full px-4 py-2 rounded-lg border border-border bg-background/50 font-inter text-sm focus:outline-none focus:border-primary"
-              />
-            </div>
-          </div>
-
           <div>
-            <label className="block font-inter text-sm font-medium mb-2">Nom d'affichage</label>
+            <label className="block font-inter text-sm font-medium mb-2">Nom complet</label>
             <input
               type="text"
-              name="display_name"
-              value={formData.display_name}
-              onChange={handleInputChange}
-              placeholder="Votre nom d'affichage"
-              className="w-full px-4 py-2 rounded-lg border border-border bg-background/50 font-inter text-sm focus:outline-none focus:border-primary"
+              value={user?.full_name || ''}
+              disabled
+              className="w-full px-4 py-2 rounded-lg border border-border bg-background/30 font-inter text-sm text-muted-foreground cursor-not-allowed"
             />
+            <p className="font-inter text-xs text-muted-foreground mt-1">Le nom complet ne peut pas être modifié ici</p>
           </div>
 
           <div>
@@ -197,8 +152,32 @@ export default function AccountSettings({ user }) {
               value={formData.bio}
               onChange={handleInputChange}
               placeholder="Parlez-vous de vous..."
-              rows={4}
+              rows={3}
               className="w-full px-4 py-2 rounded-lg border border-border bg-background/50 font-inter text-sm focus:outline-none focus:border-primary resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block font-inter text-sm font-medium mb-2">Téléphone</label>
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              placeholder="+33 6 00 00 00 00"
+              className="w-full px-4 py-2 rounded-lg border border-border bg-background/50 font-inter text-sm focus:outline-none focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block font-inter text-sm font-medium mb-2">Localisation</label>
+            <input
+              type="text"
+              name="location"
+              value={formData.location}
+              onChange={handleInputChange}
+              placeholder="Paris, France"
+              className="w-full px-4 py-2 rounded-lg border border-border bg-background/50 font-inter text-sm focus:outline-none focus:border-primary"
             />
           </div>
 

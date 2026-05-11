@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Monitor, Smartphone, Tablet, LogOut, MapPin, Clock, CheckCircle, Loader2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,20 +11,8 @@ const SESSION_KEY = 'ba_device_session_id';
 export default function ActiveDevices({ user }) {
   const queryClient = useQueryClient();
   const [confirmDisconnect, setConfirmDisconnect] = useState(null);
-  const [revokedTimer, setRevokedTimer] = useState(null);
 
   const currentSessionId = sessionStorage.getItem(SESSION_KEY);
-
-  // Timer countdown for revocation notification
-  useEffect(() => {
-    if (revokedTimer === null) return;
-    if (revokedTimer <= 0) {
-      base44.auth.logout('/');
-      return;
-    }
-    const timer = setTimeout(() => setRevokedTimer(revokedTimer - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [revokedTimer]);
 
   const { data: devices = [], isLoading } = useQuery({
     queryKey: ['active-devices', user?.email],
@@ -33,26 +21,7 @@ export default function ActiveDevices({ user }) {
     refetchInterval: 30000,
   });
 
-  // Real-time subscription — instantly reflect deletions
-  useEffect(() => {
-    if (!user?.email) return;
-    const unsubscribe = base44.entities.DeviceSession.subscribe((event) => {
-      if (event.type === 'delete') {
-        // If current session was deleted → force logout with timer
-        const deleted = event.data;
-        if (deleted?.session_id === currentSessionId || deleted?.fingerprint === localStorage.getItem('ba_device_fingerprint')) {
-          toast.error('Votre session a été révoquée par un administrateur.');
-          setRevokedTimer(5);
-          return;
-        }
-        // Other sessions deleted — refresh the list
-        queryClient.invalidateQueries({ queryKey: ['active-devices'] });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ['active-devices'] });
-      }
-    });
-    return () => unsubscribe();
-  }, [user?.email, currentSessionId, queryClient]);
+
 
   const currentDevice = devices.find(d => d.session_id === currentSessionId);
   const otherDevices = devices.filter(d => d.session_id !== currentSessionId);
@@ -281,41 +250,6 @@ export default function ActiveDevices({ user }) {
           💡 Votre session actuelle est automatiquement marquée. Vous pouvez déconnecter les autres appareils.
         </p>
       </div>
-
-      {/* Revocation countdown modal */}
-      <AnimatePresence>
-        {revokedTimer !== null && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          >
-            <motion.div
-              className="bg-card border border-border rounded-2xl shadow-2xl p-8 max-w-sm mx-4"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-            >
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
-                  <LogOut className="w-8 h-8 text-destructive" />
-                </div>
-                <h2 className="font-grotesk font-bold text-xl">Session révoquée</h2>
-                <p className="text-muted-foreground">
-                  Votre session a été fermée par un administrateur. Vous serez déconnecté automatiquement.
-                </p>
-                <div className="pt-4">
-                  <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-destructive/10 border border-destructive/20">
-                    <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-                    <span className="text-sm font-medium text-destructive">{revokedTimer}s</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }

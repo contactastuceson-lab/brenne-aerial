@@ -35,20 +35,8 @@ export default function AdminSessions() {
   const queryClient = useQueryClient();
   const [confirmAll, setConfirmAll] = useState(false);
   const [confirmUser, setConfirmUser] = useState(null);
-  const [disconnectedUser, setDisconnectedUser] = useState(null);
-  const [disconnectTimer, setDisconnectTimer] = useState(5);
 
   const canForceClose = isTopManagement(user);
-
-  useEffect(() => {
-    if (!disconnectedUser) return;
-    if (disconnectTimer <= 0) {
-      setDisconnectedUser(null);
-      return;
-    }
-    const timer = setTimeout(() => setDisconnectTimer(disconnectTimer - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [disconnectedUser, disconnectTimer]);
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ['admin-all-sessions'],
@@ -73,8 +61,7 @@ export default function AdminSessions() {
       queryClient.setQueryData(['admin-all-sessions'], (old) => 
         old.filter(s => s.id !== sessionId)
       );
-      setDisconnectedUser('session');
-      setDisconnectTimer(5);
+      toast.success('Session fermée');
     },
     onError: (err) => toast.error(err?.response?.data?.error || 'Erreur lors de la fermeture'),
   });
@@ -88,8 +75,7 @@ export default function AdminSessions() {
       queryClient.setQueryData(['admin-all-sessions'], (old) => 
         targetEmail ? old.filter(s => s.user_email !== targetEmail) : []
       );
-      setDisconnectedUser(targetEmail || 'all');
-      setDisconnectTimer(5);
+      toast.success(targetEmail ? 'Toutes les sessions de cet utilisateur fermées' : 'Toutes les sessions fermées');
       setConfirmAll(false);
       setConfirmUser(null);
     },
@@ -146,47 +132,6 @@ export default function AdminSessions() {
           🔒 La fermeture forcée des sessions est réservée au PDG et PDG-Adjoint.
         </div>
       )}
-
-      {/* Popup de déconnexion */}
-      <AnimatePresence>
-        {disconnectedUser && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          >
-            <motion.div
-              className="bg-card border border-border rounded-2xl shadow-2xl p-8 max-w-sm mx-4"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-            >
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                  <LogOut className="w-8 h-8 text-primary" />
-                </div>
-                <h2 className="font-grotesk font-bold text-xl">
-                  {disconnectedUser === 'all' ? 'Toutes les sessions fermées' : 'Session fermée'}
-                </h2>
-                <p className="text-muted-foreground">
-                  {disconnectedUser === 'all'
-                    ? 'Tous les utilisateurs ont été déconnectés.'
-                    : disconnectedUser === 'session'
-                    ? 'La session a été fermée instantanément.'
-                    : `Tous les appareils de cet utilisateur ont été déconnectés.`}
-                </p>
-                <div className="pt-4">
-                  <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span className="text-sm font-medium text-primary">{disconnectTimer}s</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">

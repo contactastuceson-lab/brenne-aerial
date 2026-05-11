@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import QRCode from 'npm:qrcode@1.5.4';
 
 // Simple TOTP implementation using Web Crypto API
 // Generates a secret and a TOTP URI for QR code generation
@@ -83,9 +84,9 @@ Deno.serve(async (req) => {
       const issuer = 'Brenne Aerial';
       const label = encodeURIComponent(`${issuer}:${user.email}`);
       const totpUri = `otpauth://totp/${label}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`;
-      // QR code via Google Charts API (no key needed)
-      const qrUrl = `https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl=${encodeURIComponent(totpUri)}`;
-      return Response.json({ success: true, secret, totpUri, qrUrl });
+      // Generate QR code as data URL (no external dependency on Google)
+      const qrDataUrl = await QRCode.toDataURL(totpUri, { width: 200, margin: 1 });
+      return Response.json({ success: true, secret, totpUri, qrUrl: qrDataUrl });
     }
 
     if (action === 'verify') {

@@ -18,6 +18,20 @@ Deno.serve(async (req) => {
     // Get IP from headers
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
 
+    // Geolocate IP
+    let city = null;
+    let country = null;
+    if (ip && ip !== 'unknown') {
+      try {
+        const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=city,country,status`);
+        const geo = await geoRes.json();
+        if (geo.status === 'success') {
+          city = geo.city || null;
+          country = geo.country || null;
+        }
+      } catch (_) { /* silently ignore */ }
+    }
+
     // Mark all previous sessions for this user as not current
     const existing = await base44.asServiceRole.entities.DeviceSession.filter({ user_email });
     for (const s of existing) {
@@ -35,6 +49,8 @@ Deno.serve(async (req) => {
       browser: browser || 'Inconnu',
       os: os || 'Inconnu',
       ip_address: ip,
+      city,
+      country,
       is_current: true,
       is_trusted: false,
       last_activity: now,

@@ -134,12 +134,14 @@ export default function ActiveDevices({ user }) {
                         IP: <span className="font-mono">{currentDevice.ip_address}</span>
                       </p>
                     )}
-                    {currentDevice.city && (
-                      <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {currentDevice.city}{currentDevice.country ? `, ${currentDevice.country}` : ''}
-                      </p>
-                    )}
+                    <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {currentDevice.city
+                        ? `${currentDevice.city}${currentDevice.country ? `, ${currentDevice.country}` : ''}`
+                        : currentDevice.ip_address && currentDevice.ip_address !== 'unknown'
+                          ? `Localisation en cours…`
+                          : 'Localisation inconnue'}
+                    </p>
                     <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {formatDate(currentDevice.last_activity || currentDevice.created_at)}
@@ -175,12 +177,14 @@ export default function ActiveDevices({ user }) {
                             IP: <span className="font-mono">{device.ip_address}</span>
                           </p>
                         )}
-                        {device.city && (
-                          <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {device.city}{device.country ? `, ${device.country}` : ''}
-                          </p>
-                        )}
+                        <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {device.city
+                            ? `${device.city}${device.country ? `, ${device.country}` : ''}`
+                            : device.ip_address && device.ip_address !== 'unknown'
+                              ? 'Localisation en cours…'
+                              : 'Localisation inconnue'}
+                        </p>
                         <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {formatDate(device.last_activity || device.created_at)}

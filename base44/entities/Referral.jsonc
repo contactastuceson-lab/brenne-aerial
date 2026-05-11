@@ -45,5 +45,32 @@
     "referrer_email",
     "referrer_name",
     "referred_name"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "data.referrer_email": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.referrer_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

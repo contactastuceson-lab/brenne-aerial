@@ -1,132 +1,55 @@
 import { useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 
-/**
- * Hook to create/register a device session when user logs in
- * Should be called once after user authentication
- */
+const SESSION_KEY = 'ba_device_session_id';
+
 export function useRegisterDevice(user) {
-  const hasRegisteredRef = useRef(false);
+  const registeredRef = useRef(false);
 
   useEffect(() => {
-    if (!user?.email) {
-      hasRegisteredRef.current = false;
+    if (!user?.email || registeredRef.current) return;
+
+    // If we already have a session ID stored for this browser tab, skip
+    const existing = sessionStorage.getItem(SESSION_KEY);
+    if (existing) {
+      registeredRef.current = true;
       return;
     }
 
-    // Only register once per session in memory (not localStorage, to allow re-registration on new tabs)
-    if (hasRegisteredRef.current) {
-      return;
-    }
+    registeredRef.current = true;
 
-    // Register device on mount (after user logs in)
-    console.log('[Device Registration] Starting for user:', user.email);
-    registerDevice(user.email).then(() => {
-      hasRegisteredRef.current = true;
-      localStorage.setItem(`device_registered_${user.email}`, 'true');
-      console.log('[Device Registration] ✅ Success');
-    }).catch((err) => {
-      console.error('[Device Registration] ❌ Failed:', err);
-    });
-  }, [user?.email]);
-}
+    const ua = navigator.userAgent;
 
-/**
- * Create or update device session for current device
- */
-export async function registerDevice(userEmail) {
-  if (!userEmail) {
-    console.warn('[registerDevice] No user email provided');
-    return;
-  }
-
-  try {
-    // Extract device info from user-agent
-    const userAgent = navigator.userAgent;
-    console.log('[registerDevice] User-Agent:', userAgent);
-    
-    // Detect browser
     let browser = 'Unknown';
-    if (userAgent.includes('Chrome')) browser = 'Chrome';
-    else if (userAgent.includes('Firefox')) browser = 'Firefox';
-    else if (userAgent.includes('Safari')) browser = 'Safari';
-    else if (userAgent.includes('Edge')) browser = 'Edge';
+    if (ua.includes('Edg')) browser = 'Edge';
+    else if (ua.includes('Chrome')) browser = 'Chrome';
+    else if (ua.includes('Firefox')) browser = 'Firefox';
+    else if (ua.includes('Safari')) browser = 'Safari';
 
-    // Detect OS
     let os = 'Unknown';
-    if (userAgent.includes('Windows')) os = 'Windows';
-    else if (userAgent.includes('Mac')) os = 'macOS';
-    else if (userAgent.includes('Linux')) os = 'Linux';
-    else if (userAgent.includes('Android')) os = 'Android';
-    else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
+    if (ua.includes('Windows')) os = 'Windows';
+    else if (ua.includes('Mac')) os = 'macOS';
+    else if (ua.includes('Linux')) os = 'Linux';
+    else if (ua.includes('Android')) os = 'Android';
+    else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
 
-    // Detect device type
     let deviceType = 'desktop';
-    if (userAgent.includes('Android')) deviceType = 'mobile';
-    else if (userAgent.includes('iPhone')) deviceType = 'mobile';
-    else if (userAgent.includes('iPad')) deviceType = 'tablet';
+    if (ua.includes('Android') || ua.includes('iPhone')) deviceType = 'mobile';
+    else if (ua.includes('iPad')) deviceType = 'tablet';
 
-    console.log('[registerDevice] Detected:', { browser, os, deviceType });
-
-    // Create device session
-    console.log('[registerDevice] Calling createDeviceSession...');
-    const result = await base44.functions.invoke('createDeviceSession', {
-      user_email: userEmail,
+    base44.functions.invoke('createDeviceSession', {
+      user_email: user.email,
       device_name: `${os} ${browser}`,
       device_type: deviceType,
       browser,
       os,
+    }).then((res) => {
+      const sessionId = res?.data?.session?.session_id;
+      if (sessionId) sessionStorage.setItem(SESSION_KEY, sessionId);
+    }).catch(() => {
+      // Silently fail — non-critical feature
     });
-
-    console.log('[registerDevice] ✅ Device registered:', result);
-    return result;
-  } catch (error) {
-    console.error('[registerDevice] ❌ Error:', error);
-    // Try with fallback entity creation
-    return await createDeviceSessionFallback(userEmail);
-  }
-}
-
-/**
- * Fallback: Create device session directly via entity
- */
-async function createDeviceSessionFallback(userEmail) {
-  try {
-    console.log('[Fallback] Creating device session directly via entity...');
-    const userAgent = navigator.userAgent;
-    
-    // Detect info
-    let browser = 'Unknown';
-    if (userAgent.includes('Chrome')) browser = 'Chrome';
-    else if (userAgent.includes('Firefox')) browser = 'Firefox';
-    else if (userAgent.includes('Safari')) browser = 'Safari';
-    
-    let os = 'Unknown';
-    if (userAgent.includes('Windows')) os = 'Windows';
-    else if (userAgent.includes('Mac')) os = 'macOS';
-    else if (userAgent.includes('Linux')) os = 'Linux';
-
-    const session = await base44.entities.DeviceSession.create({
-      session_id: Math.random().toString(36).substr(2, 9),
-      user_email: userEmail,
-      device_name: `${os} ${browser}`,
-      device_type: 'desktop',
-      browser: browser,
-      os: os,
-      ip_address: 'unknown',
-      user_agent: userAgent,
-      created_at: new Date().toISOString(),
-      last_activity: new Date().toISOString(),
-      is_current: true,
-      is_trusted: false,
-    });
-
-    console.log('[Fallback] ✅ Device created via entity:', session);
-    return session;
-  } catch (fallbackError) {
-    console.error('[Fallback] ❌ Also failed:', fallbackError);
-    throw fallbackError;
-  }
+  }, [user?.email]);
 }
 
 export default useRegisterDevice;

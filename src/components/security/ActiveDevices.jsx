@@ -11,15 +11,27 @@ const SESSION_KEY = 'ba_device_session_id';
 export default function ActiveDevices({ user }) {
   const queryClient = useQueryClient();
   const [confirmDisconnect, setConfirmDisconnect] = useState(null);
+  const [revokedTimer, setRevokedTimer] = useState(null);
 
   const currentSessionId = sessionStorage.getItem(SESSION_KEY);
 
-  // Subscription: when admin revokes current session → force logout instantly
+  // Countdown timer for revocation
+  useEffect(() => {
+    if (revokedTimer === null) return;
+    if (revokedTimer <= 0) {
+      base44.auth.logout('/');
+      return;
+    }
+    const timer = setTimeout(() => setRevokedTimer(revokedTimer - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [revokedTimer]);
+
+  // Subscription: when admin revokes current session → show timer popup
   useEffect(() => {
     if (!user?.email || !currentSessionId) return;
     const unsubscribe = base44.entities.DeviceSession.subscribe((event) => {
       if (event.type === 'delete' && event.data?.session_id === currentSessionId) {
-        base44.auth.logout('/');
+        setRevokedTimer(5);
       } else if (event.type === 'delete' || event.type === 'create' || event.type === 'update') {
         queryClient.invalidateQueries({ queryKey: ['active-devices'] });
       }
@@ -263,6 +275,46 @@ export default function ActiveDevices({ user }) {
           💡 Votre session actuelle est automatiquement marquée. Vous pouvez déconnecter les autres appareils.
         </p>
       </div>
+
+      {/* Revocation security popup */}
+      <AnimatePresence>
+        {revokedTimer !== null && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              className="bg-card border-2 border-destructive/50 rounded-2xl shadow-2xl p-8 max-w-sm mx-4"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+            >
+              <div className="text-center space-y-5">
+                <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center mx-auto">
+                  <LogOut className="w-8 h-8 text-destructive animate-pulse" />
+                </div>
+                <div>
+                  <h2 className="font-grotesk font-bold text-lg text-destructive mb-1">Session révoquée</h2>
+                  <p className="text-muted-foreground text-sm">
+                    Votre session a été fermée par un administrateur.
+                  </p>
+                </div>
+                <div className="pt-4 space-y-3">
+                  <div className="inline-flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-destructive/10 border border-destructive/30 w-full">
+                    <div className="w-2.5 h-2.5 rounded-full bg-destructive animate-pulse" />
+                    <span className="font-grotesk font-semibold text-destructive">Déconnexion en {revokedTimer}s</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Vous serez automatiquement déconnecté.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

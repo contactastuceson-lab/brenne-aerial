@@ -62,9 +62,15 @@ export default function ActiveDevices({ user }) {
 
   const disconnectMutation = useMutation({
     mutationFn: (sessionId) => base44.functions.invoke('deleteDeviceSession', { session_id: sessionId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['active-devices'] });
-      toast.success('Appareil déconnecté');
+    onSuccess: (_, sessionId) => {
+      // If we just deleted the current session, logout
+      if (sessionId === currentSessionId) {
+        setTimeout(() => base44.auth.logout(), 1000);
+        toast.success('Vous allez être déconnecté...');
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['active-devices'] });
+        toast.success('Appareil déconnecté');
+      }
       setConfirmDisconnect(null);
     },
     onError: () => toast.error('Erreur lors de la déconnexion'),

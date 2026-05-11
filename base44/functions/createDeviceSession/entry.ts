@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { user_email, device_name, device_type, browser, os } = body;
+    const { user_email, device_name, device_type, browser, os, fingerprint } = body;
 
     if (!user_email) return Response.json({ error: 'user_email requis' }, { status: 400 });
 
@@ -33,15 +33,18 @@ Deno.serve(async (req) => {
     // Get all existing sessions for this user
     const existing = await base44.asServiceRole.entities.DeviceSession.filter({ user_email });
 
-    // Find if there's already a session with same device_name + ip (upsert)
+    // Find if there's already a session with same fingerprint (or device_name + os as fallback)
     const duplicate = existing.find(s =>
-      s.device_name === (device_name || 'Appareil inconnu') && s.ip_address === ip
+      fingerprint
+        ? s.fingerprint === fingerprint
+        : s.device_name === (device_name || 'Appareil inconnu') && s.os === os && s.browser === browser
     );
 
     if (duplicate) {
       // Just refresh last_activity — do NOT touch other sessions
       await base44.asServiceRole.entities.DeviceSession.update(duplicate.id, {
         last_activity: now,
+        ip_address: ip,
         city: city || duplicate.city,
         country: country || duplicate.country,
       });
@@ -60,6 +63,7 @@ Deno.serve(async (req) => {
       ip_address: ip,
       city,
       country,
+      fingerprint: fingerprint || null,
       is_trusted: false,
       last_activity: now,
       created_at: now,

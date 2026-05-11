@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Identifiant unique de la session"
     },
+    "fingerprint": {
+      "type": "string",
+      "description": "Identifiant unique de l'appareil (localStorage)"
+    },
     "user_email": {
       "type": "string",
       "description": "Email de l'utilisateur"
@@ -37,13 +41,6 @@
     },
     "country": {
       "type": "string"
-    },
-    "user_agent": {
-      "type": "string"
-    },
-    "is_current": {
-      "type": "boolean",
-      "default": false
     },
     "is_trusted": {
       "type": "boolean",

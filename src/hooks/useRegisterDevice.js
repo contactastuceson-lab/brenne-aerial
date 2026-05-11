@@ -1,7 +1,17 @@
 import { useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 
+const FINGERPRINT_KEY = 'ba_device_fingerprint';
 const SESSION_KEY = 'ba_device_session_id';
+
+function getOrCreateFingerprint() {
+  let fp = localStorage.getItem(FINGERPRINT_KEY);
+  if (!fp) {
+    fp = crypto.randomUUID();
+    localStorage.setItem(FINGERPRINT_KEY, fp);
+  }
+  return fp;
+}
 
 export function useRegisterDevice(user) {
   const registeredRef = useRef(false);
@@ -9,9 +19,9 @@ export function useRegisterDevice(user) {
   useEffect(() => {
     if (!user?.email || registeredRef.current) return;
 
-    // If we already have a session ID stored for this browser tab, skip
-    const existing = sessionStorage.getItem(SESSION_KEY);
-    if (existing) {
+    // If we already have a session ID for this tab, skip
+    const existingSession = sessionStorage.getItem(SESSION_KEY);
+    if (existingSession) {
       registeredRef.current = true;
       return;
     }
@@ -19,6 +29,7 @@ export function useRegisterDevice(user) {
     registeredRef.current = true;
 
     const ua = navigator.userAgent;
+    const fingerprint = getOrCreateFingerprint();
 
     let browser = 'Unknown';
     if (ua.includes('Edg')) browser = 'Edge';
@@ -43,11 +54,10 @@ export function useRegisterDevice(user) {
       device_type: deviceType,
       browser,
       os,
+      fingerprint,
     }).then((res) => {
       const sessionId = res?.data?.session?.session_id;
-      if (sessionId) {
-        sessionStorage.setItem(SESSION_KEY, sessionId);
-      }
+      if (sessionId) sessionStorage.setItem(SESSION_KEY, sessionId);
     }).catch(() => {
       // Silently fail — non-critical feature
     });

@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    const PDG_EMAILS = ['contact.astuceson@gmail.com'];
+    const PDG_EMAILS = ['contact.astuceson@gmail.com', 'thecommitteescp@gmail.com'];
     const PDG_ADJOINT_EMAILS = ['sentenacborys@gmail.com'];
     const ADMIN_ROLES = ['owner', 'pdg_adjoint', 'admin', 'conseil_admin', 'directeur'];
     const isTopLevel = PDG_EMAILS.includes(user?.email) || PDG_ADJOINT_EMAILS.includes(user?.email) || ADMIN_ROLES.includes(user?.role);

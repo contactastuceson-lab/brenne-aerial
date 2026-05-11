@@ -28,16 +28,25 @@ export default function ActiveDevices({ user }) {
 
   // Subscription: when admin revokes current session → show timer popup
   useEffect(() => {
-    if (!user?.email || !currentSessionId) return;
+    if (!user?.email) return;
+    const currentDeviceSessionId = sessionStorage.getItem(SESSION_KEY);
+    if (!currentDeviceSessionId) return;
+    
     const unsubscribe = base44.entities.DeviceSession.subscribe((event) => {
-      if (event.type === 'delete' && event.data?.session_id === currentSessionId) {
-        setRevokedTimer(5);
-      } else if (event.type === 'delete' || event.type === 'create' || event.type === 'update') {
+      // Find the current session in the list to compare IDs
+      if (event.type === 'delete') {
+        // event.id is the deleted session's ID
+        if (event.id === currentDeviceSessionId) {
+          setRevokedTimer(5);
+        } else {
+          queryClient.invalidateQueries({ queryKey: ['active-devices'] });
+        }
+      } else if (event.type === 'create' || event.type === 'update') {
         queryClient.invalidateQueries({ queryKey: ['active-devices'] });
       }
     });
     return () => unsubscribe();
-  }, [user?.email, currentSessionId, queryClient]);
+  }, [user?.email, queryClient]);
 
   const { data: devices = [], isLoading } = useQuery({
     queryKey: ['active-devices', user?.email],

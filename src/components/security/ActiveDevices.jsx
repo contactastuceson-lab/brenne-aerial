@@ -41,9 +41,8 @@ export default function ActiveDevices({ user }) {
     onSuccess: (_, sessionId) => {
        queryClient.invalidateQueries({ queryKey: ['active-devices'] });
 
-       // If we just deleted the current session, logout immediately
        if (sessionId === currentSessionId) {
-         base44.auth.logout();
+         setTimeout(() => base44.auth.logout(), 500);
        } else {
          toast.success('Appareil déconnecté');
        }

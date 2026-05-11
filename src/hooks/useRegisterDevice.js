@@ -45,7 +45,9 @@ export function useRegisterDevice(user) {
       os,
     }).then((res) => {
       const sessionId = res?.data?.session?.session_id;
-      if (sessionId) sessionStorage.setItem(SESSION_KEY, sessionId);
+      if (sessionId) {
+        sessionStorage.setItem(SESSION_KEY, sessionId);
+      }
     }).catch(() => {
       // Silently fail — non-critical feature
     });

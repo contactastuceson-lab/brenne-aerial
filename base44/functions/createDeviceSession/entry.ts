@@ -11,8 +11,6 @@ Deno.serve(async (req) => {
 
     if (!user_email) return Response.json({ error: 'user_email requis' }, { status: 400 });
 
-    // Generate unique session ID
-    const sessionId = crypto.randomUUID();
     const now = new Date().toISOString();
 
     // Get IP from headers
@@ -35,32 +33,23 @@ Deno.serve(async (req) => {
     // Get all existing sessions for this user
     const existing = await base44.asServiceRole.entities.DeviceSession.filter({ user_email });
 
-    // Find if there's already a session with same device_name + ip
-    const duplicate = existing.find(s => s.device_name === (device_name || 'Appareil inconnu') && s.ip_address === ip);
+    // Find if there's already a session with same device_name + ip (upsert)
+    const duplicate = existing.find(s =>
+      s.device_name === (device_name || 'Appareil inconnu') && s.ip_address === ip
+    );
 
     if (duplicate) {
-      // Just update last_activity and mark as current
+      // Just refresh last_activity — do NOT touch other sessions
       await base44.asServiceRole.entities.DeviceSession.update(duplicate.id, {
-        is_current: true,
         last_activity: now,
+        city: city || duplicate.city,
+        country: country || duplicate.country,
       });
-      // Mark all others as not current
-      for (const s of existing) {
-        if (s.id !== duplicate.id && s.is_current) {
-          await base44.asServiceRole.entities.DeviceSession.update(s.id, { is_current: false });
-        }
-      }
-      return Response.json({ success: true, session: { ...duplicate, is_current: true, last_activity: now } });
+      return Response.json({ success: true, session: { ...duplicate, last_activity: now } });
     }
 
-    // No duplicate — mark all others as not current
-    for (const s of existing) {
-      if (s.is_current) {
-        await base44.asServiceRole.entities.DeviceSession.update(s.id, { is_current: false });
-      }
-    }
-
-    // Create new session
+    // New device — create a new session entry
+    const sessionId = crypto.randomUUID();
     const session = await base44.asServiceRole.entities.DeviceSession.create({
       session_id: sessionId,
       user_email,
@@ -71,7 +60,6 @@ Deno.serve(async (req) => {
       ip_address: ip,
       city,
       country,
-      is_current: true,
       is_trusted: false,
       last_activity: now,
       created_at: now,

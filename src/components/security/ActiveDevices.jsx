@@ -6,9 +6,13 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+const SESSION_KEY = 'ba_device_session_id';
+
 export default function ActiveDevices({ user }) {
   const queryClient = useQueryClient();
   const [confirmDisconnect, setConfirmDisconnect] = useState(null);
+
+  const currentSessionId = sessionStorage.getItem(SESSION_KEY);
 
   const { data: devices = [], isLoading } = useQuery({
     queryKey: ['active-devices', user?.email],
@@ -17,8 +21,8 @@ export default function ActiveDevices({ user }) {
     refetchInterval: 60000,
   });
 
-  const currentDevice = devices.find(d => d.is_current);
-  const otherDevices = devices.filter(d => !d.is_current);
+  const currentDevice = devices.find(d => d.session_id === currentSessionId);
+  const otherDevices = devices.filter(d => d.session_id !== currentSessionId);
 
   const disconnectMutation = useMutation({
     mutationFn: (deviceId) => base44.entities.DeviceSession.delete(deviceId),

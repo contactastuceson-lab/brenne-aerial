@@ -19,7 +19,7 @@ export default function ActiveDevices({ user }) {
   useEffect(() => {
     if (revokedTimer === null) return;
     if (revokedTimer <= 0) {
-      base44.auth.logout('/');
+      window.location.href = '/';
       return;
     }
     const timer = setTimeout(() => setRevokedTimer(revokedTimer - 1), 1000);

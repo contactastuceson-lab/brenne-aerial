@@ -9,11 +9,16 @@ Deno.serve(async (req) => {
     const { session_id } = await req.json();
     if (!session_id) return Response.json({ error: 'session_id requis' }, { status: 400 });
 
-    // Find the session and verify it belongs to this user
-    const sessions = await base44.asServiceRole.entities.DeviceSession.filter({ user_email: user.email });
-    const session = sessions.find(s => s.session_id === session_id || s.id === session_id);
+    // Get all sessions to find the one to delete
+    const allSessions = await base44.asServiceRole.entities.DeviceSession.list('-last_activity', 500);
+    const session = allSessions.find(s => s.session_id === session_id || s.id === session_id);
 
     if (!session) return Response.json({ error: 'Session introuvable' }, { status: 404 });
+
+    // Check authorization: user can only delete their own sessions, unless admin
+    if (session.user_email !== user.email && user.role !== 'admin') {
+      return Response.json({ error: 'Unauthorized' }, { status: 403 });
+    }
 
     await base44.asServiceRole.entities.DeviceSession.delete(session.id);
 

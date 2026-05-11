@@ -61,7 +61,7 @@ export default function ActiveDevices({ user }) {
   const otherDevices = devices.filter(d => d.session_id !== currentSessionId);
 
   const disconnectMutation = useMutation({
-    mutationFn: (deviceId) => base44.functions.invoke('deleteDeviceSession', { session_id: deviceId }),
+    mutationFn: (sessionId) => base44.functions.invoke('deleteDeviceSession', { session_id: sessionId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-devices'] });
       toast.success('Appareil déconnecté');
@@ -73,7 +73,7 @@ export default function ActiveDevices({ user }) {
   const disconnectAllMutation = useMutation({
     mutationFn: async () => {
       for (const d of otherDevices) {
-        await base44.functions.invoke('deleteDeviceSession', { session_id: d.id });
+        await base44.functions.invoke('deleteDeviceSession', { session_id: d.session_id });
       }
     },
     onSuccess: () => {
@@ -255,7 +255,7 @@ export default function ActiveDevices({ user }) {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => disconnectMutation.mutate(device.id)}
+                          onClick={() => disconnectMutation.mutate(device.session_id)}
                           disabled={disconnectMutation.isPending}
                           className="flex-1 text-xs"
                         >

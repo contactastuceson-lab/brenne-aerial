@@ -219,7 +219,7 @@ export default function AdminSessions() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => deleteSingleMutation.mutate(session.id)}
+                          onClick={() => deleteSingleMutation.mutate(session.session_id)}
                           disabled={deleteSingleMutation.isPending}
                           className="text-red-400 hover:text-red-500 hover:bg-red-500/10"
                         >

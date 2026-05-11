@@ -31,6 +31,14 @@ export default function ActiveDevices({ user }) {
     refetchInterval: 30000,
   });
 
+  // If current session is no longer in the list, logout
+  useEffect(() => {
+    if (!currentSessionId || devices.length === 0) return;
+    const stillExists = devices.some(d => d.session_id === currentSessionId);
+    if (!stillExists) {
+      base44.auth.logout();
+    }
+  }, [devices, currentSessionId]);
 
 
   const currentDevice = devices.find(d => d.session_id === currentSessionId);

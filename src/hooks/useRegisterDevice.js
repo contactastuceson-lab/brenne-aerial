@@ -13,53 +13,53 @@ function getOrCreateFingerprint() {
   return fp;
 }
 
+function getDeviceInfo() {
+  const ua = navigator.userAgent;
+
+  let browser = 'Unknown';
+  if (ua.includes('Edg')) browser = 'Edge';
+  else if (ua.includes('Chrome')) browser = 'Chrome';
+  else if (ua.includes('Firefox')) browser = 'Firefox';
+  else if (ua.includes('Safari')) browser = 'Safari';
+
+  let os = 'Unknown';
+  if (ua.includes('Windows')) os = 'Windows';
+  else if (ua.includes('Android')) os = 'Android';
+  else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+  else if (ua.includes('Mac')) os = 'macOS';
+  else if (ua.includes('Linux')) os = 'Linux';
+
+  let deviceType = 'desktop';
+  if (ua.includes('Android') || ua.includes('iPhone')) deviceType = 'mobile';
+  else if (ua.includes('iPad')) deviceType = 'tablet';
+
+  return { browser, os, deviceType, device_name: `${os} ${browser}` };
+}
+
 export function useRegisterDevice(user) {
   const registeredRef = useRef(false);
 
   useEffect(() => {
     if (!user?.email || registeredRef.current) return;
-
-    // If we already have a session ID for this tab, skip
-    const existingSession = sessionStorage.getItem(SESSION_KEY);
-    if (existingSession) {
-      registeredRef.current = true;
-      return;
-    }
-
     registeredRef.current = true;
 
-    const ua = navigator.userAgent;
     const fingerprint = getOrCreateFingerprint();
-
-    let browser = 'Unknown';
-    if (ua.includes('Edg')) browser = 'Edge';
-    else if (ua.includes('Chrome')) browser = 'Chrome';
-    else if (ua.includes('Firefox')) browser = 'Firefox';
-    else if (ua.includes('Safari')) browser = 'Safari';
-
-    let os = 'Unknown';
-    if (ua.includes('Windows')) os = 'Windows';
-    else if (ua.includes('Mac')) os = 'macOS';
-    else if (ua.includes('Linux')) os = 'Linux';
-    else if (ua.includes('Android')) os = 'Android';
-    else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
-
-    let deviceType = 'desktop';
-    if (ua.includes('Android') || ua.includes('iPhone')) deviceType = 'mobile';
-    else if (ua.includes('iPad')) deviceType = 'tablet';
+    const { browser, os, deviceType, device_name } = getDeviceInfo();
 
     base44.functions.invoke('createDeviceSession', {
       user_email: user.email,
-      device_name: `${os} ${browser}`,
+      device_name,
       device_type: deviceType,
       browser,
       os,
       fingerprint,
     }).then((res) => {
       const sessionId = res?.data?.session?.session_id;
-      if (sessionId) sessionStorage.setItem(SESSION_KEY, sessionId);
+      if (sessionId) {
+        sessionStorage.setItem(SESSION_KEY, sessionId);
+      }
     }).catch(() => {
-      // Silently fail — non-critical feature
+      // Silently fail — non-critical
     });
   }, [user?.email]);
 }

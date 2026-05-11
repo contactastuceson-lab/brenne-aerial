@@ -53,23 +53,29 @@ export default function AdminSessions() {
   }, {});
 
   const deleteSingleMutation = useMutation({
-    mutationFn: (sessionId) => base44.functions.invoke('deleteDeviceSession', { session_id: sessionId }),
+    mutationFn: async (sessionId) => {
+      const res = await base44.functions.invoke('deleteDeviceSession', { session_id: sessionId });
+      return res.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-all-sessions'] });
       toast.success('Session fermée');
     },
-    onError: () => toast.error('Erreur lors de la fermeture'),
+    onError: (err) => toast.error(err?.response?.data?.error || 'Erreur lors de la fermeture'),
   });
 
   const deleteAllMutation = useMutation({
-    mutationFn: (targetEmail) => base44.functions.invoke('adminDeleteAllSessions', { target_user_email: targetEmail || null }),
-    onSuccess: (res) => {
+    mutationFn: async (targetEmail) => {
+      const res = await base44.functions.invoke('adminDeleteAllSessions', { target_user_email: targetEmail || null });
+      return res.data;
+    },
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-all-sessions'] });
-      toast.success(`${res?.data?.deleted || 0} session(s) fermée(s)`);
+      toast.success(`${data?.deleted || 0} session(s) fermée(s)`);
       setConfirmAll(false);
       setConfirmUser(null);
     },
-    onError: () => toast.error('Erreur lors de la fermeture des sessions'),
+    onError: (err) => toast.error(err?.response?.data?.error || 'Erreur lors de la fermeture des sessions'),
   });
 
   return (

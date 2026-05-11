@@ -36,12 +36,19 @@ function getDeviceInfo() {
   return { browser, os, deviceType, device_name: `${os} ${browser}` };
 }
 
+// Module-level flag so it only runs ONCE per page load, across all re-renders
+let hasRegistered = false;
+
 export function useRegisterDevice(user) {
-  const registeredRef = useRef(false);
+  const emailRef = useRef(null);
 
   useEffect(() => {
-    if (!user?.email || registeredRef.current) return;
-    registeredRef.current = true;
+    if (!user?.email) return;
+    // Only register once per user per page load
+    if (hasRegistered && emailRef.current === user.email) return;
+
+    hasRegistered = true;
+    emailRef.current = user.email;
 
     const fingerprint = getOrCreateFingerprint();
     const { browser, os, deviceType, device_name } = getDeviceInfo();

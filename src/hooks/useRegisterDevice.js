@@ -63,7 +63,8 @@ export function useRegisterDevice(user) {
       os,
       fingerprint,
     }).then((res) => {
-      const sessionId = res?.data?.session?.session_id;
+      const session = res?.data?.session;
+      const sessionId = session?.session_id || session?.id;
       if (sessionId) {
         sessionStorage.setItem(SESSION_KEY, sessionId);
       }

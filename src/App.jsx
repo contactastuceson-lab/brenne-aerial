@@ -59,7 +59,7 @@ import AdminClientFiles from "@/pages/admin/AdminClientFiles";
 import AdminPartners from "@/pages/admin/AdminPartners";
 import AdminDroneMaintenance from "@/pages/admin/AdminDroneMaintenance.jsx";
 import AdminBeforeAfter from "@/pages/admin/AdminBeforeAfter.jsx";
-import AdminSessions from "@/pages/admin/AdminSessions.jsx";
+import AdminSessions from "@/pages/admin/AdminSessions";
 import ToitureCheckupPage from "@/pages/ToitureCheckupPage";
 import BeforeAfterPage from "@/pages/BeforeAfterPage.jsx";
 import EspaceClientPage from "@/pages/EspaceClientPage";

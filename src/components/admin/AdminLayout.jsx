@@ -87,6 +87,7 @@ const NAV_GROUPS = [
       { path: '/admin/accounts', icon: Users, label: 'Comptes & Rôles', minLevel: 80 },
       { path: '/admin/governance', icon: Crown, label: 'Gouvernance', minLevel: 80 },
       { path: '/admin/employees', icon: Briefcase, label: 'Équipe', minLevel: 80 },
+      { path: '/admin/sessions', icon: Zap, label: 'Sessions', minLevel: 100 },
       { path: '/admin/pdg', icon: Crown, label: 'Espace PDG', minLevel: 100 },
     ]
   },
@@ -270,6 +271,7 @@ export default function AdminLayout() {
               { to: '/admin/data-manager', icon: Database, label: 'Données' },
               { to: '/admin/emailing', icon: Mail, label: 'Emailing' },
               { to: '/admin/maintenance', icon: Shield, label: 'Maintenance' },
+              { to: '/admin/sessions', icon: Zap, label: 'Sessions' },
             ].map(({ to, icon: Icon, label }) => {
               const active = location.pathname === to || (to !== '/admin' && location.pathname.startsWith(to));
               return (

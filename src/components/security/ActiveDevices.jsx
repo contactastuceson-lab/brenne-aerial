@@ -29,10 +29,11 @@ export default function ActiveDevices({ user }) {
         // If current session was deleted → force logout
         const deleted = event.data;
         if (deleted?.session_id === currentSessionId || deleted?.fingerprint === localStorage.getItem('ba_device_fingerprint')) {
-          toast.error('Votre session a été révoquée.');
-          setTimeout(() => base44.auth.logout('/'), 1500);
+          toast.error('Votre session a été révoquée par un administrateur.');
+          setTimeout(() => base44.auth.logout('/'), 2000);
           return;
         }
+        // Other sessions deleted — refresh the list
         queryClient.invalidateQueries({ queryKey: ['active-devices'] });
       } else {
         queryClient.invalidateQueries({ queryKey: ['active-devices'] });

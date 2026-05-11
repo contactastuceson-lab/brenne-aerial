@@ -19,7 +19,8 @@ export default function ActiveDevices({ user }) {
     if (!user?.email) return;
     
     const unsubscribe = base44.entities.DeviceSession.subscribe((event) => {
-      queryClient.invalidateQueries({ queryKey: ['active-devices'] });
+      // Force immediate refetch on any change
+      queryClient.refetchQueries({ queryKey: ['active-devices', user.email] });
     });
     return () => unsubscribe();
   }, [user?.email, queryClient]);

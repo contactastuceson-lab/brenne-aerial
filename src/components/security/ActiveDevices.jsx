@@ -241,17 +241,17 @@ export default function ActiveDevices({ user }) {
                     </div>
                   </div>
                   <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setConfirmDisconnect(device.id)}
-                    className="gap-2 text-red-400 hover:text-red-500 hover:bg-red-500/10"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+                     size="sm"
+                     variant="ghost"
+                     onClick={() => setConfirmDisconnect(device.session_id)}
+                     className="gap-2 text-red-400 hover:text-red-500 hover:bg-red-500/10"
+                   >
+                     <LogOut className="w-3.5 h-3.5" />
+                   </Button>
+                  </div>
 
-                <AnimatePresence>
-                  {confirmDisconnect === device.id && (
+                  <AnimatePresence>
+                   {confirmDisconnect === device.session_id && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}

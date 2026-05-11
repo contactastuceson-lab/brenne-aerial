@@ -60,6 +60,7 @@ import AdminPartners from "@/pages/admin/AdminPartners";
 import AdminDroneMaintenance from "@/pages/admin/AdminDroneMaintenance.jsx";
 import AdminBeforeAfter from "@/pages/admin/AdminBeforeAfter.jsx";
 import AdminSessions from "@/pages/admin/AdminSessions";
+import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import ToitureCheckupPage from "@/pages/ToitureCheckupPage";
 import BeforeAfterPage from "@/pages/BeforeAfterPage.jsx";
 import EspaceClientPage from "@/pages/EspaceClientPage";
@@ -183,6 +184,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/drones" element={<AdminDroneMaintenance />} />
         <Route path="/admin/before-after" element={<AdminBeforeAfter />} />
         <Route path="/admin/sessions" element={<AdminSessions />} />
+        <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

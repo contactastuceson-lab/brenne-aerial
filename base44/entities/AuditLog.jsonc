@@ -4,49 +4,35 @@
   "properties": {
     "user_email": {
       "type": "string",
-      "description": "Email de l'utilisateur ayant effectué l'action"
+      "description": "Email de l'utilisateur"
     },
-    "action_type": {
+    "user_name": {
+      "type": "string",
+      "description": "Nom de l'utilisateur"
+    },
+    "action": {
       "type": "string",
       "enum": [
+        "create",
+        "update",
+        "delete",
+        "read",
         "login",
-        "logout",
-        "profile_update",
-        "password_change",
-        "2fa_enabled",
-        "2fa_disabled",
-        "2fa_method_added",
-        "data_export",
-        "data_deleted",
-        "user_created",
-        "user_deleted",
-        "permission_changed",
-        "badge_awarded",
-        "badge_removed",
-        "role_changed",
-        "suspension",
-        "ban",
-        "admin_action",
-        "file_uploaded",
-        "file_deleted",
-        "quote_accepted",
-        "quote_refused",
-        "payment_processed",
-        "donation_received"
+        "logout"
       ],
       "description": "Type d'action"
     },
-    "description": {
+    "entity_type": {
       "type": "string",
-      "description": "Description détaillée de l'action"
+      "description": "Type d'entit\u00e9 concern\u00e9e (ex: Quote, Appointment)"
     },
-    "resource_type": {
+    "entity_id": {
       "type": "string",
-      "description": "Type de ressource affectée (User, Project, Quote, etc.)"
+      "description": "ID de l'entit\u00e9"
     },
-    "resource_id": {
-      "type": "string",
-      "description": "ID de la ressource"
+    "changes": {
+      "type": "object",
+      "description": "D\u00e9tails des changements (ancien/nouveau)"
     },
     "ip_address": {
       "type": "string",
@@ -60,29 +46,48 @@
       "type": "string",
       "enum": [
         "success",
-        "failed",
-        "attempted"
+        "failure"
       ],
       "default": "success"
     },
-    "metadata": {
-      "type": "object",
-      "description": "Données additionnelles (ancien/nouveau valeur, etc.)"
-    },
-    "timestamp": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Timestamp de l'action"
-    },
-    "is_sensitive": {
-      "type": "boolean",
-      "default": false,
-      "description": "Si c'est une opération sensible"
+    "error_message": {
+      "type": "string"
     }
   },
   "required": [
     "user_email",
-    "action_type",
-    "timestamp"
-  ]
+    "action",
+    "entity_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "owner"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "owner"
+      }
+    }
+  }
 }

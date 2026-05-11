@@ -7,7 +7,7 @@ import {
   Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail,
   Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, Map,
   FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap,
-  SlidersHorizontal
+  SlidersHorizontal, Activity
 } from 'lucide-react';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 import AdminRealtimeSync from '@/components/admin/AdminRealtimeSync';
@@ -88,6 +88,7 @@ const NAV_GROUPS = [
       { path: '/admin/governance', icon: Crown, label: 'Gouvernance', minLevel: 80 },
       { path: '/admin/employees', icon: Briefcase, label: 'Équipe', minLevel: 80 },
       { path: '/admin/sessions', icon: Zap, label: 'Sessions', minLevel: 100 },
+      { path: '/admin/audit-logs', icon: Activity, label: 'Audit Logs', minLevel: 100 },
       { path: '/admin/pdg', icon: Crown, label: 'Espace PDG', minLevel: 100 },
     ]
   },
@@ -272,6 +273,7 @@ export default function AdminLayout() {
               { to: '/admin/emailing', icon: Mail, label: 'Emailing' },
               { to: '/admin/maintenance', icon: Shield, label: 'Maintenance' },
               { to: '/admin/sessions', icon: Zap, label: 'Sessions' },
+              { to: '/admin/audit-logs', icon: Activity, label: 'Audit Logs' },
             ].map(({ to, icon: Icon, label }) => {
               const active = location.pathname === to || (to !== '/admin' && location.pathname.startsWith(to));
               return (

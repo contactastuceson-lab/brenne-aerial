@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Monitor, Smartphone, Tablet, LogOut, MapPin, Clock, CheckCircle, Loader2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,8 +18,28 @@ export default function ActiveDevices({ user }) {
     queryKey: ['active-devices', user?.email],
     queryFn: () => base44.entities.DeviceSession.filter({ user_email: user.email }),
     enabled: !!user?.email,
-    refetchInterval: 60000,
+    refetchInterval: 30000,
   });
+
+  // Real-time subscription — instantly reflect deletions
+  useEffect(() => {
+    if (!user?.email) return;
+    const unsubscribe = base44.entities.DeviceSession.subscribe((event) => {
+      if (event.type === 'delete') {
+        // If current session was deleted → force logout
+        const deleted = event.data;
+        if (deleted?.session_id === currentSessionId || deleted?.fingerprint === localStorage.getItem('ba_device_fingerprint')) {
+          toast.error('Votre session a été révoquée.');
+          setTimeout(() => base44.auth.logout('/'), 1500);
+          return;
+        }
+        queryClient.invalidateQueries({ queryKey: ['active-devices'] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['active-devices'] });
+      }
+    });
+    return () => unsubscribe();
+  }, [user?.email, currentSessionId, queryClient]);
 
   const currentDevice = devices.find(d => d.session_id === currentSessionId);
   const otherDevices = devices.filter(d => d.session_id !== currentSessionId);

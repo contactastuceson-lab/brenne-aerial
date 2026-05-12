@@ -324,7 +324,10 @@ export default function ProfilePage() {
              />
            </div>
 
-           <UsernameChanger user={user} username={form.username} onUpdate={() => setUser(u => ({ ...u, username: form.username }))} />
+           <UsernameChanger user={user} username={form.username} onUpdate={(newUsername) => {
+             setForm(p => ({ ...p, username: newUsername }));
+             setUser(u => ({ ...u, username: newUsername }));
+           }} />
 
            <div>
              <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Bio</label>

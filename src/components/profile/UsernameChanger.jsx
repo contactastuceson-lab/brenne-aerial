@@ -81,7 +81,8 @@ export default function UsernameChanger({ user, username, onUpdate }) {
 
       // Mettre à jour le username
       await base44.auth.updateMe({ username: newUsername });
-      onUpdate?.();
+      // Update local state
+      onUpdate?.(newUsername);
       
       toast.success('Username changé avec succès !');
       setMode('view');

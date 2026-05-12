@@ -82,6 +82,7 @@ import DonationPage from "@/pages/DonationPage";
 import DonationSuccessPage from "@/pages/DonationSuccessPage";
 import AccountDeletionPage from "@/pages/AccountDeletionPage";
 import ForumPage from "@/pages/ForumPage";
+import PublicProfilePage from "@/pages/PublicProfilePage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -151,6 +152,7 @@ const AuthenticatedApp = () => {
         <Route path="/parrainage" element={<ParrainagePage />} />
         <Route path="/avant-apres" element={<BeforeAfterPage />} />
         <Route path="/forum" element={<ForumPage />} />
+        <Route path="/@:username" element={<PublicProfilePage />} />
       </Route>
 
       {/* Admin */}

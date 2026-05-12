@@ -80,7 +80,13 @@ export default function OnboardingModal({ user, onComplete }) {
     if (!isValid) return;
     
     setSaving(true);
-    await base44.auth.updateMe({ ...form, onboarding_completed: true });
+    // Ensure display_name is set, default to full_name if empty
+    const dataToUpdate = {
+      ...form,
+      display_name: form.display_name || user?.full_name || '',
+      onboarding_completed: true,
+    };
+    await base44.auth.updateMe(dataToUpdate);
     // Send welcome email (best effort, don't block)
     base44.functions.invoke('sendWelcomeEmail', {}).catch(() => {});
     setSaving(false);

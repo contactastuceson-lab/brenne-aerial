@@ -27,8 +27,8 @@ const STATS = [
 
 function useIsOpen() {
   const now = new Date();
-  const day = now.getDay(); // 0 = dimanche
-  if (day === 0) return false;
+  const day = now.getDay(); // 0 = dimanche, 6 = samedi
+  if (day === 0) return false; // dimanche fermé
   const h = now.getHours();
   const m = now.getMinutes();
   const total = h * 60 + m;
@@ -188,10 +188,10 @@ export default function ContactPage() {
               </div>
               <div className="space-y-2">
                 {[
-                  { j: 'Lun — Ven', h: '8h00 — 19h00', open: true },
-                  { j: 'Samedi', h: '9h00 — 17h00', open: true },
-                  { j: 'Dimanche', h: 'Fermé', open: false },
-                ].map(({ j, h, open }) => (
+                   { j: 'Lun — Sam', h: '10h00 — 12h30', open: true },
+                   { j: 'Lun — Sam', h: '14h30 — 18h30', open: true },
+                   { j: 'Dimanche', h: 'Fermé', open: false },
+                 ].map(({ j, h, open }) => (
                   <div key={j} className="flex items-center justify-between">
                     <span className="font-inter text-sm text-muted-foreground">{j}</span>
                     <span className={`font-mono text-xs font-semibold ${open ? 'text-green-400' : 'text-muted-foreground'}`}>{h}</span>

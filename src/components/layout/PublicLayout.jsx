@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import OnboardingModal from '@/components/shared/OnboardingModal';
 import EmailVerificationModal from '@/components/shared/EmailVerificationModal';
 import { Outlet, useLocation } from 'react-router-dom';
-import Navbar from './Navbar';
+import AppHeader from './AppHeader';
+import BottomTabBar from './BottomTabBar';
 import Footer from './Footer';
 import AnnouncementBanner from '@/components/shared/AnnouncementBanner';
 import AnnouncementPopup from '@/components/shared/AnnouncementPopup';
@@ -19,7 +20,7 @@ export default function PublicLayout() {
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const hideFooter = location.pathname === '/messages';
+  const hideFooter = true; // replaced by BottomTabBar
   const hideFloatingButton = location.pathname === '/messages';
 
   // Register device session when user logs in
@@ -109,14 +110,14 @@ export default function PublicLayout() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AnnouncementBanner user={user} />
-      <Navbar />
+      <AppHeader />
       <main className="flex-1">
         <Outlet />
       </main>
-      {!hideFooter && <Footer />}
       <AnnouncementPopup user={user} />
       {!hideFloatingButton && <DonationFloatingButton />}
       {!hideFloatingButton && <ChatbotWidget />}
+      <BottomTabBar />
     </div>
   );
 }

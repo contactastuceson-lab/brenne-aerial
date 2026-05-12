@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Monitor, Smartphone, Tablet, LogOut, MapPin, Clock, CheckCircle, Loader2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,10 +31,15 @@ export default function ActiveDevices({ user }) {
   });
 
   // If current session is no longer in the list, logout
+  // We use a ref to track if enough time has passed since mount (grace period for session registration)
+  const mountedAtRef = useRef(Date.now());
+
   useEffect(() => {
     const currentSessionId = sessionStorage.getItem(SESSION_KEY);
     // Only check if we have a registered session AND devices have loaded
     if (!currentSessionId || devices.length === 0) return;
+    // Grace period: don't check within first 10 seconds (session registration is async)
+    if (Date.now() - mountedAtRef.current < 10000) return;
     const stillExists = devices.some(d => d.session_id === currentSessionId);
     if (!stillExists) {
       base44.auth.logout();

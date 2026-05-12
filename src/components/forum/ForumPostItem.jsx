@@ -18,22 +18,17 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   const isCurrentUserAuthor = post.author === user?.id;
 
-  const { data: author, isLoading: authorLoading } = useQuery({
-    queryKey: ['user', post.author],
+  const { data: allPublicUsers = [] } = useQuery({
+    queryKey: ['public-users-forum'],
     queryFn: async () => {
-      if (!post.author) return null;
-      try {
-        const response = await base44.entities.User.get(post.author);
-        return response;
-      } catch (error) {
-        console.log('Failed to fetch author:', error);
-        return null;
-      }
+      const res = await base44.functions.invoke('getPublicUsers', {});
+      return res.data.users || [];
     },
-    enabled: !!post.author,
   });
 
-  const isSupreme = !authorLoading && (author?.role === 'owner' || author?.role === 'pdg_adjoint');
+  const author = allPublicUsers.find(u => u.id === post.author);
+
+  const isSupreme = author && (author?.role === 'owner' || author?.role === 'pdg_adjoint');
 
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -79,7 +74,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
             ) : (
               <button className="flex items-start gap-3 hover:opacity-85 transition-opacity group">
                 <Avatar className="w-8 h-8 border border-cyan-500/20 flex-shrink-0">
-                  <AvatarImage src={author?.avatar_url} />
+                  <AvatarImage src={author?.avatar_url} alt={post.author_name} />
                   <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs font-bold">
                     {(post.author_name || post.author_email)?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>

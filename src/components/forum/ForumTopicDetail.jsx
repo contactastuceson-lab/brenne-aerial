@@ -38,15 +38,17 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
     enabled: !!topicId,
   });
 
-  // Fetch author data
-  const { data: authorData } = useQuery({
-    queryKey: ['user', topic?.author],
+  // Fetch all public users once
+  const { data: allPublicUsers = [] } = useQuery({
+    queryKey: ['public-users-forum'],
     queryFn: async () => {
-      const response = await base44.entities.User.get(topic.author);
-      return response;
+      const res = await base44.functions.invoke('getPublicUsers', {});
+      return res.data.users || [];
     },
-    enabled: !!topic?.author,
   });
+
+  // Get topic author from public users list
+  const authorData = allPublicUsers.find(u => u.id === topic?.author);
 
   // Increment view count
   useEffect(() => {

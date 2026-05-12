@@ -62,21 +62,21 @@ const UserBadgeProfile = ({ userId, small = false }) => {
   const profileContent = (
     <div className={cn('space-y-3', small && 'space-y-2')}>
       <div className="flex items-start gap-3">
-        <Avatar className={cn(small ? 'w-12 h-12' : 'w-16 h-16')}>
-          <AvatarImage src={user.avatar_url} />
-          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-lg font-bold">
-            {user.name?.charAt(0).toUpperCase() || 'U'}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <h4 className={cn('font-bold text-gray-900', small ? 'text-sm' : 'text-base')}>
-            {user.name}
-          </h4>
-          <p className={cn('text-gray-600', small ? 'text-xs' : 'text-sm')}>
-            {user.title || user.role}
-          </p>
-        </div>
-      </div>
+         <Avatar className={cn(small ? 'w-12 h-12' : 'w-16 h-16')}>
+           <AvatarImage src={user.avatar_url} />
+           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-lg font-bold">
+             {(user.full_name || user.name)?.charAt(0).toUpperCase() || 'U'}
+           </AvatarFallback>
+         </Avatar>
+         <div className="flex-1">
+           <h4 className={cn('font-bold text-gray-900', small ? 'text-sm' : 'text-base')}>
+             {user.full_name || user.name}
+           </h4>
+           <p className={cn('text-gray-600', small ? 'text-xs' : 'text-sm')}>
+             {user.title || user.role}
+           </p>
+         </div>
+       </div>
 
       {/* Rôle */}
       {user.role && user.role !== 'user' && (
@@ -136,7 +136,7 @@ const UserBadgeProfile = ({ userId, small = false }) => {
             <Avatar className="w-8 h-8 border border-cyan-500/20">
               <AvatarImage src={user.avatar_url} />
               <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs font-bold">
-                {user.name?.charAt(0).toUpperCase() || 'U'}
+                {(user.full_name || user.name)?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-1 min-w-0 flex-1">

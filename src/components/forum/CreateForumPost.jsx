@@ -58,11 +58,11 @@ const CreateForumPost = ({ topicId, currentRepliesCount = 0, onSuccess }) => {
         <Avatar className="w-11 h-11 flex-shrink-0 border border-cyan-500/20">
           <AvatarImage src={user?.avatar_url} />
           <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white font-bold text-sm">
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
+            {(user?.full_name || user?.name)?.charAt(0).toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-grotesk font-semibold text-white">{user?.name}</p>
+          <p className="font-grotesk font-semibold text-white">{user?.full_name || user?.name}</p>
           <p className="text-xs text-slate-400 capitalize">{user?.role?.replace(/_/g, ' ')}</p>
         </div>
       </div>

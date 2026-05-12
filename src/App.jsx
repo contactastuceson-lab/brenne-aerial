@@ -152,7 +152,7 @@ const AuthenticatedApp = () => {
         <Route path="/parrainage" element={<ParrainagePage />} />
         <Route path="/avant-apres" element={<BeforeAfterPage />} />
         <Route path="/forum" element={<ForumPage />} />
-        <Route path="/@:username" element={<PublicProfilePage />} />
+        <Route path="/profile/@:username" element={<PublicProfilePage />} />
       </Route>
 
       {/* Admin */}

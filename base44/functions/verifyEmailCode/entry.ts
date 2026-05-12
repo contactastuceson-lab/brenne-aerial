@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
       verification_code_expires: null,
     });
 
-    return Response.json({ success: true });
+    return Response.json({ success: true, verified: true });
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }

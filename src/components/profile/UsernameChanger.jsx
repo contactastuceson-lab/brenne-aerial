@@ -69,12 +69,11 @@ export default function UsernameChanger({ user, username, onUpdate }) {
     try {
       // Vérifier le code
       const verifyResult = await base44.functions.invoke('verifyEmailCode', {
-        email: user.email,
         code,
       });
 
-      if (!verifyResult.data?.verified) {
-        toast.error('Code invalide ou expiré');
+      if (!verifyResult.data?.success) {
+        toast.error(verifyResult.data?.error || 'Code invalide ou expiré');
         setLoading(false);
         return;
       }

@@ -134,24 +134,26 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
             {/* Avatar */}
             <div>
               <label className="font-inter text-xs text-muted-foreground mb-2 block">Avatar</label>
-              <div className="flex gap-3 items-end">
-                <div className="relative w-20 h-20 bg-secondary rounded-xl overflow-hidden border-2 border-border flex-shrink-0">
-                  {form.avatar_url && (
-                    <>
-                      <img src={form.avatar_url} alt="" className="w-full h-full object-cover" />
-                      <button
-                        onClick={() => setForm(p => ({ ...p, avatar_url: '' }))}
-                        className="absolute top-1 right-1 w-5 h-5 bg-red-400/20 hover:bg-red-400/30 border border-red-400/40 rounded-full flex items-center justify-center"
-                      >
-                        <X className="w-2.5 h-2.5 text-red-400" />
-                      </button>
-                    </>
-                  )}
-                  <label className="absolute inset-0 flex items-center justify-center cursor-pointer hover:bg-black/20 transition-colors">
-                    <input type="file" accept="image/*" onChange={handleUploadAvatar} className="hidden" />
-                    <Upload className="w-4 h-4 text-muted-foreground" />
-                  </label>
-                </div>
+              <div className="relative w-24 h-24 bg-secondary rounded-xl overflow-hidden border-2 border-border group">
+                {form.avatar_url ? (
+                  <img src={form.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                    <span className="text-lg">👤</span>
+                  </div>
+                )}
+                <label className="absolute inset-0 flex items-center justify-center cursor-pointer bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <input type="file" accept="image/*" onChange={handleUploadAvatar} className="hidden" />
+                  <Upload className="w-5 h-5 text-white" />
+                </label>
+                {form.avatar_url && (
+                  <button
+                    onClick={() => setForm(p => ({ ...p, avatar_url: '' }))}
+                    className="absolute top-1 right-1 w-5 h-5 bg-red-400 hover:bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -72,7 +72,7 @@ export default function DiscoverPage() {
     queryKey: ['all-users'],
     queryFn: async () => {
       const res = await base44.functions.invoke('getPublicUsers', {});
-      return res.data.users || [];
+      return Array.isArray(res.data) ? res.data : res.data.users || [];
     },
     enabled: !!user,
   });

@@ -37,12 +37,44 @@ function useIsOpen() {
   return matin || apresmidi;
 }
 
+function getStatusMood() {
+  const now = new Date();
+  const day = now.getDay();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const total = h * 60 + m;
+
+  if (day === 0) return { emoji: '😴', label: 'C\'est dimanche.', sub: 'On recharge les batteries (et les drones). On se retrouve lundi !', color: 'border-purple-400/30 bg-purple-400/5 text-purple-400' };
+
+  const matin = total >= 10 * 60 && total < 12 * 60 + 30;
+  const apresmidi = total >= 14 * 60 + 30 && total < 18 * 60 + 30;
+
+  if (matin || apresmidi) {
+    return { emoji: '🟢', label: 'On est là !', sub: 'L\'équipe est disponible et répond à vos messages en direct.', color: 'border-green-400/30 bg-green-400/5 text-green-400' };
+  }
+
+  if (total >= 12 * 60 + 30 && total < 14 * 60 + 30) {
+    return { emoji: '🍽️', label: 'Pause méridienne.', sub: 'On est en train de manger — les drones aussi ont faim. Revenez à 14h30 !', color: 'border-amber-400/30 bg-amber-400/5 text-amber-400' };
+  }
+
+  if (total >= 18 * 60 + 30 && total < 22 * 60) {
+    return { emoji: '🌅', label: 'On a rangé les drones.', sub: 'La journée est terminée pour nous. On vous répond demain dès 10h00 !', color: 'border-orange-400/30 bg-orange-400/5 text-orange-400' };
+  }
+
+  if (total >= 22 * 60 || total < 6 * 60) {
+    return { emoji: '🌙', label: 'La nuit, c\'est fait pour dormir.', sub: 'Même les pilotes de drone ont besoin de sommeil. On se retrouve demain à 10h00 !', color: 'border-indigo-400/30 bg-indigo-400/5 text-indigo-400' };
+  }
+
+  return { emoji: '☕', label: 'On prépare le café.', sub: 'On ouvre à 10h00. Le temps de décoller les yeux, on arrive !', color: 'border-amber-400/30 bg-amber-400/5 text-amber-400' };
+}
+
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', subject: 'devis', message: '' });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [activeField, setActiveField] = useState(null);
   const isOpen = useIsOpen();
+  const mood = getStatusMood();
   const u = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleSubmit = async (e) => {
@@ -151,6 +183,20 @@ export default function ContactPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Status mood banner */}
+      <div className="px-5 lg:px-10 -mt-4 mb-2">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          className={`max-w-7xl mx-auto flex items-center gap-4 px-5 py-3.5 rounded-2xl border ${mood.color} backdrop-blur-sm`}
+        >
+          <span className="text-2xl flex-shrink-0">{mood.emoji}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3">
+            <span className="font-grotesk font-bold text-sm">{mood.label}</span>
+            <span className="font-inter text-xs opacity-70">{mood.sub}</span>
+          </div>
+        </motion.div>
+      </div>
 
       {/* Main content */}
       <section className="py-12 px-5 lg:px-10">

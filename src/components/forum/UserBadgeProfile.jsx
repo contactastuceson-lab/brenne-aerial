@@ -131,27 +131,34 @@ const UserBadgeProfile = ({ userId, small = false }) => {
     return (
       <HoverCard>
         <HoverCardTrigger asChild>
-          <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <Avatar className="w-6 h-6">
+          <button className="flex items-center gap-3 hover:opacity-85 transition-opacity group">
+            <Avatar className="w-7 h-7 border border-cyan-500/20">
               <AvatarImage src={user.avatar_url} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-xs font-bold">
+              <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs font-bold">
                 {user.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm font-semibold text-gray-900">{user.name}</span>
-            <div className="flex gap-1.5 items-center">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-grotesk font-bold text-sm text-white group-hover:text-cyan-300 transition-colors truncate">{user.name}</span>
+              {user.role && user.role !== 'user' && (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300 whitespace-nowrap flex-shrink-0">
+                  {user.role === 'pdg_adjoint' ? 'Deputy' : user.role === 'conseil_admin' ? 'Council' : user.role.split('_')[0]}
+                </span>
+              )}
+            </div>
+            <div className="flex gap-1.5 items-center flex-shrink-0">
               <VerificationIcons verifications={user.verifications} size="sm" />
-              {user.badges && user.badges.length > 0 && user.badges.slice(0, 2).map((badge) => {
+              {user.badges && user.badges.length > 0 && user.badges.slice(0, 3).map((badge) => {
                 const cfg = BADGE_CONFIG[badge];
                 if (!cfg) return null;
                 const Icon = cfg.icon;
                 return (
                   <div
                     key={badge}
-                    className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-white flex-shrink-0 ${cfg.bg}`}
+                    className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 border ${cfg.color} ${cfg.bg} ${cfg.border}`}
                     title={badge}
                   >
-                    <Icon className="w-2 h-2" strokeWidth={3} />
+                    <Icon className="w-2.5 h-2.5" strokeWidth={2.5} />
                   </div>
                 );
               })}

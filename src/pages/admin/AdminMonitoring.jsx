@@ -215,6 +215,30 @@ export default function AdminMonitoring() {
     }
   };
 
+  const handleSimulate = async (status) => {
+    const services = [
+      { name: 'aria_llm', label: 'IA ARIA (Chatbot)' },
+      { name: 'database_quotes', label: 'Base de données - Devis' },
+      { name: 'email_service', label: 'Service Email (Notifications)' },
+    ];
+    const pick = services[Math.floor(Math.random() * services.length)];
+    await base44.entities.MonitoringLog.create({
+      service_name: pick.name,
+      service_label: pick.label,
+      status,
+      response_time_ms: status === 'degraded' ? 8500 : 0,
+      error_message: status === 'error' ? 'Connection refused: ECONNREFUSED (simulé)' : null,
+      ai_diagnosis: status === 'error'
+        ? '[CRITIQUE] Cause: Simulation de panne — le service ne répond plus. | Solution: Vérifier les logs Deno et relancer le déploiement.'
+        : '[MINEURE] Cause: Temps de réponse élevé (simulé). | Solution: Surveiller pendant 15 min avant d\'escalader.',
+      checked_at: new Date().toISOString(),
+      is_incident: status === 'error',
+      incident_resolved: false,
+    });
+    qc.invalidateQueries({ queryKey: ['monitoring-logs'] });
+    toast.success(`Simulation "${status}" injectée sur ${pick.label}`);
+  };
+
   const globalHealth = latestByService.length > 0
     ? Math.round((okServices.length / latestByService.length) * 100)
     : 100;
@@ -229,10 +253,18 @@ export default function AdminMonitoring() {
             Surveillance automatique des services critiques — check toutes les 5 min
           </p>
         </div>
-        <Button onClick={handleRunNow} disabled={running} className="gap-2 bg-primary">
-          <RefreshCw className={`w-4 h-4 ${running ? 'animate-spin' : ''}`} />
-          {running ? 'Analyse...' : 'Lancer un check'}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => handleSimulate('degraded')} variant="outline" size="sm" className="gap-1.5 text-yellow-400 border-yellow-400/30 hover:bg-yellow-400/10 text-xs">
+            <Zap className="w-3 h-3" /> Simuler dégradé
+          </Button>
+          <Button onClick={() => handleSimulate('error')} variant="outline" size="sm" className="gap-1.5 text-red-400 border-red-400/30 hover:bg-red-400/10 text-xs">
+            <AlertCircle className="w-3 h-3" /> Simuler erreur
+          </Button>
+          <Button onClick={handleRunNow} disabled={running} className="gap-2 bg-primary">
+            <RefreshCw className={`w-4 h-4 ${running ? 'animate-spin' : ''}`} />
+            {running ? 'Analyse...' : 'Lancer un check'}
+          </Button>
+        </div>
       </div>
 
       {/* KPI Bar */}

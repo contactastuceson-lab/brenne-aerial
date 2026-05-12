@@ -135,7 +135,7 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
       {/* Topic Content */}
       <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/40 backdrop-blur-md border border-cyan-500/15 rounded-2xl p-8 shadow-lg hover:border-cyan-500/25 transition-colors">
         <div className="mb-6 pb-6 border-b border-slate-700/50">
-          <UserBadgeProfile userId={topic.author} />
+          <UserBadgeProfile userId={topic.author} small />
           <p className="text-xs text-slate-400 mt-3">
             {topic.created_date && formatDistanceToNow(new Date(topic.created_date), { locale: fr, addSuffix: true })}
           </p>

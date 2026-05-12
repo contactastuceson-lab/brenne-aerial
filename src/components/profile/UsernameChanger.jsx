@@ -14,21 +14,22 @@ export default function UsernameChanger({ user, username, onUpdate }) {
   const [loading, setLoading] = useState(false);
 
   const validateUsername = async (un) => {
-    if (!un || un.length < 3) {
+    const normalizedUn = un.toLowerCase();
+    if (!normalizedUn || normalizedUn.length < 3) {
       setUsernameError('Au minimum 3 caractères');
       return false;
     }
-    if (!/^[a-zA-Z0-9_-]+$/.test(un)) {
+    if (!/^[a-z0-9_-]+$/.test(normalizedUn)) {
       setUsernameError('Lettres, chiffres, - et _ uniquement');
       return false;
     }
-    if (un === username) {
+    if (normalizedUn === username.toLowerCase()) {
       setUsernameError('Doit être différent du username actuel');
       return false;
     }
     // Check availability
     try {
-      const result = await base44.functions.invoke('checkUsernameAvailable', { username: un });
+      const result = await base44.functions.invoke('checkUsernameAvailable', { username: normalizedUn });
       if (!result.data.available) {
         setUsernameError('Ce username est déjà pris');
         return false;
@@ -78,10 +79,11 @@ export default function UsernameChanger({ user, username, onUpdate }) {
         return;
       }
 
-      // Mettre à jour le username
-      await base44.auth.updateMe({ username: newUsername });
+      // Mettre à jour le username (lowercase)
+      const normalizedUsername = newUsername.toLowerCase();
+      await base44.auth.updateMe({ username: normalizedUsername });
       // Update local state
-      onUpdate?.(newUsername);
+      onUpdate?.(normalizedUsername);
       
       toast.success('Username changé avec succès !');
       setMode('view');

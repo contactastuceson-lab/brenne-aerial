@@ -8,8 +8,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import AnnouncementBanner from '@/components/shared/AnnouncementBanner';
 import AnnouncementPopup from '@/components/shared/AnnouncementPopup';
-import DonationFloatingButton from '@/components/DonationFloatingButton';
-import ChatbotWidget from '@/components/ChatbotWidget';
+
 import MaintenancePage from '@/pages/MaintenancePage';
 import SiteOfflinePage from '@/pages/SiteOfflinePage';
 import BannedPage from '@/pages/BannedPage';
@@ -126,8 +125,6 @@ export default function PublicLayout() {
         <Outlet />
       </main>
       <AnnouncementPopup user={user} />
-      {!hideFloatingButton && <DonationFloatingButton />}
-      {!hideFloatingButton && <ChatbotWidget />}
       
       {/* Mobile: BottomTabBar */}
       <div className="md:hidden">

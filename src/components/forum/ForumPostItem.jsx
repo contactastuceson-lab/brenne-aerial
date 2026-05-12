@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Heart, MessageSquare, Check, Edit2, Trash2 } from 'lucide-react';
+import { Heart, Check, Edit2, Trash2 } from 'lucide-react';
 import UserBadgeProfile from './UserBadgeProfile';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
 
 const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution }) => {
   const { user } = useAuth();
@@ -51,77 +52,91 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
   return (
     <div
       className={cn(
-        'p-5 rounded-xl border transition-all duration-300 backdrop-blur-md',
+        'group rounded-2xl border transition-all duration-300 backdrop-blur-sm',
         post.is_solution
-          ? 'bg-green-900/20 border-green-500/40 shadow-md shadow-green-500/10'
-          : 'bg-slate-800/60 border-cyan-500/20 hover:border-cyan-400/30'
+          ? 'bg-gradient-to-br from-green-900/30 to-emerald-900/20 border-green-500/30 shadow-lg shadow-green-500/5'
+          : 'bg-gradient-to-br from-slate-800/50 to-slate-900/30 border-cyan-500/15 hover:border-cyan-400/25 hover:shadow-md hover:shadow-cyan-500/5'
       )}
     >
-      {/* Header avec auteur et date */}
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div className="flex-1">
-          <div className="text-white">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-slate-700/30 flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="text-white mb-2">
             <UserBadgeProfile userId={post.author} small />
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-400">
             {post.created_date && formatDistanceToNow(new Date(post.created_date), { locale: fr, addSuffix: true })}
+            {post.edited && <span className="ml-2 italic">· édité</span>}
           </p>
-          {post.edited && <p className="text-xs text-slate-500 italic">Édité</p>}
         </div>
 
-        {/* Badge Solution */}
         {post.is_solution && (
-          <div className="flex items-center gap-1 px-3 py-1 bg-green-900/40 text-green-300 border border-green-500/40 rounded-full font-semibold text-sm">
-            <Check size={16} />
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 rounded-full font-grotesk text-xs font-semibold whitespace-nowrap flex-shrink-0">
+            <Check size={14} />
             Solution
           </div>
         )}
       </div>
 
       {/* Contenu */}
-      <div className="mb-4">
-        <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+      <div className="px-6 py-4">
+        <div className="prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+          <ReactMarkdown
+            components={{
+              p: ({ children }) => <p className="text-slate-300 leading-relaxed mb-3 last:mb-0">{children}</p>,
+              strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+              em: ({ children }) => <em className="text-slate-400 italic">{children}</em>,
+              code: ({ children }) => <code className="bg-slate-900/60 text-cyan-300 px-2 py-1 rounded text-xs font-mono">{children}</code>,
+              ul: ({ children }) => <ul className="space-y-2 ml-4 list-disc mb-3 last:mb-0">{children}</ul>,
+              ol: ({ children }) => <ol className="space-y-2 ml-4 list-decimal mb-3 last:mb-0">{children}</ol>,
+              li: ({ children }) => <li className="text-slate-300">{children}</li>,
+              blockquote: ({ children }) => <blockquote className="border-l-2 border-cyan-500/40 pl-3 italic text-slate-400 my-3">{children}</blockquote>,
+              a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline">{children}</a>,
+            }}
+          >
+            {post.content}
+          </ReactMarkdown>
+        </div>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
+      <div className="px-6 py-3 border-t border-slate-700/30 flex items-center justify-between gap-3 opacity-90 group-hover:opacity-100 transition-opacity">
         <div className="flex items-center gap-2">
           <button
             onClick={handleLike}
             disabled={likeMutation.isPending}
             className={cn(
-              'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium',
+              'flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium',
               isLiked
-                ? 'bg-red-900/40 text-red-300 border border-red-500/40'
-                : 'text-slate-400 hover:bg-cyan-500/10 hover:text-cyan-300 hover:border hover:border-cyan-500/30'
+                ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                : 'text-slate-400 hover:bg-cyan-500/15 hover:text-cyan-300 hover:border hover:border-cyan-500/25'
             )}
           >
             <Heart
-              size={16}
-              className={isLiked ? 'fill-current' : ''}
+              size={15}
+              className={cn('transition-all', isLiked && 'fill-current')}
             />
-            <span className="text-xs">{likesCount}</span>
+            <span className="text-xs font-semibold">{likesCount}</span>
           </button>
 
           {canMarkSolution && post.author !== user?.id && (
             <button
               onClick={() => onMarkSolution(post.id, !post.is_solution)}
               className={cn(
-                'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium',
+                'flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium',
                 post.is_solution
-                  ? 'bg-green-900/40 text-green-300 border border-green-500/40'
-                  : 'text-slate-400 hover:bg-cyan-500/10 hover:text-cyan-300 hover:border hover:border-cyan-500/30'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  : 'text-slate-400 hover:bg-cyan-500/15 hover:text-cyan-300 hover:border hover:border-cyan-500/25'
               )}
             >
-              <Check size={16} />
-              <span className="text-xs">
+              <Check size={15} />
+              <span className="text-xs font-semibold">
                 {post.is_solution ? 'Solution' : 'Marquer'}
               </span>
             </button>
           )}
         </div>
 
-        {/* Menu actions */}
         {user?.id === post.author && (
           <div className="flex items-center gap-1">
             <Button

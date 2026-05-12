@@ -66,7 +66,7 @@ export default function BottomTabBar() {
 
   return (
     <>
-      {/* More panel overlay */}
+      {/* Fullscreen drawer menu */}
       <AnimatePresence>
         {showMore && (
           <>
@@ -74,101 +74,123 @@ export default function BottomTabBar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/70 backdrop-blur-md z-40"
               onClick={() => setShowMore(false)}
             />
             <motion.div
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-20 left-0 right-0 z-50 mx-3 rounded-2xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl overflow-hidden"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-b from-card/98 to-background/95 backdrop-blur-xl rounded-t-3xl max-h-[95vh] flex flex-col overflow-hidden"
             >
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                <div>
-                  <p className="font-grotesk font-bold text-base">Menu</p>
-                  {user && <p className="font-inter text-xs text-muted-foreground">{user.full_name}</p>}
-                </div>
-                <button onClick={() => setShowMore(false)} className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                  <X className="w-4 h-4 text-muted-foreground" />
+              {/* Grab handle + close */}
+              <div className="flex items-center justify-between px-6 pt-4 pb-2">
+                <div className="w-12 h-1 rounded-full bg-border/40 mx-auto absolute top-3" />
+                <div className="h-1" />
+                <button 
+                  onClick={() => setShowMore(false)}
+                  className="w-10 h-10 rounded-full bg-secondary/50 hover:bg-secondary flex items-center justify-center transition-colors"
+                >
+                  <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
 
-              {/* User quick actions */}
-              {user && (
-                <div className="flex gap-2 px-4 py-3 border-b border-border">
-                  <Link to="/profile" onClick={() => setShowMore(false)}
-                    className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl bg-primary/10 border border-primary/20">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
-                      {user.avatar_url
-                        ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
-                        : <User className="w-4 h-4 text-primary" />}
+              {/* Scrollable content */}
+              <div className="overflow-y-auto flex-1 px-4">
+                {/* User quick actions */}
+                {user && (
+                  <div className="mb-6">
+                    <p className="font-grotesk text-xs text-muted-foreground uppercase tracking-wider mb-3">Mon compte</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Link to="/profile" onClick={() => setShowMore(false)}
+                        className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-primary/10 border border-primary/30 hover:border-primary/50 transition-all">
+                        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {user.avatar_url
+                            ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
+                            : <User className="w-5 h-5 text-primary" />}
+                        </div>
+                        <span className="font-inter text-[11px] text-primary font-medium text-center">Profil</span>
+                      </Link>
+                      <Link to="/dashboard" onClick={() => setShowMore(false)}
+                        className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-secondary/50 border border-border hover:bg-secondary transition-all relative">
+                        <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center flex-shrink-0">
+                          <Bell className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-mono font-bold flex items-center justify-center">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
+                        <span className="font-inter text-[11px] text-muted-foreground text-center">Notifs</span>
+                      </Link>
+                      {hasAdminAccess(user) && (
+                        <Link to="/admin" onClick={() => setShowMore(false)}
+                          className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-secondary/50 border border-border hover:bg-secondary transition-all">
+                          <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center flex-shrink-0">
+                            <LayoutDashboard className="w-5 h-5 text-primary" />
+                          </div>
+                          <span className="font-inter text-[11px] text-muted-foreground text-center">Admin</span>
+                        </Link>
+                      )}
                     </div>
-                    <span className="font-inter text-[11px] text-primary font-medium">Profil</span>
-                  </Link>
-                  <Link to="/dashboard" onClick={() => setShowMore(false)}
-                    className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl bg-secondary border border-border relative">
-                    <Bell className="w-5 h-5 text-muted-foreground" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-2 right-4 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-mono flex items-center justify-center">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                    )}
-                    <span className="font-inter text-[11px] text-muted-foreground">Notifs</span>
-                  </Link>
-                  {hasAdminAccess(user) && (
-                    <Link to="/admin" onClick={() => setShowMore(false)}
-                      className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl bg-secondary border border-border">
-                      <LayoutDashboard className="w-5 h-5 text-primary" />
-                      <span className="font-inter text-[11px] text-muted-foreground">Admin</span>
-                    </Link>
-                  )}
-                  <button onClick={() => { base44.auth.logout('/'); setShowMore(false); }}
-                    className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl bg-secondary border border-border">
-                    <LogOut className="w-5 h-5 text-muted-foreground" />
-                    <span className="font-inter text-[11px] text-muted-foreground">Quitter</span>
-                  </button>
-                </div>
-              )}
+                  </div>
+                )}
 
-              {!user && (
-                <div className="flex gap-2 px-4 py-3 border-b border-border">
-                  <button onClick={() => { base44.auth.redirectToLogin(); setShowMore(false); }}
-                    className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-grotesk font-semibold text-sm">
-                    Connexion
-                  </button>
-                  <Link to="/quote" onClick={() => setShowMore(false)}
-                    className="flex-1 py-3 rounded-xl bg-secondary border border-border font-inter text-sm text-center text-foreground">
-                    Devis gratuit
-                  </Link>
-                </div>
-              )}
-
-              {/* Grid of more links */}
-              <div className="grid grid-cols-4 gap-1 p-3 max-h-[40vh] overflow-y-auto">
-                {MORE_ITEMS.filter(item => {
-                  // Hide profile/dashboard here since they're in quick actions
-                  if (!user && (item.to === '/dashboard' || item.to === '/profile')) return false;
-                  return true;
-                }).map(item => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => setShowMore(false)}
-                      className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${
-                        isActive(item.to) ? 'bg-primary/10 border border-primary/20' : 'bg-secondary/50 hover:bg-secondary border border-transparent'
-                      }`}
-                    >
-                      <div className={`w-8 h-8 rounded-xl bg-background flex items-center justify-center ${item.color}`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <span className="font-inter text-[10px] text-muted-foreground text-center leading-tight">{item.label}</span>
+                {!user && (
+                  <div className="mb-6 flex gap-2">
+                    <button onClick={() => { base44.auth.redirectToLogin(); setShowMore(false); }}
+                      className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-grotesk font-semibold text-sm transition-transform hover:scale-105 active:scale-95">
+                      Connexion
+                    </button>
+                    <Link to="/quote" onClick={() => setShowMore(false)}
+                      className="flex-1 py-3 rounded-xl bg-secondary border border-border font-inter text-sm text-center text-foreground transition-all hover:bg-secondary/80">
+                      Devis gratuit
                     </Link>
-                  );
-                })}
+                  </div>
+                )}
+
+                {/* Navigation sections */}
+                <div className="mb-6">
+                  <p className="font-grotesk text-xs text-muted-foreground uppercase tracking-wider mb-3">Navigation</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {MORE_ITEMS.filter(item => {
+                      if (!user && (item.to === '/dashboard' || item.to === '/profile')) return false;
+                      return true;
+                    }).map(item => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.to}
+                          to={item.to}
+                          onClick={() => setShowMore(false)}
+                          className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all border ${
+                            isActive(item.to) 
+                              ? 'bg-primary/10 border-primary/30' 
+                              : 'bg-secondary/30 border-border/50 hover:bg-secondary/50'
+                          }`}
+                        >
+                          <div className={`w-10 h-10 rounded-xl bg-background flex items-center justify-center flex-shrink-0 ${item.color}`}>
+                            <Icon className="w-5 h-5" />
+                          </div>
+                          <span className="font-inter text-[10px] text-muted-foreground text-center leading-tight">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Logout */}
+                {user && (
+                  <div className="pb-4">
+                    <button onClick={() => { base44.auth.logout('/'); setShowMore(false); }}
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive hover:bg-destructive/20 transition-all font-inter text-sm font-medium">
+                      <LogOut className="w-4 h-4" />
+                      Quitter mon compte
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           </>

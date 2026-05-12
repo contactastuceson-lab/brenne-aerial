@@ -208,9 +208,15 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const isManual = body.manual === true;
 
-    // Run all checks in parallel
+    // Run checks with controlled parallelism to avoid rate limits
     console.log('[Monitoring] Starting checks for', SERVICES.length, 'services...');
-    const results = await Promise.all(SERVICES.map(s => checkService(s, base44)));
+    const results = [];
+    for (let i = 0; i < SERVICES.length; i += 2) {
+      const batch = SERVICES.slice(i, i + 2);
+      const batchResults = await Promise.all(batch.map(s => checkService(s, base44)));
+      results.push(...batchResults);
+      if (i + 2 < SERVICES.length) await new Promise(r => setTimeout(r, 500)); // 500ms delay between batches
+    }
 
     const incidents = results.filter(r => r.is_incident || r.status === 'degraded');
     const okCount = results.filter(r => r.status === 'ok').length;

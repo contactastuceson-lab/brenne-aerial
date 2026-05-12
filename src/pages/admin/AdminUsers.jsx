@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import BadgeChip from '@/components/ui/BadgeChip';
+import UserEditModal from '@/components/admin/UserEditModal';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { ROLE_CONFIG, getUserLevel, getAssignableRoles, PDG_EMAILS, PDG_ADJOINT_EMAILS } from '@/lib/roles';
@@ -60,7 +61,6 @@ export default function AdminUsers() {
   const [filterRole, setFilterRole] = useState('all');
   const [filterBadge, setFilterBadge] = useState('all');
   const [selectedIds, setSelectedIds] = useState([]);
-  const [generatingUsername, setGeneratingUsername] = useState(false);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['adm-users-list'],
@@ -345,7 +345,7 @@ export default function AdminUsers() {
 
                   <Button size="sm" variant="outline"
                     onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut modifier un membre Suprême.') : openEdit(u)}
-                    className={`text-xs flex-1 lg:flex-none ${blocked ? 'border-amber-600/30 text-amber-600/50 cursor-not-allowed opacity-50' : 'border-border'}`}>
+                    className={`text-xs flex-1 lg:flex-none gap-1 ${blocked ? 'border-amber-600/30 text-amber-600/50 cursor-not-allowed opacity-50' : 'border-primary/30 text-primary hover:bg-primary/10'}`}>
                     <span className="hidden sm:inline">Modifier</span>
                     <span className="sm:hidden">✏️</span>
                   </Button>
@@ -454,176 +454,14 @@ export default function AdminUsers() {
         );
       })()}
 
-      <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>
-        <DialogContent className="bg-card border-border max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-grotesk font-bold">Modifier — {editUser?.full_name}</DialogTitle>
-          </DialogHeader>
-          {editUser && (
-            <div className="space-y-5">
-              {/* Status du compte */}
-              <div className="bg-secondary rounded-xl p-4 space-y-3">
-                <p className="font-inter font-medium text-sm">Statut du compte</p>
-                <Select value={editForm.account_status} onValueChange={v => setEditForm(p => ({ ...p, account_status: v }))}>
-                  <SelectTrigger className="bg-card border-border">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">✅ Actif</SelectItem>
-                    <SelectItem value="restricted">⚠️ Restreint</SelectItem>
-                    <SelectItem value="suspended">🔶 Suspendu</SelectItem>
-                    <SelectItem value="banned">🔴 Banni</SelectItem>
-                  </SelectContent>
-                </Select>
-                {editForm.account_status !== 'active' && (
-                  <>
-                    <Input
-                      value={editForm.suspension_reason}
-                      onChange={e => setEditForm(p => ({ ...p, suspension_reason: e.target.value }))}
-                      placeholder="Raison de la restriction / suspension..."
-                      className="bg-card border-border font-inter"
-                    />
-                    <div>
-                      <label className="font-inter text-xs text-muted-foreground mb-1 block">Jusqu'au (optionnel)</label>
-                      <Input
-                        type="date"
-                        value={editForm.suspension_until}
-                        onChange={e => setEditForm(p => ({ ...p, suspension_until: e.target.value }))}
-                        className="bg-card border-border font-inter"
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Vérification */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-inter text-sm font-medium flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-accent" /> Compte vérifié
-                  </p>
-                  <p className="font-inter text-xs text-muted-foreground">Affiche un badge de vérification officiel</p>
-                </div>
-                <Switch
-                  checked={editForm.verified_status === 'yes'}
-                  onCheckedChange={v => setEditForm(p => ({ ...p, verified_status: v ? 'yes' : 'no' }))}
-                />
-              </div>
-
-              {/* Rôle */}
-              <div>
-                <label className="font-inter text-xs text-muted-foreground mb-2 block">
-                  Rôle — vous pouvez attribuer les rôles de niveau inférieur au vôtre
-                </label>
-                {/* Show current role if it can't be changed */}
-                {getUserLevel({ role: editUser?.role, email: editUser?.email }) >= myLevel && getUserLevel(editUser) > 0 ? (
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                    <span className="font-mono text-xs text-amber-400">
-                      {ROLE_CONFIG[editUser?.role]?.emoji} {ROLE_CONFIG[editUser?.role]?.label} — rôle non modifiable (niveau ≥ au vôtre)
-                    </span>
-                  </div>
-                ) : (
-                  <Select value={editForm.role} onValueChange={v => setEditForm(p => ({ ...p, role: v }))}>
-                    <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {/* Current role always visible */}
-                      {editUser?.role && !assignableRoles.find(r => r.role === editUser.role) && (
-                        <SelectItem value={editUser.role} disabled>
-                          {ROLE_CONFIG[editUser.role]?.emoji} {ROLE_CONFIG[editUser.role]?.label} (actuel)
-                        </SelectItem>
-                      )}
-                      {assignableRoles.map(r => (
-                        <SelectItem key={r.role} value={r.role}>
-                          {r.emoji} {r.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-
-              {/* Badges */}
-              <div>
-                <label className="font-inter text-xs text-muted-foreground mb-2 block">Badges</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {BADGES.map(b => (
-                    <label key={b} className="flex items-center gap-2 cursor-pointer bg-secondary rounded-lg px-3 py-2">
-                      <Checkbox checked={editForm.badges?.includes(b)} onCheckedChange={() => toggleBadge(b)} />
-                      <span className="font-inter text-sm">{b}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Bio */}
-              <div>
-                <label className="font-inter text-xs text-muted-foreground mb-1 block">Bio</label>
-                <Textarea value={editForm.bio} onChange={e => setEditForm(p => ({ ...p, bio: e.target.value }))} className="bg-secondary border-border resize-none h-20" />
-              </div>
-
-              {/* Username section */}
-              <div className="bg-secondary rounded-xl p-4">
-               <div className="flex items-center justify-between mb-2">
-                 <label className="font-inter text-xs text-muted-foreground">Username</label>
-                 {editUser?.username && (
-                   <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-1 rounded">{editUser.username}</span>
-                 )}
-               </div>
-               {!editUser?.username ? (
-                 <Button
-                   size="sm"
-                   variant="outline"
-                   className="w-full border-primary/30 text-primary hover:bg-primary/10 gap-2"
-                   onClick={async () => {
-                     setGeneratingUsername(true);
-                     try {
-                       const emailPrefix = editUser.email.split('@')[0];
-                       const random = Math.random().toString(36).substring(2, 8);
-                       const tempUsername = `temp_${emailPrefix}_${random}`;
-                       await updateUser.mutateAsync({ id: editUser.id, data: { username: tempUsername } });
-                       setEditForm(p => ({ ...p, username: tempUsername }));
-                     } catch (err) {
-                       toast.error('Erreur lors de la génération');
-                     } finally {
-                       setGeneratingUsername(false);
-                     }
-                   }}
-                   disabled={generatingUsername}
-                 >
-                   {generatingUsername ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                   Générer username temporaire
-                 </Button>
-               ) : (
-                 <div className="px-3 py-2 rounded-lg bg-green-400/10 border border-green-400/20">
-                   <p className="font-mono text-xs text-green-400">✅ Username généré</p>
-                 </div>
-               )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-inter text-xs text-muted-foreground mb-1 block">Téléphone</label>
-                  <Input
-                    value={editForm.phone}
-                    onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))}
-                    onBlur={e => setEditForm(p => ({ ...p, phone: formatPhone(e.target.value) }))}
-                    placeholder="06 12 34 56 78"
-                    className="bg-secondary border-border"
-                  />
-                </div>
-                <div>
-                  <label className="font-inter text-xs text-muted-foreground mb-1 block">Localisation</label>
-                  <Input value={editForm.location} onChange={e => setEditForm(p => ({ ...p, location: e.target.value }))} className="bg-secondary border-border" />
-                </div>
-              </div>
-
-              <Button onClick={() => updateUser.mutate({ id: editUser.id, data: editForm })} disabled={updateUser.isPending} className="w-full bg-primary text-primary-foreground">
-                {updateUser.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 mr-2" />Sauvegarder</>}
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <UserEditModal
+        user={editUser}
+        open={!!editUser}
+        onClose={() => setEditUser(null)}
+        onSave={(data) => updateUser.mutate({ id: editUser.id, data })}
+        isLoading={updateUser.isPending}
+        currentUser={currentUser}
+      />
     </div>
   );
 }

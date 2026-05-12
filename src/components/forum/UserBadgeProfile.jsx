@@ -173,13 +173,8 @@ const UserBadgeProfile = ({ userId, small = false }) => {
               <span className="font-grotesk font-bold text-sm text-white group-hover:text-cyan-300 transition-colors leading-tight">
                 {user.full_name || user.name}
               </span>
-              {user.role && user.role !== 'user' && (
-                <span className="text-[9px] font-mono px-1.5 py-0 rounded-full bg-slate-700/50 text-slate-300 whitespace-nowrap w-fit flex-shrink-0">
-                  {user.role === 'pdg_adjoint' ? 'Deputy' : user.role === 'conseil_admin' ? 'Council' : user.role.split('_')[0]}
-                </span>
-              )}
             </div>
-            <div className="flex gap-1.5 items-center flex-shrink-0">
+            <div className="flex gap-0.5 items-center flex-shrink-0">
               <VerificationIcons verifications={user.verifications} size="sm" />
               {user.badges && user.badges.length > 0 && user.badges.slice(0, 3).map((badge) => {
                 const cfg = BADGE_CONFIG[badge];

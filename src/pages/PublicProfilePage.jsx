@@ -45,13 +45,12 @@ export default function PublicProfilePage() {
           // Non authentifié
         }
 
-        // Chercher l'utilisateur par full_name ou email
+        // Chercher l'utilisateur par username
         const searchUsername = username.toLowerCase();
         const response = await base44.functions.invoke('getPublicUsers', {});
         const allUsers = response.data || response;
         const foundUser = allUsers.find(u => 
-          u.full_name?.toLowerCase() === searchUsername ||
-          u.email?.toLowerCase().split('@')[0] === searchUsername
+          u.username?.toLowerCase() === searchUsername
         );
 
         if (!foundUser) {
@@ -111,7 +110,7 @@ export default function PublicProfilePage() {
       <div className="min-h-screen flex items-center justify-center pt-20">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">Profil non trouvé</h1>
-          <p className="text-muted-foreground">L'utilisateur @{username?.toLowerCase()} n'existe pas</p>
+          <p className="text-muted-foreground">L'utilisateur {username?.toLowerCase()} n'existe pas</p>
         </div>
       </div>
     );
@@ -275,7 +274,7 @@ export default function PublicProfilePage() {
                   {user.display_name || user.full_name}
                 </h1>
                 {user.username && (
-                  <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
+                  <p className="font-mono text-sm text-muted-foreground">{user.username}</p>
                 )}
                 <VerificationIcons verifications={user.verifications} size="md" />
               </div>

@@ -76,9 +76,13 @@ export default function ProfilePage() {
   const saveMutation = useMutation({
     mutationFn: async () => {
       const dataToSave = {
-        ...form,
         display_name: form.display_name,
         full_name: form.display_name,
+        username: user.username,
+        bio: form.bio,
+        phone: form.phone,
+        location: form.location,
+        website: form.website,
       };
       await base44.auth.updateMe(dataToSave);
       const updated = await base44.auth.me();
@@ -341,7 +345,7 @@ export default function ProfilePage() {
              />
            </div>
 
-           <UsernameChanger user={user} username={form.username} onUpdate={(newUsername) => {
+           <UsernameChanger user={user} username={user.username || form.username} onUpdate={(newUsername) => {
              setForm(p => ({ ...p, username: newUsername }));
              setUser(u => ({ ...u, username: newUsername }));
            }} />

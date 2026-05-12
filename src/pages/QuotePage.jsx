@@ -93,7 +93,7 @@ export default function QuotePage() {
   const handleSubmit = async () => {
     setSending(true);
     try {
-      await base44.entities.Quote.create({
+      const quote = await base44.entities.Quote.create({
         ...form,
         fichiers_urls: uploadedFiles,
         prix_estime: estimatedPrice,
@@ -104,6 +104,8 @@ export default function QuotePage() {
         clientEmail: form.client_email,
         serviceType: form.service_type,
         estimatedPrice: estimatedPrice,
+        quoteId: quote?.id || '',
+        dateStr: form.date_souhaitee || null,
       });
       setSent(true);
     } catch (err) {

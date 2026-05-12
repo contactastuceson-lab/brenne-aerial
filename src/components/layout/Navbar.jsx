@@ -8,11 +8,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_LINKS = [
   { to: '/',         label: 'Accueil' },
-  { to: '/quote',    label: 'Devis' },
   { to: '/discover', label: 'Explorer' },
   { to: '/portfolio', label: 'Portfolio' },
   { to: '/planning',  label: 'Planning' },
   { to: '/blog',      label: 'Blog' },
+  { to: '/forum',     label: 'Forum' },
 ];
 
 const TOOLS = [

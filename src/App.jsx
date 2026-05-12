@@ -119,7 +119,7 @@ const AuthenticatedApp = () => {
       <Routes>
       {/* Profile catch-all route for /@username */}
       <Route element={<PublicLayout />}>
-        <Route path="/@:username" element={<PublicProfilePage />} />
+        <Route path="/:pathUsername" element={<PublicProfilePage />} />
       </Route>
 
       {/* Public */}

@@ -20,8 +20,11 @@ const BADGE_CONFIG = {
 };
 
 export default function PublicProfilePage() {
-  const { username } = useParams();
+  const { pathUsername } = useParams();
   const navigate = useNavigate();
+  
+  // Extraire le username (enlever le @ s'il existe)
+  const username = pathUsername?.startsWith('@') ? pathUsername.slice(1) : pathUsername;
   const [user, setUser] = useState(null);
   const [followers, setFollowers] = useState([]);
   const [loading, setLoading] = useState(true);

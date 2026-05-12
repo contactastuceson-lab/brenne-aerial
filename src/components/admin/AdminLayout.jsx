@@ -9,6 +9,7 @@ import {
   FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap,
   SlidersHorizontal, Activity, Radar
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 import AdminRealtimeSync from '@/components/admin/AdminRealtimeSync';
 
@@ -320,73 +321,92 @@ export default function AdminLayout() {
         </button>
       </nav>
 
-      {/* ── MOBILE MENU SHEET ── */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[60] flex flex-col">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-sidebar border-t border-sidebar-border rounded-t-2xl max-h-[85vh] flex flex-col">
-
-            <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-sidebar-border flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <Plane className="w-4 h-4 text-primary" />
-                <span className="font-grotesk font-bold text-sm">Navigation</span>
+      {/* ── MOBILE FULLSCREEN DRAWER ── */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="lg:hidden fixed inset-0 bg-black/70 backdrop-blur-md z-40"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-b from-sidebar/98 to-background/95 backdrop-blur-xl rounded-t-3xl max-h-[95vh] flex flex-col overflow-hidden"
+            >
+              {/* Grab handle + close */}
+              <div className="flex items-center justify-between px-6 pt-4 pb-2">
+                <div className="w-12 h-1 rounded-full bg-border/40 mx-auto absolute top-3" />
+                <div className="h-1" />
+                <button 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-10 h-10 rounded-full bg-sidebar-accent/50 hover:bg-sidebar-accent flex items-center justify-center transition-colors"
+                >
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
               </div>
-              <button onClick={() => setMobileMenuOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-sidebar-accent">
-                <X className="w-4 h-4 text-muted-foreground" />
-              </button>
-            </div>
 
-            {/* User + role */}
-            <div className="px-4 py-2.5 border-b border-sidebar-border flex-shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
-                  style={isTopMgmt ? { background: 'linear-gradient(135deg,#92400e,#d97706)' } : { background: 'hsl(var(--primary)/0.2)' }}>
-                  {user?.avatar_url
-                    ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
-                    : <span className="font-grotesk font-bold text-xs" style={{ color: isTopMgmt ? '#fde68a' : 'hsl(var(--primary))' }}>{user?.full_name?.[0]}</span>
-                  }
-                </div>
-                <div>
-                  <p className="font-inter text-sm font-semibold">{user?.full_name}</p>
-                  <p className="font-mono text-[10px] text-muted-foreground">{roleCfg.emoji} {roleCfg.label} — niveau {userLevel}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="overflow-y-auto flex-1 p-3 space-y-3">
-              {visibleGroups.map(group => (
-                <div key={group.label}>
-                  <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground/40 px-2 mb-1.5">{group.label}</p>
-                  <div className="grid grid-cols-2 gap-1">
-                    {group.items.map(item => {
-                      const active = isActive(item.path);
-                      const Icon = item.icon;
-                      return (
-                        <Link key={item.path} to={item.path}
-                          className={`flex items-center gap-2 px-3 py-2.5 rounded-xl transition-all ${
-                            active
-                              ? 'bg-primary/10 text-primary border border-primary/20'
-                              : 'text-sidebar-foreground hover:bg-sidebar-accent border border-transparent'
-                          }`}>
-                          <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
-                          <span className="font-inter text-xs truncate">{item.label}</span>
-                        </Link>
-                      );
-                    })}
+              {/* Scrollable content */}
+              <div className="overflow-y-auto flex-1 px-4 pb-4">
+                {/* User card */}
+                <div className="mb-6 p-3 rounded-xl bg-sidebar-accent/30 border border-sidebar-border/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
+                      style={isTopMgmt ? { background: 'linear-gradient(135deg,#92400e,#d97706)' } : { background: 'hsl(var(--primary)/0.2)' }}>
+                      {user?.avatar_url
+                        ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
+                        : <span className="font-grotesk font-bold text-sm" style={{ color: isTopMgmt ? '#fde68a' : 'hsl(var(--primary))' }}>{user?.full_name?.[0]}</span>
+                      }
+                    </div>
+                    <div>
+                      <p className="font-grotesk font-bold text-sm">{user?.full_name}</p>
+                      <p className="font-mono text-[10px] text-muted-foreground">{roleCfg.emoji} {roleCfg.label} — niveau {userLevel}</p>
+                    </div>
                   </div>
                 </div>
-              ))}
 
-              <div className="pt-2 border-t border-sidebar-border">
-                <Link to="/" className="flex items-center gap-2 px-3 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition-all">
-                  <ArrowLeft className="w-4 h-4 text-primary" />
-                  <span className="font-inter text-xs">Retour au site</span>
+                {/* Navigation groups */}
+                {visibleGroups.map(group => (
+                  <div key={group.label} className="mb-5">
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground/40 px-2 mb-2.5">{group.label}</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {group.items.map(item => {
+                        const active = isActive(item.path);
+                        const Icon = item.icon;
+                        return (
+                          <Link key={item.path} to={item.path}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all border ${
+                              active
+                                ? 'bg-primary/10 border-primary/30'
+                                : 'bg-sidebar-accent/20 border-border/30 hover:bg-sidebar-accent/40'
+                            }`}>
+                            <Icon className={`w-5 h-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <span className="font-inter text-[10px] text-muted-foreground text-center leading-tight">{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Back to site */}
+                <Link to="/" onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sidebar-accent/30 border border-border/50 text-muted-foreground hover:text-foreground transition-all font-inter text-sm mb-2">
+                  <ArrowLeft className="w-4 h-4" />
+                  Retour au site
                 </Link>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

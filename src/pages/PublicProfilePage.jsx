@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Users, MapPin, Globe, CheckCircle, Award } from 'lucide-react';
+import { Users, MapPin, Globe, CheckCircle, Award, MessageCircle, UserPlus, UserMinus, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { ROLE_CONFIG } from '@/lib/roles';
@@ -19,17 +21,25 @@ const BADGE_CONFIG = {
 
 export default function PublicProfilePage() {
   const { username } = useParams();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [followers, setFollowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followingLoading, setFollowingLoading] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
       try {
-         // Chercher l'utilisateur par username (case-insensitive)
-         const searchUsername = username.toLowerCase().replace(/@/g, '');
-         const users = await base44.entities.User.filter({ username: searchUsername });
+        // Chercher l'utilisateur actuel
+        const me = await base44.auth.me();
+        setCurrentUser(me);
+
+        // Chercher l'utilisateur par username (case-insensitive)
+        const searchUsername = username.toLowerCase().replace(/@/g, '');
+        const users = await base44.entities.User.filter({ username: searchUsername });
         if (users.length === 0) {
           setNotFound(true);
           setLoading(false);
@@ -42,6 +52,32 @@ export default function PublicProfilePage() {
         // Charger les followers
         const followersList = await base44.entities.Follow.filter({ following_email: foundUser.email });
         setFollowers(followersList);
+
+        // Vérifier si l'utilisateur actuel suit ce profil
+        if (me) {
+          const isFollowingCheck = followersList.some(f => f.follower_email === me.email);
+          setIsFollowing(isFollowingCheck);
+        }
+
+        // Subscribe aux changements de follow en temps réel
+        const unsubscribe = base44.entities.Follow.subscribe((event) => {
+          if (event.data?.following_email === foundUser.email) {
+            setFollowers(prev => {
+              if (event.type === 'create') {
+                return [...prev, event.data];
+              } else if (event.type === 'delete') {
+                return prev.filter(f => f.id !== event.id);
+              }
+              return prev;
+            });
+            
+            if (me && event.data?.follower_email === me.email) {
+              setIsFollowing(event.type === 'create');
+            }
+          }
+        });
+
+        return unsubscribe;
       } catch (err) {
         setNotFound(true);
       } finally {
@@ -49,7 +85,8 @@ export default function PublicProfilePage() {
       }
     };
 
-    loadUser();
+    const unsub = loadUser();
+    return () => unsub?.then(fn => fn?.());
   }, [username]);
 
   if (loading) {
@@ -79,6 +116,57 @@ export default function PublicProfilePage() {
     suspended: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30',
     banned: 'text-red-400 bg-red-400/10 border-red-400/30',
     restricted: 'text-orange-400 bg-orange-400/10 border-orange-400/30',
+  };
+
+  const handleFollow = async () => {
+    if (!currentUser) {
+      navigate('/profile');
+      return;
+    }
+    
+    setFollowingLoading(true);
+    try {
+      await base44.entities.Follow.create({
+        follower_email: currentUser.email,
+        follower_name: currentUser.full_name,
+        follower_avatar: currentUser.avatar_url,
+        following_email: user.email,
+        following_name: user.full_name,
+      });
+      setIsFollowing(true);
+      toast.success('Abonnement effectué !');
+    } catch (err) {
+      toast.error('Erreur lors de l\'abonnement');
+    } finally {
+      setFollowingLoading(false);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    setFollowingLoading(true);
+    try {
+      const follows = await base44.entities.Follow.filter({
+        follower_email: currentUser.email,
+        following_email: user.email,
+      });
+      if (follows.length > 0) {
+        await base44.entities.Follow.delete(follows[0].id);
+        setIsFollowing(false);
+        toast.success('Abonnement annulé');
+      }
+    } catch (err) {
+      toast.error('Erreur lors de la suppression');
+    } finally {
+      setFollowingLoading(false);
+    }
+  };
+
+  const handleMessage = () => {
+    if (!currentUser) {
+      navigate('/profile');
+      return;
+    }
+    navigate(`/messages?to=${user.email}`);
   };
 
   return (
@@ -123,7 +211,7 @@ export default function PublicProfilePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pb-1">
+            <div className="flex items-center gap-2 pb-1 flex-wrap">
               {user.verified_status === 'yes' && (
                 <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
                   <CheckCircle className="w-3 h-3" /> Vérifié
@@ -132,6 +220,39 @@ export default function PublicProfilePage() {
               <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
                 {user.account_status === 'active' ? 'Actif' : 'Inactif'}
               </span>
+              
+              {/* Subscription buttons */}
+              {currentUser && currentUser.email !== user.email && (
+                <div className="flex items-center gap-2 ml-auto">
+                  {!isFollowing ? (
+                    <Button
+                      onClick={handleFollow}
+                      disabled={followingLoading}
+                      className="gap-2 h-7 px-3 text-xs bg-primary hover:bg-primary/90"
+                    >
+                      {followingLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
+                      S'abonner
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={handleMessage}
+                        className="gap-2 h-7 px-3 text-xs bg-secondary hover:bg-secondary/80 text-foreground"
+                      >
+                        <MessageCircle className="w-3 h-3" />
+                        Message
+                      </Button>
+                      <Button
+                        onClick={handleUnfollow}
+                        disabled={followingLoading}
+                        className="gap-2 h-7 px-3 text-xs bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30"
+                      >
+                        {followingLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserMinus className="w-3 h-3" />}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

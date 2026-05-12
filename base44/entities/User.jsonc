@@ -19,6 +19,14 @@
       ],
       "default": "user"
     },
+    "username": {
+      "type": "string",
+      "description": "Username unique et public (lowercase)"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Nom d'affichage du profil"
+    },
     "bio": {
       "type": "string"
     },

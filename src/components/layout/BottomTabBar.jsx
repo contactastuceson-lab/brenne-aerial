@@ -177,7 +177,7 @@ export default function BottomTabBar() {
 
       {/* Bottom Tab Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30 glass border-t border-border/60 pb-safe">
-        <div className="flex items-center justify-around px-2 h-16">
+        <div className="flex items-center px-2 h-16 overflow-x-auto scrollbar-hide gap-1">
           {MAIN_TABS.map((tab) => {
             const Icon = tab.icon;
             const active = tab.isMore ? showMore : isActive(tab.to);
@@ -187,7 +187,7 @@ export default function BottomTabBar() {
                 <button
                   key="more"
                   onClick={() => setShowMore(v => !v)}
-                  className="flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-all"
+                  className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all flex-shrink-0"
                 >
                   <div className={`w-7 h-7 flex items-center justify-center rounded-xl transition-all ${
                     active ? 'bg-primary/20' : ''
@@ -206,7 +206,7 @@ export default function BottomTabBar() {
                 key={tab.to}
                 to={tab.to}
                 onClick={() => setShowMore(false)}
-                className="flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-all relative"
+                className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all relative flex-shrink-0"
               >
                 {/* Notification badge on Messages */}
                 {tab.to === '/messages' && unreadCount > 0 && user && (

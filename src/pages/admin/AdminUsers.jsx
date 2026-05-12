@@ -266,84 +266,99 @@ export default function AdminUsers() {
           {filtered.map(u => {
             const status = u.account_status || 'active';
             const reportCount = reportCountForUser(u.email);
+            const isTargetSupreme = (u.verifications || []).includes('supreme');
+            const blocked = isTargetSupreme && !canManageSupreme;
+            const cfg = ROLE_CONFIG[u.role] || ROLE_CONFIG.user;
+            const isOwnerUser = PDG_EMAILS.includes(u.email) || u.role === 'owner';
+            const isPdgAdj = PDG_ADJOINT_EMAILS.includes(u.email) || u.role === 'pdg_adjoint';
+            const roleLabel = isOwnerUser ? '👑 PDG' : isPdgAdj ? '🥈 PDG-Adj' : `${cfg.emoji} ${cfg.label}`;
+
             return (
-              <div key={u.id} className={`flex items-center gap-4 p-4 rounded-xl bg-card border transition-colors ${selectedIds.includes(u.id) ? 'border-primary/40 bg-primary/5' : 'border-border hover:border-primary/20'}`}>
+              <div key={u.id} className={`flex flex-col lg:flex-row lg:items-center gap-4 p-4 rounded-xl bg-card border transition-colors ${selectedIds.includes(u.id) ? 'border-primary/40 bg-primary/5' : 'border-border hover:border-primary/20'}`}>
+                {/* Checkbox */}
                 <input type="checkbox" checked={selectedIds.includes(u.id)} onChange={() => toggleSelect(u.id)}
                   className="w-3.5 h-3.5 accent-primary cursor-pointer flex-shrink-0" />
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {u.avatar_url
-                    ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />
-                    : <span className="font-grotesk font-bold text-primary">{u.full_name?.[0] || 'U'}</span>
-                  }
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-inter text-sm font-medium">{u.full_name || '—'}</p>
-                    {u.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 text-accent" />}
-                    <span className={`font-mono text-[9px] px-2 py-0.5 rounded-full border ${STATUS_COLORS[status]}`}>
-                      {STATUS_LABELS[status]}
-                    </span>
-                    {reportCount > 0 && (
-                      <Link to="/admin/reports">
-                        <span className="flex items-center gap-1 font-mono text-[9px] text-destructive bg-destructive/10 border border-destructive/30 px-2 py-0.5 rounded-full cursor-pointer hover:bg-destructive/20">
-                          <Flag className="w-2.5 h-2.5" /> {reportCount} signalement{reportCount > 1 ? 's' : ''}
-                        </span>
-                      </Link>
+
+                {/* Avatar + User Info */}
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <div className="w-12 h-12 lg:w-10 lg:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {u.avatar_url
+                      ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />
+                      : <span className="font-grotesk font-bold text-primary text-lg lg:text-base">{u.full_name?.[0] || 'U'}</span>
+                    }
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    {/* Name + Status badges */}
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <p className="font-grotesk font-bold text-sm lg:text-base">{u.full_name || '—'}</p>
+                      {u.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 text-accent flex-shrink-0" />}
+                    </div>
+
+                    {/* Status + Reports */}
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <span className={`font-mono text-[9px] px-2 py-0.5 rounded-full border ${STATUS_COLORS[status]}`}>
+                        {STATUS_LABELS[status]}
+                      </span>
+                      {reportCount > 0 && (
+                        <Link to="/admin/reports">
+                          <span className="flex items-center gap-1 font-mono text-[9px] text-destructive bg-destructive/10 border border-destructive/30 px-2 py-0.5 rounded-full cursor-pointer hover:bg-destructive/20">
+                            <Flag className="w-2.5 h-2.5" /> {reportCount}
+                          </span>
+                        </Link>
+                      )}
+                      <span className="hidden lg:inline font-mono text-xs text-muted-foreground">{roleLabel}</span>
+                    </div>
+
+                    {/* Email + Phone */}
+                    <div>
+                      <p className="font-mono text-xs text-muted-foreground truncate">{u.email}</p>
+                      {u.phone && <p className="font-mono text-xs text-muted-foreground/60">{formatPhone(u.phone)}</p>}
+                    </div>
+
+                    {/* Badges */}
+                    {u.badges?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {u.badges.map(b => <BadgeChip key={b} badge={b} size="sm" />)}
+                      </div>
                     )}
                   </div>
-                  <p className="font-mono text-xs text-muted-foreground">{u.email}</p>
-                  {u.phone && <p className="font-mono text-xs text-muted-foreground/60">{formatPhone(u.phone)}</p>}
-                  {u.badges?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {u.badges.map(b => <BadgeChip key={b} badge={b} size="sm" />)}
-                    </div>
-                  )}
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="font-mono text-xs text-muted-foreground hidden sm:block">
-                    {(() => {
-                      const cfg = ROLE_CONFIG[u.role] || ROLE_CONFIG.user;
-                      const isOwnerUser = PDG_EMAILS.includes(u.email) || u.role === 'owner';
-                      const isPdgAdj = PDG_ADJOINT_EMAILS.includes(u.email) || u.role === 'pdg_adjoint';
-                      if (isOwnerUser) return '👑 PDG';
-                      if (isPdgAdj) return '🥈 PDG-Adj';
-                      return `${cfg.emoji} ${cfg.label}`;
-                    })()}
-                  </span>
-                  {(() => {
-                    const isTargetSupreme = (u.verifications || []).includes('supreme');
-                    const blocked = isTargetSupreme && !canManageSupreme;
-                    return (
-                      <>
-                        {status === 'active' ? (
-                          <Button size="sm" variant="outline"
-                            className={blocked ? 'border-amber-600/30 text-amber-600/50 text-xs gap-1 cursor-not-allowed opacity-50' : 'border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10 text-xs gap-1'}
-                            onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut agir sur un membre Suprême.') : quickAction.mutate({ id: u.id, data: { account_status: 'suspended', suspension_reason: 'Suspension admin' } })}>
-                            <ShieldOff className="w-3 h-3" /> Suspendre
-                          </Button>
-                        ) : status !== 'active' && (
-                          <Button size="sm" variant="outline" className="border-green-400/30 text-green-400 hover:bg-green-400/10 text-xs gap-1"
-                            onClick={() => quickAction.mutate({ id: u.id, data: { account_status: 'active', suspension_reason: '' } })}>
-                            <ShieldCheck className="w-3 h-3" /> Réactiver
-                          </Button>
-                        )}
-                        <Button size="sm" variant="outline"
-                          onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut modifier un membre Suprême.') : openEdit(u)}
-                          className={blocked ? 'border-amber-600/30 text-amber-600/50 text-xs cursor-not-allowed opacity-50' : 'border-border text-xs'}>
-                          Modifier
-                        </Button>
-                        <Button size="sm" variant="outline"
-                          onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut supprimer un membre Suprême.') : (setDeleteConfirm(u), setDeleteReason(''), setEmailSent(false))}
-                          className={`text-xs gap-1 ${
-                            blocked
-                              ? 'border-amber-600/30 text-amber-600/50 cursor-not-allowed opacity-50'
-                              : `border-destructive/40 text-destructive hover:bg-destructive/10 ${hasDeletionRequest(u.email) ? 'animate-pulse border-destructive' : ''}`
-                          }`}>
-                          <Trash2 className="w-3 h-3" /> {hasDeletionRequest(u.email) ? 'Demande!' : 'Suppr.'}
-                        </Button>
-                      </>
-                    );
-                  })()}
+
+                {/* Action Buttons - Stacked on mobile, Row on desktop */}
+                <div className="flex gap-2 flex-wrap lg:flex-nowrap lg:flex-shrink-0">
+                  {status === 'active' ? (
+                    <Button size="sm" variant="outline"
+                      className={blocked ? 'border-amber-600/30 text-amber-600/50 text-xs gap-1 cursor-not-allowed opacity-50 flex-1 lg:flex-none' : 'border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10 text-xs gap-1 flex-1 lg:flex-none'}
+                      onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut agir sur un membre Suprême.') : quickAction.mutate({ id: u.id, data: { account_status: 'suspended', suspension_reason: 'Suspension admin' } })}>
+                      <ShieldOff className="w-3 h-3" />
+                      <span className="hidden sm:inline">Suspendre</span>
+                    </Button>
+                  ) : status !== 'active' && (
+                    <Button size="sm" variant="outline" className="border-green-400/30 text-green-400 hover:bg-green-400/10 text-xs gap-1 flex-1 lg:flex-none"
+                      onClick={() => quickAction.mutate({ id: u.id, data: { account_status: 'active', suspension_reason: '' } })}>
+                      <ShieldCheck className="w-3 h-3" />
+                      <span className="hidden sm:inline">Réactiver</span>
+                    </Button>
+                  )}
+
+                  <Button size="sm" variant="outline"
+                    onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut modifier un membre Suprême.') : openEdit(u)}
+                    className={`text-xs flex-1 lg:flex-none ${blocked ? 'border-amber-600/30 text-amber-600/50 cursor-not-allowed opacity-50' : 'border-border'}`}>
+                    <span className="hidden sm:inline">Modifier</span>
+                    <span className="sm:hidden">✏️</span>
+                  </Button>
+
+                  <Button size="sm" variant="outline"
+                    onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut supprimer un membre Suprême.') : (setDeleteConfirm(u), setDeleteReason(''), setEmailSent(false))}
+                    className={`text-xs flex-1 lg:flex-none gap-1 ${
+                      blocked
+                        ? 'border-amber-600/30 text-amber-600/50 cursor-not-allowed opacity-50'
+                        : `border-destructive/40 text-destructive hover:bg-destructive/10 ${hasDeletionRequest(u.email) ? 'animate-pulse border-destructive' : ''}`
+                    }`}>
+                    <Trash2 className="w-3 h-3" />
+                    <span className="hidden sm:inline">{hasDeletionRequest(u.email) ? 'Demande!' : 'Suppr.'}</span>
+                  </Button>
                 </div>
               </div>
             );

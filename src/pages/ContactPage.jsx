@@ -186,17 +186,27 @@ export default function ContactPage() {
                 <Clock className="w-4 h-4 text-primary" />
                 <h3 className="font-grotesk font-bold text-sm">Horaires</h3>
               </div>
-              <div className="space-y-2">
-                {[
-                   { j: 'Lun — Sam', h: '10h00 — 12h30', open: true },
-                   { j: 'Lun — Sam', h: '14h30 — 18h30', open: true },
-                   { j: 'Dimanche', h: 'Fermé', open: false },
-                 ].map(({ j, h, open }) => (
-                  <div key={j} className="flex items-center justify-between">
-                    <span className="font-inter text-sm text-muted-foreground">{j}</span>
-                    <span className={`font-mono text-xs font-semibold ${open ? 'text-green-400' : 'text-muted-foreground'}`}>{h}</span>
+              <div className="space-y-3">
+                <div className="rounded-lg border border-border bg-secondary/30 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-inter text-sm font-medium text-foreground">Lundi — Samedi</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-green-400/10 text-green-400 border border-green-400/20">Ouvert</span>
                   </div>
-                ))}
+                  <div className="space-y-1.5 pl-1 border-l-2 border-green-400/30">
+                    <div className="flex justify-between items-center">
+                      <span className="font-inter text-xs text-muted-foreground">Matin</span>
+                      <span className="font-mono text-xs font-bold text-green-400">10h00 — 12h30</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-inter text-xs text-muted-foreground">Après-midi</span>
+                      <span className="font-mono text-xs font-bold text-green-400">14h30 — 18h30</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-lg border border-border bg-secondary/30 p-3 flex items-center justify-between">
+                  <span className="font-inter text-sm font-medium text-foreground">Dimanche</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-destructive/10 text-destructive border border-destructive/20">Fermé</span>
+                </div>
               </div>
             </motion.div>
 
@@ -244,18 +254,28 @@ export default function ContactPage() {
                     Notre équipe n'est pas disponible pour le moment.<br />
                     Le formulaire de contact est accessible uniquement pendant nos horaires d'ouverture.
                   </p>
-                  <div className="bg-card border border-border rounded-xl p-5 text-left w-full max-w-xs space-y-2 mb-6">
-                    <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-3">Horaires d'ouverture</p>
-                    {[
-                      { j: 'Lun — Sam', h: '10h00 — 12h30' },
-                      { j: 'Lun — Sam', h: '14h30 — 18h30' },
-                      { j: 'Dimanche', h: 'Fermé' },
-                    ].map(({ j, h }, i) => (
-                      <div key={i} className="flex justify-between items-center">
-                        <span className="font-inter text-sm text-muted-foreground">{j}</span>
-                        <span className={`font-mono text-xs font-bold ${h === 'Fermé' ? 'text-destructive' : 'text-green-400'}`}>{h}</span>
+                  <div className="bg-card border border-border rounded-xl p-5 text-left w-full max-w-xs mb-6 space-y-3">
+                    <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">Horaires d'ouverture</p>
+                    <div className="rounded-lg border border-green-400/20 bg-green-400/5 p-3 space-y-1.5">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-inter text-sm font-semibold text-foreground">Lun — Sam</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-green-400/10 text-green-400 border border-green-400/20">Ouvert</span>
                       </div>
-                    ))}
+                      <div className="pl-2 border-l-2 border-green-400/30 space-y-1">
+                        <div className="flex justify-between">
+                          <span className="font-inter text-xs text-muted-foreground">Matin</span>
+                          <span className="font-mono text-xs font-bold text-green-400">10h00 — 12h30</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-inter text-xs text-muted-foreground">Après-midi</span>
+                          <span className="font-mono text-xs font-bold text-green-400">14h30 — 18h30</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 flex justify-between items-center">
+                      <span className="font-inter text-sm text-foreground">Dimanche</span>
+                      <span className="font-mono text-xs font-bold text-destructive">Fermé</span>
+                    </div>
                   </div>
                   <p className="font-inter text-xs text-muted-foreground">
                     Vous pouvez aussi nous écrire à{' '}

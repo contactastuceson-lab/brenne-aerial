@@ -42,13 +42,14 @@ export default function PublicProfilePage() {
           // Non authentifié
         }
 
-        // Chercher l'utilisateur par username
+        // Chercher l'utilisateur par username, display_name, full_name ou email
         const searchUsername = username.toLowerCase().replace(/@/g, '');
         const allUsers = await base44.entities.User.list();
         const foundUser = allUsers.find(u => 
           u.username?.toLowerCase() === searchUsername || 
           u.display_name?.toLowerCase() === searchUsername ||
-          u.full_name?.toLowerCase() === searchUsername
+          u.full_name?.toLowerCase() === searchUsername ||
+          u.email?.toLowerCase().split('@')[0] === searchUsername
         );
 
         if (!foundUser) {

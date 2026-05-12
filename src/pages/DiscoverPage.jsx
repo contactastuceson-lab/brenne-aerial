@@ -66,7 +66,7 @@ export default function DiscoverPage() {
   });
 
   const settingsMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
-  const discoverEnabled = settingsMap['page_discover_enabled'] === 'true' || (settingsMap['page_discover_enabled'] !== 'false' && settingsMap['discover_enabled'] === 'true');
+  const discoverEnabled = settingsMap['page_discover_enabled'] !== 'false' && settingsMap['discover_enabled'] !== 'false';
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['all-users'],

@@ -74,12 +74,19 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
           </p>
         </div>
 
-        {post.is_solution && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 rounded-full font-grotesk text-xs font-semibold whitespace-nowrap flex-shrink-0">
-            <Check size={14} />
-            Solution
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {isSupreme && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white border border-purple-400/50 rounded-full font-grotesk text-xs font-bold whitespace-nowrap flex-shrink-0 shadow-lg shadow-purple-500/40">
+              👑 SUPRÊME
+            </div>
+          )}
+          {post.is_solution && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 rounded-full font-grotesk text-xs font-semibold whitespace-nowrap flex-shrink-0">
+              <Check size={14} />
+              Solution
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Contenu */}

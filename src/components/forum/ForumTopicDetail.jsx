@@ -38,6 +38,16 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
     enabled: !!topicId,
   });
 
+  // Fetch author data
+  const { data: authorData } = useQuery({
+    queryKey: ['user', topic?.author],
+    queryFn: async () => {
+      const response = await base44.entities.User.get(topic.author);
+      return response;
+    },
+    enabled: !!topic?.author,
+  });
+
   // Increment view count
   useEffect(() => {
     if (topic && user) {
@@ -86,6 +96,7 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
   const isAuthor = topic.author === user?.id;
   const canMarkSolution = isAuthor || user?.role === 'admin' || user?.role === 'owner';
   const hasSolution = posts.some((post) => post.is_solution);
+  const isSupreme = authorData?.role === 'owner' || authorData?.role === 'pdg_adjoint';
 
   return (
     <div className="space-y-6">
@@ -133,7 +144,12 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
       </div>
 
       {/* Topic Content */}
-      <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/40 backdrop-blur-md border border-cyan-500/15 rounded-2xl p-8 shadow-lg hover:border-cyan-500/25 transition-colors">
+      <div className={cn(
+        "backdrop-blur-md border rounded-2xl p-8 shadow-lg transition-colors",
+        isSupreme
+          ? 'bg-gradient-to-br from-purple-900/20 to-slate-900/40 border-purple-500/40 hover:border-purple-500/50 shadow-purple-500/10'
+          : 'bg-gradient-to-br from-slate-800/60 to-slate-900/40 border-cyan-500/15 hover:border-cyan-500/25'
+      )}>
         <div className="mb-6 pb-6 border-b border-slate-700/50">
           <UserBadgeProfile userId={topic.author} small />
           <p className="text-xs text-slate-400 mt-3">

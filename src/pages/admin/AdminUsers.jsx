@@ -178,6 +178,16 @@ export default function AdminUsers() {
   const toggleSelect = (id) => setSelectedIds(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
   const toggleAll = () => setSelectedIds(selectedIds.length === filtered.length ? [] : filtered.map(u => u.id));
 
+  // Listen for user updates to refresh the list in real-time
+  useEffect(() => {
+    const unsub = base44.entities.User.subscribe((event) => {
+      if (event.type === 'update') {
+        qc.invalidateQueries({ queryKey: ['adm-users-list'] });
+      }
+    });
+    return () => unsub();
+  }, [qc]);
+
   const filtered = users
     .filter(u => filterStatus === 'all' || (u.account_status || 'active') === filterStatus)
     .filter(u => filterRole === 'all' || (u.role || 'user') === filterRole)
@@ -292,7 +302,7 @@ export default function AdminUsers() {
                   <div className="flex-1 min-w-0">
                     {/* Name + Status badges */}
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <p className="font-grotesk font-bold text-sm lg:text-base">{u.full_name || '—'}</p>
+                      <p className="font-grotesk font-bold text-sm lg:text-base">{u.display_name || u.full_name || '—'}</p>
                       {u.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 text-accent flex-shrink-0" />}
                     </div>
 

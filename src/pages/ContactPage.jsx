@@ -168,6 +168,19 @@ export default function ContactPage() {
             <p className="font-inter text-muted-foreground text-lg max-w-lg mx-auto">
               Une idée, un projet, une urgence — notre équipe vous répond sous 48h.
             </p>
+
+            {/* Mood status pill */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }}
+              className={`mt-6 inline-flex items-center gap-3 px-6 py-3 rounded-full border text-sm font-inter backdrop-blur-sm ${mood.color}`}
+            >
+              <span className="text-xl">{mood.emoji}</span>
+              <div className="text-left">
+                <span className="font-grotesk font-bold">{mood.label}</span>
+                <span className="ml-2 opacity-70 hidden sm:inline">{mood.sub}</span>
+              </div>
+            </motion.div>
+            <p className="font-inter text-xs text-muted-foreground mt-2 sm:hidden opacity-70">{mood.sub}</p>
           </motion.div>
 
           {/* Stats row */}
@@ -183,20 +196,6 @@ export default function ContactPage() {
           </motion.div>
         </div>
       </section>
-
-      {/* Status mood banner */}
-      <div className="px-5 lg:px-10 -mt-4 mb-2">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          className={`max-w-7xl mx-auto flex items-center gap-4 px-5 py-3.5 rounded-2xl border ${mood.color} backdrop-blur-sm`}
-        >
-          <span className="text-2xl flex-shrink-0">{mood.emoji}</span>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3">
-            <span className="font-grotesk font-bold text-sm">{mood.label}</span>
-            <span className="font-inter text-xs opacity-70">{mood.sub}</span>
-          </div>
-        </motion.div>
-      </div>
 
       {/* Main content */}
       <section className="py-12 px-5 lg:px-10">

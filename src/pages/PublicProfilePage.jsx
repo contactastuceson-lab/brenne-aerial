@@ -28,7 +28,7 @@ export default function PublicProfilePage() {
     const loadUser = async () => {
       try {
         // Chercher l'utilisateur par username (case-insensitive)
-        const users = await base44.asServiceRole.entities.User.filter({ username: username.toLowerCase() });
+        const users = await base44.entities.User.filter({ username: username.toLowerCase() });
         if (users.length === 0) {
           setNotFound(true);
           setLoading(false);

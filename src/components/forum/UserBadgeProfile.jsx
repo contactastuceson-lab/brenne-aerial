@@ -32,12 +32,38 @@ const UserBadgeProfile = ({ userId, small = false }) => {
     return null;
   }
 
-  const getBadgeIcon = (badge) => {
-    if (badge.includes('verificat')) return <Shield size={14} className="text-blue-600" />;
-    if (badge.includes('expert')) return <Zap size={14} className="text-yellow-600" />;
-    if (badge.includes('moderateur')) return <Shield size={14} className="text-purple-600" />;
-    if (badge.includes('supremme')) return <Star size={14} className="text-amber-600" />;
-    return <Award size={14} className="text-gray-600" />;
+  const getBadgeConfig = (badge) => {
+    const badgeLower = badge.toLowerCase();
+    if (badgeLower.includes('fondateur')) return {
+      bg: 'bg-gradient-to-br from-amber-400 to-yellow-500',
+      icon: '👑',
+      color: 'text-white',
+    };
+    if (badgeLower.includes('supremme')) return {
+      bg: 'bg-gradient-to-br from-purple-500 to-pink-500',
+      icon: '✨',
+      color: 'text-white',
+    };
+    if (badgeLower.includes('expert')) return {
+      bg: 'bg-gradient-to-br from-blue-500 to-cyan-500',
+      icon: '⚡',
+      color: 'text-white',
+    };
+    if (badgeLower.includes('moderateur')) return {
+      bg: 'bg-gradient-to-br from-green-500 to-emerald-500',
+      icon: '🛡️',
+      color: 'text-white',
+    };
+    if (badgeLower.includes('verificat')) return {
+      bg: 'bg-gradient-to-br from-blue-400 to-blue-600',
+      icon: '✓',
+      color: 'text-white',
+    };
+    return {
+      bg: 'bg-gradient-to-br from-slate-500 to-slate-600',
+      icon: '🏅',
+      color: 'text-white',
+    };
   };
 
   const roleColors = {
@@ -93,16 +119,26 @@ const UserBadgeProfile = ({ userId, small = false }) => {
           <p className={cn('font-semibold text-gray-900 mb-2', small ? 'text-xs' : 'text-sm')}>
             Badges ({user.badges.length})
           </p>
-          <div className="flex flex-wrap gap-2">
-            {user.badges.map((badge) => (
-              <div
-                key={badge}
-                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-900 rounded-full text-xs font-semibold border border-amber-300"
-              >
-                {getBadgeIcon(badge)}
-                <span className="capitalize">{badge.replace(/_/g, ' ')}</span>
-              </div>
-            ))}
+          <div className="flex flex-wrap gap-3">
+            {user.badges.map((badge) => {
+              const config = getBadgeConfig(badge);
+              return (
+                <div key={badge} className="group relative">
+                  <div
+                    className={cn(
+                      'w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110',
+                      config.bg
+                    )}
+                    title={badge}
+                  >
+                    {config.icon}
+                  </div>
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                    {badge.replace(/_/g, ' ')}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -136,15 +172,21 @@ const UserBadgeProfile = ({ userId, small = false }) => {
             <span className="text-sm font-semibold text-gray-900">{user.name}</span>
             {user.badges && user.badges.length > 0 && (
               <div className="flex gap-1">
-                {user.badges.slice(0, 1).map((badge) => (
-                  <div
-                    key={badge}
-                    className="flex items-center justify-center w-4 h-4 bg-amber-400 rounded-full text-white text-xs"
-                    title={badge}
-                  >
-                    ⭐
-                  </div>
-                ))}
+                {user.badges.slice(0, 2).map((badge) => {
+                  const config = getBadgeConfig(badge);
+                  return (
+                    <div
+                      key={badge}
+                      className={cn(
+                        'flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold shadow-md hover:scale-110 transition-transform',
+                        config.bg
+                      )}
+                      title={badge}
+                    >
+                      {config.icon}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </button>

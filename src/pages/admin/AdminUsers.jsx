@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Save, Loader2, Search, ShieldCheck, ShieldOff, CheckCircle, Flag, Download, Trash2, UserX, AlertTriangle
+import { Save, Loader2, Search, ShieldCheck, ShieldOff, CheckCircle, Flag, Download, Trash2, UserX, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,6 +60,7 @@ export default function AdminUsers() {
   const [filterRole, setFilterRole] = useState('all');
   const [filterBadge, setFilterBadge] = useState('all');
   const [selectedIds, setSelectedIds] = useState([]);
+  const [generatingUsername, setGeneratingUsername] = useState(false);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['adm-users-list'],
@@ -558,6 +559,45 @@ export default function AdminUsers() {
               <div>
                 <label className="font-inter text-xs text-muted-foreground mb-1 block">Bio</label>
                 <Textarea value={editForm.bio} onChange={e => setEditForm(p => ({ ...p, bio: e.target.value }))} className="bg-secondary border-border resize-none h-20" />
+              </div>
+
+              {/* Username section */}
+              <div className="bg-secondary rounded-xl p-4">
+               <div className="flex items-center justify-between mb-2">
+                 <label className="font-inter text-xs text-muted-foreground">Username</label>
+                 {editUser?.username && (
+                   <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-1 rounded">{editUser.username}</span>
+                 )}
+               </div>
+               {!editUser?.username ? (
+                 <Button
+                   size="sm"
+                   variant="outline"
+                   className="w-full border-primary/30 text-primary hover:bg-primary/10 gap-2"
+                   onClick={async () => {
+                     setGeneratingUsername(true);
+                     try {
+                       const emailPrefix = editUser.email.split('@')[0];
+                       const random = Math.random().toString(36).substring(2, 8);
+                       const tempUsername = `temp_${emailPrefix}_${random}`;
+                       await updateUser.mutateAsync({ id: editUser.id, data: { username: tempUsername } });
+                       setEditForm(p => ({ ...p, username: tempUsername }));
+                     } catch (err) {
+                       toast.error('Erreur lors de la génération');
+                     } finally {
+                       setGeneratingUsername(false);
+                     }
+                   }}
+                   disabled={generatingUsername}
+                 >
+                   {generatingUsername ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                   Générer username temporaire
+                 </Button>
+               ) : (
+                 <div className="px-3 py-2 rounded-lg bg-green-400/10 border border-green-400/20">
+                   <p className="font-mono text-xs text-green-400">✅ Username généré</p>
+                 </div>
+               )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">

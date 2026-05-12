@@ -16,6 +16,7 @@ import DangerZone from '@/components/profile/DangerZone';
 import CertificationRequest from '@/components/profile/CertificationRequest';
 import ThemeSelector from '@/components/profile/ThemeSelector';
 import SecurityAndPrivacy from '@/components/security/SecurityAndPrivacy';
+import UsernameChanger from '@/components/profile/UsernameChanger';
 import UserSettings from '@/components/settings/UserSettings';
 import { ROLE_CONFIG, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 
@@ -323,20 +324,7 @@ export default function ProfilePage() {
              />
            </div>
 
-           <div>
-             <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Username</label>
-             <div className="relative">
-               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
-               <Input
-                 value={form.username}
-                 onChange={e => setForm(p => ({ ...p, username: e.target.value }))}
-                 placeholder="jdupont"
-                 className="bg-secondary border-border font-inter pl-7"
-                 disabled
-               />
-             </div>
-             <p className="font-inter text-xs text-muted-foreground mt-1">Le username ne peut pas être modifié</p>
-           </div>
+           <UsernameChanger user={user} username={form.username} onUpdate={() => setUser(u => ({ ...u, username: form.username }))} />
 
            <div>
              <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Bio</label>

@@ -169,12 +169,11 @@ const UserBadgeProfile = ({ userId, small = false }) => {
                 {(user.full_name || user.name)?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
-            <div className="flex items-center gap-0.5 min-w-0 flex-1">
+            <div className="flex items-center gap-1 min-w-0 flex-1">
               <span className="font-grotesk font-bold text-sm text-white group-hover:text-cyan-300 transition-colors leading-tight">
                 {user.full_name || user.name}
               </span>
-            </div>
-            <div className="flex gap-0.5 items-center flex-shrink-0">
+              <div className="flex gap-0.5 items-center flex-shrink-0">
               <VerificationIcons verifications={user.verifications} size="sm" />
               {user.badges && user.badges.length > 0 && user.badges.slice(0, 3).map((badge) => {
                 const cfg = BADGE_CONFIG[badge];
@@ -190,6 +189,7 @@ const UserBadgeProfile = ({ userId, small = false }) => {
                   </div>
                 );
               })}
+              </div>
             </div>
           </button>
         </HoverCardTrigger>

@@ -25,27 +25,55 @@ const VERIFICATION_OPTIONS = [
 
 export default function UserEditModal({ user, open, onClose, onSave, isLoading, currentUser }) {
   const [form, setForm] = useState({
-    full_name: user?.full_name || '',
-    display_name: user?.display_name || '',
-    email: user?.email || '',
-    role: user?.role || 'user',
-    account_status: user?.account_status || 'active',
-    verified_status: user?.verified_status || 'no',
-    suspension_reason: user?.suspension_reason || '',
-    suspension_until: user?.suspension_until || '',
-    bio: user?.bio || '',
-    location: user?.location || '',
-    phone: user?.phone || '',
-    avatar_url: user?.avatar_url || '',
-    cover_url: user?.cover_url || '',
-    username: user?.username || '',
-    subscription_tier: user?.subscription_tier || 'free',
-    is_premium: user?.is_premium || false,
-    website: user?.website || '',
-    twitter: user?.twitter || '',
-    linkedin: user?.linkedin || '',
-    instagram: user?.instagram || '',
+    full_name: '',
+    display_name: '',
+    email: '',
+    role: 'user',
+    account_status: 'active',
+    verified_status: 'no',
+    suspension_reason: '',
+    suspension_until: '',
+    bio: '',
+    location: '',
+    phone: '',
+    avatar_url: '',
+    cover_url: '',
+    username: '',
+    subscription_tier: 'free',
+    is_premium: false,
+    website: '',
+    twitter: '',
+    linkedin: '',
+    instagram: '',
   });
+
+  // Sync form with user data when modal opens
+  React.useEffect(() => {
+    if (user) {
+      setForm({
+        full_name: user.full_name || '',
+        display_name: user.display_name || '',
+        email: user.email || '',
+        role: user.role || 'user',
+        account_status: user.account_status || 'active',
+        verified_status: user.verified_status || 'no',
+        suspension_reason: user.suspension_reason || '',
+        suspension_until: user.suspension_until || '',
+        bio: user.bio || '',
+        location: user.location || '',
+        phone: user.phone || '',
+        avatar_url: user.avatar_url || '',
+        cover_url: user.cover_url || '',
+        username: user.username || '',
+        subscription_tier: user.subscription_tier || 'free',
+        is_premium: user.is_premium || false,
+        website: user.website || '',
+        twitter: user.twitter || '',
+        linkedin: user.linkedin || '',
+        instagram: user.instagram || '',
+      });
+    }
+  }, [user]);
 
   const myLevel = getUserLevel(currentUser);
   const assignableRoles = getAssignableRoles(currentUser);

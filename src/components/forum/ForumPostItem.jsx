@@ -73,12 +73,11 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
       <div className="px-6 py-4 border-b border-slate-700/30 flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="text-white mb-2">
-            {post.author && author ? (
+            {author ? (
               <UserBadgeProfile userId={post.author} small />
             ) : (
-              <div className="flex items-center gap-2">
-                <span className="font-grotesk font-bold text-sm text-white">{post.author_name || 'Auteur inconnu'}</span>
-                {post.author_email && <span className="text-xs text-slate-400">{post.author_email}</span>}
+              <div className="flex items-start gap-2">
+                <span className="font-grotesk font-bold text-sm text-white">{post.author_name || post.author_email || 'Auteur inconnu'}</span>
               </div>
             )}
           </div>

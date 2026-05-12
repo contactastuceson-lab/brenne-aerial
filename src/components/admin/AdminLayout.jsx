@@ -7,7 +7,7 @@ import {
   Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail,
   Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, Map,
   FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap,
-  SlidersHorizontal, Activity
+  SlidersHorizontal, Activity, Radar
 } from 'lucide-react';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 import AdminRealtimeSync from '@/components/admin/AdminRealtimeSync';
@@ -74,6 +74,7 @@ const NAV_GROUPS = [
     label: 'Système',
     minLevel: 80,
     items: [
+      { path: '/admin/monitoring', icon: Radar, label: 'Monitoring IA', minLevel: 70 },
       { path: '/admin/maintenance', icon: Shield, label: 'Maintenance', minLevel: 80 },
       { path: '/admin/status', icon: Settings, label: 'Statut Site', minLevel: 70 },
       { path: '/admin/site-config', icon: Settings, label: 'Config. Site', minLevel: 90 },

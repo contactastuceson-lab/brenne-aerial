@@ -30,9 +30,8 @@ const UserBadgeProfile = ({ userId, small = false }) => {
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  // Fallback display if user data not found - used when user ID doesn't resolve
+  const displayAsUnknown = !user;
 
   const BADGE_CONFIG = {
     'Fondateur': { icon: Star, color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -129,6 +128,24 @@ const UserBadgeProfile = ({ userId, small = false }) => {
   );
 
   if (small) {
+    // If no user data, return minimal display
+    if (displayAsUnknown) {
+      return (
+        <div className="flex items-start gap-3">
+          <Avatar className="w-8 h-8 border border-cyan-500/20">
+            <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white text-xs font-bold">
+              U
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col gap-1 min-w-0 flex-1">
+            <span className="font-grotesk font-bold text-sm text-slate-400 leading-tight">
+              Auteur inconnu
+            </span>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <HoverCard>
         <HoverCardTrigger asChild>
@@ -172,6 +189,25 @@ const UserBadgeProfile = ({ userId, small = false }) => {
           {profileContent}
         </HoverCardContent>
       </HoverCard>
+    );
+  }
+
+  if (displayAsUnknown) {
+    return (
+      <div className={cn('space-y-3', small && 'space-y-2')}>
+        <div className="flex items-start gap-3">
+          <Avatar className={cn(small ? 'w-12 h-12' : 'w-16 h-16')}>
+            <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white text-lg font-bold">
+              U
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <h4 className={cn('font-bold text-gray-900', small ? 'text-sm' : 'text-base')}>
+              Auteur inconnu
+            </h4>
+          </div>
+        </div>
+      </div>
     );
   }
 

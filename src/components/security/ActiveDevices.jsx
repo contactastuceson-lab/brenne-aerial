@@ -12,8 +12,6 @@ export default function ActiveDevices({ user }) {
   const queryClient = useQueryClient();
   const [confirmDisconnect, setConfirmDisconnect] = useState(null);
 
-  const currentSessionId = sessionStorage.getItem(SESSION_KEY);
-
   // Subscription: refresh list on other sessions changes
   useEffect(() => {
     if (!user?.email) return;
@@ -34,14 +32,17 @@ export default function ActiveDevices({ user }) {
 
   // If current session is no longer in the list, logout
   useEffect(() => {
+    const currentSessionId = sessionStorage.getItem(SESSION_KEY);
+    // Only check if we have a registered session AND devices have loaded
     if (!currentSessionId || devices.length === 0) return;
     const stillExists = devices.some(d => d.session_id === currentSessionId);
     if (!stillExists) {
       base44.auth.logout();
     }
-  }, [devices, currentSessionId]);
+  }, [devices]);
 
 
+  const currentSessionId = sessionStorage.getItem(SESSION_KEY);
   const currentDevice = devices.find(d => d.session_id === currentSessionId);
   const otherDevices = devices.filter(d => d.session_id !== currentSessionId);
 

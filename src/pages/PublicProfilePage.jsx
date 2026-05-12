@@ -39,30 +39,24 @@ export default function PublicProfilePage() {
           me = await base44.auth.me();
           setCurrentUser(me);
         } catch {
-          // Non authentifié, c'est ok pour une page publique
+          // Non authentifié
         }
 
-        // Chercher l'utilisateur par username (case-insensitive)
+        // Chercher l'utilisateur par username
         const searchUsername = username.toLowerCase().replace(/@/g, '');
-        let users = await base44.entities.User.filter({ username: searchUsername });
-        
-        // Fallback: chercher dans tous les utilisateurs
-        if (users.length === 0) {
-          const allUsers = await base44.entities.User.list();
-          users = allUsers.filter(u => 
-            u.username?.toLowerCase() === searchUsername || 
-            u.display_name?.toLowerCase() === searchUsername ||
-            u.full_name?.toLowerCase() === searchUsername
-          );
-        }
-        
-        if (users.length === 0) {
+        const allUsers = await base44.entities.User.list();
+        const foundUser = allUsers.find(u => 
+          u.username?.toLowerCase() === searchUsername || 
+          u.display_name?.toLowerCase() === searchUsername ||
+          u.full_name?.toLowerCase() === searchUsername
+        );
+
+        if (!foundUser) {
           setNotFound(true);
           setLoading(false);
           return;
         }
 
-        const foundUser = users[0];
         setUser(foundUser);
 
         // Charger les followers
@@ -75,26 +69,22 @@ export default function PublicProfilePage() {
           setIsFollowing(isFollowingCheck);
         }
 
-        // Subscribe aux changements de follow en temps réel
+        // Subscribe aux changements en temps réel
         const unsubscribe = base44.entities.Follow.subscribe((event) => {
           if (event.data?.following_email === foundUser.email) {
-            setFollowers(prev => {
-              if (event.type === 'create') {
-                return [...prev, event.data];
-              } else if (event.type === 'delete') {
-                return prev.filter(f => f.id !== event.id);
-              }
-              return prev;
-            });
-            
-            if (me && event.data?.follower_email === me.email) {
-              setIsFollowing(event.type === 'create');
+            if (event.type === 'create') {
+              setFollowers(prev => [...prev, event.data]);
+              if (me && event.data?.follower_email === me.email) setIsFollowing(true);
+            } else if (event.type === 'delete') {
+              setFollowers(prev => prev.filter(f => f.id !== event.id));
+              if (me && event.data?.follower_email === me.email) setIsFollowing(false);
             }
           }
         });
 
         return unsubscribe;
       } catch (err) {
+        console.error('Profile load error:', err);
         setNotFound(true);
       } finally {
         setLoading(false);

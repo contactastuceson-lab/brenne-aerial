@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Compass, MessageCircle, Bell, User, LogOut, LayoutDashboard, Menu, X } from 'lucide-react';
+import { Home, FileText, Compass, MessageCircle, Bell, User, LogOut, LayoutDashboard, Menu, X, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_LINKS = [
   { to: '/',         label: 'Accueil' },
@@ -12,13 +12,27 @@ const NAV_LINKS = [
   { to: '/discover', label: 'Explorer' },
   { to: '/portfolio', label: 'Portfolio' },
   { to: '/planning',  label: 'Planning' },
-  { to: '/contact',   label: 'Contact' },
+  { to: '/blog',      label: 'Blog' },
+];
+
+const TOOLS = [
+  { to: '/calculateur',      label: 'Calculateur de prix' },
+  { to: '/garage',           label: 'Garage Drones' },
+  { to: '/partenaires',      label: 'Partenaires' },
+  { to: '/parrainage',       label: 'Parrainage' },
+  { to: '/avant-apres',      label: 'Avant / Après' },
+  { to: '/reglementation',   label: 'Réglementation' },
+  { to: '/simulateur-vue',   label: 'Simulateur de vue' },
+  { to: '/comparateur',      label: 'Comparateur résolution' },
+  { to: '/flash-delivery',   label: 'Flash Delivery' },
+  { to: '/espace-client',    label: 'Espace Client' },
 ];
 
 export default function Navbar() {
   const location = useLocation();
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(auth => {
@@ -62,6 +76,47 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Tools Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setToolsOpen(!toolsOpen)}
+                className={`px-3 py-2 rounded-lg text-sm font-inter flex items-center gap-1.5 transition-colors ${
+                  toolsOpen
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Outils
+                <ChevronDown className={`w-4 h-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {toolsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full left-0 mt-1 w-48 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-50"
+                  >
+                    {TOOLS.map(tool => (
+                      <Link
+                        key={tool.to}
+                        to={tool.to}
+                        onClick={() => setToolsOpen(false)}
+                        className={`block px-4 py-2.5 text-sm font-inter border-b border-border/50 last:border-b-0 transition-colors ${
+                          isActive(tool.to)
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                        }`}
+                      >
+                        {tool.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Right side: Notifs, Profile, Auth */}
@@ -166,6 +221,46 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            
+            {/* Mobile Tools Submenu */}
+            <button
+              onClick={() => setToolsOpen(!toolsOpen)}
+              className={`block w-full text-left px-3 py-2 rounded-lg text-sm font-inter transition-colors ${
+                toolsOpen
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span>Outils</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
+              </div>
+            </button>
+            <AnimatePresence>
+              {toolsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-1 px-3"
+                >
+                  {TOOLS.map(tool => (
+                    <Link
+                      key={tool.to}
+                      to={tool.to}
+                      onClick={() => { setMobileMenuOpen(false); setToolsOpen(false); }}
+                      className={`block px-3 py-2 rounded-lg text-sm font-inter transition-colors ${
+                        isActive(tool.to)
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {tool.label}
+                    </Link>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
             {!user && (
               <div className="flex gap-2 pt-2">
                 <button

@@ -47,7 +47,8 @@ export default function PublicProfilePage() {
 
         // Chercher l'utilisateur par username, display_name, full_name ou email
         const searchUsername = username.toLowerCase();
-        const allUsers = await base44.functions.invoke('getPublicUsers', {});
+        const response = await base44.functions.invoke('getPublicUsers', {});
+        const allUsers = Array.isArray(response) ? response : response.data || [];
         const foundUser = allUsers.find(u => 
           u.username?.toLowerCase() === searchUsername || 
           u.display_name?.toLowerCase() === searchUsername ||

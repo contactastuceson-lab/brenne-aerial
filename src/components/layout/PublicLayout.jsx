@@ -4,6 +4,7 @@ import EmailVerificationModal from '@/components/shared/EmailVerificationModal';
 import { Outlet, useLocation } from 'react-router-dom';
 import AppHeader from './AppHeader';
 import BottomTabBar from './BottomTabBar';
+import Navbar from './Navbar';
 import Footer from './Footer';
 import AnnouncementBanner from '@/components/shared/AnnouncementBanner';
 import AnnouncementPopup from '@/components/shared/AnnouncementPopup';
@@ -110,14 +111,28 @@ export default function PublicLayout() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AnnouncementBanner user={user} />
-      <AppHeader />
+      
+      {/* Desktop: Navbar */}
+      <div className="hidden md:block">
+        <Navbar />
+      </div>
+      
+      {/* Mobile: AppHeader */}
+      <div className="md:hidden">
+        <AppHeader />
+      </div>
+      
       <main className="flex-1">
         <Outlet />
       </main>
       <AnnouncementPopup user={user} />
       {!hideFloatingButton && <DonationFloatingButton />}
       {!hideFloatingButton && <ChatbotWidget />}
-      <BottomTabBar />
+      
+      {/* Mobile: BottomTabBar */}
+      <div className="md:hidden">
+        <BottomTabBar />
+      </div>
     </div>
   );
 }

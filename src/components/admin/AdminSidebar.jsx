@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, Radar } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, Radar, MessageCircle } from 'lucide-react';
 
 const navItems = [
   { key: 'stats', icon: BarChart3, path: '/admin' },
@@ -11,6 +11,7 @@ const navItems = [
   { key: 'accounts', icon: UserCog, path: '/admin/accounts' },
   { key: 'certifications', icon: Award, path: '/admin/certifications' },
   { key: 'messaging', icon: MessageSquare, path: '/admin/messaging' },
+  { key: 'forum', icon: MessageCircle, path: '/admin/forum' },
   { key: 'pricing', icon: DollarSign, path: '/admin/pricing' },
   { key: 'emailing', icon: Mail, path: '/admin/emailing' },
   { key: 'sessions', icon: MonitorSmartphone, path: '/admin/sessions' },

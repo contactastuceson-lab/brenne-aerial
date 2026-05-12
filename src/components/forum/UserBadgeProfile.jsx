@@ -8,7 +8,7 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Award, Zap, Star } from 'lucide-react';
+import { Shield, Award, Zap, Star, CheckCircle, Heart, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -32,38 +32,15 @@ const UserBadgeProfile = ({ userId, small = false }) => {
     return null;
   }
 
-  const getBadgeConfig = (badge) => {
-    const badgeLower = badge.toLowerCase();
-    if (badgeLower.includes('fondateur')) return {
-      bg: 'bg-gradient-to-br from-amber-400 to-yellow-500',
-      icon: '👑',
-      color: 'text-white',
-    };
-    if (badgeLower.includes('supremme')) return {
-      bg: 'bg-gradient-to-br from-purple-500 to-pink-500',
-      icon: '✨',
-      color: 'text-white',
-    };
-    if (badgeLower.includes('expert')) return {
-      bg: 'bg-gradient-to-br from-blue-500 to-cyan-500',
-      icon: '⚡',
-      color: 'text-white',
-    };
-    if (badgeLower.includes('moderateur')) return {
-      bg: 'bg-gradient-to-br from-green-500 to-emerald-500',
-      icon: '🛡️',
-      color: 'text-white',
-    };
-    if (badgeLower.includes('verificat')) return {
-      bg: 'bg-gradient-to-br from-blue-400 to-blue-600',
-      icon: '✓',
-      color: 'text-white',
-    };
-    return {
-      bg: 'bg-gradient-to-br from-slate-500 to-slate-600',
-      icon: '🏅',
-      color: 'text-white',
-    };
+  const BADGE_CONFIG = {
+    'Fondateur': { icon: Star, color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
+    'Collaborateur': { icon: Award, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/30' },
+    'VIP': { icon: Award, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
+    'Admin': { icon: Shield, color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/30' },
+    'Pilote': { icon: Zap, color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/30' },
+    'Officiel': { icon: CheckCircle, color: 'text-accent', bg: 'bg-accent/10', border: 'border-accent/30' },
+    'Vérfifié': { icon: CheckCircle, color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/30' },
+    'Donateur': { icon: Heart, color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/30' },
   };
 
   const roleColors = {
@@ -119,24 +96,15 @@ const UserBadgeProfile = ({ userId, small = false }) => {
           <p className={cn('font-semibold text-gray-900 mb-2', small ? 'text-xs' : 'text-sm')}>
             Badges ({user.badges.length})
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {user.badges.map((badge) => {
-              const config = getBadgeConfig(badge);
+              const cfg = BADGE_CONFIG[badge];
+              if (!cfg) return <span key={badge} className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-900">{badge}</span>;
+              const Icon = cfg.icon;
               return (
-                <div key={badge} className="group relative">
-                  <div
-                    className={cn(
-                      'w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110',
-                      config.bg
-                    )}
-                    title={badge}
-                  >
-                    {config.icon}
-                  </div>
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                    {badge.replace(/_/g, ' ')}
-                  </div>
-                </div>
+                <span key={badge} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+                  <Icon className="w-3 h-3" /> {badge}
+                </span>
               );
             })}
           </div>
@@ -173,18 +141,17 @@ const UserBadgeProfile = ({ userId, small = false }) => {
             {user.badges && user.badges.length > 0 && (
               <div className="flex gap-1">
                 {user.badges.slice(0, 2).map((badge) => {
-                  const config = getBadgeConfig(badge);
+                  const cfg = BADGE_CONFIG[badge];
+                  if (!cfg) return null;
+                  const Icon = cfg.icon;
                   return (
-                    <div
+                    <span
                       key={badge}
-                      className={cn(
-                        'flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold shadow-md hover:scale-110 transition-transform',
-                        config.bg
-                      )}
+                      className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full border text-[10px] font-semibold ${cfg.color} ${cfg.bg} ${cfg.border}`}
                       title={badge}
                     >
-                      {config.icon}
-                    </div>
+                      <Icon className="w-2.5 h-2.5" /> {badge}
+                    </span>
                   );
                 })}
               </div>

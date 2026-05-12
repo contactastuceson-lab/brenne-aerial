@@ -46,6 +46,7 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
     linkedin: '',
     instagram: '',
   });
+  const [generatingUsername, setGeneratingUsername] = useState(false);
 
   // Sync form with user data when modal opens
   React.useEffect(() => {
@@ -79,7 +80,6 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
   const assignableRoles = getAssignableRoles(currentUser);
   const isTargetSupreme = (user?.verifications || []).includes('supreme');
   const blocked = isTargetSupreme && myLevel < 100;
-  const [generatingUsername, setGeneratingUsername] = useState(false);
 
   const handleUploadAvatar = async (e) => {
     const file = e.target.files?.[0];
@@ -110,10 +110,11 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
     try {
       const emailPrefix = user.email.split('@')[0];
       const random = Math.random().toString(36).substring(2, 8);
-      setForm(p => ({ ...p, username: `temp_${emailPrefix}_${random}` }));
-      toast.success('Username généré');
+      const newUsername = `${emailPrefix}${random}`;
+      setForm(p => ({ ...p, username: newUsername }));
+      toast.success(`Username généré: ${newUsername}`);
     } catch (err) {
-      toast.error('Erreur');
+      toast.error('Erreur lors de la génération du username');
     } finally {
       setGeneratingUsername(false);
     }
@@ -203,7 +204,7 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
             <div className="col-span-2">
               <label className="font-inter text-xs text-muted-foreground mb-1 block">Username</label>
               <div className="flex gap-2">
-                <Input value={form.username} readOnly className="bg-card border-border text-muted-foreground" />
+                <Input value={form.username} onChange={e => setForm(p => ({ ...p, username: e.target.value }))} placeholder="Entrez un username..." className="bg-card border-border" />
                 <Button size="sm" variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 gap-1.5 flex-shrink-0" onClick={generateUsername} disabled={generatingUsername}>
                   {generatingUsername ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
                   <span className="hidden sm:inline">Générer</span>

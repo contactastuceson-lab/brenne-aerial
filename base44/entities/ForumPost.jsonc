@@ -1,49 +1,36 @@
 {
   "name": "ForumPost",
   "type": "object",
-  "description": "Réponse dans un sujet du forum",
   "properties": {
     "topic_id": {
       "type": "string",
-      "description": "ID du sujet parent (référence ForumTopic)"
+      "description": "ID du sujet parent"
     },
     "content": {
       "type": "string",
-      "description": "Contenu de la réponse"
+      "description": "Contenu de la r\u00e9ponse"
     },
-    "parent_post_id": {
+    "author": {
       "type": "string",
-      "description": "ID du post parent (pour les réponses imbriquées)"
+      "description": "ID de l'auteur"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Nom de l'auteur"
+    },
+    "author_email": {
+      "type": "string",
+      "description": "Email de l'auteur"
     },
     "is_solution": {
       "type": "boolean",
       "default": false,
-      "description": "Marquer comme solution au problème"
+      "description": "Est une solution marqu\u00e9e"
     },
     "likes_count": {
       "type": "number",
       "default": 0,
-      "description": "Nombre de likes"
-    },
-    "liked_by": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "IDs des utilisateurs qui ont aimé"
-    },
-    "edited": {
-      "type": "boolean",
-      "default": false,
-      "description": "Le message a été édité"
-    },
-    "created_at": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "updated_at": {
-      "type": "string",
-      "format": "date-time"
+      "description": "Nombre de J'aime"
     }
   },
   "required": [

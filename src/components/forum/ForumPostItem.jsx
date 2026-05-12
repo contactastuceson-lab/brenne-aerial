@@ -16,7 +16,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
   const [isLiked, setIsLiked] = useState(post.liked_by?.includes(user?.id) || false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
 
-  const { data: author } = useQuery({
+  const { data: author, isLoading: authorLoading } = useQuery({
     queryKey: ['user', post.author],
     queryFn: async () => {
       const response = await base44.entities.User.get(post.author);
@@ -25,7 +25,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
     enabled: !!post.author,
   });
 
-  const isSupreme = author?.role === 'owner' || author?.role === 'pdg_adjoint';
+  const isSupreme = !authorLoading && (author?.role === 'owner' || author?.role === 'pdg_adjoint');
 
   const likeMutation = useMutation({
     mutationFn: async () => {

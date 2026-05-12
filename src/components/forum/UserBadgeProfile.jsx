@@ -169,17 +169,13 @@ const UserBadgeProfile = ({ userId, small = false }) => {
                 {(user.full_name || user.name)?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
-            <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className="font-grotesk font-bold text-sm text-white group-hover:text-cyan-300 transition-colors leading-tight">
-                  {user.full_name || user.name}
-                </span>
-                {user.role && user.role !== 'user' && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300 whitespace-nowrap w-fit flex-shrink-0">
-                    {user.role === 'pdg_adjoint' ? 'Deputy' : user.role === 'conseil_admin' ? 'Council' : user.role.split('_')[0]}
-                  </span>
-                )}
-              </div>
+            <div className="flex items-center gap-1 min-w-0 flex-1">
+              <span className="font-grotesk font-bold text-sm text-white group-hover:text-cyan-300 transition-colors leading-tight">
+                {user.full_name || user.name}
+              </span>
+              {user.role && user.role !== 'user' && (
+                <div className="w-2 h-2 rounded-full bg-cyan-400 flex-shrink-0" title={user.role} />
+              )}
             </div>
             <div className="flex gap-1.5 items-center flex-shrink-0">
               <VerificationIcons verifications={user.verifications} size="sm" />

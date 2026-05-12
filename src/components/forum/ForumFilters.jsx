@@ -39,9 +39,9 @@ const ForumFilters = ({
   const hasActiveFilters = searchQuery || selectedCategory !== 'all' || sortBy !== 'recent';
 
   return (
-    <div className="space-y-4 p-4 bg-slate-800 rounded-lg border border-slate-700">
-      <div className="flex items-center gap-2 mb-2">
-        <Filter size={18} className="text-blue-400" />
+    <div className="space-y-4 p-5 bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-md rounded-xl border border-cyan-500/20">
+      <div className="flex items-center gap-2 mb-3">
+        <Filter size={18} className="text-cyan-400" />
         <h3 className="font-bold text-white">Filtrer et Rechercher</h3>
       </div>
 
@@ -60,7 +60,7 @@ const ForumFilters = ({
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Chercher un sujet..."
-              className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-500"
+              className="pl-10 bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-500 focus:border-cyan-400/50"
             />
           </div>
         </div>
@@ -71,12 +71,12 @@ const ForumFilters = ({
             Catégorie
           </label>
           <Select value={selectedCategory} onValueChange={onCategoryChange}>
-            <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+            <SelectTrigger className="bg-slate-700/50 border-cyan-500/30 text-white focus:border-cyan-400/50">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-slate-700 border-slate-600">
+            <SelectContent className="bg-slate-800 border-cyan-500/30">
               {categories.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value} className="text-white focus:bg-slate-600">
+                <SelectItem key={cat.value} value={cat.value} className="text-white focus:bg-slate-700">
                   {cat.label}
                 </SelectItem>
               ))}
@@ -90,12 +90,12 @@ const ForumFilters = ({
             Trier par
           </label>
           <Select value={sortBy} onValueChange={onSortChange}>
-            <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+            <SelectTrigger className="bg-slate-700/50 border-cyan-500/30 text-white focus:border-cyan-400/50">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-slate-700 border-slate-600">
+            <SelectContent className="bg-slate-800 border-cyan-500/30">
               {sorts.map((sort) => (
-                <SelectItem key={sort.value} value={sort.value} className="text-white focus:bg-slate-600">
+                <SelectItem key={sort.value} value={sort.value} className="text-white focus:bg-slate-700">
                   {sort.label}
                 </SelectItem>
               ))}
@@ -106,12 +106,12 @@ const ForumFilters = ({
 
       {/* Bouton Clear */}
       {hasActiveFilters && (
-        <div className="flex justify-end pt-2 border-t border-slate-700">
+        <div className="flex justify-end pt-3 border-t border-slate-700/50">
           <Button
             variant="ghost"
             size="sm"
             onClick={onClearFilters}
-            className="text-blue-400 hover:text-blue-300 hover:bg-slate-700 gap-2"
+            className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 gap-2"
           >
             <X size={16} />
             Réinitialiser les filtres

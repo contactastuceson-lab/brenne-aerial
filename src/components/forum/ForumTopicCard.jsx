@@ -37,29 +37,29 @@ const ForumTopicCard = ({ topic, onSelect }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        'group p-4 bg-slate-800 border border-slate-700 rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer',
-        isHovered && 'border-blue-500 shadow-lg shadow-blue-500/20'
+        'group p-5 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-md border border-cyan-500/20 rounded-xl transition-all duration-300 cursor-pointer hover:border-cyan-400/40',
+        isHovered && 'shadow-lg shadow-cyan-500/10 border-cyan-400/40 transform -translate-y-0.5'
       )}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           {/* Header avec badges */}
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
             {topic.is_pinned && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-900 text-red-200 rounded-full text-xs font-semibold">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-semibold">
                 <Pin size={12} />
                 Épinglé
               </span>
             )}
             {topic.is_locked && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-slate-700 text-gray-300 rounded-full text-xs font-semibold">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-700/60 text-slate-300 border border-slate-600/50 rounded-full text-xs font-semibold">
                 <Lock size={12} />
                 Fermé
               </span>
             )}
             <span
               className={cn(
-                'px-2 py-1 rounded-full text-xs font-semibold border',
+                'px-2.5 py-1 rounded-full text-xs font-semibold border backdrop-blur-sm',
                 getCategoryColor(topic.category)
               )}
             >
@@ -68,37 +68,37 @@ const ForumTopicCard = ({ topic, onSelect }) => {
           </div>
 
           {/* Titre */}
-          <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors truncate">
+          <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors truncate">
             {topic.title}
           </h3>
 
           {/* Aperçu du contenu */}
-          <p className="text-sm text-gray-400 mt-1 line-clamp-2">
+          <p className="text-sm text-slate-400 mt-2 line-clamp-2">
             {topic.content.substring(0, 120)}...
           </p>
 
           {/* Tags */}
           {topic.tags && topic.tags.length > 0 && (
-            <div className="flex gap-2 mt-2 flex-wrap">
+            <div className="flex gap-2 mt-3 flex-wrap">
               {topic.tags.slice(0, 3).map((tag) => (
-                <span key={tag} className="px-2 py-1 bg-slate-700 text-gray-300 text-xs rounded-md">
+                <span key={tag} className="px-2 py-1 bg-cyan-500/10 text-cyan-300 text-xs rounded-md border border-cyan-500/20 font-medium">
                   #{tag}
                 </span>
               ))}
               {topic.tags.length > 3 && (
-                <span className="text-xs text-gray-500">+{topic.tags.length - 3}</span>
+                <span className="text-xs text-slate-500">+{topic.tags.length - 3}</span>
               )}
             </div>
           )}
         </div>
 
         {/* Stats */}
-        <div className="flex flex-col gap-3 text-right">
-          <div className="flex items-center justify-end gap-2 text-gray-400 hover:text-blue-400 transition-colors">
+        <div className="flex flex-col gap-3 text-right flex-shrink-0">
+          <div className="flex items-center justify-end gap-2 text-slate-400 group-hover:text-cyan-400 transition-colors">
             <MessageSquare size={18} />
             <span className="text-sm font-semibold">{topic.replies_count || 0}</span>
           </div>
-          <div className="flex items-center justify-end gap-2 text-gray-400 hover:text-purple-400 transition-colors">
+          <div className="flex items-center justify-end gap-2 text-slate-400 group-hover:text-purple-400 transition-colors">
             <TrendingUp size={18} />
             <span className="text-sm font-semibold">{topic.views_count || 0}</span>
           </div>
@@ -106,11 +106,11 @@ const ForumTopicCard = ({ topic, onSelect }) => {
       </div>
 
       {/* Footer avec auteur et date */}
-      <div className="mt-3 pt-3 border-t border-slate-700 flex items-center justify-between">
-        <div className="min-w-0">
+      <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <UserBadgeProfile userId={topic.author} small />
         </div>
-        <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+        <span className="text-xs text-slate-500 whitespace-nowrap">
           {topic.created_date && formatDistanceToNow(new Date(topic.created_date), { locale: fr, addSuffix: true })}
         </span>
       </div>

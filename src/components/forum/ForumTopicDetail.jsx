@@ -89,7 +89,7 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6 shadow-xl">
+      <div className="bg-gradient-to-br from-cyan-600 via-blue-600 to-purple-600 text-white rounded-xl p-6 shadow-xl backdrop-blur-md border border-cyan-500/20">
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors mb-4"
@@ -123,10 +123,12 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
       </div>
 
       {/* Topic Content */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md">
+      <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-md border border-cyan-500/20 rounded-xl p-6 shadow-lg">
         <div className="mb-4">
-          <UserBadgeProfile userId={topic.author} />
-          <p className="text-xs text-gray-500 mt-2">
+          <div className="text-white">
+            <UserBadgeProfile userId={topic.author} />
+          </div>
+          <p className="text-xs text-slate-400 mt-2">
             {topic.created_date && formatDistanceToNow(new Date(topic.created_date), { locale: fr, addSuffix: true })}
           </p>
         </div>
@@ -135,36 +137,36 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
         {topic.tags && topic.tags.length > 0 && (
           <div className="flex gap-2 mb-4 flex-wrap">
             {topic.tags.map((tag) => (
-              <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold">
+              <span key={tag} className="px-3 py-1 bg-cyan-500/10 text-cyan-300 rounded-lg text-sm font-semibold border border-cyan-500/20">
                 #{tag}
               </span>
             ))}
           </div>
         )}
 
-        <div className="prose prose-sm max-w-none text-gray-800 whitespace-pre-wrap">
+        <div className="text-slate-300 whitespace-pre-wrap leading-relaxed">
           {topic.content}
         </div>
       </div>
 
       {/* Status message */}
       {hasSolution && (
-        <div className="bg-green-50 border border-green-300 rounded-lg p-4 text-green-900 font-semibold">
+        <div className="bg-green-900/20 border border-green-500/40 rounded-xl p-4 text-green-300 font-semibold backdrop-blur-md">
           ✓ Ce sujet a une solution marquée ci-dessous
         </div>
       )}
 
       {/* Posts section */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <h2 className="text-2xl font-bold text-white mb-4">
           Réponses ({posts.length})
         </h2>
 
         {posts.length === 0 ? (
-          <div className="text-center p-8 bg-gray-50 rounded-lg border border-gray-200">
-            <p className="text-gray-600 mb-4">Aucune réponse pour le moment</p>
+          <div className="text-center p-8 bg-slate-800/60 backdrop-blur-md rounded-xl border border-cyan-500/20">
+            <p className="text-cyan-200 mb-4">Aucune réponse pour le moment</p>
             {!topic.is_locked && (
-              <p className="text-gray-500 text-sm">Soyez le premier à répondre !</p>
+              <p className="text-slate-400 text-sm">Soyez le premier à répondre !</p>
             )}
           </div>
         ) : (
@@ -184,7 +186,7 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
         {/* Reply form */}
         {!topic.is_locked && user && (
           <div className="mt-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Votre réponse</h3>
+            <h3 className="text-lg font-bold text-white mb-4">Votre réponse</h3>
             <CreateForumPost 
               topicId={topicId} 
               currentRepliesCount={topic.replies_count || 0}
@@ -193,10 +195,10 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
         )}
 
         {topic.is_locked && (
-          <div className="mt-6 p-4 bg-gray-100 text-gray-700 rounded-lg border border-gray-300 text-center">
+          <div className="mt-6 p-4 bg-slate-800/60 backdrop-blur-md text-slate-300 rounded-xl border border-slate-700/50 text-center">
             <Lock size={20} className="mx-auto mb-2" />
             <p className="font-semibold">Ce sujet est fermé</p>
-            <p className="text-sm text-gray-600">Les nouvelles réponses ne sont plus acceptées</p>
+            <p className="text-sm text-slate-400">Les nouvelles réponses ne sont plus acceptées</p>
           </div>
         )}
       </div>

@@ -89,14 +89,17 @@ const ForumTopicList = ({ onSelectTopic }) => {
 
   return (
     <div className="space-y-6">
-      {/* Header Section */}
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-          Forum de la Communauté
-        </h1>
-        <p className="text-gray-400 text-lg">
-          Posez des questions, partagez vos connaissances et connectez-vous avec la communauté
-        </p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-cyan-500 to-purple-600 p-8 md:p-12">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+        <div className="relative z-10">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+            Forum de la Communauté
+          </h1>
+          <p className="text-cyan-50 text-lg md:text-xl">
+            Posez des questions, partagez vos connaissances et connectez-vous avec la communauté Brenne Aerial
+          </p>
+        </div>
       </div>
 
       {/* Create Topic Button */}
@@ -121,20 +124,23 @@ const ForumTopicList = ({ onSelectTopic }) => {
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 rounded-xl animate-pulse" />
+            <div key={i} className="h-32 bg-gradient-to-r from-slate-700 to-slate-800 rounded-xl animate-pulse" />
           ))}
         </div>
       ) : error ? (
-        <div className="p-8 text-center bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700 font-semibold">Erreur lors du chargement des sujets</p>
-          <p className="text-red-600 text-sm mt-2">{error.message}</p>
+        <div className="p-8 text-center bg-red-900/20 border border-red-500/50 rounded-xl backdrop-blur-sm">
+          <p className="text-red-300 font-semibold">Erreur lors du chargement des sujets</p>
+          <p className="text-red-400/80 text-sm mt-2">{error.message}</p>
         </div>
       ) : filteredTopics.length === 0 ? (
-        <div className="p-12 text-center bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-dashed border-blue-300 rounded-lg">
-          <p className="text-gray-600 text-lg font-semibold mb-2">
+        <div className="p-12 text-center bg-gradient-to-br from-slate-800 to-slate-900 border border-cyan-500/20 rounded-xl backdrop-blur-sm">
+          <div className="inline-block p-3 rounded-full bg-cyan-500/10 mb-4">
+            <span className="text-4xl">💬</span>
+          </div>
+          <p className="text-cyan-100 text-lg font-semibold mb-2">
             Aucun sujet trouvé
           </p>
-          <p className="text-gray-500 mb-4">
+          <p className="text-slate-400 mb-6">
             {searchQuery || selectedCategory !== 'all'
               ? 'Essayez de modifier vos filtres'
               : 'Soyez le premier à créer un sujet !'}
@@ -147,15 +153,15 @@ const ForumTopicList = ({ onSelectTopic }) => {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              <span className="font-semibold text-gray-900">{filteredTopics.length}</span> sujet
+          <div className="flex items-center justify-between px-2">
+            <p className="text-sm text-slate-400">
+              <span className="font-semibold text-cyan-400">{filteredTopics.length}</span> sujet
               {filteredTopics.length > 1 ? 's' : ''} trouvé
               {filteredTopics.length > 1 ? 's' : ''}
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {filteredTopics.map((topic) => (
               <ForumTopicCard
                 key={topic.id}

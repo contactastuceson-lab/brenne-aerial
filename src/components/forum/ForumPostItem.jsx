@@ -51,25 +51,27 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
   return (
     <div
       className={cn(
-        'p-4 rounded-lg border transition-all duration-300',
+        'p-5 rounded-xl border transition-all duration-300 backdrop-blur-md',
         post.is_solution
-          ? 'bg-slate-800 border-green-600 shadow-md shadow-green-500/20'
-          : 'bg-slate-800 border-slate-700 hover:border-slate-600'
+          ? 'bg-green-900/20 border-green-500/40 shadow-md shadow-green-500/10'
+          : 'bg-slate-800/60 border-cyan-500/20 hover:border-cyan-400/30'
       )}
     >
       {/* Header avec auteur et date */}
-      <div className="flex items-start justify-between gap-4 mb-3">
+      <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex-1">
-          <UserBadgeProfile userId={post.author} small />
-          <p className="text-xs text-gray-500 mt-1">
+          <div className="text-white">
+            <UserBadgeProfile userId={post.author} small />
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
             {post.created_date && formatDistanceToNow(new Date(post.created_date), { locale: fr, addSuffix: true })}
           </p>
-          {post.edited && <p className="text-xs text-gray-400 italic">Édité</p>}
+          {post.edited && <p className="text-xs text-slate-500 italic">Édité</p>}
         </div>
 
         {/* Badge Solution */}
         {post.is_solution && (
-          <div className="flex items-center gap-1 px-3 py-1 bg-green-900 text-green-200 rounded-full font-semibold text-sm">
+          <div className="flex items-center gap-1 px-3 py-1 bg-green-900/40 text-green-300 border border-green-500/40 rounded-full font-semibold text-sm">
             <Check size={16} />
             Solution
           </div>
@@ -77,43 +79,43 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
       </div>
 
       {/* Contenu */}
-      <div className="prose prose-sm max-w-none mb-4">
-        <p className="text-gray-300 whitespace-pre-wrap">{post.content}</p>
+      <div className="mb-4">
+        <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">{post.content}</p>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-slate-700">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
+        <div className="flex items-center gap-2">
           <button
             onClick={handleLike}
             disabled={likeMutation.isPending}
             className={cn(
-              'flex items-center gap-2 px-3 py-1 rounded-lg transition-all duration-200',
+              'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium',
               isLiked
-                ? 'bg-red-900 text-red-200 font-semibold'
-                : 'text-gray-400 hover:bg-slate-700'
+                ? 'bg-red-900/40 text-red-300 border border-red-500/40'
+                : 'text-slate-400 hover:bg-cyan-500/10 hover:text-cyan-300 hover:border hover:border-cyan-500/30'
             )}
           >
             <Heart
-              size={18}
+              size={16}
               className={isLiked ? 'fill-current' : ''}
             />
-            <span className="text-sm">{likesCount}</span>
+            <span className="text-xs">{likesCount}</span>
           </button>
 
           {canMarkSolution && post.author !== user?.id && (
             <button
               onClick={() => onMarkSolution(post.id, !post.is_solution)}
               className={cn(
-                'flex items-center gap-2 px-3 py-1 rounded-lg transition-all duration-200',
+                'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium',
                 post.is_solution
-                  ? 'bg-green-900 text-green-200 font-semibold'
-                  : 'text-gray-400 hover:bg-slate-700'
+                  ? 'bg-green-900/40 text-green-300 border border-green-500/40'
+                  : 'text-slate-400 hover:bg-cyan-500/10 hover:text-cyan-300 hover:border hover:border-cyan-500/30'
               )}
             >
-              <Check size={18} />
-              <span className="text-sm">
-                {post.is_solution ? 'Solution' : 'Marquer comme solution'}
+              <Check size={16} />
+              <span className="text-xs">
+                {post.is_solution ? 'Solution' : 'Marquer'}
               </span>
             </button>
           )}
@@ -121,20 +123,20 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
 
         {/* Menu actions */}
         {user?.id === post.author && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-500 hover:text-gray-300"
+              className="text-slate-500 hover:text-slate-300 h-8 w-8 p-0"
             >
-              <Edit2 size={16} />
+              <Edit2 size={14} />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-500 hover:text-red-400"
+              className="text-slate-500 hover:text-red-400 h-8 w-8 p-0"
             >
-              <Trash2 size={16} />
+              <Trash2 size={14} />
             </Button>
           </div>
         )}

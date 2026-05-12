@@ -117,6 +117,11 @@ const AuthenticatedApp = () => {
       <PreferencesApplier user={user} />
       
       <Routes>
+      {/* Profile catch-all route for /@username */}
+      <Route element={<PublicLayout />}>
+        <Route path="/@:username" element={<PublicProfilePage />} />
+      </Route>
+
       {/* Public */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
@@ -152,7 +157,7 @@ const AuthenticatedApp = () => {
         <Route path="/parrainage" element={<ParrainagePage />} />
         <Route path="/avant-apres" element={<BeforeAfterPage />} />
         <Route path="/forum" element={<ForumPage />} />
-        <Route path="/:username" element={<PublicProfilePage />} />
+
       </Route>
 
       {/* Admin */}

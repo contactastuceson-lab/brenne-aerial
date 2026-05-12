@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { PDG_EMAILS, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 import { toast } from 'sonner';
 import PDGAIAgent from '@/components/admin/PDGAIAgent';
+import PDGAIAgentMobile from '@/components/admin/PDGAIAgentMobile';
 
 // All project files organized by category
 const FILE_TREE = {
@@ -247,7 +248,14 @@ export default function AdminPDGSpace() {
 
       {/* AI Tab */}
       {activeTab === 'ai' && (
-        <PDGAIAgent />
+        <>
+          <div className="hidden lg:block">
+            <PDGAIAgent />
+          </div>
+          <div className="lg:hidden">
+            <PDGAIAgentMobile />
+          </div>
+        </>
       )}
 
       {/* Code Tab */}

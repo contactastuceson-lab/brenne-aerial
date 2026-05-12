@@ -39,11 +39,11 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Non authentifié' }, { status: 401 });
 
     const code = String(Math.floor(100000 + Math.random() * 900000));
-    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const expires = Date.now() + 15 * 60 * 1000; // 15 minutes
 
     await base44.auth.updateMe({
       verification_code: code,
-      verification_code_expires: expires,
+      verification_code_expires: String(expires),
     });
 
     await base44.asServiceRole.integrations.Core.SendEmail({

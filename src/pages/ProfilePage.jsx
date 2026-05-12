@@ -75,10 +75,12 @@ export default function ProfilePage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      await base44.auth.updateMe({
+      const dataToSave = {
         ...form,
+        display_name: form.display_name,
         full_name: form.display_name,
-      });
+      };
+      await base44.auth.updateMe(dataToSave);
       const updated = await base44.auth.me();
       return updated;
     },
@@ -274,7 +276,7 @@ export default function ProfilePage() {
               <h1
                 className="font-grotesk font-bold text-xl"
                 style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.3))' } : {}}
-              >{user.full_name}</h1>
+              >{user.display_name || user.full_name}</h1>
               <VerificationIcons verifications={user.verifications} size="md" />
             </div>
             <p className="font-mono text-xs text-muted-foreground">{user.email}</p>

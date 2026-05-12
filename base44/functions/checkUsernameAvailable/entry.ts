@@ -10,8 +10,8 @@ Deno.serve(async (req) => {
 
     const base44 = createClientFromRequest(req);
 
-    // Check if username already exists
-    const existingUsers = await base44.asServiceRole.entities.User.filter({ username });
+    // Check if username already exists (case-insensitive)
+    const existingUsers = await base44.asServiceRole.entities.User.filter({ username: username.toLowerCase() });
 
     return Response.json({
       available: existingUsers.length === 0,

@@ -127,7 +127,7 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
         <div className="mb-4">
           <UserBadgeProfile userId={topic.author} />
           <p className="text-xs text-gray-500 mt-2">
-            {formatDistanceToNow(new Date(topic.created_at), { locale: fr, addSuffix: true })}
+            {topic.created_date && formatDistanceToNow(new Date(topic.created_date), { locale: fr, addSuffix: true })}
           </p>
         </div>
 

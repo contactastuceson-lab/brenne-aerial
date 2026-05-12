@@ -62,7 +62,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
         <div className="flex-1">
           <UserBadgeProfile userId={post.author} small />
           <p className="text-xs text-gray-500 mt-1">
-            {formatDistanceToNow(new Date(post.created_at), { locale: fr, addSuffix: true })}
+            {post.created_date && formatDistanceToNow(new Date(post.created_date), { locale: fr, addSuffix: true })}
           </p>
           {post.edited && <p className="text-xs text-gray-400 italic">Édité</p>}
         </div>

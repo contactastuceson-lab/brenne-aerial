@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Shield, Award, Zap, Star, CheckCircle, Heart, Crown, Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import VerificationIcons from '@/components/ui/VerificationIcon';
 
 const UserBadgeProfile = ({ userId, small = false }) => {
   const { data: user, isLoading } = useQuery({
@@ -41,14 +42,6 @@ const UserBadgeProfile = ({ userId, small = false }) => {
     'Officiel': { icon: CheckCircle, color: 'text-accent', bg: 'bg-accent/10', border: 'border-accent/30' },
     'Vérfifié': { icon: CheckCircle, color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/30' },
     'Donateur': { icon: Heart, color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/30' },
-  };
-
-  const VERIFICATION_CONFIG = {
-    'verified': { icon: CheckCircle, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30', label: 'Vérifié' },
-    'certified': { icon: CheckCircle, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/30', label: 'Certifié' },
-    'official': { icon: Building2, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30', label: 'Officiel' },
-    'pro': { icon: Crown, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/30', label: 'Pro' },
-    'supreme': { icon: Crown, color: 'text-chart-5', bg: 'bg-chart-5/10', border: 'border-chart-5/30', label: 'Suprême' },
   };
 
   const roleColors = {
@@ -146,21 +139,8 @@ const UserBadgeProfile = ({ userId, small = false }) => {
               </AvatarFallback>
             </Avatar>
             <span className="text-sm font-semibold text-gray-900">{user.name}</span>
-            <div className="flex gap-1.5 flex-wrap">
-              {user.verifications?.map((ver) => {
-                const cfg = VERIFICATION_CONFIG[ver];
-                if (!cfg) return null;
-                const Icon = cfg.icon;
-                return (
-                  <div
-                    key={ver}
-                    className={`w-6 h-6 rounded-full flex items-center justify-center border ${cfg.color} ${cfg.bg} ${cfg.border} hover:scale-110 transition-transform`}
-                    title={cfg.label}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                  </div>
-                );
-              })}
+            <div className="flex gap-1.5 items-center">
+              <VerificationIcons verifications={user.verifications} size="sm" />
               {user.badges && user.badges.length > 0 && user.badges.slice(0, 2).map((badge) => {
                 const cfg = BADGE_CONFIG[badge];
                 if (!cfg) return null;
@@ -168,10 +148,10 @@ const UserBadgeProfile = ({ userId, small = false }) => {
                 return (
                   <div
                     key={badge}
-                    className={`w-6 h-6 rounded-full flex items-center justify-center border ${cfg.color} ${cfg.bg} ${cfg.border} hover:scale-110 transition-transform`}
+                    className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-white flex-shrink-0 ${cfg.bg}`}
                     title={badge}
                   >
-                    <Icon className="w-3.5 h-3.5" />
+                    <Icon className="w-2 h-2" strokeWidth={3} />
                   </div>
                 );
               })}

@@ -27,6 +27,7 @@ const navSections = [
       { key: 'certifications', icon: Award, path: '/admin/certifications', label: 'Certifications' },
       { key: 'conversations', icon: MessageSquare, path: '/admin/conversations', label: 'Conversations' },
       { key: 'messaging', icon: MessageCircle, path: '/admin/messaging', label: 'Messagerie' },
+      { key: 'forum', icon: MessageCircle, path: '/admin/forum', label: 'Forum' },
       { key: 'reports', icon: AlertCircle, path: '/admin/reports', label: 'Signalements' },
       { key: 'donations', icon: Gift, path: '/admin/donations', label: 'Donations' },
     ]

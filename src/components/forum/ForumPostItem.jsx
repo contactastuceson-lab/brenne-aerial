@@ -79,7 +79,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
             ) : (
               <button className="flex items-start gap-3 hover:opacity-85 transition-opacity group">
                 <Avatar className="w-8 h-8 border border-cyan-500/20 flex-shrink-0">
-                  <AvatarImage src={author?.avatar_url} />
+                  <AvatarImage src={author?.avatar_url} alt={post.author_name} />
                   <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs font-bold">
                     {(post.author_name || post.author_email)?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>

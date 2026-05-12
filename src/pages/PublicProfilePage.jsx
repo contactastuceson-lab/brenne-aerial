@@ -200,26 +200,24 @@ export default function PublicProfilePage() {
 
         {/* Avatar + infos */}
         <div className="relative px-6 -mt-10 mb-6">
-          <div className="flex items-end justify-between">
-            <div>
-              <div
-                className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden"
-                style={isSupreme
-                  ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
-                  : { border: '4px solid hsl(var(--background))', background: 'hsl(var(--secondary))' }
-                }
-              >
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-grotesk font-bold text-3xl text-primary">
-                    {user.full_name?.[0]?.toUpperCase() || '?'}
-                  </span>
-                )}
-              </div>
+          <div className="flex items-end justify-between gap-4">
+            <div
+              className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0"
+              style={isSupreme
+                ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
+                : { border: '4px solid hsl(var(--background))', background: 'hsl(var(--secondary))' }
+              }
+            >
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-grotesk font-bold text-3xl text-primary">
+                  {user.full_name?.[0]?.toUpperCase() || '?'}
+                </span>
+              )}
             </div>
 
-            <div className="flex items-center gap-2 pb-1 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
               {user.verified_status === 'yes' && (
                 <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
                   <CheckCircle className="w-3 h-3" /> Vérifié
@@ -228,39 +226,6 @@ export default function PublicProfilePage() {
               <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
                 {user.account_status === 'active' ? 'Actif' : 'Inactif'}
               </span>
-              
-              {/* Subscription buttons */}
-              {currentUser && currentUser.email !== user.email && (
-                <div className="flex items-center gap-2 ml-auto">
-                  {!isFollowing ? (
-                    <Button
-                      onClick={handleFollow}
-                      disabled={followingLoading}
-                      className="gap-2 h-7 px-3 text-xs bg-primary hover:bg-primary/90"
-                    >
-                      {followingLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
-                      S'abonner
-                    </Button>
-                  ) : (
-                    <>
-                      <Button
-                        onClick={handleMessage}
-                        className="gap-2 h-7 px-3 text-xs bg-secondary hover:bg-secondary/80 text-foreground"
-                      >
-                        <MessageCircle className="w-3 h-3" />
-                        Message
-                      </Button>
-                      <Button
-                        onClick={handleUnfollow}
-                        disabled={followingLoading}
-                        className="gap-2 h-7 px-3 text-xs bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30"
-                      >
-                        {followingLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserMinus className="w-3 h-3" />}
-                      </Button>
-                    </>
-                  )}
-                </div>
-              )}
             </div>
           </div>
 

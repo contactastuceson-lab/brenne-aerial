@@ -58,6 +58,15 @@ export default function ProfilePage() {
       unsubscribe = base44.entities.User.subscribe((event) => {
         if (event.type === 'update' && event.data?.email === u.email) {
           setUser(event.data);
+          // Sync form with updated user data
+          setForm({
+            display_name: event.data.display_name || event.data.full_name || '',
+            username: event.data.username || '',
+            bio: event.data.bio || '',
+            phone: event.data.phone || '',
+            location: event.data.location || '',
+            website: event.data.website || '',
+          });
         }
       });
     };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Compass, MessageCircle, MoreHorizontal, X, Bell, User, LogOut, LayoutDashboard, FolderOpen, Warehouse, Building2, Users, Shield, Building, ZoomIn, ArrowLeftRight, Calculator, Phone, Camera, BookOpen } from 'lucide-react';
+import { Home, FileText, Compass, MessageCircle, MoreHorizontal, X, Bell, User, LogOut, LayoutDashboard, FolderOpen, Warehouse, Building2, Users, Shield, Building, ZoomIn, ArrowLeftRight, Calculator, Phone, Camera, BookOpen, MessageSquare } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
@@ -11,6 +11,7 @@ const MAIN_TABS = [
   { to: '/quote',     icon: FileText,       label: 'Devis' },
   { to: '/discover',  icon: Compass,        label: 'Explorer' },
   { to: '/messages',  icon: MessageCircle,  label: 'Messages' },
+  { to: '/forum',     icon: MessageSquare,  label: 'Forum' },
   { to: null,         icon: MoreHorizontal, label: 'Plus',   isMore: true },
 ];
 

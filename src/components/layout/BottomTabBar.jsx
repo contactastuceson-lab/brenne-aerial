@@ -11,7 +11,7 @@ const MAIN_TABS = [
   { to: '/quote',     icon: FileText,       label: 'Devis' },
   { to: '/discover',  icon: Compass,        label: 'Explorer' },
   { to: '/messages',  icon: MessageCircle,  label: 'Messages' },
-  { to: '/forum',     icon: MessageSquare,  label: 'Forum' },
+  { to: '/planning',  icon: BookOpen,       label: 'Planning' },
   { to: null,         icon: MoreHorizontal, label: 'Plus',   isMore: true },
 ];
 
@@ -30,6 +30,7 @@ const MORE_ITEMS = [
   { to: '/reglementation',   icon: Shield,        label: 'Réglementation',         color: 'text-red-400' },
   { to: '/simulateur-vue',   icon: Building,      label: 'Simulateur de vue',      color: 'text-violet-400' },
   { to: '/comparateur',      icon: ZoomIn,        label: 'Comparateur résolution', color: 'text-amber-400' },
+  { to: '/forum',            icon: MessageSquare, label: 'Forum',                 color: 'text-blue-400' },
   { to: '/donation',         icon: Heart,         label: 'Donation',               color: 'text-red-400' },
   { to: '/toiture-checkup',  icon: Zap,           label: 'Inspection Toiture',     color: 'text-yellow-400' },
   { to: '/flash-delivery',   icon: Zap,           label: 'Flash Delivery',         color: 'text-blue-400' },

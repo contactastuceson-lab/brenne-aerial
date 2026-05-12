@@ -93,12 +93,30 @@ export default function AdminForum() {
     },
   });
 
+  // Fetch blocked users
+  const { data: blockedUsersDb = [] } = useQuery({
+    queryKey: ['admin-forum-blocked-users'],
+    queryFn: async () => {
+      try {
+        const res = await base44.entities.Block.filter({ block_type: 'forum' });
+        return res || [];
+      } catch (err) {
+        return [];
+      }
+    },
+  });
+
   // Block user
   const blockUserMutation = useMutation({
     mutationFn: async (userEmail) => {
-      setBlockedUsers([...blockedUsers, userEmail]);
+      await base44.entities.Block.create({
+        target_email: userEmail,
+        block_type: 'forum',
+        reason: 'Bloqué par modérateur forum',
+      });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-forum-blocked-users'] });
       toast.success('Utilisateur bloqué');
     },
   });
@@ -106,9 +124,13 @@ export default function AdminForum() {
   // Unblock user
   const unblockUserMutation = useMutation({
     mutationFn: async (userEmail) => {
-      setBlockedUsers(blockedUsers.filter(e => e !== userEmail));
+      const block = blockedUsersDb.find(b => b.target_email === userEmail && b.block_type === 'forum');
+      if (block) {
+        await base44.entities.Block.delete(block.id);
+      }
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-forum-blocked-users'] });
       toast.success('Utilisateur débloqué');
     },
   });
@@ -248,9 +270,9 @@ export default function AdminForum() {
               <div className="text-center py-8 text-muted-foreground">Aucun utilisateur trouvé</div>
             ) : (
               filteredUsers.map((user) => {
-                const isBlocked = blockedUsers.includes(user.email);
-                const userPosts = posts.filter(p => p.author_email === user.email);
-                const userTopics = topics.filter(t => t.author_email === user.email);
+                  const isBlocked = blockedUsersDb.some(b => b.target_email === user.email && b.block_type === 'forum');
+                  const userPosts = posts.filter(p => p.author_email === user.email);
+                  const userTopics = topics.filter(t => t.author_email === user.email);
 
                 return (
                   <Card key={user.id} className={cn('transition-colors', isBlocked && 'opacity-60 bg-destructive/5')}>

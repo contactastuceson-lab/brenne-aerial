@@ -2,8 +2,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
-  const user = await base44.auth.me();
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   // Use service role to list all users (bypasses User entity security rules)
   const users = await base44.asServiceRole.entities.User.list();
@@ -28,5 +26,5 @@ Deno.serve(async (req) => {
   // Filter out banned/suspended users from public view
   const visible = publicUsers.filter(u => !['banned', 'suspended'].includes(u.account_status));
 
-  return Response.json({ users: visible });
+  return Response.json(visible);
 });

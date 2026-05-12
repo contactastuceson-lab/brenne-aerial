@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Heart, Check, Edit2, Trash2 } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import UserBadgeProfile from './UserBadgeProfile';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -76,9 +77,18 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
             {author ? (
               <UserBadgeProfile userId={post.author} small />
             ) : (
-              <div className="flex items-start gap-2">
-                <span className="font-grotesk font-bold text-sm text-white">{post.author_name || post.author_email || 'Auteur inconnu'}</span>
-              </div>
+              <button className="flex items-start gap-3 hover:opacity-85 transition-opacity group">
+                <Avatar className="w-8 h-8 border border-cyan-500/20 flex-shrink-0">
+                  <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs font-bold">
+                    {(post.author_name || post.author_email)?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  <span className="font-grotesk font-bold text-sm text-white group-hover:text-cyan-300 transition-colors leading-tight">
+                    {post.author_name || post.author_email || 'Auteur inconnu'}
+                  </span>
+                </div>
+              </button>
             )}
           </div>
           <p className="text-xs text-slate-400">

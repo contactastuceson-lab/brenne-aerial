@@ -229,7 +229,7 @@ export default function AccountSettings({ user }) {
       </motion.div>
 
       {/* Password */}
-      {user?.provider !== 'google' && (
+      {!user?.oauth_providers?.includes('google') && (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -389,7 +389,7 @@ export default function AccountSettings({ user }) {
       )}
 
       {/* Google OAuth notice */}
-      {user?.provider === 'google' && (
+      {user?.oauth_providers?.includes('google') && (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

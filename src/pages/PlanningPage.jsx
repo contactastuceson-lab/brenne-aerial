@@ -51,10 +51,16 @@ export default function PlanningPage() {
         client_email: bookForm.client_email,
         notes: bookForm.notes,
       });
-      await base44.integrations.Core.SendEmail({
-        to: bookForm.client_email,
-        subject: 'Réservation confirmée — Brenne Aerial',
-        body: `Bonjour ${bookForm.client_name},\n\nVotre réservation du ${appt.date} à ${appt.time_start} a bien été enregistrée.\nNous vous contacterons pour confirmer les détails.\n\nBrenn Aerial`,
+      await base44.functions.invoke('sendQuoteEmail', {
+        type: 'appointment_confirmed',
+        clientName: bookForm.client_name,
+        clientEmail: bookForm.client_email,
+        date: format(new Date(appt.date), 'EEEE d MMMM yyyy', { locale: fr }),
+        timeStart: appt.time_start,
+        timeEnd: appt.time_end || null,
+        serviceType: appt.service_type || null,
+        location: appt.location || null,
+        notes: bookForm.notes || null,
       });
     },
     onSuccess: () => {

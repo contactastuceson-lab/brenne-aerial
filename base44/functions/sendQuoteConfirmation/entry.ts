@@ -1,38 +1,49 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const APP_URL = Deno.env.get('APP_URL') || 'https://brenneaerial.fr';
+
+const SERVICE_LABELS = {
+  video_evenement: 'Vidéo événement',
+  inspection_toiture: 'Inspection toiture',
+  suivi_chantier: 'Suivi chantier',
+  captation_particulier: 'Captation particulier',
+  captation_entreprise: 'Captation entreprise',
+  retour_temps_reel: 'Retour temps réel',
+  autre: 'Autre prestation',
+};
+
 Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const base44 = createClientFromRequest(req);
-    
+
     const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { clientName, clientEmail, serviceType, estimatedPrice } = body;
+    const { clientName, clientEmail, serviceType, estimatedPrice, dateStr, quoteId } = body;
 
-    // Send notification to admin user instead of external client
+    // Notification admin
     await base44.entities.Notification.create({
       user_email: user.email,
-      title: `📋 Nouvelle demande de devis de ${clientName}`,
-      content: `Service: ${serviceType} | Email: ${clientEmail}${estimatedPrice ? ` | Prix estimé: ${estimatedPrice}€` : ''}`,
+      title: `📋 Nouveau devis de ${clientName}`,
+      content: `Service: ${SERVICE_LABELS[serviceType] || serviceType} | Email: ${clientEmail}${estimatedPrice ? ` | Estimé: ${estimatedPrice}€` : ''}`,
       type: 'quote_pending',
       link: '/admin/quotes',
     });
 
-    // Create Quote record in database
-    const quote = await base44.entities.Quote.create({
-      client_name: clientName,
-      client_email: clientEmail,
-      service_type: serviceType,
-      status: 'pending',
+    // Email de confirmation au client via sendQuoteEmail
+    await base44.functions.invoke('sendQuoteEmail', {
+      type: 'quote_received',
+      clientName,
+      clientEmail,
+      serviceType,
+      quoteId,
+      dateStr: dateStr || null,
       prix_estime: estimatedPrice || null,
     });
 
-    return Response.json({ success: true, quoteId: quote.id });
+    return Response.json({ success: true });
   } catch (err) {
-    console.error('Error:', err);
     return Response.json({ error: err.message }, { status: 500 });
   }
 });

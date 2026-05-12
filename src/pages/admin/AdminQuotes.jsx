@@ -54,19 +54,29 @@ export default function AdminQuotes() {
   });
 
   const handleAction = async (quote, status) => {
-    await updateQ.mutateAsync({ id: quote.id, data: { status, admin_notes: adminNotes, prix_final: prixFinal ? parseFloat(prixFinal) : undefined } });
+    const prix = prixFinal ? parseFloat(prixFinal) : undefined;
+    await updateQ.mutateAsync({ id: quote.id, data: { status, admin_notes: adminNotes, prix_final: prix } });
+
+    // Notification in-app
     await base44.entities.Notification.create({
       user_email: quote.client_email,
       title: status === 'accepted' ? '✅ Votre devis a été accepté !' : '❌ Votre devis a été refusé',
-      content: `Prestation : ${SERVICE_PRICES[quote.service_type]?.label || quote.service_type}${prixFinal ? ` — Prix final : ${formatPrice(parseFloat(prixFinal))}` : ''}`,
+      content: `Prestation : ${SERVICE_PRICES[quote.service_type]?.label || quote.service_type}${prix ? ` — Prix final : ${formatPrice(prix)}` : ''}`,
       type: status === 'accepted' ? 'quote_accepted' : 'quote_refused',
       link: '/dashboard',
     });
-    await base44.integrations.Core.SendEmail({
-      to: quote.client_email,
-      subject: status === 'accepted' ? '✅ Devis accepté — Brenne Aerial' : 'Mise à jour de votre devis — Brenne Aerial',
-      body: `Bonjour ${quote.client_name},\n\n${status === 'accepted' ? `Votre demande de devis pour "${SERVICE_PRICES[quote.service_type]?.label}" a été acceptée.${prixFinal ? `\nPrix final : ${formatPrice(parseFloat(prixFinal))}` : ''}\n\nNous vous contacterons rapidement pour organiser la prestation.` : `Votre demande de devis pour "${SERVICE_PRICES[quote.service_type]?.label}" n'a pas pu être acceptée.${adminNotes ? `\nRaison : ${adminNotes}` : ''}`}\n\nCordialement,\nEnor Lefoulon Meyer — Brenne Aerial`,
+
+    // Email HTML via sendQuoteEmail
+    await base44.functions.invoke('sendQuoteEmail', {
+      type: status === 'accepted' ? 'quote_accepted' : 'quote_refused',
+      clientName: quote.client_name,
+      clientEmail: quote.client_email,
+      serviceType: quote.service_type,
+      quoteId: quote.id,
+      prix_final: prix ? String(prix) : null,
+      adminNotes: adminNotes || null,
     });
+
     setSelected(null);
   };
 

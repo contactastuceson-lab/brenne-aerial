@@ -350,12 +350,15 @@ export default function DiscoverPage() {
                     </div>
 
                     <div className="flex items-center gap-1 mb-0.5">
-                      <h3
-                        className="font-grotesk font-semibold text-sm truncate"
-                        style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-                      >{profile.full_name}</h3>
-                      <VerificationIcons verifications={profile.verifications} />
-                    </div>
+                       <h3
+                         className="font-grotesk font-semibold text-sm truncate"
+                         style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+                       >{profile.display_name || profile.full_name}</h3>
+                       <VerificationIcons verifications={profile.verifications} />
+                     </div>
+                     {profile.username && (
+                       <p className="font-mono text-xs text-muted-foreground mb-2">@{profile.username}</p>
+                     )}
                     <div className="flex flex-col gap-1 mb-2">
                       {profile.location && (
                         <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">

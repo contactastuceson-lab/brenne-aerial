@@ -10,6 +10,8 @@ Deno.serve(async (req) => {
   const publicUsers = users.map(u => ({
     id: u.id,
     full_name: u.full_name,
+    display_name: u.display_name || u.full_name,
+    username: u.username || null,
     email: u.email,
     role: u.role,
     avatar_url: u.avatar_url || null,

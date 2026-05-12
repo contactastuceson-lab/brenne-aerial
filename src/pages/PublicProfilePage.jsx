@@ -27,8 +27,9 @@ export default function PublicProfilePage() {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        // Chercher l'utilisateur par username (case-insensitive)
-        const users = await base44.entities.User.filter({ username: username.toLowerCase() });
+         // Chercher l'utilisateur par username (case-insensitive)
+         const searchUsername = username.toLowerCase().replace(/@/g, '');
+         const users = await base44.entities.User.filter({ username: searchUsername });
         if (users.length === 0) {
           setNotFound(true);
           setLoading(false);

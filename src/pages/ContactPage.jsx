@@ -295,8 +295,14 @@ export default function ContactPage() {
                     <Clock className="w-10 h-10 text-amber-400" />
                   </div>
                   <h3 className="font-grotesk font-black text-2xl mb-3 text-amber-400">Hors des horaires</h3>
-                  <p className="font-inter text-muted-foreground max-w-sm mb-5 leading-relaxed">
-                    Notre équipe n'est pas disponible pour le moment.<br />
+                  <div className={`inline-flex items-center gap-3 px-5 py-2.5 rounded-full border text-sm font-inter mb-4 ${mood.color}`}>
+                    <span className="text-xl">{mood.emoji}</span>
+                    <div className="text-left">
+                      <span className="font-grotesk font-bold">{mood.label}</span>
+                    </div>
+                  </div>
+                  <p className="font-inter text-muted-foreground max-w-sm mb-2 leading-relaxed text-sm">{mood.sub}</p>
+                  <p className="font-inter text-muted-foreground max-w-sm mb-5 leading-relaxed text-sm">
                     Le formulaire de contact est accessible uniquement pendant nos horaires d'ouverture.
                   </p>
                   <div className="bg-card border border-border rounded-xl p-5 text-left w-full max-w-xs mb-6 space-y-3">

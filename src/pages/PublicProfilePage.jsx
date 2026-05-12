@@ -230,57 +230,57 @@ export default function PublicProfilePage() {
           </div>
 
           <div className="mt-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h1
-                  className="font-grotesk font-bold text-2xl"
-                  style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-                >
-                  {user.display_name || user.full_name}
-                </h1>
-                {user.username && (
-                  <p className="font-mono text-sm text-muted-foreground">{user.username}</p>
-                )}
-                <VerificationIcons verifications={user.verifications} size="md" />
-              </div>
+            <h1
+              className="font-grotesk font-bold text-3xl mb-1"
+              style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+            >
+              {user.display_name || user.full_name}
+            </h1>
 
-              {/* Subscription buttons */}
-              {currentUser && currentUser.email !== user.email && (
-                <div className="flex items-center gap-2">
-                  {!isFollowing ? (
-                    <Button
-                      onClick={handleFollow}
-                      disabled={followingLoading}
-                      className="gap-2 h-8 px-4 text-sm bg-primary hover:bg-primary/90"
-                    >
-                      {followingLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
-                      S'abonner
-                    </Button>
-                  ) : (
-                    <>
-                      <Button
-                        onClick={handleMessage}
-                        className="gap-2 h-8 px-4 text-sm bg-secondary hover:bg-secondary/80 text-foreground"
-                      >
-                        <MessageCircle className="w-3 h-3" />
-                        Message
-                      </Button>
-                      <Button
-                        onClick={handleUnfollow}
-                        disabled={followingLoading}
-                        className="gap-2 h-8 px-4 text-sm bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30"
-                      >
-                        {followingLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserMinus className="w-3 h-3" />}
-                      </Button>
-                    </>
-                  )}
-                </div>
+            <div className="flex items-center gap-2 mb-3">
+              {user.username && (
+                <p className="font-mono text-sm text-muted-foreground">{user.username}</p>
               )}
+              <VerificationIcons verifications={user.verifications} size="md" />
             </div>
+
             {user.role && roleCfg && (
-              <span className={`inline-block mt-2 font-mono text-[10px] px-2 py-0.5 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
+              <span className={`inline-block mb-4 font-mono text-[10px] px-2.5 py-1 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
                 {roleCfg.emoji} {roleCfg.label}
               </span>
+            )}
+
+            {/* Action buttons */}
+            {currentUser && currentUser.email !== user.email && (
+              <div className="flex gap-2 mb-4">
+                {!isFollowing ? (
+                  <Button
+                    onClick={handleFollow}
+                    disabled={followingLoading}
+                    className="flex-1 gap-2 h-10 text-sm font-medium bg-primary hover:bg-primary/90 rounded-xl"
+                  >
+                    {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                    S'abonner
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={handleMessage}
+                      className="flex-1 gap-2 h-10 text-sm font-medium bg-secondary hover:bg-secondary/80 text-foreground rounded-xl"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Message
+                    </Button>
+                    <Button
+                      onClick={handleUnfollow}
+                      disabled={followingLoading}
+                      className="h-10 px-4 text-sm font-medium bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30 rounded-xl"
+                    >
+                      {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
+                    </Button>
+                  </>
+                )}
+              </div>
             )}
           </div>
 

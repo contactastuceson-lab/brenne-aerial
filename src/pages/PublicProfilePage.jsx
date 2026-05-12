@@ -64,7 +64,7 @@ export default function PublicProfilePage() {
       <div className="min-h-screen flex items-center justify-center pt-20">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">Profil non trouvé</h1>
-          <p className="text-muted-foreground">L'utilisateur @{username} n'existe pas</p>
+          <p className="text-muted-foreground">L'utilisateur @{username?.toLowerCase()} n'existe pas</p>
         </div>
       </div>
     );
@@ -144,7 +144,7 @@ export default function PublicProfilePage() {
               </h1>
               <VerificationIcons verifications={user.verifications} size="md" />
             </div>
-            <p className="font-mono text-sm text-muted-foreground mt-1">@{username}</p>
+            <p className="font-mono text-sm text-muted-foreground mt-1">@{user.username}</p>
             <p className="font-inter text-xs text-muted-foreground">{user.email}</p>
             {user.role && roleCfg && (
               <span className={`inline-block mt-2 font-mono text-[10px] px-2 py-0.5 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>

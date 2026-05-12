@@ -12,6 +12,7 @@ import { Shield, Award, Zap, Star, CheckCircle, Heart, Crown, Building2 } from '
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import BadgeChip from '@/components/ui/BadgeChip';
 
 const UserBadgeProfile = ({ userId, small = false }) => {
   const { data: user, isLoading } = useQuery({
@@ -132,16 +133,18 @@ const UserBadgeProfile = ({ userId, small = false }) => {
       <HoverCard>
         <HoverCardTrigger asChild>
           <button className="flex items-center gap-3 hover:opacity-85 transition-opacity group">
-            <Avatar className="w-7 h-7 border border-cyan-500/20">
+            <Avatar className="w-8 h-8 border border-cyan-500/20">
               <AvatarImage src={user.avatar_url} />
               <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs font-bold">
                 {user.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="font-grotesk font-bold text-sm text-white group-hover:text-cyan-300 transition-colors truncate">{user.name}</span>
+            <div className="flex flex-col gap-1 min-w-0 flex-1">
+              <span className="font-grotesk font-bold text-sm text-white group-hover:text-cyan-300 transition-colors leading-tight">
+                {user.full_name || user.name}
+              </span>
               {user.role && user.role !== 'user' && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300 whitespace-nowrap flex-shrink-0">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300 whitespace-nowrap w-fit">
                   {user.role === 'pdg_adjoint' ? 'Deputy' : user.role === 'conseil_admin' ? 'Council' : user.role.split('_')[0]}
                 </span>
               )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Compass, MessageCircle, MoreHorizontal, X, Bell, User, LogOut, LayoutDashboard, FolderOpen, Warehouse, Building2, Users, Shield, Building, ZoomIn, ArrowLeftRight, Calculator, Phone, Camera, BookOpen, MessageSquare } from 'lucide-react';
+import { Home, FileText, Compass, MessageCircle, MoreHorizontal, X, Bell, User, LogOut, LayoutDashboard, FolderOpen, Warehouse, Building2, Users, Shield, Building, ZoomIn, ArrowLeftRight, Calculator, Phone, Camera, BookOpen, MessageSquare, Scale, Lock, Heart, Zap } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
@@ -30,6 +30,11 @@ const MORE_ITEMS = [
   { to: '/reglementation',   icon: Shield,        label: 'Réglementation',         color: 'text-red-400' },
   { to: '/simulateur-vue',   icon: Building,      label: 'Simulateur de vue',      color: 'text-violet-400' },
   { to: '/comparateur',      icon: ZoomIn,        label: 'Comparateur résolution', color: 'text-amber-400' },
+  { to: '/donation',         icon: Heart,         label: 'Donation',               color: 'text-red-400' },
+  { to: '/toiture-checkup',  icon: Zap,           label: 'Inspection Toiture',     color: 'text-yellow-400' },
+  { to: '/flash-delivery',   icon: Zap,           label: 'Flash Delivery',         color: 'text-blue-400' },
+  { to: '/legal/privacy',    icon: Lock,          label: 'Confidentialité',        color: 'text-slate-400' },
+  { to: '/legal/terms',      icon: Scale,         label: 'Conditions',             color: 'text-slate-400' },
 ];
 
 export default function BottomTabBar() {

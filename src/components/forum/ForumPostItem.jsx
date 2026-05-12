@@ -20,8 +20,14 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
   const { data: author, isLoading: authorLoading } = useQuery({
     queryKey: ['user', post.author],
     queryFn: async () => {
-      const response = await base44.entities.User.get(post.author);
-      return response;
+      if (!post.author) return null;
+      try {
+        const response = await base44.entities.User.get(post.author);
+        return response;
+      } catch (error) {
+        console.log('Failed to fetch author:', error);
+        return null;
+      }
     },
     enabled: !!post.author,
   });
@@ -67,7 +73,14 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
       <div className="px-6 py-4 border-b border-slate-700/30 flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="text-white mb-2">
-            <UserBadgeProfile userId={post.author} small />
+            {post.author && author ? (
+              <UserBadgeProfile userId={post.author} small />
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="font-grotesk font-bold text-sm text-white">{post.author_name || 'Auteur inconnu'}</span>
+                {post.author_email && <span className="text-xs text-slate-400">{post.author_email}</span>}
+              </div>
+            )}
           </div>
           <p className="text-xs text-slate-400">
             {post.created_date && formatDistanceToNow(new Date(post.created_date), { locale: fr, addSuffix: true })}

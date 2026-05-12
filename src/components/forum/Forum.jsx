@@ -16,7 +16,7 @@ const Forum = () => {
     queryFn: async () => {
       if (!user?.email) return false;
       try {
-        const blocks = await base44.entities.Block.filter({ target_email: user.email });
+        const blocks = await base44.entities.Block.filter({ blocked_email: user.email });
         return blocks && blocks.length > 0;
       } catch (err) {
         return false;

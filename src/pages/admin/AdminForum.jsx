@@ -93,12 +93,20 @@ export default function AdminForum() {
     },
   });
 
+  // Fetch current user for blocker_email
+  const { data: currentUser } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: async () => {
+      return await base44.auth.me();
+    },
+  });
+
   // Fetch blocked users
   const { data: blockedUsersDb = [] } = useQuery({
     queryKey: ['admin-forum-blocked-users'],
     queryFn: async () => {
       try {
-        const res = await base44.entities.Block.filter({ block_type: 'forum' });
+        const res = await base44.entities.Block.list();
         return res || [];
       } catch (err) {
         return [];
@@ -110,9 +118,8 @@ export default function AdminForum() {
   const blockUserMutation = useMutation({
     mutationFn: async (userEmail) => {
       await base44.entities.Block.create({
-        target_email: userEmail,
-        block_type: 'forum',
-        reason: 'Bloqué par modérateur forum',
+        blocked_email: userEmail,
+        blocker_email: currentUser?.email,
       });
     },
     onSuccess: () => {
@@ -127,7 +134,7 @@ export default function AdminForum() {
   // Unblock user
   const unblockUserMutation = useMutation({
     mutationFn: async (userEmail) => {
-      const block = blockedUsersDb.find(b => b.target_email === userEmail && b.block_type === 'forum');
+      const block = blockedUsersDb.find(b => b.blocked_email === userEmail);
       if (block) {
         await base44.entities.Block.delete(block.id);
       }
@@ -276,7 +283,7 @@ export default function AdminForum() {
               <div className="text-center py-8 text-muted-foreground">Aucun utilisateur trouvé</div>
             ) : (
               filteredUsers.map((user) => {
-                  const isBlocked = blockedUsersDb.some(b => b.target_email === user.email && b.block_type === 'forum');
+                  const isBlocked = blockedUsersDb.some(b => b.blocked_email === user.email);
                   const userPosts = posts.filter(p => p.author_email === user.email);
                   const userTopics = topics.filter(t => t.author_email === user.email);
 

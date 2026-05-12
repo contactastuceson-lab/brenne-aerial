@@ -55,6 +55,22 @@ function setFill(doc, arr) { doc.setFillColor(arr[0], arr[1], arr[2]); }
 function setStroke(doc, arr) { doc.setDrawColor(arr[0], arr[1], arr[2]); }
 function setColor(doc, arr) { doc.setTextColor(arr[0], arr[1], arr[2]); }
 
+// Normalize accented French characters for jsPDF Helvetica compatibility
+function clean(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/[àâä]/g, 'a').replace(/[ÀÂÄÄ]/g, 'A')
+    .replace(/[éèêë]/g, 'e').replace(/[ÉÈÊË]/g, 'E')
+    .replace(/[îï]/g, 'i').replace(/[ÎÏ]/g, 'I')
+    .replace(/[ôö]/g, 'o').replace(/[ÔÖ]/g, 'O')
+    .replace(/[ùûü]/g, 'u').replace(/[ÙÛÜ]/g, 'U')
+    .replace(/[ç]/g, 'c').replace(/[Ç]/g, 'C')
+    .replace(/[æ]/g, 'ae').replace(/[œ]/g, 'oe')
+    .replace(/[«»]/g, '"')
+    .replace(/[–—]/g, '-')
+    .replace(/['']/g, "'");
+}
+
 function wrapText(doc, text, x, y, maxWidth, lineHeight = 5) {
   const lines = doc.splitTextToSize(String(text || ''), maxWidth);
   doc.text(lines, x, y);
@@ -134,7 +150,7 @@ Deno.serve(async (req) => {
     setColor(doc, C.accentL);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.text('Opérateur drone professionnel certifié', ML, 32);
+    doc.text(clean('Operateur drone professionnel certifie'), ML, 32);
 
     // Doc type pill
     setFill(doc, C.accent);
@@ -150,8 +166,8 @@ Deno.serve(async (req) => {
     setColor(doc, C.light);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.text(`Réf. DEV-${quoteRef}`, PW - MR, 39, { align: 'right' });
-    doc.text(`Émis le ${quoteDate}`, PW - MR, 45, { align: 'right' });
+    doc.text(`Ref. DEV-${quoteRef}`, PW - MR, 39, { align: 'right' });
+    doc.text(`Emis le ${quoteDate}`, PW - MR, 45, { align: 'right' });
 
     // ──────────────────────────────────────────────────────────────
     // 2. INFO CARDS — Client & Prestataire (side by side)
@@ -173,23 +189,23 @@ Deno.serve(async (req) => {
     setColor(doc, C.white);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
-    doc.text('▶  CLIENT', ML + 4, y + 5.5);
+    doc.text('CLIENT', ML + 4, y + 5.5);
 
     setColor(doc, C.dark);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
-    doc.text(q.client_name || 'N/A', ML + 4, y + 16);
+    doc.text(clean(q.client_name || 'N/A'), ML + 4, y + 16);
 
     setColor(doc, C.mid);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     let cy = y + 22;
     if (q.company) {
-      doc.text(`🏢 ${q.company}`, ML + 4, cy); cy += 5;
+      doc.text(clean(q.company), ML + 4, cy); cy += 5;
     }
-    doc.text(`✉  ${q.client_email || 'N/A'}`, ML + 4, cy); cy += 5;
+    doc.text(q.client_email || 'N/A', ML + 4, cy); cy += 5;
     if (q.client_phone) {
-      doc.text(`📞 ${q.client_phone}`, ML + 4, cy); cy += 5;
+      doc.text(q.client_phone, ML + 4, cy); cy += 5;
     }
 
     // Prestataire card
@@ -204,7 +220,7 @@ Deno.serve(async (req) => {
     setColor(doc, C.accent);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
-    doc.text('▶  PRESTATAIRE', rx + 4, y + 5.5);
+    doc.text('PRESTATAIRE', rx + 4, y + 5.5);
 
     setColor(doc, C.dark);
     doc.setFont('helvetica', 'bold');
@@ -214,10 +230,10 @@ Deno.serve(async (req) => {
     setColor(doc, C.mid);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.text(`📍 ${COMPANY_ADDRESS}`, rx + 4, y + 22);
-    doc.text(`✉  ${COMPANY_EMAIL}`, rx + 4, y + 27);
-    doc.text(`📞 ${COMPANY_PHONE}`, rx + 4, y + 32);
-    doc.text(`🌐 ${COMPANY_WEB}`, rx + 4, y + 37);
+    doc.text(COMPANY_ADDRESS, rx + 4, y + 22);
+    doc.text(COMPANY_EMAIL, rx + 4, y + 27);
+    doc.text(COMPANY_PHONE, rx + 4, y + 32);
+    doc.text(COMPANY_WEB, rx + 4, y + 37);
 
     y += 50;
 
@@ -232,16 +248,16 @@ Deno.serve(async (req) => {
     setColor(doc, C.white);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
-    doc.text('DÉTAILS DE LA MISSION', ML + 7, y + 5.5);
+    doc.text('DETAILS DE LA MISSION', ML + 7, y + 5.5);
 
     y += 12;
 
     const detailRows = [
-      ['Service demandé', SERVICE_LABELS[q.service_type] || q.service_type || '—'],
-      ['Durée estimée', DURATION_LABELS[q.duree_estimee] || q.duree_estimee || '—'],
-      ['Date souhaitée', q.date_souhaitee ? new Date(q.date_souhaitee).toLocaleDateString('fr-FR') : '—'],
-      ['Horaire', q.horaire || '—'],
-      ['Lieu de la prestation', q.location || '—'],
+      ['Service demande', clean(SERVICE_LABELS[q.service_type] || q.service_type || '-')],
+      ['Duree estimee', clean(DURATION_LABELS[q.duree_estimee] || q.duree_estimee || '-')],
+      ['Date souhaitee', q.date_souhaitee ? new Date(q.date_souhaitee).toLocaleDateString('fr-FR') : '-'],
+      ['Horaire', clean(q.horaire || '-')],
+      ['Lieu de la prestation', clean(q.location || '-')],
     ];
 
     detailRows.forEach(([label, val], i) => {
@@ -254,12 +270,12 @@ Deno.serve(async (req) => {
       setColor(doc, C.mid);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8);
-      doc.text(label, ML + 4, y + 4.8);
+      doc.text(clean(label), ML + 4, y + 4.8);
 
       setColor(doc, C.dark);
       doc.setFont('helvetica', 'normal');
       const lines = doc.splitTextToSize(String(val), CW - 75);
-      doc.text(lines[0], ML + 70, y + 4.8);
+      doc.text(clean(lines[0]), ML + 70, y + 4.8);
 
       y += 7;
     });
@@ -270,7 +286,7 @@ Deno.serve(async (req) => {
       setFill(doc, C.row1);
       setStroke(doc, [210, 225, 240]);
       doc.setLineWidth(0.3);
-      const descLines = doc.splitTextToSize(q.description, CW - 8);
+      const descLines = doc.splitTextToSize(clean(q.description), CW - 8);
       const descH = Math.max(descLines.length * 5 + 10, 20);
       doc.roundedRect(ML, y, CW, descH, 2, 2, 'FD');
 
@@ -311,8 +327,8 @@ Deno.serve(async (req) => {
     setColor(doc, C.white);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
-    doc.text('Désignation', ML + 4, y + 5);
-    doc.text('Qté', ML + CW - 50, y + 5, { align: 'center' });
+    doc.text('Designation', ML + 4, y + 5);
+    doc.text('Qte', ML + CW - 50, y + 5, { align: 'center' });
     doc.text('P.U. HT', ML + CW - 28, y + 5, { align: 'right' });
     doc.text('Total HT', ML + CW - 2, y + 5, { align: 'right' });
     y += 7;
@@ -330,7 +346,7 @@ Deno.serve(async (req) => {
       setColor(doc, C.dark);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
-      doc.text(label, ML + 4, y + 4.8);
+      doc.text(clean(label), ML + 4, y + 4.8);
       doc.text(String(qty), ML + CW - 50, y + 4.8, { align: 'center' });
 
       doc.setFont('helvetica', 'normal');
@@ -347,12 +363,12 @@ Deno.serve(async (req) => {
     // Estimate or final price
     const displayPrice = q.prix_final || q.prix_estime;
     if (displayPrice) {
-      const serviceLabel = SERVICE_LABELS[q.service_type] || q.service_type || 'Prestation drone';
-      const durLabel = DURATION_LABELS[q.duree_estimee] || q.duree_estimee || '';
-      addRow(`${serviceLabel}${durLabel ? ' – ' + durLabel : ''}`, '1', fmtEur(displayPrice), fmtEur(displayPrice));
+      const serviceLabel = clean(SERVICE_LABELS[q.service_type] || q.service_type || 'Prestation drone');
+      const durLabel = clean(DURATION_LABELS[q.duree_estimee] || q.duree_estimee || '');
+      addRow(`${serviceLabel}${durLabel ? ' - ' + durLabel : ''}`, '1', fmtEur(displayPrice), fmtEur(displayPrice));
       subtotal = displayPrice;
     } else {
-      addRow(SERVICE_LABELS[q.service_type] || 'Prestation drone', '1', 'Sur devis', 'Sur devis');
+      addRow(clean(SERVICE_LABELS[q.service_type] || 'Prestation drone'), '1', 'Sur devis', 'Sur devis');
     }
 
     // Total block
@@ -365,7 +381,7 @@ Deno.serve(async (req) => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.text('TOTAL HT', ML + CW - 66, y + 4.5);
-    doc.text('TVA (non applicable, art. 293B CGI)', ML + CW - 66, y + 8.5);
+    doc.text('TVA (non appl., art. 293B CGI)', ML + CW - 66, y + 8.5);
 
     setColor(doc, C.accent);
     doc.setFont('helvetica', 'bold');
@@ -390,7 +406,7 @@ Deno.serve(async (req) => {
       setFill(doc, [255, 249, 235]);
       setStroke(doc, [230, 200, 100]);
       doc.setLineWidth(0.3);
-      const noteLines = doc.splitTextToSize(q.admin_notes, CW - 16);
+      const noteLines = doc.splitTextToSize(clean(q.admin_notes), CW - 16);
       const noteH = noteLines.length * 5 + 12;
       doc.roundedRect(ML, y, CW, noteH, 3, 3, 'FD');
       setFill(doc, [220, 170, 0]);
@@ -399,7 +415,7 @@ Deno.serve(async (req) => {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8);
       setColor(doc, [120, 90, 0]);
-      doc.text('Notes & conditions particulières', ML + 7, y + 5.5);
+      doc.text('Notes & conditions particulieres', ML + 7, y + 5.5);
 
       doc.setFont('helvetica', 'normal');
       setColor(doc, [80, 60, 0]);
@@ -419,14 +435,14 @@ Deno.serve(async (req) => {
       setColor(doc, C.blue);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8);
-      doc.text('CONDITIONS GÉNÉRALES', ML + 4, y + 5.5);
+      doc.text('CONDITIONS GENERALES', ML + 4, y + 5.5);
 
       setColor(doc, C.mid);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
-      doc.text('• Ce devis est valable 30 jours à compter de sa date d\'émission.', ML + 4, y + 10.5);
-      doc.text('• Les frais de déplacement (au-delà de 30 km) sont facturés en sus selon barème en vigueur.', ML + 4, y + 15.5);
-      doc.text('• Prestation soumise à conditions météorologiques et réglementation DGAC en vigueur.', ML + 4, y + 20);
+      doc.text('- Ce devis est valable 30 jours a compter de sa date d\'emission.', ML + 4, y + 10.5);
+      doc.text('- Les frais de deplacement (au-dela de 30 km) sont factures en sus selon bareme en vigueur.', ML + 4, y + 15.5);
+      doc.text('- Prestation soumise a conditions meteorologiques et reglementation DGAC en vigueur.', ML + 4, y + 20);
       y += 28;
     }
 
@@ -450,7 +466,7 @@ Deno.serve(async (req) => {
 
     setColor(doc, C.gray);
     doc.setFontSize(7);
-    doc.text(`Réf. DEV-${quoteRef}  ·  ${COMPANY_SIRET}`, PW - MR, PH - 6, { align: 'right' });
+    doc.text(`Ref. DEV-${quoteRef}  -  ${COMPANY_SIRET}`, PW - MR, PH - 6, { align: 'right' });
 
     // Page number
     setColor(doc, C.accentL);

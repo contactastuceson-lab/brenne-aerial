@@ -146,19 +146,19 @@ const UserBadgeProfile = ({ userId, small = false }) => {
               </AvatarFallback>
             </Avatar>
             <span className="text-sm font-semibold text-gray-900">{user.name}</span>
-            <div className="flex gap-1 flex-wrap">
+            <div className="flex gap-1.5 flex-wrap">
               {user.verifications?.map((ver) => {
                 const cfg = VERIFICATION_CONFIG[ver];
                 if (!cfg) return null;
                 const Icon = cfg.icon;
                 return (
-                  <span
+                  <div
                     key={ver}
-                    className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full border text-[10px] font-semibold ${cfg.color} ${cfg.bg} ${cfg.border}`}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center border ${cfg.color} ${cfg.bg} ${cfg.border} hover:scale-110 transition-transform`}
                     title={cfg.label}
                   >
-                    <Icon className="w-2.5 h-2.5" /> {cfg.label}
-                  </span>
+                    <Icon className="w-3.5 h-3.5" />
+                  </div>
                 );
               })}
               {user.badges && user.badges.length > 0 && user.badges.slice(0, 2).map((badge) => {
@@ -166,13 +166,13 @@ const UserBadgeProfile = ({ userId, small = false }) => {
                 if (!cfg) return null;
                 const Icon = cfg.icon;
                 return (
-                  <span
+                  <div
                     key={badge}
-                    className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full border text-[10px] font-semibold ${cfg.color} ${cfg.bg} ${cfg.border}`}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center border ${cfg.color} ${cfg.bg} ${cfg.border} hover:scale-110 transition-transform`}
                     title={badge}
                   >
-                    <Icon className="w-2.5 h-2.5" /> {badge}
-                  </span>
+                    <Icon className="w-3.5 h-3.5" />
+                  </div>
                 );
               })}
             </div>

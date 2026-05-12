@@ -111,7 +111,7 @@ const ForumTopicCard = ({ topic, onSelect }) => {
           <UserBadgeProfile userId={topic.author} small />
         </div>
         <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
-          {formatDistanceToNow(new Date(topic.created_at), { locale: fr, addSuffix: true })}
+          {topic.created_date && formatDistanceToNow(new Date(topic.created_date), { locale: fr, addSuffix: true })}
         </span>
       </div>
     </div>

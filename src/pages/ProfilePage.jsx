@@ -74,12 +74,24 @@ export default function ProfilePage() {
   }, []);
 
   const saveMutation = useMutation({
-    mutationFn: () => base44.auth.updateMe({
-      ...form,
-      full_name: form.display_name, // Sync full_name with display_name
-    }),
+    mutationFn: async () => {
+      await base44.auth.updateMe({
+        ...form,
+        full_name: form.display_name,
+      });
+      const updated = await base44.auth.me();
+      return updated;
+    },
     onSuccess: (updated) => {
-      if (updated) setUser(updated);
+      setUser(updated);
+      setForm({
+        display_name: updated.display_name || updated.full_name || '',
+        username: updated.username || '',
+        bio: updated.bio || '',
+        phone: updated.phone || '',
+        location: updated.location || '',
+        website: updated.website || '',
+      });
       toast.success('Profil mis à jour !');
     },
     onError: () => toast.error('Erreur lors de la sauvegarde'),

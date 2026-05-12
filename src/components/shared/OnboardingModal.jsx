@@ -12,7 +12,7 @@ const HOW_FOUND = ['Bouche à oreille', 'Google / Internet', 'Réseaux sociaux',
 
 const STEPS = [
   { id: 'welcome', title: 'Bienvenue !', subtitle: 'Personnalisons votre profil en quelques secondes' },
-  { id: 'identity', title: 'Votre identité', subtitle: 'Ces infos seront visibles sur votre profil' },
+  { id: 'identity', title: 'Votre identité', subtitle: 'Nom et username visibles sur votre profil' },
   { id: 'contact', title: 'Coordonnées', subtitle: 'Pour vous contacter plus facilement' },
   { id: 'project', title: 'Votre projet', subtitle: 'Quelques infos pour mieux vous accompagner' },
   { id: 'done', title: 'C\'est parti !', subtitle: 'Votre profil est prêt' },
@@ -24,6 +24,8 @@ export default function OnboardingModal({ user, onComplete }) {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [form, setForm] = useState({
     avatar_url: user?.avatar_url || '',
+    display_name: user?.display_name || user?.full_name || '',
+    username: user?.username || '',
     bio: user?.bio || '',
     location: user?.location || '',
     phone: user?.phone || '',
@@ -31,6 +33,7 @@ export default function OnboardingModal({ user, onComplete }) {
     sector: '',
     how_found: '',
   });
+  const [usernameError, setUsernameError] = useState('');
 
   const set = (key, val) => setForm(p => ({ ...p, [key]: val }));
   const toggleProjectType = (i) => set('project_types', form.project_types.includes(i) ? form.project_types.filter(x => x !== i) : [...form.project_types, i]);
@@ -44,7 +47,38 @@ export default function OnboardingModal({ user, onComplete }) {
     setUploadingAvatar(false);
   };
 
+  const validateUsername = async (username) => {
+    if (!username || username.length < 3) {
+      setUsernameError('Au minimum 3 caractères');
+      return false;
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+      setUsernameError('Lettres, chiffres, - et _ uniquement');
+      return false;
+    }
+    // Check if username is unique
+    try {
+      const result = await base44.functions.invoke('checkUsernameAvailable', { username });
+      if (!result.data.available) {
+        setUsernameError('Ce username est déjà pris');
+        return false;
+      }
+    } catch (err) {
+      setUsernameError('Erreur de vérification');
+      return false;
+    }
+    setUsernameError('');
+    return true;
+  };
+
   const handleFinish = async () => {
+    if (!form.username) {
+      setUsernameError('Le username est requis');
+      return;
+    }
+    const isValid = await validateUsername(form.username);
+    if (!isValid) return;
+    
     setSaving(true);
     await base44.auth.updateMe({ ...form, onboarding_completed: true });
     // Send welcome email (best effort, don't block)
@@ -133,6 +167,19 @@ export default function OnboardingModal({ user, onComplete }) {
                       <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                     </label>
                     <p className="font-inter text-xs text-muted-foreground">Photo de profil (optionnel)</p>
+                  </div>
+                  <div>
+                    <label className="font-inter text-xs text-muted-foreground mb-1 block">Nom d'affichage</label>
+                    <Input value={form.display_name} onChange={e => set('display_name', e.target.value)} placeholder="Ex: Jean Dupont" className="bg-secondary border-border" />
+                  </div>
+                  <div>
+                    <label className="font-inter text-xs text-muted-foreground mb-1 block">Username <span className="text-primary">*</span></label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">@</span>
+                      <Input value={form.username} onChange={e => { set('username', e.target.value); setUsernameError(''); }} placeholder="jdupont" className="bg-secondary border-border pl-7" />
+                    </div>
+                    {usernameError && <p className="font-inter text-xs text-red-500 mt-1">{usernameError}</p>}
+                    <p className="font-inter text-xs text-muted-foreground mt-1">Unique, visible sur votre profil (@username)</p>
                   </div>
                   <div>
                     <label className="font-inter text-xs text-muted-foreground mb-1 block">Localisation (ville, région)</label>

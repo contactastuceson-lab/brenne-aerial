@@ -45,6 +45,8 @@ export default function ProfilePage() {
       const u = await base44.auth.me();
       setUser(u);
       setForm({
+        display_name: u.display_name || u.full_name || '',
+        username: u.username || '',
         bio: u.bio || '',
         phone: u.phone || '',
         location: u.location || '',
@@ -300,26 +302,51 @@ export default function ProfilePage() {
         </div>
 
         {/* Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-6 space-y-5"
-          style={isSupreme
-            ? { background: 'linear-gradient(145deg, #1a0c00, #150a00)', border: '1px solid rgba(217,119,6,0.3)', boxShadow: '0 0 30px rgba(245,158,11,0.07)' }
-            : { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }
-          }
-        >
-          <h2 className="font-grotesk font-semibold text-base">Modifier mon profil</h2>
+         <motion.div
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           className="rounded-2xl p-6 space-y-5"
+           style={isSupreme
+             ? { background: 'linear-gradient(145deg, #1a0c00, #150a00)', border: '1px solid rgba(217,119,6,0.3)', boxShadow: '0 0 30px rgba(245,158,11,0.07)' }
+             : { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }
+           }
+         >
+           <h2 className="font-grotesk font-semibold text-base">Modifier mon profil</h2>
 
-          <div>
-            <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Bio</label>
-            <Textarea
-              value={form.bio}
-              onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-              placeholder="Parlez de vous en quelques mots..."
-              className="bg-secondary border-border font-inter text-sm resize-none h-24"
-            />
-          </div>
+           <div>
+             <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Nom d'affichage</label>
+             <Input
+               value={form.display_name}
+               onChange={e => setForm(p => ({ ...p, display_name: e.target.value }))}
+               placeholder="Ex: Jean Dupont"
+               className="bg-secondary border-border font-inter"
+             />
+           </div>
+
+           <div>
+             <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Username</label>
+             <div className="relative">
+               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
+               <Input
+                 value={form.username}
+                 onChange={e => setForm(p => ({ ...p, username: e.target.value }))}
+                 placeholder="jdupont"
+                 className="bg-secondary border-border font-inter pl-7"
+                 disabled
+               />
+             </div>
+             <p className="font-inter text-xs text-muted-foreground mt-1">Le username ne peut pas être modifié</p>
+           </div>
+
+           <div>
+             <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Bio</label>
+             <Textarea
+               value={form.bio}
+               onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
+               placeholder="Parlez de vous en quelques mots..."
+               className="bg-secondary border-border font-inter text-sm resize-none h-24"
+             />
+           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

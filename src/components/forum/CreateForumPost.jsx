@@ -51,16 +51,16 @@ const CreateForumPost = ({ topicId, currentRepliesCount = 0, onSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-5 bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-md border border-cyan-500/20 rounded-xl space-y-4">
-      <div className="flex gap-3">
-        <Avatar className="w-10 h-10 flex-shrink-0">
+    <form onSubmit={handleSubmit} className="p-6 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-md border border-cyan-500/15 rounded-2xl space-y-4">
+      <div className="flex gap-3 items-start">
+        <Avatar className="w-11 h-11 flex-shrink-0 border border-cyan-500/20">
           <AvatarImage src={user?.avatar_url} />
           <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white font-bold text-sm">
             {user?.name?.charAt(0).toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-white">{user?.name}</p>
+          <p className="font-grotesk font-semibold text-white">{user?.name}</p>
           <p className="text-xs text-slate-400 capitalize">{user?.role?.replace(/_/g, ' ')}</p>
         </div>
       </div>
@@ -68,26 +68,26 @@ const CreateForumPost = ({ topicId, currentRepliesCount = 0, onSuccess }) => {
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Écrivez votre réponse... (markdown supporté)"
+        placeholder="Écrivez votre réponse..."
         rows={4}
-        className="resize-none bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-500 focus:border-cyan-400/50"
+        className="resize-none bg-slate-700/30 border-cyan-500/20 text-white placeholder:text-slate-500 focus:border-cyan-400/50 font-inter"
         disabled={createMutation.isPending}
       />
 
-      <div className="flex justify-end gap-3">
+      <div className="flex justify-end gap-2">
         <Button
           type="button"
           variant="outline"
           onClick={() => setContent('')}
           disabled={createMutation.isPending || !content.trim()}
-          className="text-slate-400 border-slate-600 hover:bg-slate-700/50"
+          className="text-slate-400 border-slate-600 hover:bg-slate-700/50 font-inter"
         >
           Annuler
         </Button>
         <Button
           type="submit"
           disabled={createMutation.isPending || !content.trim()}
-          className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 gap-2"
+          className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 gap-2 font-grotesk"
         >
           <Send size={16} />
           {createMutation.isPending ? 'Publication...' : 'Publier'}

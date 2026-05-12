@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -8,27 +7,24 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Award, Zap, Star, CheckCircle, Heart, Crown, Building2 } from 'lucide-react';
+import { Shield, Award, Zap, Star, CheckCircle, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import BadgeChip from '@/components/ui/BadgeChip';
 
 const UserBadgeProfile = ({ userId, small = false }) => {
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['user', userId],
+  const { data: allPublicUsers = [] } = useQuery({
+    queryKey: ['public-users-forum'],
     queryFn: async () => {
-      const response = await base44.entities.User.get(userId);
-      return response;
+      const res = await base44.functions.invoke('getPublicUsers', {});
+      return res.data.users || [];
     },
-    enabled: !!userId,
   });
 
-  if (isLoading) {
-    return (
-      <div className={cn('animate-pulse bg-gray-200 rounded-full', small ? 'w-6 h-6' : 'w-10 h-10')} />
-    );
-  }
+  const user = allPublicUsers.find(u => u.id === userId);
+
+
 
   // Fallback display if user data not found - used when user ID doesn't resolve
   const displayAsUnknown = !user;

@@ -54,12 +54,12 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
   return (
     <div
       className={cn(
-        'group rounded-2xl border transition-all duration-300 backdrop-blur-sm',
+        'group rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm',
         post.is_solution
-          ? 'bg-gradient-to-br from-green-900/30 to-emerald-900/20 border-green-500/30 shadow-lg shadow-green-500/5'
+          ? 'bg-gradient-to-br from-green-900/30 to-emerald-900/20 border-green-500/40 shadow-xl shadow-green-500/20'
           : isSupreme
-          ? 'bg-gradient-to-br from-purple-900/20 to-slate-900/30 border-purple-500/40 shadow-lg shadow-purple-500/10'
-          : 'bg-gradient-to-br from-slate-800/50 to-slate-900/30 border-cyan-500/15 hover:border-cyan-400/25 hover:shadow-md hover:shadow-cyan-500/5'
+          ? 'bg-gradient-to-br from-purple-900/30 to-purple-800/20 border-purple-500/60 shadow-2xl shadow-purple-500/30'
+          : 'bg-gradient-to-br from-slate-800/50 to-slate-900/30 border-cyan-500/20 hover:border-cyan-400/30 hover:shadow-md hover:shadow-cyan-500/10'
       )}
     >
       {/* Header */}

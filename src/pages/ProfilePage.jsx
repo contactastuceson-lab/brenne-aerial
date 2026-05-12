@@ -74,7 +74,10 @@ export default function ProfilePage() {
   }, []);
 
   const saveMutation = useMutation({
-    mutationFn: () => base44.auth.updateMe(form),
+    mutationFn: () => base44.auth.updateMe({
+      ...form,
+      full_name: form.display_name, // Sync full_name with display_name
+    }),
     onSuccess: (updated) => {
       if (updated) setUser(updated);
       toast.success('Profil mis à jour !');

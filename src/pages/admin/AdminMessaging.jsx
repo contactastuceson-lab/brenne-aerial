@@ -88,8 +88,11 @@ export default function AdminMessaging() {
   });
 
   return (
-    <div>
-      <h1 className="font-grotesk font-bold text-2xl mb-8">Messagerie & Notifications</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="font-grotesk font-bold text-3xl mb-2">Messagerie & Notifications</h1>
+        <p className="text-muted-foreground text-sm">Gérez les messages officiels, notifications et communications avec les utilisateurs</p>
+      </div>
 
       <Tabs defaultValue="official" className="space-y-6">
         <TabsList className="bg-card border border-border">

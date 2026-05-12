@@ -16,6 +16,8 @@ Deno.serve(async (req) => {
     cover_url: u.cover_url || null,
     bio: u.bio || null,
     location: u.location || null,
+    website: u.website || null,
+    phone: u.phone || null,
     badges: u.badges || [],
     verifications: u.verifications || [],
     verified_status: u.verified_status || 'no',

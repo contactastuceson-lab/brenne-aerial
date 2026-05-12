@@ -45,12 +45,11 @@ export default function PublicProfilePage() {
           // Non authentifié
         }
 
-        // Chercher l'utilisateur par username, display_name, full_name ou email
+        // Chercher l'utilisateur par full_name ou email
         const searchUsername = username.toLowerCase();
-        const allUsers = await base44.functions.invoke('getPublicUsers', {});
+        const response = await base44.functions.invoke('getPublicUsers', {});
+        const allUsers = response.data || response;
         const foundUser = allUsers.find(u => 
-          u.username?.toLowerCase() === searchUsername || 
-          u.display_name?.toLowerCase() === searchUsername ||
           u.full_name?.toLowerCase() === searchUsername ||
           u.email?.toLowerCase().split('@')[0] === searchUsername
         );

@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { CheckCircle, XCircle, Clock, Eye, Mail, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Eye, Mail, AlertCircle, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export default function AdminCertifications() {
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -101,123 +103,97 @@ export default function AdminCertifications() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="font-grotesk font-bold text-3xl mb-2">Certifications</h1>
-          <p className="text-muted-foreground">Gérez les demandes de certification des utilisateurs</p>
+          <h1 className="font-grotesk font-bold text-2xl lg:text-3xl mb-1">Certifications</h1>
+          <p className="text-muted-foreground text-xs lg:text-sm">Demandes de certification utilisateur</p>
         </div>
-        <div>
-          <Button
-            onClick={toggleCertifications}
-            disabled={toggleLoading}
-            variant={certificationsEnabled ? 'default' : 'outline'}
-            className={certificationsEnabled ? 'bg-green-600 hover:bg-green-700' : 'border-destructive text-destructive'}
-          >
-            {certificationsEnabled ? '✓ Actif' : '✕ Désactivé'}
-          </Button>
-        </div>
+        <Button
+          onClick={toggleCertifications}
+          disabled={toggleLoading}
+          variant={certificationsEnabled ? 'default' : 'outline'}
+          className={`h-9 lg:h-10 text-xs lg:text-sm gap-2 flex-shrink-0 ${certificationsEnabled ? 'bg-green-600 hover:bg-green-700' : 'border-destructive text-destructive'}`}
+        >
+          {certificationsEnabled ? '✓ Actif' : '✕ Off'}
+        </Button>
       </div>
 
       {!certificationsEnabled && (
-        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 flex gap-3">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-destructive/10 border border-destructive/30 rounded-2xl p-3 lg:p-4 flex gap-3">
           <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-semibold text-sm">Certifications désactivées</p>
-            <p className="text-xs text-muted-foreground mt-1">Les utilisateurs ne peuvent plus demander de certification. Les demandes existantes restent visibles.</p>
+            <p className="font-semibold text-xs lg:text-sm">Certifications désactivées</p>
+            <p className="text-[10px] lg:text-xs text-muted-foreground mt-1">Les utilisateurs ne peuvent plus demander de certification.</p>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-card border border-border rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-4 h-4 text-yellow-400" />
-            <p className="text-xs text-muted-foreground">En attente</p>
-          </div>
-          <p className="text-2xl font-bold text-yellow-400">{stats.pending}</p>
-        </div>
-        <div className="bg-card border border-border rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle className="w-4 h-4 text-green-400" />
-            <p className="text-xs text-muted-foreground">Approuvées</p>
-          </div>
-          <p className="text-2xl font-bold text-green-400">{stats.approved}</p>
-        </div>
-        <div className="bg-card border border-border rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <XCircle className="w-4 h-4 text-red-400" />
-            <p className="text-xs text-muted-foreground">Refusées</p>
-          </div>
-          <p className="text-2xl font-bold text-red-400">{stats.rejected}</p>
-        </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-3 gap-2 lg:gap-4">
+        {[
+          { icon: Clock, color: 'from-yellow-500/10 to-yellow-500/5', iconColor: 'text-yellow-400', label: 'En attente', value: stats.pending },
+          { icon: CheckCircle, color: 'from-green-500/10 to-green-500/5', iconColor: 'text-green-400', label: 'Approuvées', value: stats.approved },
+          { icon: XCircle, color: 'from-red-500/10 to-red-500/5', iconColor: 'text-red-400', label: 'Refusées', value: stats.rejected }
+        ].map(({ icon: Icon, color, iconColor, label, value }, idx) => (
+          <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} 
+            className={`bg-gradient-to-br ${color} border border-border rounded-xl p-3 lg:p-4 hover:border-primary/30 transition-colors`}>
+            <div className="flex items-center gap-2 mb-2">
+              <Icon className={`w-4 h-4 ${iconColor}`} />
+              <p className="text-[10px] lg:text-xs text-muted-foreground">{label}</p>
+            </div>
+            <p className={`text-xl lg:text-2xl font-bold ${iconColor}`}>{value}</p>
+          </motion.div>
+        ))}
       </div>
 
       {/* Requests list */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="px-4 py-3 text-left font-semibold text-xs">Utilisateur</th>
-                <th className="px-4 py-3 text-left font-semibold text-xs">Email</th>
-                <th className="px-4 py-3 text-left font-semibold text-xs">Statut</th>
-                <th className="px-4 py-3 text-left font-semibold text-xs">Paiement</th>
-                <th className="px-4 py-3 text-left font-semibold text-xs">Date</th>
-                <th className="px-4 py-3 text-right font-semibold text-xs">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requests.map(r => (
-                <tr key={r.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs">{r.user_name}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{r.user_email}</td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                      r.status === 'pending' ? 'bg-yellow-400/10 text-yellow-400 border border-yellow-400/30' :
-                      r.status === 'approved' ? 'bg-green-400/10 text-green-400 border border-green-400/30' :
-                      'bg-red-400/10 text-red-400 border border-red-400/30'
+      <div className="space-y-2">
+        <p className="text-[10px] lg:text-xs text-muted-foreground px-1 font-mono uppercase tracking-wide">Demandes ({requests.length})</p>
+        {requests.length === 0 ? (
+          <div className="text-center py-12 bg-card border border-border rounded-2xl">
+            <Award className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
+            <p className="text-xs lg:text-sm text-muted-foreground">Aucune demande</p>
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-[600px] overflow-y-auto">
+            {requests.map((r, idx) => (
+              <motion.div key={r.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.03 }}
+                className="p-3 lg:p-4 bg-gradient-to-r from-card to-card border border-border rounded-xl hover:border-primary/30 transition-colors cursor-pointer"
+                onClick={() => { setSelectedRequest(r); setAdminNotes(r.admin_notes || ''); }}>
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-grotesk font-bold text-xs lg:text-sm text-foreground">{r.user_name}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground truncate">{r.user_email}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] lg:text-xs font-semibold border ${
+                      r.status === 'pending' ? 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30' :
+                      r.status === 'approved' ? 'bg-green-400/10 text-green-400 border-green-400/30' :
+                      'bg-red-400/10 text-red-400 border-red-400/30'
                     }`}>
-                      {r.status === 'pending' && <Clock className="w-3 h-3" />}
-                      {r.status === 'approved' && <CheckCircle className="w-3 h-3" />}
-                      {r.status === 'rejected' && <XCircle className="w-3 h-3" />}
-                      {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                      {r.status === 'pending' && <Clock className="w-2.5 h-2.5" />}
+                      {r.status === 'approved' && <CheckCircle className="w-2.5 h-2.5" />}
+                      {r.status === 'rejected' && <XCircle className="w-2.5 h-2.5" />}
+                      <span className="hidden sm:inline">{r.status.charAt(0).toUpperCase() + r.status.slice(1)}</span>
                     </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs">
-                    <span className={`px-2 py-1 rounded text-[10px] font-semibold ${
-                      r.payment_status === 'completed' ? 'bg-green-400/10 text-green-400 border border-green-400/30' :
-                      r.payment_status === 'failed' ? 'bg-red-400/10 text-red-400 border border-red-400/30' :
-                      'bg-yellow-400/10 text-yellow-400 border border-yellow-400/30'
-                    }`}>
-                      {r.payment_status === 'completed' ? '✓ Payé' :
-                       r.payment_status === 'failed' ? '✕ Échoué' :
-                       '⏳ En attente'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {new Date(r.created_date).toLocaleDateString('fr-FR')}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedRequest(r);
-                        setAdminNotes(r.admin_notes || '');
-                      }}
-                      className="gap-1"
-                    >
-                      <Eye className="w-3 h-3" />
-                      Détails
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-2 text-[10px] lg:text-xs">
+                  <span className={`px-2 py-0.5 rounded-lg font-semibold border ${
+                    r.payment_status === 'completed' ? 'bg-green-400/10 text-green-400 border-green-400/30' :
+                    r.payment_status === 'failed' ? 'bg-red-400/10 text-red-400 border-red-400/30' :
+                    'bg-yellow-400/10 text-yellow-400 border-yellow-400/30'
+                  }`}>
+                    {r.payment_status === 'completed' ? '✓' : r.payment_status === 'failed' ? '✕' : '⏳'}
+                  </span>
+                  <span className="text-muted-foreground">{format(new Date(r.created_date), 'd MMM', { locale: fr })}</span>
+                  <Eye className="w-3 h-3 text-primary opacity-60" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Details modal */}
@@ -235,46 +211,44 @@ export default function AdminCertifications() {
             style={{ maxHeight: '90vh' }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b border-border flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <Eye className="w-4 h-4 text-primary" />
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 lg:p-5 border-b border-border flex-shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Award className="w-4 h-4 text-primary" />
                 </div>
-                <div>
-                  <h2 className="font-grotesk font-bold text-base">Détails de la demande</h2>
-                  <p className="font-mono text-[10px] text-muted-foreground">{selectedRequest.user_email}</p>
+                <div className="min-w-0">
+                  <h2 className="font-grotesk font-bold text-xs lg:text-base">Certification</h2>
+                  <p className="font-mono text-[10px] text-muted-foreground truncate">{selectedRequest.user_name}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] lg:text-xs font-semibold border ${
                   selectedRequest.status === 'pending' ? 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30' :
                   selectedRequest.status === 'approved' ? 'bg-green-400/10 text-green-400 border-green-400/30' :
                   'bg-red-400/10 text-red-400 border-red-400/30'
                 }`}>
-                  {selectedRequest.status === 'pending' && <Clock className="w-3 h-3" />}
-                  {selectedRequest.status === 'approved' && <CheckCircle className="w-3 h-3" />}
-                  {selectedRequest.status === 'rejected' && <XCircle className="w-3 h-3" />}
-                  {selectedRequest.status === 'pending' ? 'En attente' : selectedRequest.status === 'approved' ? 'Approuvé' : 'Refusé'}
+                  {selectedRequest.status === 'pending' && <Clock className="w-2.5 h-2.5" />}
+                  {selectedRequest.status === 'approved' && <CheckCircle className="w-2.5 h-2.5" />}
+                  {selectedRequest.status === 'rejected' && <XCircle className="w-2.5 h-2.5" />}
                 </span>
-                <button onClick={() => setSelectedRequest(null)} className="text-muted-foreground hover:text-foreground transition-colors p-1">
-                  <XCircle className="w-5 h-5" />
+                <button onClick={() => setSelectedRequest(null)} className="text-muted-foreground hover:text-foreground transition-colors p-1 lg:p-2">
+                  <XCircle className="w-4 h-4 lg:w-5 lg:h-5" />
                 </button>
               </div>
             </div>
 
-            {/* Scrollable body */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-5">
-
-              {/* User info */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-secondary rounded-xl p-4 border border-border">
-                  <p className="font-mono text-[10px] text-muted-foreground mb-1">Nom</p>
-                  <p className="font-grotesk font-semibold text-sm">{selectedRequest.user_name}</p>
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-4 lg:p-5 space-y-4 lg:space-y-5">
+              {/* Info grid */}
+              <div className="grid grid-cols-2 gap-2 lg:gap-3">
+                <div className="bg-secondary/50 rounded-xl p-3 border border-border">
+                  <p className="font-mono text-[10px] text-muted-foreground mb-1">Utilisateur</p>
+                  <p className="font-grotesk font-semibold text-xs lg:text-sm">{selectedRequest.user_name}</p>
                 </div>
-                <div className="bg-secondary rounded-xl p-4 border border-border">
+                <div className="bg-secondary/50 rounded-xl p-3 border border-border">
                   <p className="font-mono text-[10px] text-muted-foreground mb-1">Paiement</p>
-                  <span className={`inline-flex items-center gap-1 text-xs font-semibold ${
+                  <span className={`inline-flex items-center gap-1 text-[10px] lg:text-xs font-semibold ${
                     selectedRequest.payment_status === 'completed' ? 'text-green-400' :
                     selectedRequest.payment_status === 'failed' ? 'text-red-400' : 'text-yellow-400'
                   }`}>
@@ -284,23 +258,23 @@ export default function AdminCertifications() {
                 </div>
               </div>
 
-              <div className="bg-secondary rounded-xl p-4 border border-border">
-                <p className="font-mono text-[10px] text-muted-foreground mb-1">Date de soumission</p>
-                <p className="font-inter text-sm">{new Date(selectedRequest.created_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+              <div className="bg-secondary/50 rounded-xl p-3 border border-border">
+                <p className="font-mono text-[10px] text-muted-foreground mb-1">Soumis</p>
+                <p className="font-inter text-xs lg:text-sm">{format(new Date(selectedRequest.created_date), 'd MMMM yyyy à HH:mm', { locale: fr })}</p>
               </div>
 
-              {/* Responses */}
+              {/* Form responses */}
               {selectedRequest.responses && Object.keys(selectedRequest.responses).length > 0 && (
                 <div>
-                  <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider mb-3">Réponses du formulaire</p>
-                  <div className="space-y-3">
+                  <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider mb-2.5">Réponses</p>
+                  <div className="space-y-2">
                     {Object.entries(selectedRequest.responses).map(([key, value]) => (
-                      <div key={key} className="rounded-xl border border-border bg-secondary/50 p-4">
-                        <p className="font-mono text-[10px] text-muted-foreground mb-1.5 capitalize">{key.replace(/_/g, ' ')}</p>
+                      <div key={key} className="rounded-xl border border-border bg-secondary/50 p-3">
+                        <p className="font-mono text-[10px] text-muted-foreground mb-1 capitalize">{key.replace(/_/g, ' ')}</p>
                         {String(value).startsWith('http') ? (
-                          <a href={value} target="_blank" rel="noopener noreferrer" className="font-inter text-sm text-primary hover:underline break-all">{value}</a>
+                          <a href={value} target="_blank" rel="noopener noreferrer" className="font-inter text-xs lg:text-sm text-primary hover:underline break-all">{value}</a>
                         ) : (
-                          <p className="font-inter text-sm text-foreground whitespace-pre-wrap break-words">{value}</p>
+                          <p className="font-inter text-xs lg:text-sm text-foreground whitespace-pre-wrap break-words">{value}</p>
                         )}
                       </div>
                     ))}
@@ -314,31 +288,31 @@ export default function AdminCertifications() {
                 <Textarea
                   value={adminNotes}
                   onChange={e => setAdminNotes(e.target.value)}
-                  placeholder="Ajoutez vos notes (motif de refus, observations...)..."
-                  className="bg-secondary border-border h-28 text-sm resize-none font-inter"
+                  placeholder="Observations, motif..."
+                  className="bg-secondary border-border min-h-20 lg:min-h-24 text-xs lg:text-sm resize-none font-inter rounded-xl"
                 />
               </div>
             </div>
 
-            {/* Sticky actions */}
+            {/* Actions */}
             <div className="flex-shrink-0 border-t border-border p-4 space-y-2 bg-card">
               {selectedRequest.status === 'pending' && (
                 <div className="flex gap-2">
                   <Button
                     onClick={() => rejectMutation.mutate(selectedRequest.id)}
                     disabled={rejectMutation.isPending}
-                    className="flex-1 gap-2 bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive/20"
+                    className="flex-1 gap-2 text-xs lg:text-sm h-8 lg:h-9 bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive/20"
                     variant="outline"
                   >
-                    <XCircle className="w-4 h-4" />
+                    <XCircle className="w-3 h-3 lg:w-4 lg:h-4" />
                     Refuser
                   </Button>
                   <Button
                     onClick={() => approveMutation.mutate(selectedRequest.id)}
                     disabled={approveMutation.isPending}
-                    className="flex-1 gap-2 bg-green-600 hover:bg-green-700 text-white"
+                    className="flex-1 gap-2 text-xs lg:text-sm h-8 lg:h-9 bg-green-600 hover:bg-green-700 text-white"
                   >
-                    <CheckCircle className="w-4 h-4" />
+                    <CheckCircle className="w-3 h-3 lg:w-4 lg:h-4" />
                     Approuver
                   </Button>
                 </div>
@@ -346,11 +320,11 @@ export default function AdminCertifications() {
               <Button
                 variant="outline"
                 onClick={() => sendEmailMutation.mutate(selectedRequest)}
-                className="w-full gap-2 border-border"
+                className="w-full gap-2 border-border text-xs lg:text-sm h-8 lg:h-9"
                 disabled={sendEmailMutation.isPending}
               >
-                <Mail className="w-4 h-4" />
-                Envoyer un email de notification
+                <Mail className="w-3 h-3 lg:w-4 lg:h-4" />
+                Email notification
               </Button>
             </div>
           </motion.div>

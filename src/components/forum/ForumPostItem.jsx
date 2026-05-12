@@ -15,6 +15,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
   const queryClient = useQueryClient();
   const [isLiked, setIsLiked] = useState(post.liked_by?.includes(user?.id) || false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
+  const isCurrentUserAuthor = post.author === user?.id;
 
   const { data: author, isLoading: authorLoading } = useQuery({
     queryKey: ['user', post.author],
@@ -130,7 +131,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
             <span className="text-xs font-semibold">{likesCount}</span>
           </button>
 
-          {canMarkSolution && post.author !== user?.id && (
+          {canMarkSolution && !isCurrentUserAuthor && (
             <button
               onClick={() => onMarkSolution(post.id, !post.is_solution)}
               className={cn(
@@ -148,7 +149,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
           )}
         </div>
 
-        {user?.id === post.author && (
+        {isCurrentUserAuthor && (
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"

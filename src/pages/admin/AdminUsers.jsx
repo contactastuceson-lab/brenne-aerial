@@ -454,14 +454,20 @@ export default function AdminUsers() {
         );
       })()}
 
-      <UserEditModal
-        user={editUser}
-        open={!!editUser}
-        onClose={() => setEditUser(null)}
-        onSave={(data) => updateUser.mutate({ id: editUser.id, data })}
-        isLoading={updateUser.isPending}
-        currentUser={currentUser}
-      />
+      {editUser && (
+        <UserEditModal
+          user={editUser}
+          open={!!editUser}
+          onClose={() => setEditUser(null)}
+          onSave={(data) => {
+            updateUser.mutate({ id: editUser.id, data }, {
+              onSuccess: () => setEditUser(null)
+            });
+          }}
+          isLoading={updateUser.isPending}
+          currentUser={currentUser}
+        />
+      )}
     </div>
   );
 }

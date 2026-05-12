@@ -120,6 +120,10 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
   };
 
   const handleSave = () => {
+    if (!form.full_name.trim()) {
+      toast.error('Le nom complet est requis');
+      return;
+    }
     onSave(form);
   };
 

@@ -34,12 +34,28 @@ export default function PublicProfilePage() {
     const loadUser = async () => {
       try {
         // Chercher l'utilisateur actuel
-        const me = await base44.auth.me();
-        setCurrentUser(me);
+        let me = null;
+        try {
+          me = await base44.auth.me();
+          setCurrentUser(me);
+        } catch {
+          // Non authentifié, c'est ok pour une page publique
+        }
 
         // Chercher l'utilisateur par username (case-insensitive)
         const searchUsername = username.toLowerCase().replace(/@/g, '');
-        const users = await base44.entities.User.filter({ username: searchUsername });
+        let users = await base44.entities.User.filter({ username: searchUsername });
+        
+        // Fallback: chercher dans tous les utilisateurs
+        if (users.length === 0) {
+          const allUsers = await base44.entities.User.list();
+          users = allUsers.filter(u => 
+            u.username?.toLowerCase() === searchUsername || 
+            u.display_name?.toLowerCase() === searchUsername ||
+            u.full_name?.toLowerCase() === searchUsername
+          );
+        }
+        
         if (users.length === 0) {
           setNotFound(true);
           setLoading(false);

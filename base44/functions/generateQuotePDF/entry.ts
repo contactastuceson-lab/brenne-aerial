@@ -1,18 +1,72 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { jsPDF } from 'npm:jspdf@4.0.0';
 
-const LOGO_URL = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/6de51adde_1775602844308.png';
 const COMPANY_NAME = 'Brenne Aerial';
 const COMPANY_EMAIL = 'contact@brenneaerial.fr';
-const COMPANY_PHONE = '+33 (0) 6 XX XX XX XX';
-const COMPANY_ADDRESS = 'Brenne, Creuse, France';
+const COMPANY_PHONE = '+33 (0)6 XX XX XX XX';
+const COMPANY_ADDRESS = 'Brenne, Indre, France';
+const COMPANY_WEB = 'brenneaerial.fr';
+const COMPANY_SIRET = 'SIRET : En cours';
+
+const SERVICE_LABELS = {
+  video_evenement: 'Vidéo événement',
+  inspection_toiture: 'Inspection toiture',
+  suivi_chantier: 'Suivi chantier',
+  captation_particulier: 'Captation particulier',
+  captation_entreprise: 'Captation entreprise',
+  retour_temps_reel: 'Retour temps réel',
+  photogrammetrie_3d: 'Photogrammétrie 3D',
+  cartographie_releves: 'Cartographie / Relevés',
+  thermographie: 'Thermographie infrarouge',
+  surveillance: 'Surveillance / Gardiennage',
+  contenu_social: 'Contenu réseaux sociaux',
+  reportage: 'Reportage / Documentaire',
+  mariage_aero: 'Mariage photo aérienne',
+  immobilier_virtuelle: 'Visite immobilière virtuelle',
+  agriculture: 'Agriculture / Monitoring',
+  autre: 'Autre prestation',
+};
+
+const DURATION_LABELS = {
+  '1h': '1 heure',
+  '2-3h': '2 à 3 heures',
+  'demi-journee': 'Demi-journée',
+  'journee': 'Journée complète',
+  'multi-jours': 'Multi-jours',
+};
+
+// Color palette
+const C = {
+  navy:    [6, 14, 30],
+  blue:    [30, 90, 150],
+  accent:  [56, 170, 220],
+  accentL: [100, 190, 235],
+  white:   [255, 255, 255],
+  light:   [230, 240, 250],
+  gray:    [140, 155, 170],
+  dark:    [30, 45, 65],
+  mid:     [80, 100, 125],
+  row1:    [245, 249, 253],
+  row2:    [235, 243, 251],
+};
+
+function rgb(arr) { return { r: arr[0], g: arr[1], b: arr[2] }; }
+function setFill(doc, arr) { doc.setFillColor(arr[0], arr[1], arr[2]); }
+function setStroke(doc, arr) { doc.setDrawColor(arr[0], arr[1], arr[2]); }
+function setColor(doc, arr) { doc.setTextColor(arr[0], arr[1], arr[2]); }
+
+function wrapText(doc, text, x, y, maxWidth, lineHeight = 5) {
+  const lines = doc.splitTextToSize(String(text || ''), maxWidth);
+  doc.text(lines, x, y);
+  return y + lines.length * lineHeight;
+}
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user?.role === 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { quoteId } = await req.json();
@@ -20,219 +74,403 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Quote ID required' }, { status: 400 });
     }
 
-    // Fetch quote and services
-    const quote = await base44.entities.Quote.filter({ id: quoteId });
-    if (!quote.length) {
+    // Fetch quote
+    const quotes = await base44.entities.Quote.filter({ id: quoteId });
+    if (!quotes.length) {
       return Response.json({ error: 'Quote not found' }, { status: 404 });
     }
+    const q = quotes[0];
 
-    const q = quote[0];
-    const services = await base44.entities.Service.list();
-    const service = services.find(s => s.name === q.service_type);
+    // ──────────────────────────────────────────────────────────────
+    // PDF Setup
+    // ──────────────────────────────────────────────────────────────
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const PW = doc.internal.pageSize.getWidth();   // 210
+    const PH = doc.internal.pageSize.getHeight();  // 297
+    const ML = 14; // margin left
+    const MR = 14; // margin right
+    const CW = PW - ML - MR; // content width
 
-    // Create PDF
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    let y = 15;
+    // ──────────────────────────────────────────────────────────────
+    // 1. HERO HEADER (full-width dark band)
+    // ──────────────────────────────────────────────────────────────
+    setFill(doc, C.navy);
+    doc.rect(0, 0, PW, 52, 'F');
 
-    // Header
-    doc.setFillColor(13, 26, 46);
-    doc.rect(0, 0, pageWidth, 50, 'F');
+    // Accent stripe
+    setFill(doc, C.accent);
+    doc.rect(0, 52, PW, 2, 'F');
 
-    // Company logo/name
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
-    doc.setFont(undefined, 'bold');
-    doc.text(COMPANY_NAME, 15, 25);
+    // Drone icon (simplified geometric) at right
+    setFill(doc, [20, 50, 90]);
+    doc.circle(PW - 28, 26, 18, 'F');
+    setFill(doc, C.accent);
+    doc.circle(PW - 28, 26, 14, 'F');
+    setFill(doc, C.navy);
+    doc.circle(PW - 28, 26, 9, 'F');
+    // Cross arms
+    setFill(doc, C.accentL);
+    doc.rect(PW - 42, 24.5, 28, 3, 'F');
+    doc.rect(PW - 29.5, 12, 3, 28, 'F');
+    // Propellers
+    setFill(doc, C.white);
+    doc.ellipse(PW - 44, 26, 4, 1.5, 'F');
+    doc.ellipse(PW - 12, 26, 4, 1.5, 'F');
+    doc.ellipse(PW - 28, 12, 1.5, 4, 'F');
+    doc.ellipse(PW - 28, 40, 1.5, 4, 'F');
 
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    doc.setTextColor(106, 174, 212);
-    doc.text('Devis Professionnel', 15, 35);
+    // Company name — large
+    setColor(doc, C.white);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(26);
+    doc.text('BRENNE', ML, 24);
 
-    // Invoice number and date
-    doc.setTextColor(180, 180, 180);
+    setColor(doc, C.accent);
+    doc.setFontSize(26);
+    const brenneWidth = doc.getTextWidth('BRENNE');
+    doc.text(' AERIAL', ML + brenneWidth - 1, 24);
+
+    // Tagline
+    setColor(doc, C.accentL);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Opérateur drone professionnel certifié', ML, 32);
+
+    // Doc type pill
+    setFill(doc, C.accent);
+    doc.roundedRect(ML, 38, 48, 8, 2, 2, 'F');
+    setColor(doc, C.navy);
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
-    doc.text(`Devis #${q.id.slice(0, 8).toUpperCase()}`, pageWidth - 50, 25);
-    doc.text(`Date: ${new Date(q.created_date).toLocaleDateString('fr-FR')}`, pageWidth - 50, 35);
+    doc.text('DEVIS PROFESSIONNEL', ML + 3, 43.5);
 
-    y = 65;
+    // Ref + date — right side of header
+    const quoteRef = q.id.slice(-8).toUpperCase();
+    const quoteDate = new Date(q.created_date || Date.now()).toLocaleDateString('fr-FR');
+    setColor(doc, C.light);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text(`Réf. DEV-${quoteRef}`, PW - MR, 39, { align: 'right' });
+    doc.text(`Émis le ${quoteDate}`, PW - MR, 45, { align: 'right' });
 
-    // Client info section
-    doc.setTextColor(58, 106, 122);
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'bold');
-    doc.text('CLIENT', 15, y);
+    // ──────────────────────────────────────────────────────────────
+    // 2. INFO CARDS — Client & Prestataire (side by side)
+    // ──────────────────────────────────────────────────────────────
+    let y = 62;
+    const halfW = (CW - 6) / 2;
 
-    y += 8;
-    doc.setTextColor(0, 0, 0);
+    // Client card
+    setFill(doc, C.row1);
+    setStroke(doc, [200, 215, 235]);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(ML, y, halfW, 44, 3, 3, 'FD');
+
+    // Client card header
+    setFill(doc, C.blue);
+    doc.roundedRect(ML, y, halfW, 8, 3, 3, 'F');
+    doc.rect(ML, y + 4, halfW, 4, 'F');
+
+    setColor(doc, C.white);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('▶  CLIENT', ML + 4, y + 5.5);
+
+    setColor(doc, C.dark);
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    doc.text(`${q.client_name}`, 15, y);
-    y += 6;
-    doc.text(`${q.client_email}`, 15, y);
-    y += 6;
-    if (q.client_phone) {
-      doc.text(`${q.client_phone}`, 15, y);
-      y += 6;
-    }
+    doc.text(q.client_name || 'N/A', ML + 4, y + 16);
+
+    setColor(doc, C.mid);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    let cy = y + 22;
     if (q.company) {
-      doc.text(`Entreprise: ${q.company}`, 15, y);
-      y += 6;
+      doc.text(`🏢 ${q.company}`, ML + 4, cy); cy += 5;
+    }
+    doc.text(`✉  ${q.client_email || 'N/A'}`, ML + 4, cy); cy += 5;
+    if (q.client_phone) {
+      doc.text(`📞 ${q.client_phone}`, ML + 4, cy); cy += 5;
     }
 
-    y += 4;
+    // Prestataire card
+    const rx = ML + halfW + 6;
+    setFill(doc, C.row1);
+    doc.roundedRect(rx, y, halfW, 44, 3, 3, 'FD');
 
-    // Company info section
-    doc.setTextColor(58, 106, 122);
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'bold');
-    doc.text('PRESTATAIRE', pageWidth / 2 + 10, 65);
+    setFill(doc, C.navy);
+    doc.roundedRect(rx, y, halfW, 8, 3, 3, 'F');
+    doc.rect(rx, y + 4, halfW, 4, 'F');
 
-    y = 73;
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'normal');
-    doc.text(COMPANY_NAME, pageWidth / 2 + 10, y);
-    y += 5;
-    doc.text(COMPANY_ADDRESS, pageWidth / 2 + 10, y);
-    y += 5;
-    doc.text(COMPANY_EMAIL, pageWidth / 2 + 10, y);
-    y += 5;
-    doc.text(COMPANY_PHONE, pageWidth / 2 + 10, y);
+    setColor(doc, C.accent);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('▶  PRESTATAIRE', rx + 4, y + 5.5);
 
-    y = 110;
-
-    // Service details
-    doc.setTextColor(58, 106, 122);
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'bold');
-    doc.text('DÉTAILS DU DEVIS', 15, y);
-
-    y += 8;
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'normal');
-
-    const details = [
-      ['Type de service:', q.service_type],
-      ['Date souhaitée:', new Date(q.date_souhaitee).toLocaleDateString('fr-FR')],
-      ['Lieu:', q.location || '-'],
-      ['Durée estimée:', q.duree_estimee || '-'],
-      ['Description:', q.description || '-'],
-    ];
-
-    details.forEach(([label, value]) => {
-      doc.setFont(undefined, 'bold');
-      doc.text(label, 15, y);
-      doc.setFont(undefined, 'normal');
-      doc.text(value, 60, y);
-      y += 6;
-    });
-
-    y += 6;
-
-    // Pricing table
-    doc.setFillColor(30, 48, 72);
-    doc.setTextColor(255, 255, 255);
-    doc.setFont(undefined, 'bold');
+    setColor(doc, C.dark);
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
+    doc.text(COMPANY_NAME, rx + 4, y + 16);
 
-    const tableY = y;
-    doc.rect(15, tableY, pageWidth - 30, 8, 'F');
-    doc.text('Designation', 20, tableY + 6);
-    doc.text('Tarif', pageWidth - 70, tableY + 6);
-    doc.text('Montant', pageWidth - 35, tableY + 6);
+    setColor(doc, C.mid);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text(`📍 ${COMPANY_ADDRESS}`, rx + 4, y + 22);
+    doc.text(`✉  ${COMPANY_EMAIL}`, rx + 4, y + 27);
+    doc.text(`📞 ${COMPANY_PHONE}`, rx + 4, y + 32);
+    doc.text(`🌐 ${COMPANY_WEB}`, rx + 4, y + 37);
 
-    y = tableY + 10;
-    doc.setTextColor(0, 0, 0);
-    doc.setFont(undefined, 'normal');
+    y += 50;
+
+    // ──────────────────────────────────────────────────────────────
+    // 3. MISSION DETAILS SECTION
+    // ──────────────────────────────────────────────────────────────
+    // Section title
+    setFill(doc, C.navy);
+    doc.rect(ML, y, CW, 8, 'F');
+    setFill(doc, C.accent);
+    doc.rect(ML, y, 3, 8, 'F');
+    setColor(doc, C.white);
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
-
-    let subtotal = 0;
-
-    // Base price
-    if (service?.base_price) {
-      const amount = service.base_price;
-      doc.text('Prix de base', 20, y);
-      doc.text(`${amount.toFixed(2)}€`, pageWidth - 70, y);
-      doc.text(`${amount.toFixed(2)}€`, pageWidth - 35, y);
-      subtotal += amount;
-      y += 6;
-    }
-
-    // Hourly rate (if applicable)
-    if (q.duree_estimee && service?.price_per_hour) {
-      const hours = q.duree_estimee === '1h' ? 1 : q.duree_estimee === '2-3h' ? 2.5 : q.duree_estimee === 'demi-journee' ? 4 : q.duree_estimee === 'journee' ? 8 : 0;
-      if (hours > 0) {
-        const amount = service.price_per_hour * hours;
-        doc.text(`Tarif horaire (${hours}h)`, 20, y);
-        doc.text(`${service.price_per_hour.toFixed(2)}€/h`, pageWidth - 70, y);
-        doc.text(`${amount.toFixed(2)}€`, pageWidth - 35, y);
-        subtotal += amount;
-        y += 6;
-      }
-    }
-
-    // Admin notes / custom pricing
-    if (q.prix_final && q.prix_final !== subtotal) {
-      y += 2;
-      doc.setFillColor(240, 248, 255);
-      doc.rect(15, y - 2, pageWidth - 30, 6, 'F');
-      doc.setTextColor(58, 106, 122);
-      doc.setFont(undefined, 'bold');
-      doc.text('Prix final proposé', 20, y + 2);
-      doc.text(`${q.prix_final.toFixed(2)}€`, pageWidth - 35, y + 2);
-      y += 6;
-    }
-
-    // Total
-    y += 3;
-    doc.setFillColor(13, 26, 46);
-    doc.rect(15, y, pageWidth - 30, 8, 'F');
-    doc.setTextColor(58, 170, 220);
-    doc.setFont(undefined, 'bold');
-    doc.setFontSize(11);
-    const total = q.prix_final || subtotal;
-    doc.text('TOTAL', 20, y + 6);
-    doc.text(`${total.toFixed(2)}€`, pageWidth - 35, y + 6);
+    doc.text('DÉTAILS DE LA MISSION', ML + 7, y + 5.5);
 
     y += 12;
 
-    // Notes
-    if (q.admin_notes) {
-      doc.setTextColor(58, 106, 122);
-      doc.setFont(undefined, 'bold');
-      doc.setFontSize(10);
-      doc.text('Notes:', 15, y);
-      y += 6;
-      doc.setTextColor(0, 0, 0);
-      doc.setFont(undefined, 'normal');
-      doc.setFontSize(9);
-      const noteLines = doc.splitTextToSize(q.admin_notes, pageWidth - 30);
-      doc.text(noteLines, 15, y);
-      y += noteLines.length * 4 + 4;
+    const detailRows = [
+      ['Service demandé', SERVICE_LABELS[q.service_type] || q.service_type || '—'],
+      ['Durée estimée', DURATION_LABELS[q.duree_estimee] || q.duree_estimee || '—'],
+      ['Date souhaitée', q.date_souhaitee ? new Date(q.date_souhaitee).toLocaleDateString('fr-FR') : '—'],
+      ['Horaire', q.horaire || '—'],
+      ['Lieu de la prestation', q.location || '—'],
+    ];
+
+    detailRows.forEach(([label, val], i) => {
+      setFill(doc, i % 2 === 0 ? C.row1 : C.row2);
+      doc.rect(ML, y, CW, 7, 'F');
+      setStroke(doc, [210, 225, 240]);
+      doc.setLineWidth(0.1);
+      doc.rect(ML, y, CW, 7, 'S');
+
+      setColor(doc, C.mid);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.text(label, ML + 4, y + 4.8);
+
+      setColor(doc, C.dark);
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(String(val), CW - 75);
+      doc.text(lines[0], ML + 70, y + 4.8);
+
+      y += 7;
+    });
+
+    // Description
+    if (q.description) {
+      y += 3;
+      setFill(doc, C.row1);
+      setStroke(doc, [210, 225, 240]);
+      doc.setLineWidth(0.3);
+      const descLines = doc.splitTextToSize(q.description, CW - 8);
+      const descH = Math.max(descLines.length * 5 + 10, 20);
+      doc.roundedRect(ML, y, CW, descH, 2, 2, 'FD');
+
+      setFill(doc, C.accent);
+      doc.roundedRect(ML, y, 3, descH, 2, 2, 'F');
+
+      setColor(doc, C.mid);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.text('Description du projet', ML + 7, y + 5);
+
+      setColor(doc, C.dark);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.text(descLines, ML + 7, y + 11);
+      y += descH + 6;
+    } else {
+      y += 4;
     }
 
-    // Footer
-    doc.setTextColor(106, 174, 212);
-    doc.setFontSize(8);
-    doc.setFont(undefined, 'normal');
-    doc.text('Ce devis est valable 30 jours à partir de la date d\'émission.', 15, pageHeight - 15);
-    doc.text(`© ${new Date().getFullYear()} ${COMPANY_NAME} - ${COMPANY_EMAIL}`, 15, pageHeight - 10);
+    // ──────────────────────────────────────────────────────────────
+    // 4. PRICING TABLE
+    // ──────────────────────────────────────────────────────────────
+    setFill(doc, C.navy);
+    doc.rect(ML, y, CW, 8, 'F');
+    setFill(doc, C.accent);
+    doc.rect(ML, y, 3, 8, 'F');
+    setColor(doc, C.white);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('TARIFICATION', ML + 7, y + 5.5);
 
-    // Return PDF
+    y += 10;
+
+    // Table header
+    setFill(doc, C.blue);
+    doc.rect(ML, y, CW, 7, 'F');
+    setColor(doc, C.white);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('Désignation', ML + 4, y + 5);
+    doc.text('Qté', ML + CW - 50, y + 5, { align: 'center' });
+    doc.text('P.U. HT', ML + CW - 28, y + 5, { align: 'right' });
+    doc.text('Total HT', ML + CW - 2, y + 5, { align: 'right' });
+    y += 7;
+
+    let subtotal = 0;
+    let rowIdx = 0;
+
+    const addRow = (label, qty, pu, total) => {
+      setFill(doc, rowIdx % 2 === 0 ? C.row1 : C.row2);
+      doc.rect(ML, y, CW, 7, 'F');
+      setStroke(doc, [210, 225, 240]);
+      doc.setLineWidth(0.1);
+      doc.rect(ML, y, CW, 7, 'S');
+
+      setColor(doc, C.dark);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.text(label, ML + 4, y + 4.8);
+      doc.text(String(qty), ML + CW - 50, y + 4.8, { align: 'center' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.text(pu, ML + CW - 28, y + 4.8, { align: 'right' });
+      doc.setFont('helvetica', 'bold');
+      doc.text(total, ML + CW - 2, y + 4.8, { align: 'right' });
+
+      y += 7;
+      rowIdx++;
+    };
+
+    const fmtEur = (n) => `${Number(n).toFixed(2)} €`;
+
+    // Estimate or final price
+    const displayPrice = q.prix_final || q.prix_estime;
+    if (displayPrice) {
+      const serviceLabel = SERVICE_LABELS[q.service_type] || q.service_type || 'Prestation drone';
+      const durLabel = DURATION_LABELS[q.duree_estimee] || q.duree_estimee || '';
+      addRow(`${serviceLabel}${durLabel ? ' – ' + durLabel : ''}`, '1', fmtEur(displayPrice), fmtEur(displayPrice));
+      subtotal = displayPrice;
+    } else {
+      addRow(SERVICE_LABELS[q.service_type] || 'Prestation drone', '1', 'Sur devis', 'Sur devis');
+    }
+
+    // Total block
+    y += 2;
+    const totalH = 14;
+    setFill(doc, C.navy);
+    doc.roundedRect(ML + CW - 70, y, 70, totalH, 2, 2, 'F');
+
+    setColor(doc, C.accentL);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.text('TOTAL HT', ML + CW - 66, y + 4.5);
+    doc.text('TVA (non applicable, art. 293B CGI)', ML + CW - 66, y + 8.5);
+
+    setColor(doc, C.accent);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.text(subtotal ? fmtEur(subtotal) : 'Sur devis', ML + CW - 2, y + 4.5, { align: 'right' });
+    doc.text('0,00 €', ML + CW - 2, y + 8.5, { align: 'right' });
+
+    setFill(doc, C.accent);
+    doc.roundedRect(ML + CW - 70, y + 10, 70, 7, 2, 2, 'F');
+    setColor(doc, C.navy);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('TOTAL TTC', ML + CW - 66, y + 15.2);
+    doc.text(subtotal ? fmtEur(subtotal) : 'Sur devis', ML + CW - 2, y + 15.2, { align: 'right' });
+
+    y += totalH + 10;
+
+    // ──────────────────────────────────────────────────────────────
+    // 5. ADMIN NOTES (if any)
+    // ──────────────────────────────────────────────────────────────
+    if (q.admin_notes) {
+      setFill(doc, [255, 249, 235]);
+      setStroke(doc, [230, 200, 100]);
+      doc.setLineWidth(0.3);
+      const noteLines = doc.splitTextToSize(q.admin_notes, CW - 16);
+      const noteH = noteLines.length * 5 + 12;
+      doc.roundedRect(ML, y, CW, noteH, 3, 3, 'FD');
+      setFill(doc, [220, 170, 0]);
+      doc.roundedRect(ML, y, 3, noteH, 2, 2, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      setColor(doc, [120, 90, 0]);
+      doc.text('Notes & conditions particulières', ML + 7, y + 5.5);
+
+      doc.setFont('helvetica', 'normal');
+      setColor(doc, [80, 60, 0]);
+      doc.text(noteLines, ML + 7, y + 11);
+      y += noteH + 6;
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // 6. VALIDITY & CONDITIONS
+    // ──────────────────────────────────────────────────────────────
+    if (y < PH - 55) {
+      setFill(doc, [240, 246, 252]);
+      setStroke(doc, [200, 220, 240]);
+      doc.setLineWidth(0.2);
+      doc.roundedRect(ML, y, CW, 22, 3, 3, 'FD');
+
+      setColor(doc, C.blue);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.text('CONDITIONS GÉNÉRALES', ML + 4, y + 5.5);
+
+      setColor(doc, C.mid);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.text('• Ce devis est valable 30 jours à compter de sa date d\'émission.', ML + 4, y + 10.5);
+      doc.text('• Les frais de déplacement (au-delà de 30 km) sont facturés en sus selon barème en vigueur.', ML + 4, y + 15.5);
+      doc.text('• Prestation soumise à conditions météorologiques et réglementation DGAC en vigueur.', ML + 4, y + 20);
+      y += 28;
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // 7. FOOTER
+    // ──────────────────────────────────────────────────────────────
+    setFill(doc, C.navy);
+    doc.rect(0, PH - 18, PW, 18, 'F');
+    setFill(doc, C.accent);
+    doc.rect(0, PH - 18, PW, 1.5, 'F');
+
+    setColor(doc, C.accentL);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text(COMPANY_NAME, ML, PH - 10.5);
+
+    setColor(doc, C.gray);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text(`${COMPANY_ADDRESS}  ·  ${COMPANY_EMAIL}  ·  ${COMPANY_WEB}`, ML, PH - 6);
+
+    setColor(doc, C.gray);
+    doc.setFontSize(7);
+    doc.text(`Réf. DEV-${quoteRef}  ·  ${COMPANY_SIRET}`, PW - MR, PH - 6, { align: 'right' });
+
+    // Page number
+    setColor(doc, C.accentL);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('Page 1 / 1', PW - MR, PH - 10.5, { align: 'right' });
+
+    // ──────────────────────────────────────────────────────────────
+    // Output
+    // ──────────────────────────────────────────────────────────────
     const pdfBytes = doc.output('arraybuffer');
     return new Response(pdfBytes, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="devis-${q.id.slice(0, 8)}.pdf"`,
+        'Content-Disposition': `attachment; filename="devis-${quoteRef}.pdf"`,
       },
     });
   } catch (err) {
-    console.error('PDF generation error:', err);
+    console.error('PDF error:', err);
     return Response.json({ error: err.message }, { status: 500 });
   }
 });

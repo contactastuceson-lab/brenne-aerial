@@ -31,20 +31,22 @@ export default function ActiveDevices({ user }) {
   });
 
   // If current session is no longer in the list, logout
-  // We use a ref to track if enough time has passed since mount (grace period for session registration)
-  const mountedAtRef = useRef(Date.now());
+  const sessionCheckedRef = useRef(false);
 
   useEffect(() => {
     const currentSessionId = sessionStorage.getItem(SESSION_KEY);
-    // Only check if we have a registered session AND devices have loaded
-    if (!currentSessionId || devices.length === 0) return;
-    // Grace period: don't check within first 10 seconds (session registration is async)
-    if (Date.now() - mountedAtRef.current < 10000) return;
+    // No session registered yet — skip, don't logout
+    if (!currentSessionId) return;
+    // Wait until we have devices loaded (non-empty response)
+    if (isLoading || devices.length === 0) return;
+    // Mark that we've done at least one valid check
+    sessionCheckedRef.current = true;
     const stillExists = devices.some(d => d.session_id === currentSessionId);
     if (!stillExists) {
+      sessionStorage.removeItem(SESSION_KEY);
       base44.auth.logout();
     }
-  }, [devices]);
+  }, [devices, isLoading]);
 
 
   const currentSessionId = sessionStorage.getItem(SESSION_KEY);

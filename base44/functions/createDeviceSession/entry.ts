@@ -55,14 +55,16 @@ Deno.serve(async (req) => {
     );
 
     if (duplicate) {
-      // Just refresh last_activity — do NOT touch other sessions
+      // Generate a fresh session_id so the client always gets a valid, current one
+      const freshSessionId = crypto.randomUUID();
       await base44.asServiceRole.entities.DeviceSession.update(duplicate.id, {
+        session_id: freshSessionId,
         last_activity: now,
         ip_address: ip,
         city: city ?? duplicate.city,
         country: country ?? duplicate.country,
       });
-      return Response.json({ success: true, session: { ...duplicate, last_activity: now } });
+      return Response.json({ success: true, session: { ...duplicate, session_id: freshSessionId, last_activity: now } });
     }
 
     // New device — create a new session entry

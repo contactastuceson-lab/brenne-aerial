@@ -117,13 +117,15 @@ export default function AdminForum() {
   // Block user
   const blockUserMutation = useMutation({
     mutationFn: async (userEmail) => {
-      await base44.entities.Block.create({
+      const newBlock = await base44.entities.Block.create({
         blocked_email: userEmail,
         blocker_email: currentUser?.email,
       });
+      return newBlock;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-forum-blocked-users'] });
+    onSuccess: (newBlock) => {
+      // Mise à jour instantanée du cache
+      queryClient.setQueryData(['admin-forum-blocked-users'], (old) => [...(old || []), newBlock]);
       toast.success('Utilisateur bloqué');
     },
     onError: (error) => {
@@ -137,10 +139,14 @@ export default function AdminForum() {
       const block = blockedUsersDb.find(b => b.blocked_email === userEmail);
       if (block) {
         await base44.entities.Block.delete(block.id);
+        return block.id;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-forum-blocked-users'] });
+    onSuccess: (blockId) => {
+      // Mise à jour instantanée du cache
+      queryClient.setQueryData(['admin-forum-blocked-users'], (old) => 
+        (old || []).filter(b => b.id !== blockId)
+      );
       toast.success('Utilisateur débloqué');
     },
     onError: (error) => {

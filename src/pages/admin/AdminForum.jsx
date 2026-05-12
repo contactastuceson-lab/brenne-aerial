@@ -119,6 +119,9 @@ export default function AdminForum() {
       queryClient.invalidateQueries({ queryKey: ['admin-forum-blocked-users'] });
       toast.success('Utilisateur bloqué');
     },
+    onError: (error) => {
+      toast.error('Erreur lors du blocage: ' + error.message);
+    },
   });
 
   // Unblock user
@@ -132,6 +135,9 @@ export default function AdminForum() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-forum-blocked-users'] });
       toast.success('Utilisateur débloqué');
+    },
+    onError: (error) => {
+      toast.error('Erreur lors du déblocage: ' + error.message);
     },
   });
 
@@ -290,18 +296,19 @@ export default function AdminForum() {
                           </div>
                         </div>
                         <Button
-                          variant={isBlocked ? 'secondary' : 'destructive'}
-                          size="sm"
-                          onClick={() => {
-                            if (isBlocked) {
-                              unblockUserMutation.mutate(user.email);
-                            } else {
-                              blockUserMutation.mutate(user.email);
-                            }
-                          }}
-                        >
-                          {isBlocked ? 'Débloquer' : 'Bloquer'}
-                        </Button>
+                           variant={isBlocked ? 'secondary' : 'destructive'}
+                           size="sm"
+                           disabled={blockUserMutation.isPending || unblockUserMutation.isPending}
+                           onClick={() => {
+                             if (isBlocked) {
+                               unblockUserMutation.mutate(user.email);
+                             } else {
+                               blockUserMutation.mutate(user.email);
+                             }
+                           }}
+                         >
+                           {blockUserMutation.isPending || unblockUserMutation.isPending ? '...' : (isBlocked ? 'Débloquer' : 'Bloquer')}
+                         </Button>
                       </div>
                     </CardContent>
                   </Card>

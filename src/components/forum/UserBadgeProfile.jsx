@@ -132,7 +132,7 @@ const UserBadgeProfile = ({ userId, small = false }) => {
     return (
       <HoverCard>
         <HoverCardTrigger asChild>
-          <button className="flex items-center gap-3 hover:opacity-85 transition-opacity group">
+          <button className="flex items-start gap-3 hover:opacity-85 transition-opacity group">
             <Avatar className="w-8 h-8 border border-cyan-500/20">
               <AvatarImage src={user.avatar_url} />
               <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs font-bold">

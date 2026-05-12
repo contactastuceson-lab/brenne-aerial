@@ -296,7 +296,7 @@ export default function DiscoverPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: i * 0.04 }}
-                  onClick={() => navigate(`/${profile.username || profile.email}`)}
+                  onClick={() => navigate(`/@${profile.username}`)}
                   className={`group relative rounded-2xl overflow-hidden hover-lift cursor-pointer ${isSupreme ? 'border-2' : 'border border-border bg-card'}`}
                   style={isSupreme ? {
                     background: 'linear-gradient(145deg, #0d0800, #1a0e00, #0d0800)',

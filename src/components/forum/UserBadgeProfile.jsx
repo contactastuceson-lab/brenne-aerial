@@ -71,7 +71,7 @@ const UserBadgeProfile = ({ userId, small = false }) => {
     user: 'bg-gray-50 text-gray-900',
   };
 
-  const profileContent = (
+  const profileContent = user ? (
     <div className={cn('space-y-3', small && 'space-y-2')}>
       <div className="flex items-start gap-3">
          <Avatar className={cn(small ? 'w-12 h-12' : 'w-16 h-16')}>
@@ -138,7 +138,7 @@ const UserBadgeProfile = ({ userId, small = false }) => {
         Voir le profil
       </Link>
     </div>
-  );
+  ) : null;
 
   if (small) {
     // If no user data, return minimal display

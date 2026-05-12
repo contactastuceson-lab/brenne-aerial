@@ -264,17 +264,18 @@ export default function PublicProfilePage() {
           </div>
 
           <div className="mt-4">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <h1
                 className="font-grotesk font-bold text-2xl"
                 style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
               >
                 {user.display_name || user.full_name}
               </h1>
+              {user.username && (
+                <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
+              )}
               <VerificationIcons verifications={user.verifications} size="md" />
             </div>
-            <p className="font-mono text-sm text-muted-foreground mt-1">@{user.username}</p>
-            <p className="font-inter text-xs text-muted-foreground">{user.email}</p>
             {user.role && roleCfg && (
               <span className={`inline-block mt-2 font-mono text-[10px] px-2 py-0.5 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
                 {roleCfg.emoji} {roleCfg.label}

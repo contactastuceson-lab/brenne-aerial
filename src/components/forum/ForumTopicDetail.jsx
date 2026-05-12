@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { ArrowLeft, Lock, Pin } from 'lucide-react';
+import { ArrowLeft, Lock, Pin, MessageCircle, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UserBadgeProfile from './UserBadgeProfile';
 import ForumPostItem from './ForumPostItem';
@@ -10,6 +10,7 @@ import CreateForumPost from './CreateForumPost';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
 
 const ForumTopicDetail = ({ topicId, onBack }) => {
   const { user } = useAuth();
@@ -88,64 +89,85 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-cyan-600 via-blue-600 to-purple-600 text-white rounded-xl p-6 shadow-xl backdrop-blur-md border border-cyan-500/20">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-blue-100 hover:text-white transition-colors mb-4"
-        >
-          <ArrowLeft size={18} />
-          Retour au forum
-        </button>
+      {/* Back Button */}
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors font-grotesk font-semibold text-sm"
+      >
+        <ArrowLeft size={16} />
+        Retour au forum
+      </button>
 
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              {topic.is_pinned && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-200 text-red-900 rounded-full text-sm font-semibold">
-                  <Pin size={14} />
-                  Épinglé
-                </span>
-              )}
-              {topic.is_locked && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-500 text-white rounded-full text-sm font-semibold">
-                  <Lock size={14} />
-                  Fermé
-                </span>
-              )}
-            </div>
-            <h1 className="text-3xl font-bold mb-2">{topic.title}</h1>
-            <p className="text-blue-100 text-sm">
-              {topic.category.toUpperCase()} • {topic.replies_count} réponses • {topic.views_count} vues
-            </p>
+      {/* Title & Meta */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          {topic.is_pinned && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-grotesk font-bold">
+              <Pin size={14} />
+              Épinglé
+            </span>
+          )}
+          {topic.is_locked && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-600/40 text-slate-300 border border-slate-500/30 rounded-full text-xs font-grotesk font-bold">
+              <Lock size={14} />
+              Fermé
+            </span>
+          )}
+          <span className="text-xs font-mono px-2 py-1 rounded-full bg-slate-700/50 text-slate-300 uppercase tracking-wide">
+            {topic.category}
+          </span>
+        </div>
+        <h1 className="text-4xl font-grotesk font-bold text-white leading-tight">
+          {topic.title}
+        </h1>
+        <div className="flex items-center gap-4 text-sm text-slate-400">
+          <div className="flex items-center gap-1.5">
+            <MessageCircle size={16} />
+            {topic.replies_count} réponse{topic.replies_count !== 1 ? 's' : ''}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Eye size={16} />
+            {topic.views_count} vue{topic.views_count !== 1 ? 's' : ''}
           </div>
         </div>
       </div>
 
       {/* Topic Content */}
-      <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-md border border-cyan-500/20 rounded-xl p-6 shadow-lg">
-        <div className="mb-4">
-          <div className="text-white">
-            <UserBadgeProfile userId={topic.author} />
-          </div>
-          <p className="text-xs text-slate-400 mt-2">
+      <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/40 backdrop-blur-md border border-cyan-500/15 rounded-2xl p-8 shadow-lg hover:border-cyan-500/25 transition-colors">
+        <div className="mb-6 pb-6 border-b border-slate-700/50">
+          <UserBadgeProfile userId={topic.author} />
+          <p className="text-xs text-slate-400 mt-3">
             {topic.created_date && formatDistanceToNow(new Date(topic.created_date), { locale: fr, addSuffix: true })}
           </p>
         </div>
 
         {/* Tags */}
         {topic.tags && topic.tags.length > 0 && (
-          <div className="flex gap-2 mb-4 flex-wrap">
+          <div className="flex gap-2 mb-6 flex-wrap">
             {topic.tags.map((tag) => (
-              <span key={tag} className="px-3 py-1 bg-cyan-500/10 text-cyan-300 rounded-lg text-sm font-semibold border border-cyan-500/20">
+              <span key={tag} className="px-3 py-1.5 bg-cyan-500/10 text-cyan-300 rounded-lg text-xs font-grotesk font-semibold border border-cyan-500/25">
                 #{tag}
               </span>
             ))}
           </div>
         )}
 
-        <div className="text-slate-300 whitespace-pre-wrap leading-relaxed">
-          {topic.content}
+        <div className="prose prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+          <ReactMarkdown
+            components={{
+              p: ({ children }) => <p className="text-slate-300 leading-relaxed mb-3 last:mb-0">{children}</p>,
+              strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+              em: ({ children }) => <em className="text-slate-400 italic">{children}</em>,
+              code: ({ children }) => <code className="bg-slate-900/60 text-cyan-300 px-2 py-1 rounded text-xs font-mono">{children}</code>,
+              ul: ({ children }) => <ul className="space-y-2 ml-4 list-disc mb-3 last:mb-0">{children}</ul>,
+              ol: ({ children }) => <ol className="space-y-2 ml-4 list-decimal mb-3 last:mb-0">{children}</ol>,
+              li: ({ children }) => <li className="text-slate-300">{children}</li>,
+              blockquote: ({ children }) => <blockquote className="border-l-2 border-cyan-500/40 pl-3 italic text-slate-400 my-3">{children}</blockquote>,
+              a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline">{children}</a>,
+            }}
+          >
+            {topic.content}
+          </ReactMarkdown>
         </div>
       </div>
 

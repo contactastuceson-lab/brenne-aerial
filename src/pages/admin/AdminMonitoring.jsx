@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2, AlertCircle, Clock, Zap, RefreshCw, Brain,
-  ChevronDown, ChevronUp, Activity, Wifi, Database, MessageSquare, FileText, Bell
+  ChevronDown, ChevronUp, Activity, Wifi, Database, MessageSquare, FileText, Bell, Link, Copy, Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -346,12 +346,90 @@ export default function AdminMonitoring() {
         </div>
       )}
 
+      {/* Endpoints Section */}
+      <EndpointsPanel />
+
       {dataUpdatedAt > 0 && (
         <p className="font-mono text-[10px] text-muted-foreground/50 text-center">
           Données actualisées {formatDistanceToNow(new Date(dataUpdatedAt), { addSuffix: true, locale: fr })}
           {' · '}Prochain check auto dans ~5 min
         </p>
       )}
+    </div>
+  );
+}
+
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <button onClick={handleCopy} className="flex-shrink-0 p-1 rounded hover:bg-secondary/60 transition-colors">
+      {copied
+        ? <Check className="w-3 h-3 text-green-400" />
+        : <Copy className="w-3 h-3 text-muted-foreground" />
+      }
+    </button>
+  );
+}
+
+function EndpointsPanel() {
+  const [open, setOpen] = useState(false);
+  const BASE = 'https://brenneaerial.base44.app/api/functions';
+
+  const endpoints = [
+    { label: 'Monitoring global', fn: 'runMonitoring', desc: 'Déclenche tous les checks (BetterStack / cron externe)', icon: Activity },
+    { label: 'Check statut modules', fn: 'statusCheck', desc: 'Vérifie l\'état des modules publics', icon: CheckCircle2 },
+    { label: 'Génération PDF Devis', fn: 'generateQuotePDF', desc: 'Service PDF (POST + quoteId)', icon: FileText },
+    { label: 'Service Email', fn: 'emailNotification', desc: 'Envoi de notifications email', icon: Bell },
+    { label: 'Push Notifications', fn: 'pushNotification', desc: 'Envoi de notifications push', icon: Bell },
+    { label: 'Webhook Stripe', fn: 'handleStripeWebhook', desc: 'Réception des événements Stripe', icon: Activity },
+    { label: 'Agent PDG (Nexus)', fn: 'pdgAIAgent', desc: 'IA conversationnelle PDG', icon: Brain },
+  ];
+
+  return (
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center gap-3 p-4 hover:bg-secondary/20 transition-colors"
+      >
+        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <Link className="w-4 h-4 text-primary" />
+        </div>
+        <div className="flex-1 text-left">
+          <p className="font-inter font-semibold text-sm">Endpoints HTTP</p>
+          <p className="font-mono text-[10px] text-muted-foreground">{endpoints.length} URLs disponibles — cliquer pour copier</p>
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="border-t border-border overflow-hidden"
+          >
+            <div className="p-4 space-y-2">
+              {endpoints.map(({ label, fn, desc, icon: Icon }) => (
+                <div key={fn} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group">
+                  <Icon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-inter text-xs font-medium">{label}</p>
+                    <p className="font-mono text-[10px] text-primary truncate">{BASE}/{fn}</p>
+                    <p className="font-inter text-[10px] text-muted-foreground">{desc}</p>
+                  </div>
+                  <CopyButton text={`${BASE}/${fn}`} />
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

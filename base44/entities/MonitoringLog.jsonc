@@ -1,0 +1,60 @@
+{
+  "name": "MonitoringLog",
+  "type": "object",
+  "properties": {
+    "service_name": {
+      "type": "string",
+      "description": "Nom du service v\u00e9rifi\u00e9 (ex: aria_llm, nexus_agent, planning_api)"
+    },
+    "service_label": {
+      "type": "string",
+      "description": "Libell\u00e9 lisible"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "degraded",
+        "error",
+        "timeout"
+      ],
+      "description": "R\u00e9sultat du check"
+    },
+    "response_time_ms": {
+      "type": "number",
+      "description": "Temps de r\u00e9ponse en ms"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Message d'erreur si applicable"
+    },
+    "ai_diagnosis": {
+      "type": "string",
+      "description": "Diagnostic IA : cause probable + solution sugg\u00e9r\u00e9e"
+    },
+    "http_status": {
+      "type": "number",
+      "description": "Code HTTP retourn\u00e9"
+    },
+    "checked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Horodatage du check"
+    },
+    "is_incident": {
+      "type": "boolean",
+      "default": false,
+      "description": "Ce check a d\u00e9clench\u00e9 un incident"
+    },
+    "incident_resolved": {
+      "type": "boolean",
+      "default": false,
+      "description": "L'incident est r\u00e9solu"
+    }
+  },
+  "required": [
+    "service_name",
+    "status",
+    "checked_at"
+  ]
+}

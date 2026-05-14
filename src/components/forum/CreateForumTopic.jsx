@@ -93,15 +93,15 @@ const CreateForumTopic = ({ onSuccess }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white gap-2">
+        <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white gap-2">
           <MessageSquare size={18} />
           Nouveau sujet
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl bg-slate-800 border-slate-700">
+      <DialogContent className="max-w-2xl bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-md border-cyan-500/30">
         <DialogHeader>
-          <DialogTitle className="text-white">Créer un nouveau sujet</DialogTitle>
-          <DialogDescription className="text-gray-400">
+          <DialogTitle className="text-white text-2xl">Créer un nouveau sujet</DialogTitle>
+          <DialogDescription className="text-slate-400">
             Posez une question ou lancez une discussion avec la communauté
           </DialogDescription>
         </DialogHeader>
@@ -109,21 +109,21 @@ const CreateForumTopic = ({ onSuccess }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Titre */}
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-cyan-300 mb-2">
               Titre du sujet *
             </label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Quel est votre sujet ?"
-              className="text-base bg-slate-700 border-slate-600 text-white placeholder:text-gray-500"
+              className="text-base bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-500 focus:border-cyan-400/50"
               required
             />
           </div>
 
           {/* Contenu */}
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-cyan-300 mb-2">
               Détails *
             </label>
             <Textarea
@@ -131,35 +131,33 @@ const CreateForumTopic = ({ onSuccess }) => {
               onChange={(e) => setContent(e.target.value)}
               placeholder="Décrivez votre sujet en détail..."
               rows={6}
-              className="text-base resize-none bg-slate-700 border-slate-600 text-white placeholder:text-gray-500"
+              className="text-base resize-none bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-500 focus:border-cyan-400/50"
               required
             />
           </div>
 
           {/* Catégorie */}
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-cyan-300 mb-2">
               Catégorie *
             </label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+              <SelectTrigger className="bg-slate-700/50 border-cyan-500/30 text-white focus:border-cyan-400/50">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-700 border-slate-600">
-                <SelectItem value="general" className="text-white focus:bg-slate-600">General</SelectItem>
-                <SelectItem value="techniques" className="text-white focus:bg-slate-600">Techniques</SelectItem>
-                <SelectItem value="projets" className="text-white focus:bg-slate-600">Projets</SelectItem>
-                <SelectItem value="services" className="text-white focus:bg-slate-600">Services</SelectItem>
-                <SelectItem value="formation" className="text-white focus:bg-slate-600">Formation</SelectItem>
-                <SelectItem value="actualites" className="text-white focus:bg-slate-600">Actualités</SelectItem>
-                <SelectItem value="support" className="text-white focus:bg-slate-600">Support</SelectItem>
+              <SelectContent className="bg-slate-800 border-cyan-500/30">
+                <SelectItem value="general" className="text-white focus:bg-slate-700">Général</SelectItem>
+                <SelectItem value="technique" className="text-white focus:bg-slate-700">Technique</SelectItem>
+                <SelectItem value="aide" className="text-white focus:bg-slate-700">Aide</SelectItem>
+                <SelectItem value="partages" className="text-white focus:bg-slate-700">Partages</SelectItem>
+                <SelectItem value="autres" className="text-white focus:bg-slate-700">Autres</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label className="block text-sm font-semibold text-cyan-300 mb-2">
               Tags
             </label>
             <Input
@@ -167,20 +165,20 @@ const CreateForumTopic = ({ onSuccess }) => {
               onChange={(e) => setTags(e.target.value)}
               onKeyDown={handleAddTag}
               placeholder="Saisissez un tag et appuyez sur Entrée..."
-              className="text-base bg-slate-700 border-slate-600 text-white placeholder:text-gray-500"
+              className="text-base bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-500 focus:border-cyan-400/50"
             />
             {tagList.length > 0 && (
               <div className="mt-2 flex gap-2 flex-wrap">
                 {tagList.map((tag) => (
                   <div
                     key={tag}
-                    className="flex items-center gap-1 px-3 py-1 bg-blue-900 text-blue-200 rounded-full text-sm font-semibold"
+                    className="flex items-center gap-1 px-3 py-1 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded-full text-sm font-semibold"
                   >
                     #{tag}
                     <button
                       type="button"
                       onClick={() => removeTag(tag)}
-                      className="hover:text-blue-100"
+                      className="hover:text-cyan-200"
                     >
                       <X size={14} />
                     </button>
@@ -191,24 +189,25 @@ const CreateForumTopic = ({ onSuccess }) => {
           </div>
 
           {submissionError && (
-            <div className="p-3 rounded-lg bg-red-900 border border-red-700 text-red-200 text-sm">
+            <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/40 text-red-300 text-sm backdrop-blur-sm">
               {submissionError}
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex gap-3 justify-end pt-4 border-t border-slate-700">
+          <div className="flex gap-3 justify-end pt-4 border-t border-slate-700/50">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
+              className="border-slate-600 text-slate-300 hover:bg-slate-700/50"
             >
               Annuler
             </Button>
             <Button
               type="submit"
               disabled={createMutation.isPending || !title.trim() || !content.trim()}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
             >
               {createMutation.isPending ? 'Création...' : 'Créer le sujet'}
             </Button>

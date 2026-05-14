@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Save, Loader2, Search, ShieldCheck, ShieldOff, CheckCircle, Flag, Download, Trash2, UserX, AlertTriangle
+import { Save, Loader2, Search, ShieldCheck, ShieldOff, CheckCircle, Flag, Download, Trash2, UserX, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import BadgeChip from '@/components/ui/BadgeChip';
+import UserEditModal from '@/components/admin/UserEditModal';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { ROLE_CONFIG, getUserLevel, getAssignableRoles, PDG_EMAILS, PDG_ADJOINT_EMAILS } from '@/lib/roles';
@@ -177,6 +178,16 @@ export default function AdminUsers() {
   const toggleSelect = (id) => setSelectedIds(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
   const toggleAll = () => setSelectedIds(selectedIds.length === filtered.length ? [] : filtered.map(u => u.id));
 
+  // Listen for user updates to refresh the list in real-time
+  useEffect(() => {
+    const unsub = base44.entities.User.subscribe((event) => {
+      if (event.type === 'update') {
+        qc.invalidateQueries({ queryKey: ['adm-users-list'] });
+      }
+    });
+    return () => unsub();
+  }, [qc]);
+
   const filtered = users
     .filter(u => filterStatus === 'all' || (u.account_status || 'active') === filterStatus)
     .filter(u => filterRole === 'all' || (u.role || 'user') === filterRole)
@@ -266,84 +277,99 @@ export default function AdminUsers() {
           {filtered.map(u => {
             const status = u.account_status || 'active';
             const reportCount = reportCountForUser(u.email);
+            const isTargetSupreme = (u.verifications || []).includes('supreme');
+            const blocked = isTargetSupreme && !canManageSupreme;
+            const cfg = ROLE_CONFIG[u.role] || ROLE_CONFIG.user;
+            const isOwnerUser = PDG_EMAILS.includes(u.email) || u.role === 'owner';
+            const isPdgAdj = PDG_ADJOINT_EMAILS.includes(u.email) || u.role === 'pdg_adjoint';
+            const roleLabel = isOwnerUser ? '👑 PDG' : isPdgAdj ? '🥈 PDG-Adj' : `${cfg.emoji} ${cfg.label}`;
+
             return (
-              <div key={u.id} className={`flex items-center gap-4 p-4 rounded-xl bg-card border transition-colors ${selectedIds.includes(u.id) ? 'border-primary/40 bg-primary/5' : 'border-border hover:border-primary/20'}`}>
+              <div key={u.id} className={`flex flex-col lg:flex-row lg:items-center gap-4 p-4 rounded-xl bg-card border transition-colors ${selectedIds.includes(u.id) ? 'border-primary/40 bg-primary/5' : 'border-border hover:border-primary/20'}`}>
+                {/* Checkbox */}
                 <input type="checkbox" checked={selectedIds.includes(u.id)} onChange={() => toggleSelect(u.id)}
                   className="w-3.5 h-3.5 accent-primary cursor-pointer flex-shrink-0" />
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {u.avatar_url
-                    ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />
-                    : <span className="font-grotesk font-bold text-primary">{u.full_name?.[0] || 'U'}</span>
-                  }
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-inter text-sm font-medium">{u.full_name || '—'}</p>
-                    {u.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 text-accent" />}
-                    <span className={`font-mono text-[9px] px-2 py-0.5 rounded-full border ${STATUS_COLORS[status]}`}>
-                      {STATUS_LABELS[status]}
-                    </span>
-                    {reportCount > 0 && (
-                      <Link to="/admin/reports">
-                        <span className="flex items-center gap-1 font-mono text-[9px] text-destructive bg-destructive/10 border border-destructive/30 px-2 py-0.5 rounded-full cursor-pointer hover:bg-destructive/20">
-                          <Flag className="w-2.5 h-2.5" /> {reportCount} signalement{reportCount > 1 ? 's' : ''}
-                        </span>
-                      </Link>
+
+                {/* Avatar + User Info */}
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <div className="w-12 h-12 lg:w-10 lg:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {u.avatar_url
+                      ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />
+                      : <span className="font-grotesk font-bold text-primary text-lg lg:text-base">{u.full_name?.[0] || 'U'}</span>
+                    }
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    {/* Name + Status badges */}
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <p className="font-grotesk font-bold text-sm lg:text-base">{u.display_name || u.full_name || '—'}</p>
+                      {u.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 text-accent flex-shrink-0" />}
+                    </div>
+
+                    {/* Status + Reports */}
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <span className={`font-mono text-[9px] px-2 py-0.5 rounded-full border ${STATUS_COLORS[status]}`}>
+                        {STATUS_LABELS[status]}
+                      </span>
+                      {reportCount > 0 && (
+                        <Link to="/admin/reports">
+                          <span className="flex items-center gap-1 font-mono text-[9px] text-destructive bg-destructive/10 border border-destructive/30 px-2 py-0.5 rounded-full cursor-pointer hover:bg-destructive/20">
+                            <Flag className="w-2.5 h-2.5" /> {reportCount}
+                          </span>
+                        </Link>
+                      )}
+                      <span className="hidden lg:inline font-mono text-xs text-muted-foreground">{roleLabel}</span>
+                    </div>
+
+                    {/* Email + Phone */}
+                    <div>
+                      <p className="font-mono text-xs text-muted-foreground truncate">{u.email}</p>
+                      {u.phone && <p className="font-mono text-xs text-muted-foreground/60">{formatPhone(u.phone)}</p>}
+                    </div>
+
+                    {/* Badges */}
+                    {u.badges?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {u.badges.map(b => <BadgeChip key={b} badge={b} size="sm" />)}
+                      </div>
                     )}
                   </div>
-                  <p className="font-mono text-xs text-muted-foreground">{u.email}</p>
-                  {u.phone && <p className="font-mono text-xs text-muted-foreground/60">{formatPhone(u.phone)}</p>}
-                  {u.badges?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {u.badges.map(b => <BadgeChip key={b} badge={b} size="sm" />)}
-                    </div>
-                  )}
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="font-mono text-xs text-muted-foreground hidden sm:block">
-                    {(() => {
-                      const cfg = ROLE_CONFIG[u.role] || ROLE_CONFIG.user;
-                      const isOwnerUser = PDG_EMAILS.includes(u.email) || u.role === 'owner';
-                      const isPdgAdj = PDG_ADJOINT_EMAILS.includes(u.email) || u.role === 'pdg_adjoint';
-                      if (isOwnerUser) return '👑 PDG';
-                      if (isPdgAdj) return '🥈 PDG-Adj';
-                      return `${cfg.emoji} ${cfg.label}`;
-                    })()}
-                  </span>
-                  {(() => {
-                    const isTargetSupreme = (u.verifications || []).includes('supreme');
-                    const blocked = isTargetSupreme && !canManageSupreme;
-                    return (
-                      <>
-                        {status === 'active' ? (
-                          <Button size="sm" variant="outline"
-                            className={blocked ? 'border-amber-600/30 text-amber-600/50 text-xs gap-1 cursor-not-allowed opacity-50' : 'border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10 text-xs gap-1'}
-                            onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut agir sur un membre Suprême.') : quickAction.mutate({ id: u.id, data: { account_status: 'suspended', suspension_reason: 'Suspension admin' } })}>
-                            <ShieldOff className="w-3 h-3" /> Suspendre
-                          </Button>
-                        ) : status !== 'active' && (
-                          <Button size="sm" variant="outline" className="border-green-400/30 text-green-400 hover:bg-green-400/10 text-xs gap-1"
-                            onClick={() => quickAction.mutate({ id: u.id, data: { account_status: 'active', suspension_reason: '' } })}>
-                            <ShieldCheck className="w-3 h-3" /> Réactiver
-                          </Button>
-                        )}
-                        <Button size="sm" variant="outline"
-                          onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut modifier un membre Suprême.') : openEdit(u)}
-                          className={blocked ? 'border-amber-600/30 text-amber-600/50 text-xs cursor-not-allowed opacity-50' : 'border-border text-xs'}>
-                          Modifier
-                        </Button>
-                        <Button size="sm" variant="outline"
-                          onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut supprimer un membre Suprême.') : (setDeleteConfirm(u), setDeleteReason(''), setEmailSent(false))}
-                          className={`text-xs gap-1 ${
-                            blocked
-                              ? 'border-amber-600/30 text-amber-600/50 cursor-not-allowed opacity-50'
-                              : `border-destructive/40 text-destructive hover:bg-destructive/10 ${hasDeletionRequest(u.email) ? 'animate-pulse border-destructive' : ''}`
-                          }`}>
-                          <Trash2 className="w-3 h-3" /> {hasDeletionRequest(u.email) ? 'Demande!' : 'Suppr.'}
-                        </Button>
-                      </>
-                    );
-                  })()}
+
+                {/* Action Buttons - Stacked on mobile, Row on desktop */}
+                <div className="flex gap-2 flex-wrap lg:flex-nowrap lg:flex-shrink-0">
+                  {status === 'active' ? (
+                    <Button size="sm" variant="outline"
+                      className={blocked ? 'border-amber-600/30 text-amber-600/50 text-xs gap-1 cursor-not-allowed opacity-50 flex-1 lg:flex-none' : 'border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10 text-xs gap-1 flex-1 lg:flex-none'}
+                      onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut agir sur un membre Suprême.') : quickAction.mutate({ id: u.id, data: { account_status: 'suspended', suspension_reason: 'Suspension admin' } })}>
+                      <ShieldOff className="w-3 h-3" />
+                      <span className="hidden sm:inline">Suspendre</span>
+                    </Button>
+                  ) : status !== 'active' && (
+                    <Button size="sm" variant="outline" className="border-green-400/30 text-green-400 hover:bg-green-400/10 text-xs gap-1 flex-1 lg:flex-none"
+                      onClick={() => quickAction.mutate({ id: u.id, data: { account_status: 'active', suspension_reason: '' } })}>
+                      <ShieldCheck className="w-3 h-3" />
+                      <span className="hidden sm:inline">Réactiver</span>
+                    </Button>
+                  )}
+
+                  <Button size="sm" variant="outline"
+                    onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut modifier un membre Suprême.') : openEdit(u)}
+                    className={`text-xs flex-1 lg:flex-none gap-1 ${blocked ? 'border-amber-600/30 text-amber-600/50 cursor-not-allowed opacity-50' : 'border-primary/30 text-primary hover:bg-primary/10'}`}>
+                    <span className="hidden sm:inline">Modifier</span>
+                    <span className="sm:hidden">✏️</span>
+                  </Button>
+
+                  <Button size="sm" variant="outline"
+                    onClick={() => blocked ? toast.error('Seul le PDG ou PDG-Adjoint peut supprimer un membre Suprême.') : (setDeleteConfirm(u), setDeleteReason(''), setEmailSent(false))}
+                    className={`text-xs flex-1 lg:flex-none gap-1 ${
+                      blocked
+                        ? 'border-amber-600/30 text-amber-600/50 cursor-not-allowed opacity-50'
+                        : `border-destructive/40 text-destructive hover:bg-destructive/10 ${hasDeletionRequest(u.email) ? 'animate-pulse border-destructive' : ''}`
+                    }`}>
+                    <Trash2 className="w-3 h-3" />
+                    <span className="hidden sm:inline">{hasDeletionRequest(u.email) ? 'Demande!' : 'Suppr.'}</span>
+                  </Button>
                 </div>
               </div>
             );
@@ -438,137 +464,20 @@ export default function AdminUsers() {
         );
       })()}
 
-      <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>
-        <DialogContent className="bg-card border-border max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-grotesk font-bold">Modifier — {editUser?.full_name}</DialogTitle>
-          </DialogHeader>
-          {editUser && (
-            <div className="space-y-5">
-              {/* Status du compte */}
-              <div className="bg-secondary rounded-xl p-4 space-y-3">
-                <p className="font-inter font-medium text-sm">Statut du compte</p>
-                <Select value={editForm.account_status} onValueChange={v => setEditForm(p => ({ ...p, account_status: v }))}>
-                  <SelectTrigger className="bg-card border-border">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">✅ Actif</SelectItem>
-                    <SelectItem value="restricted">⚠️ Restreint</SelectItem>
-                    <SelectItem value="suspended">🔶 Suspendu</SelectItem>
-                    <SelectItem value="banned">🔴 Banni</SelectItem>
-                  </SelectContent>
-                </Select>
-                {editForm.account_status !== 'active' && (
-                  <>
-                    <Input
-                      value={editForm.suspension_reason}
-                      onChange={e => setEditForm(p => ({ ...p, suspension_reason: e.target.value }))}
-                      placeholder="Raison de la restriction / suspension..."
-                      className="bg-card border-border font-inter"
-                    />
-                    <div>
-                      <label className="font-inter text-xs text-muted-foreground mb-1 block">Jusqu'au (optionnel)</label>
-                      <Input
-                        type="date"
-                        value={editForm.suspension_until}
-                        onChange={e => setEditForm(p => ({ ...p, suspension_until: e.target.value }))}
-                        className="bg-card border-border font-inter"
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Vérification */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-inter text-sm font-medium flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-accent" /> Compte vérifié
-                  </p>
-                  <p className="font-inter text-xs text-muted-foreground">Affiche un badge de vérification officiel</p>
-                </div>
-                <Switch
-                  checked={editForm.verified_status === 'yes'}
-                  onCheckedChange={v => setEditForm(p => ({ ...p, verified_status: v ? 'yes' : 'no' }))}
-                />
-              </div>
-
-              {/* Rôle */}
-              <div>
-                <label className="font-inter text-xs text-muted-foreground mb-2 block">
-                  Rôle — vous pouvez attribuer les rôles de niveau inférieur au vôtre
-                </label>
-                {/* Show current role if it can't be changed */}
-                {getUserLevel({ role: editUser?.role, email: editUser?.email }) >= myLevel && getUserLevel(editUser) > 0 ? (
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                    <span className="font-mono text-xs text-amber-400">
-                      {ROLE_CONFIG[editUser?.role]?.emoji} {ROLE_CONFIG[editUser?.role]?.label} — rôle non modifiable (niveau ≥ au vôtre)
-                    </span>
-                  </div>
-                ) : (
-                  <Select value={editForm.role} onValueChange={v => setEditForm(p => ({ ...p, role: v }))}>
-                    <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {/* Current role always visible */}
-                      {editUser?.role && !assignableRoles.find(r => r.role === editUser.role) && (
-                        <SelectItem value={editUser.role} disabled>
-                          {ROLE_CONFIG[editUser.role]?.emoji} {ROLE_CONFIG[editUser.role]?.label} (actuel)
-                        </SelectItem>
-                      )}
-                      {assignableRoles.map(r => (
-                        <SelectItem key={r.role} value={r.role}>
-                          {r.emoji} {r.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-
-              {/* Badges */}
-              <div>
-                <label className="font-inter text-xs text-muted-foreground mb-2 block">Badges</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {BADGES.map(b => (
-                    <label key={b} className="flex items-center gap-2 cursor-pointer bg-secondary rounded-lg px-3 py-2">
-                      <Checkbox checked={editForm.badges?.includes(b)} onCheckedChange={() => toggleBadge(b)} />
-                      <span className="font-inter text-sm">{b}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Bio */}
-              <div>
-                <label className="font-inter text-xs text-muted-foreground mb-1 block">Bio</label>
-                <Textarea value={editForm.bio} onChange={e => setEditForm(p => ({ ...p, bio: e.target.value }))} className="bg-secondary border-border resize-none h-20" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-inter text-xs text-muted-foreground mb-1 block">Téléphone</label>
-                  <Input
-                    value={editForm.phone}
-                    onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))}
-                    onBlur={e => setEditForm(p => ({ ...p, phone: formatPhone(e.target.value) }))}
-                    placeholder="06 12 34 56 78"
-                    className="bg-secondary border-border"
-                  />
-                </div>
-                <div>
-                  <label className="font-inter text-xs text-muted-foreground mb-1 block">Localisation</label>
-                  <Input value={editForm.location} onChange={e => setEditForm(p => ({ ...p, location: e.target.value }))} className="bg-secondary border-border" />
-                </div>
-              </div>
-
-              <Button onClick={() => updateUser.mutate({ id: editUser.id, data: editForm })} disabled={updateUser.isPending} className="w-full bg-primary text-primary-foreground">
-                {updateUser.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 mr-2" />Sauvegarder</>}
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {editUser && (
+        <UserEditModal
+          user={editUser}
+          open={!!editUser}
+          onClose={() => setEditUser(null)}
+          onSave={(data) => {
+            updateUser.mutate({ id: editUser.id, data }, {
+              onSuccess: () => setEditUser(null)
+            });
+          }}
+          isLoading={updateUser.isPending}
+          currentUser={currentUser}
+        />
+      )}
     </div>
   );
 }

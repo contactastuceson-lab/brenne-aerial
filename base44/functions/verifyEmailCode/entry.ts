@@ -12,7 +12,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Aucun code envoyé' }, { status: 400 });
     }
 
-    if (Date.now() > Number(user.verification_code_expires)) {
+    const expiresAt = Number(user.verification_code_expires) || 0;
+    if (Date.now() > expiresAt) {
       return Response.json({ error: 'Code expiré' }, { status: 400 });
     }
 
@@ -27,7 +28,7 @@ Deno.serve(async (req) => {
       verification_code_expires: null,
     });
 
-    return Response.json({ success: true });
+    return Response.json({ success: true, verified: true });
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
   }

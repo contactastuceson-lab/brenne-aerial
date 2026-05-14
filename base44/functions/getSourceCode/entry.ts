@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     }
 
     // Only owner/PDG and pdg_adjoint can access source code
-    const PDG_EMAILS = ['enor.lefoulon@gmail.com'];
+    const PDG_EMAILS = ['enor.lefoulon@gmail.com', 'thecommitteescp@gmail.com'];
     const PDG_ADJOINT_EMAILS = [];
     const isTopMgmt = user.role === 'owner' || user.role === 'pdg_adjoint' ||
       PDG_EMAILS.includes(user.email) || PDG_ADJOINT_EMAILS.includes(user.email);

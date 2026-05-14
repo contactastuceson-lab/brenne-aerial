@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { PDG_EMAILS, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 import { toast } from 'sonner';
 import PDGAIAgent from '@/components/admin/PDGAIAgent';
+import PDGAIAgentMobile from '@/components/admin/PDGAIAgentMobile';
 
 // All project files organized by category
 const FILE_TREE = {
@@ -182,79 +183,86 @@ export default function AdminPDGSpace() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full gap-4 lg:gap-6 p-4 lg:p-0">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{ background: 'linear-gradient(135deg,#92400e,#d97706)', boxShadow: '0 0 20px rgba(245,158,11,0.3)' }}>
               <Crown className="w-5 h-5 text-yellow-100" />
             </div>
             <div>
-              <h1 className="font-grotesk font-bold text-2xl">Espace PDG</h1>
-              <p className="font-inter text-sm text-muted-foreground">
-                IA Super Admin · Code Source · Accès exclusif direction
+              <h1 className="font-grotesk font-bold text-xl lg:text-2xl">Espace PDG</h1>
+              <p className="font-inter text-xs lg:text-sm text-muted-foreground">
+                IA · Code · Accès exclusif
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full lg:w-auto">
             {downloadProgress ? (
-              <div className="flex items-center gap-2 bg-secondary border border-border rounded-xl px-4 py-2">
-                <RefreshCw className="w-4 h-4 text-primary animate-spin" />
-                <span className="font-mono text-xs text-primary max-w-[200px] truncate">{downloadProgress}</span>
+              <div className="flex items-center gap-2 bg-secondary border border-border rounded-xl px-3 py-2 flex-1 lg:flex-none">
+                <RefreshCw className="w-4 h-4 text-primary animate-spin flex-shrink-0" />
+                <span className="font-mono text-xs text-primary truncate">{downloadProgress}</span>
               </div>
             ) : (
               <Button
                 onClick={downloadZip}
-                className="gap-2 font-grotesk font-semibold"
+                className="gap-2 font-grotesk font-semibold text-xs lg:text-sm flex-1 lg:flex-none h-9 lg:h-10"
                 style={{ background: 'linear-gradient(135deg,#92400e,#d97706)', color: '#fde68a' }}
               >
-                <Download className="w-4 h-4" />
-                Télécharger ZIP
+                <Download className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
+                <span className="hidden sm:inline">ZIP</span>
               </Button>
             )}
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mt-5">
+        {/* Tabs - Responsive */}
+        <div className="flex gap-2 overflow-x-auto pb-1">
           <button
             onClick={() => setActiveTab('ai')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-grotesk font-semibold text-sm transition-all ${
+            className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-xl font-grotesk font-semibold text-xs lg:text-sm whitespace-nowrap transition-all flex-shrink-0 ${
               activeTab === 'ai'
                 ? 'text-yellow-100'
                 : 'bg-card border border-border text-muted-foreground hover:text-foreground'
             }`}
             style={activeTab === 'ai' ? { background: 'linear-gradient(135deg,#92400e,#d97706)', boxShadow: '0 0 16px rgba(245,158,11,0.3)' } : {}}
           >
-            <Sparkles className="w-4 h-4" />
-            NEXUS — IA Super Admin
+            <Sparkles className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
+            <span>NEXUS</span>
           </button>
           <button
             onClick={() => setActiveTab('code')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-grotesk font-semibold text-sm transition-all ${
+            className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-xl font-grotesk font-semibold text-xs lg:text-sm whitespace-nowrap transition-all flex-shrink-0 ${
               activeTab === 'code'
                 ? 'bg-primary/10 border border-primary/30 text-primary'
                 : 'bg-card border border-border text-muted-foreground hover:text-foreground'
             }`}
           >
-            <Code className="w-4 h-4" />
-            Code Source
+            <Code className="w-3 h-3 lg:w-4 lg:h-4 flex-shrink-0" />
+            <span>Code</span>
           </button>
         </div>
       </div>
 
       {/* AI Tab */}
       {activeTab === 'ai' && (
-        <PDGAIAgent />
+        <>
+          <div className="hidden lg:block">
+            <PDGAIAgent />
+          </div>
+          <div className="lg:hidden">
+            <PDGAIAgentMobile />
+          </div>
+        </>
       )}
 
       {/* Code Tab */}
       {activeTab === 'code' && (
-      <div className="flex gap-4 flex-1 min-h-0" style={{ height: 'calc(100vh - 360px)' }}>
-        {/* Left: file tree */}
-        <div className="w-64 flex-shrink-0 bg-card border border-border rounded-xl flex flex-col overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-hidden">
+        {/* Left: file tree - hidden on mobile, toggleable via button */}
+        <div className="hidden lg:flex w-full lg:w-64 flex-col bg-card border border-border rounded-xl overflow-hidden flex-shrink-0">
           <div className="p-3 border-b border-border">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
@@ -300,18 +308,50 @@ export default function AdminPDGSpace() {
           </div>
         </div>
 
+        {/* Mobile file selector */}
+        <div className="lg:hidden bg-card border border-border rounded-xl p-3">
+          <div className="relative mb-3">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-8 h-8 text-xs bg-secondary border-0"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+            {Object.entries(filteredTree).map(([cat, files]) => (
+              <div key={cat}>
+                {files.map(file => (
+                  <button
+                    key={file}
+                    onClick={() => fetchFile(file)}
+                    className={`w-full text-left px-2 py-1.5 rounded-lg text-[10px] font-mono transition-colors truncate ${
+                      selectedFile === file
+                        ? 'bg-primary/15 text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    }`}
+                  >
+                    {file.split('/').pop()}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Right: code viewer */}
         <div className="flex-1 bg-card border border-border rounded-xl flex flex-col overflow-hidden min-w-0">
           {selectedFile ? (
             <>
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-border flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <Code className="w-4 h-4 text-primary" />
-                  <span className="font-mono text-xs text-primary">{selectedFile}</span>
+              <div className="flex items-center justify-between px-3 lg:px-4 py-2 lg:py-2.5 border-b border-border flex-shrink-0 gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Code className="w-3 h-3 lg:w-4 lg:h-4 text-primary flex-shrink-0" />
+                  <span className="font-mono text-[10px] lg:text-xs text-primary truncate">{selectedFile}</span>
                 </div>
-                <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={copyContent}>
+                <Button size="sm" variant="outline" className="h-7 gap-1 text-[10px] lg:text-xs flex-shrink-0" onClick={copyContent}>
                   {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
-                  {copied ? 'Copié' : 'Copier'}
+                  <span className="hidden sm:inline">{copied ? 'Copié' : 'Copier'}</span>
                 </Button>
               </div>
               <div className="flex-1 overflow-auto">
@@ -320,17 +360,17 @@ export default function AdminPDGSpace() {
                     <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   </div>
                 ) : (
-                  <pre className="p-4 font-mono text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap break-all">
+                  <pre className="p-3 lg:p-4 font-mono text-[11px] lg:text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap break-all">
                     {fileContents[selectedFile] || '// Fichier vide ou non accessible'}
                   </pre>
                 )}
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
-              <Eye className="w-10 h-10 opacity-20" />
-              <p className="font-inter text-sm">Sélectionnez un fichier pour afficher son code</p>
-              <p className="font-mono text-xs opacity-60">{ALL_FILES.length} fichiers disponibles</p>
+            <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground px-4">
+              <Eye className="w-8 h-8 lg:w-10 lg:h-10 opacity-20" />
+              <p className="font-inter text-xs lg:text-sm">Sélectionnez un fichier</p>
+              <p className="font-mono text-[10px] opacity-60">{ALL_FILES.length} fichiers</p>
             </div>
           )}
         </div>
@@ -339,10 +379,10 @@ export default function AdminPDGSpace() {
       )}
 
       {/* Footer note */}
-      <div className="mt-4 bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-3 flex items-start gap-2">
-        <Lock className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
-        <p className="font-inter text-xs text-muted-foreground">
-          <span className="text-yellow-500 font-semibold">Accès confidentiel.</span> Ce panneau est visible uniquement par le PDG et le PDG-Adjoint.
+      <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-2 lg:p-3 flex items-start gap-2">
+        <Lock className="w-3 h-3 lg:w-4 lg:h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+        <p className="font-inter text-[10px] lg:text-xs text-muted-foreground">
+          <span className="text-yellow-500 font-semibold">Confidentiel.</span> Visible PDG/PDG-Adjoint uniquement.
         </p>
       </div>
     </div>

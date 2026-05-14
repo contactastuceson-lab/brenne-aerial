@@ -5,7 +5,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * Réservé au PDG et PDG-Adjoint uniquement.
  */
 
-const PDG_EMAILS = ['contact.astuceson@gmail.com'];
+const PDG_EMAILS = ['contact.astuceson@gmail.com', 'thecommitteescp@gmail.com'];
 const PDG_ADJOINT_EMAILS = ['sentenacborys@gmail.com'];
 
 const ROLE_CONFIG = {

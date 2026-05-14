@@ -1,0 +1,89 @@
+{
+  "name": "DroneMaintenanceLog",
+  "type": "object",
+  "properties": {
+    "drone_name": {
+      "type": "string",
+      "description": "Nom du drone (ex: DJI Mavic 3 Pro)"
+    },
+    "serial_number": {
+      "type": "string",
+      "description": "Num\u00e9ro de s\u00e9rie"
+    },
+    "total_flight_hours": {
+      "type": "number",
+      "description": "Heures de vol totales"
+    },
+    "battery_cycles": {
+      "type": "number",
+      "description": "Nombre de cycles de charge batterie"
+    },
+    "battery_health_percent": {
+      "type": "number",
+      "description": "Sant\u00e9 batterie en %"
+    },
+    "last_maintenance_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date derni\u00e8re maintenance"
+    },
+    "next_maintenance_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Prochaine maintenance pr\u00e9vue"
+    },
+    "propellers_changed_at_hours": {
+      "type": "number",
+      "description": "Heures auxquelles les h\u00e9lices ont \u00e9t\u00e9 chang\u00e9es"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "operational",
+        "maintenance_needed",
+        "in_maintenance",
+        "retired"
+      ],
+      "default": "operational",
+      "description": "Statut du drone"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notes techniques"
+    },
+    "alert_at_hours": {
+      "type": "number",
+      "default": 50,
+      "description": "Seuil d'alerte en heures de vol"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Photo du drone"
+    }
+  },
+  "required": [
+    "drone_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

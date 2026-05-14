@@ -16,6 +16,7 @@ import DangerZone from '@/components/profile/DangerZone';
 import CertificationRequest from '@/components/profile/CertificationRequest';
 import ThemeSelector from '@/components/profile/ThemeSelector';
 import SecurityAndPrivacy from '@/components/security/SecurityAndPrivacy';
+import UsernameChanger from '@/components/profile/UsernameChanger';
 import UserSettings from '@/components/settings/UserSettings';
 import { ROLE_CONFIG, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 
@@ -39,39 +40,76 @@ export default function ProfilePage() {
   const [certificationsEnabled, setCertificationsEnabled] = useState(true);
 
   useEffect(() => {
+    let unsubscribe = () => {};
+
     const loadUser = async () => {
       const u = await base44.auth.me();
       setUser(u);
       setForm({
+        display_name: u.display_name || u.full_name || '',
+        username: u.username || '',
         bio: u.bio || '',
         phone: u.phone || '',
         location: u.location || '',
         website: u.website || '',
       });
-    };
-    
-    loadUser().catch(() => base44.auth.redirectToLogin('/profile'));
 
-    // Surveiller les changements de l'entité User en temps réel
-    const unsubscribe = base44.entities.User.subscribe((event) => {
-      if (event.type === 'update' && event.data?.email === user?.email) {
-        setUser(event.data);
-      }
-    });
+      // Subscribe after user is loaded so we have the email
+      unsubscribe = base44.entities.User.subscribe((event) => {
+        if (event.type === 'update' && event.data?.email === u.email) {
+          setUser(event.data);
+          // Sync form with updated user data
+          setForm({
+            display_name: event.data.display_name || event.data.full_name || '',
+            username: event.data.username || '',
+            bio: event.data.bio || '',
+            phone: event.data.phone || '',
+            location: event.data.location || '',
+            website: event.data.website || '',
+          });
+        }
+      });
+    };
+
+    loadUser().catch(() => base44.auth.redirectToLogin('/profile'));
 
     base44.entities.AppSettings.filter({ key: 'certifications_enabled' }).then(settings => {
       if (settings.length > 0) {
         setCertificationsEnabled(settings[0].value === 'true');
       }
     });
+
+    return () => unsubscribe();
   }, []);
 
   const saveMutation = useMutation({
-    mutationFn: () => base44.auth.updateMe(form),
+    mutationFn: async () => {
+      const dataToSave = {
+        display_name: form.display_name,
+        full_name: form.display_name,
+        username: user.username,
+        bio: form.bio,
+        phone: form.phone,
+        location: form.location,
+        website: form.website,
+      };
+      await base44.auth.updateMe(dataToSave);
+      const updated = await base44.auth.me();
+      return updated;
+    },
     onSuccess: (updated) => {
       setUser(updated);
+      setForm({
+        display_name: updated.display_name || updated.full_name || '',
+        username: updated.username || '',
+        bio: updated.bio || '',
+        phone: updated.phone || '',
+        location: updated.location || '',
+        website: updated.website || '',
+      });
       toast.success('Profil mis à jour !');
     },
+    onError: () => toast.error('Erreur lors de la sauvegarde'),
   });
 
   const { data: followers = [] } = useQuery({
@@ -251,7 +289,7 @@ export default function ProfilePage() {
               <h1
                 className="font-grotesk font-bold text-xl"
                 style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.3))' } : {}}
-              >{user.full_name}</h1>
+              >{user.display_name || user.full_name}</h1>
               <VerificationIcons verifications={user.verifications} size="md" />
             </div>
             <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
@@ -295,26 +333,41 @@ export default function ProfilePage() {
         </div>
 
         {/* Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-6 space-y-5"
-          style={isSupreme
-            ? { background: 'linear-gradient(145deg, #1a0c00, #150a00)', border: '1px solid rgba(217,119,6,0.3)', boxShadow: '0 0 30px rgba(245,158,11,0.07)' }
-            : { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }
-          }
-        >
-          <h2 className="font-grotesk font-semibold text-base">Modifier mon profil</h2>
+         <motion.div
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           className="rounded-2xl p-6 space-y-5"
+           style={isSupreme
+             ? { background: 'linear-gradient(145deg, #1a0c00, #150a00)', border: '1px solid rgba(217,119,6,0.3)', boxShadow: '0 0 30px rgba(245,158,11,0.07)' }
+             : { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }
+           }
+         >
+           <h2 className="font-grotesk font-semibold text-base">Modifier mon profil</h2>
 
-          <div>
-            <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Bio</label>
-            <Textarea
-              value={form.bio}
-              onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-              placeholder="Parlez de vous en quelques mots..."
-              className="bg-secondary border-border font-inter text-sm resize-none h-24"
-            />
-          </div>
+           <div>
+             <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Nom d'affichage</label>
+             <Input
+               value={form.display_name}
+               onChange={e => setForm(p => ({ ...p, display_name: e.target.value }))}
+               placeholder="Ex: Jean Dupont"
+               className="bg-secondary border-border font-inter"
+             />
+           </div>
+
+           <UsernameChanger user={user} username={user.username || form.username} onUpdate={(newUsername) => {
+             setForm(p => ({ ...p, username: newUsername }));
+             setUser(u => ({ ...u, username: newUsername }));
+           }} />
+
+           <div>
+             <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Bio</label>
+             <Textarea
+               value={form.bio}
+               onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
+               placeholder="Parlez de vous en quelques mots..."
+               className="bg-secondary border-border font-inter text-sm resize-none h-24"
+             />
+           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

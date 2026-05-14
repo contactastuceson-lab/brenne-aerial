@@ -1,7 +1,6 @@
 {
   "name": "ForumTopic",
   "type": "object",
-  "description": "Sujet de discussion du forum",
   "properties": {
     "title": {
       "type": "string",
@@ -9,58 +8,38 @@
     },
     "content": {
       "type": "string",
-      "description": "Contenu initial du sujet/question"
+      "description": "Contenu principal du sujet"
     },
     "category": {
       "type": "string",
       "enum": [
         "general",
-        "techniques",
-        "projets",
-        "services",
-        "formation",
-        "actualites",
-        "support"
+        "technique",
+        "aide",
+        "partages",
+        "autres"
       ],
       "default": "general",
-      "description": "Catégorie du sujet"
+      "description": "Cat\u00e9gorie du sujet"
     },
     "author": {
       "type": "string",
-      "description": "ID de l'auteur (référence User)"
+      "description": "ID de l'auteur"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Nom de l'auteur"
+    },
+    "author_email": {
+      "type": "string",
+      "description": "Email de l'auteur"
     },
     "tags": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Tags pour catégoriser"
-    },
-    "is_pinned": {
-      "type": "boolean",
-      "default": false,
-      "description": "Épingler en haut du forum"
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "open",
-        "closed",
-        "solved"
-      ],
-      "default": "open",
-      "description": "Statut du sujet"
-    },
-    "priority": {
-      "type": "string",
-      "enum": [
-        "low",
-        "normal",
-        "high",
-        "urgent"
-      ],
-      "default": "normal",
-      "description": "Priorité du sujet"
+      "description": "Tags du sujet"
     },
     "views_count": {
       "type": "number",
@@ -70,20 +49,22 @@
     "replies_count": {
       "type": "number",
       "default": 0,
-      "description": "Nombre de réponses"
+      "description": "Nombre de r\u00e9ponses"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sujet \u00e9pingl\u00e9"
+    },
+    "is_locked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sujet ferm\u00e9"
     },
     "last_reply_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Date de la dernière réponse"
-    },
-    "created_at": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "updated_at": {
-      "type": "string",
-      "format": "date-time"
+      "description": "Date de la derni\u00e8re r\u00e9ponse"
     }
   },
   "required": [

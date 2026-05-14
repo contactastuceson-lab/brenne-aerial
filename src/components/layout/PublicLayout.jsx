@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import OnboardingModal from '@/components/shared/OnboardingModal';
 import EmailVerificationModal from '@/components/shared/EmailVerificationModal';
 import { Outlet, useLocation } from 'react-router-dom';
+import AppHeader from './AppHeader';
+import BottomTabBar from './BottomTabBar';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import AnnouncementBanner from '@/components/shared/AnnouncementBanner';
 import AnnouncementPopup from '@/components/shared/AnnouncementPopup';
-import DonationFloatingButton from '@/components/DonationFloatingButton';
-import ChatbotWidget from '@/components/ChatbotWidget';
+
 import MaintenancePage from '@/pages/MaintenancePage';
 import SiteOfflinePage from '@/pages/SiteOfflinePage';
 import BannedPage from '@/pages/BannedPage';
@@ -19,7 +20,7 @@ export default function PublicLayout() {
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const hideFooter = location.pathname === '/messages';
+  const hideFooter = true; // replaced by BottomTabBar
   const hideFloatingButton = location.pathname === '/messages';
 
   // Register device session when user logs in
@@ -109,14 +110,26 @@ export default function PublicLayout() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AnnouncementBanner user={user} />
-      <Navbar />
+      
+      {/* Desktop: Navbar */}
+      <div className="hidden md:block">
+        <Navbar />
+      </div>
+      
+      {/* Mobile: AppHeader */}
+      <div className="md:hidden">
+        <AppHeader />
+      </div>
+      
       <main className="flex-1">
         <Outlet />
       </main>
-      {!hideFooter && <Footer />}
       <AnnouncementPopup user={user} />
-      {!hideFloatingButton && <DonationFloatingButton />}
-      {!hideFloatingButton && <ChatbotWidget />}
+      
+      {/* Mobile: BottomTabBar */}
+      <div className="md:hidden">
+        <BottomTabBar />
+      </div>
     </div>
   );
 }

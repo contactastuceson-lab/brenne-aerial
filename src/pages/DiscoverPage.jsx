@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import BadgePopup from '@/components/ui/BadgePopup';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ReportModal from '@/components/shared/ReportModal';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import EmployeeProfileModal from '@/components/admin/EmployeeProfileModal';
@@ -35,13 +35,13 @@ const BADGE_CONFIG = {
 };
 
 export default function DiscoverPage() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
   const [reportTarget, setReportTarget] = useState(null);
   const [activeTab, setActiveTab] = useState('members');
   const [filterPole, setFilterPole] = useState('all');
   const [viewEmployee, setViewEmployee] = useState(null);
-  const [viewProfile, setViewProfile] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function DiscoverPage() {
     queryKey: ['all-users'],
     queryFn: async () => {
       const res = await base44.functions.invoke('getPublicUsers', {});
-      return res.data.users || [];
+      return Array.isArray(res.data) ? res.data : res.data.users || [];
     },
     enabled: !!user,
   });
@@ -296,7 +296,7 @@ export default function DiscoverPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: i * 0.04 }}
-                  onClick={() => setViewProfile(profile)}
+                  onClick={() => navigate(`/@${profile.username}`)}
                   className={`group relative rounded-2xl overflow-hidden hover-lift cursor-pointer ${isSupreme ? 'border-2' : 'border border-border bg-card'}`}
                   style={isSupreme ? {
                     background: 'linear-gradient(145deg, #0d0800, #1a0e00, #0d0800)',
@@ -350,12 +350,15 @@ export default function DiscoverPage() {
                     </div>
 
                     <div className="flex items-center gap-1 mb-0.5">
-                      <h3
-                        className="font-grotesk font-semibold text-sm truncate"
-                        style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-                      >{profile.full_name}</h3>
-                      <VerificationIcons verifications={profile.verifications} />
-                    </div>
+                       <h3
+                         className="font-grotesk font-semibold text-sm truncate"
+                         style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+                       >{profile.display_name || profile.full_name}</h3>
+                       <VerificationIcons verifications={profile.verifications} />
+                     </div>
+                     {profile.username && (
+                       <p className="font-mono text-xs text-muted-foreground mb-2">@{profile.username}</p>
+                     )}
                     <div className="flex flex-col gap-1 mb-2">
                       {profile.location && (
                         <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
@@ -482,10 +485,6 @@ export default function DiscoverPage() {
 
       {viewEmployee && (
         <EmployeeProfileModal employee={viewEmployee} onClose={() => setViewEmployee(null)} />
-      )}
-
-      {viewProfile && (
-        <UserProfileModal profile={viewProfile} onClose={() => setViewProfile(null)} />
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { calculatePrice, formatPrice, SERVICE_PRICES, getServicePrices } from '@/lib/droneUtils';
 import { toast } from 'sonner';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
+import AddressAutocomplete from '@/components/quote/AddressAutocomplete';
 
 const SERVICE_OPTIONS = [
   { key: 'video_evenement',      icon: Video,       label: 'Vidéo événement' },
@@ -91,9 +92,10 @@ export default function QuotePage() {
   };
 
   const handleSubmit = async () => {
+    if (sending) return; // anti double-submit
     setSending(true);
     try {
-      await base44.entities.Quote.create({
+      const quote = await base44.entities.Quote.create({
         ...form,
         fichiers_urls: uploadedFiles,
         prix_estime: estimatedPrice,
@@ -104,6 +106,8 @@ export default function QuotePage() {
         clientEmail: form.client_email,
         serviceType: form.service_type,
         estimatedPrice: estimatedPrice,
+        quoteId: quote?.id || '',
+        dateStr: form.date_souhaitee || null,
       });
       setSent(true);
     } catch (err) {
@@ -243,7 +247,11 @@ export default function QuotePage() {
                 </div>
                 <div>
                   <label className="font-inter text-xs text-muted-foreground mb-2 block">Lieu de la prestation</label>
-                  <Input placeholder="Adresse, ville..." value={form.location} onChange={e => u('location', e.target.value)} className="bg-card border-border" />
+                  <AddressAutocomplete
+                    value={form.location}
+                    onChange={val => u('location', val)}
+                    placeholder="Adresse, ville, pays..."
+                  />
                 </div>
                 <div>
                   <label className="font-inter text-xs text-muted-foreground mb-2 block">Durée estimée *</label>

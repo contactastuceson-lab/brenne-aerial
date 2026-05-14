@@ -6,14 +6,11 @@ import { useUserPreferences } from '@/hooks/useUserPreferences';
  * Should be placed inside AuthProvider to have access to user
  */
 export function PreferencesApplier({ user }) {
-  const { preferences, isLoading } = useUserPreferences(user);
-
+  // Apply theme from localStorage on mount
   useEffect(() => {
-    if (isLoading || !preferences) return;
-
-    // Apply all preferences globally
-    applyAllPreferences(preferences);
-  }, [preferences, isLoading]);
+    const savedTheme = localStorage.getItem('theme-preference') || 'auto';
+    applyTheme(savedTheme);
+  }, []);
 
   return null; // This component doesn't render anything
 }

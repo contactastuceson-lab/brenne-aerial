@@ -1,18 +1,40 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { jsPDF } from 'npm:jspdf@4.0.0';
 
-const LOGO_URL = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/6de51adde_1775602844308.png';
-const COMPANY_NAME = 'Brenne Aerial';
-const COMPANY_EMAIL = 'contact@brenneaerial.fr';
-const COMPANY_PHONE = '+33 (0) 6 XX XX XX XX';
-const COMPANY_ADDRESS = 'Brenne, Creuse, France';
+const LOGO_URL = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/ff90ec6fd_1775602844308.png';
+
+const SERVICE_LABELS = {
+  video_evenement: 'Vidéo événement',
+  inspection_toiture: 'Inspection toiture',
+  suivi_chantier: 'Suivi chantier',
+  captation_particulier: 'Captation particulier',
+  captation_entreprise: 'Captation entreprise',
+  retour_temps_reel: 'Retour temps réel',
+  photogrammetrie_3d: 'Photogrammétrie 3D',
+  cartographie_releves: 'Cartographie / Relevés',
+  thermographie: 'Thermographie infrarouge',
+  surveillance: 'Surveillance / Gardiennage',
+  contenu_social: 'Contenu réseaux sociaux',
+  reportage: 'Reportage / Documentaire',
+  mariage_aero: 'Mariage photo aérienne',
+  immobilier_virtuelle: 'Visite immobilière virtuelle',
+  agriculture: 'Agriculture / Monitoring',
+  autre: 'Autre prestation',
+};
+
+const DURATION_LABELS = {
+  '1h': '1 heure',
+  '2-3h': '2 à 3 heures',
+  'demi-journee': 'Demi-journée',
+  'journee': 'Journée complète',
+  'multi-jours': 'Multi-jours',
+};
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user?.role === 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { quoteId } = await req.json();
@@ -20,217 +42,74 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Quote ID required' }, { status: 400 });
     }
 
-    // Fetch quote and services
-    const quote = await base44.entities.Quote.filter({ id: quoteId });
-    if (!quote.length) {
+    const quotes = await base44.entities.Quote.filter({ id: quoteId });
+    if (!quotes.length) {
       return Response.json({ error: 'Quote not found' }, { status: 404 });
     }
+    const q = quotes[0];
 
-    const q = quote[0];
-    const services = await base44.entities.Service.list();
-    const service = services.find(s => s.name === q.service_type);
+    const quoteRef = q.id.slice(-8).toUpperCase();
+    const quoteDate = new Date(q.created_date || Date.now()).toLocaleDateString('fr-FR');
+    const serviceLabel = SERVICE_LABELS[q.service_type] || q.service_type || 'Prestation drone';
+    const durationLabel = DURATION_LABELS[q.duree_estimee] || q.duree_estimee || '';
+    const displayPrice = q.prix_final || q.prix_estime;
+    const fmtEur = (n) => n ? `${Number(n).toFixed(2)} €` : 'Sur devis';
+    const dateStr = q.date_souhaitee ? new Date(q.date_souhaitee).toLocaleDateString('fr-FR') : 'Non définie';
 
-    // Create PDF
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    let y = 15;
+    const prompt = `Tu es un expert en création de documents professionnels. Génère un devis HTML complet, élégant et professionnel pour une entreprise de drone.
 
-    // Header
-    doc.setFillColor(13, 26, 46);
-    doc.rect(0, 0, pageWidth, 50, 'F');
+DONNÉES DU DEVIS:
+- Référence: DEV-${quoteRef}
+- Date d'émission: ${quoteDate}
+- Client: ${q.client_name || 'N/A'}
+- Email client: ${q.client_email || 'N/A'}
+- Téléphone: ${q.client_phone || 'N/A'}
+- Société: ${q.company || 'Particulier'}
+- Service demandé: ${serviceLabel}
+- Durée estimée: ${durationLabel || 'Non précisée'}
+- Date souhaitée: ${dateStr}
+- Horaire: ${q.horaire || 'Non précisé'}
+- Lieu: ${q.location || 'Non précisé'}
+- Description: ${q.description || 'Aucune description fournie'}
+- Prix estimé HT: ${fmtEur(displayPrice)}
+- Notes admin: ${q.admin_notes || ''}
+- Statut: ${q.status || 'pending'}
 
-    // Company logo/name
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
-    doc.setFont(undefined, 'bold');
-    doc.text(COMPANY_NAME, 15, 25);
+ENTREPRISE PRESTATAIRE:
+- Nom: Brenne Aerial
+- Adresse: Brenne, Indre (36), France
+- Email: contact@brenneaerial.fr
+- Web: brenneaerial.fr
+- SIRET: En cours d'enregistrement
+- Spécialité: Opérateur drone professionnel certifié DGAC
 
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    doc.setTextColor(106, 174, 212);
-    doc.text('Devis Professionnel', 15, 35);
+INSTRUCTIONS HTML:
+- Génère un document HTML COMPLET avec <html>, <head>, <body> et CSS inline très riche
+- Format A4 (210mm × 297mm), width: 794px pour l'affichage
+- Style: professionnel, moderne, bleu marine (#0a1628) et bleu ciel (#38aadc) comme couleurs principales
+- IMPORTANT: Intègre le logo en haut à gauche avec cette URL: ${LOGO_URL} (max-height: 90px)
+- Header: logo + nom entreprise + badge "DEVIS PROFESSIONNEL" + référence + date
+- Section client et prestataire côte à côte dans des cartes
+- Tableau des prestations avec colonnes: Désignation, Quantité, P.U. HT, Total HT
+- Bloc totaux (HT, TVA non applicable art.293B CGI, TTC) en bas à droite
+- Si des notes admin existent, affiche-les dans un encadré doré/ambre
+- Conditions générales en bas: validité 30 jours, frais déplacement >30km en sus, soumis DGAC
+- Footer avec infos entreprise et numéro de page
+- Utilise des dégradés, ombres, bordures arrondies pour un rendu premium
+- Tout le CSS doit être inline dans les balises style="" ou dans un <style> dans le <head>
+- Le document doit être prêt à être converti en PDF via html2canvas
+- Assure-toi que les accents français s'affichent correctement (UTF-8)
+- NE mets PAS de markdown, JUSTE le HTML pur
 
-    // Invoice number and date
-    doc.setTextColor(180, 180, 180);
-    doc.setFontSize(9);
-    doc.text(`Devis #${q.id.slice(0, 8).toUpperCase()}`, pageWidth - 50, 25);
-    doc.text(`Date: ${new Date(q.created_date).toLocaleDateString('fr-FR')}`, pageWidth - 50, 35);
+Génère uniquement le HTML, rien d'autre.`;
 
-    y = 65;
-
-    // Client info section
-    doc.setTextColor(58, 106, 122);
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'bold');
-    doc.text('CLIENT', 15, y);
-
-    y += 8;
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    doc.text(`${q.client_name}`, 15, y);
-    y += 6;
-    doc.text(`${q.client_email}`, 15, y);
-    y += 6;
-    if (q.client_phone) {
-      doc.text(`${q.client_phone}`, 15, y);
-      y += 6;
-    }
-    if (q.company) {
-      doc.text(`Entreprise: ${q.company}`, 15, y);
-      y += 6;
-    }
-
-    y += 4;
-
-    // Company info section
-    doc.setTextColor(58, 106, 122);
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'bold');
-    doc.text('PRESTATAIRE', pageWidth / 2 + 10, 65);
-
-    y = 73;
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'normal');
-    doc.text(COMPANY_NAME, pageWidth / 2 + 10, y);
-    y += 5;
-    doc.text(COMPANY_ADDRESS, pageWidth / 2 + 10, y);
-    y += 5;
-    doc.text(COMPANY_EMAIL, pageWidth / 2 + 10, y);
-    y += 5;
-    doc.text(COMPANY_PHONE, pageWidth / 2 + 10, y);
-
-    y = 110;
-
-    // Service details
-    doc.setTextColor(58, 106, 122);
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'bold');
-    doc.text('DÉTAILS DU DEVIS', 15, y);
-
-    y += 8;
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'normal');
-
-    const details = [
-      ['Type de service:', q.service_type],
-      ['Date souhaitée:', new Date(q.date_souhaitee).toLocaleDateString('fr-FR')],
-      ['Lieu:', q.location || '-'],
-      ['Durée estimée:', q.duree_estimee || '-'],
-      ['Description:', q.description || '-'],
-    ];
-
-    details.forEach(([label, value]) => {
-      doc.setFont(undefined, 'bold');
-      doc.text(label, 15, y);
-      doc.setFont(undefined, 'normal');
-      doc.text(value, 60, y);
-      y += 6;
+    const htmlContent = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt,
+      model: 'claude_sonnet_4_6',
     });
 
-    y += 6;
+    return Response.json({ html: htmlContent, ref: quoteRef });
 
-    // Pricing table
-    doc.setFillColor(30, 48, 72);
-    doc.setTextColor(255, 255, 255);
-    doc.setFont(undefined, 'bold');
-    doc.setFontSize(10);
-
-    const tableY = y;
-    doc.rect(15, tableY, pageWidth - 30, 8, 'F');
-    doc.text('Designation', 20, tableY + 6);
-    doc.text('Tarif', pageWidth - 70, tableY + 6);
-    doc.text('Montant', pageWidth - 35, tableY + 6);
-
-    y = tableY + 10;
-    doc.setTextColor(0, 0, 0);
-    doc.setFont(undefined, 'normal');
-    doc.setFontSize(9);
-
-    let subtotal = 0;
-
-    // Base price
-    if (service?.base_price) {
-      const amount = service.base_price;
-      doc.text('Prix de base', 20, y);
-      doc.text(`${amount.toFixed(2)}€`, pageWidth - 70, y);
-      doc.text(`${amount.toFixed(2)}€`, pageWidth - 35, y);
-      subtotal += amount;
-      y += 6;
-    }
-
-    // Hourly rate (if applicable)
-    if (q.duree_estimee && service?.price_per_hour) {
-      const hours = q.duree_estimee === '1h' ? 1 : q.duree_estimee === '2-3h' ? 2.5 : q.duree_estimee === 'demi-journee' ? 4 : q.duree_estimee === 'journee' ? 8 : 0;
-      if (hours > 0) {
-        const amount = service.price_per_hour * hours;
-        doc.text(`Tarif horaire (${hours}h)`, 20, y);
-        doc.text(`${service.price_per_hour.toFixed(2)}€/h`, pageWidth - 70, y);
-        doc.text(`${amount.toFixed(2)}€`, pageWidth - 35, y);
-        subtotal += amount;
-        y += 6;
-      }
-    }
-
-    // Admin notes / custom pricing
-    if (q.prix_final && q.prix_final !== subtotal) {
-      y += 2;
-      doc.setFillColor(240, 248, 255);
-      doc.rect(15, y - 2, pageWidth - 30, 6, 'F');
-      doc.setTextColor(58, 106, 122);
-      doc.setFont(undefined, 'bold');
-      doc.text('Prix final proposé', 20, y + 2);
-      doc.text(`${q.prix_final.toFixed(2)}€`, pageWidth - 35, y + 2);
-      y += 6;
-    }
-
-    // Total
-    y += 3;
-    doc.setFillColor(13, 26, 46);
-    doc.rect(15, y, pageWidth - 30, 8, 'F');
-    doc.setTextColor(58, 170, 220);
-    doc.setFont(undefined, 'bold');
-    doc.setFontSize(11);
-    const total = q.prix_final || subtotal;
-    doc.text('TOTAL', 20, y + 6);
-    doc.text(`${total.toFixed(2)}€`, pageWidth - 35, y + 6);
-
-    y += 12;
-
-    // Notes
-    if (q.admin_notes) {
-      doc.setTextColor(58, 106, 122);
-      doc.setFont(undefined, 'bold');
-      doc.setFontSize(10);
-      doc.text('Notes:', 15, y);
-      y += 6;
-      doc.setTextColor(0, 0, 0);
-      doc.setFont(undefined, 'normal');
-      doc.setFontSize(9);
-      const noteLines = doc.splitTextToSize(q.admin_notes, pageWidth - 30);
-      doc.text(noteLines, 15, y);
-      y += noteLines.length * 4 + 4;
-    }
-
-    // Footer
-    doc.setTextColor(106, 174, 212);
-    doc.setFontSize(8);
-    doc.setFont(undefined, 'normal');
-    doc.text('Ce devis est valable 30 jours à partir de la date d\'émission.', 15, pageHeight - 15);
-    doc.text(`© ${new Date().getFullYear()} ${COMPANY_NAME} - ${COMPANY_EMAIL}`, 15, pageHeight - 10);
-
-    // Return PDF
-    const pdfBytes = doc.output('arraybuffer');
-    return new Response(pdfBytes, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="devis-${q.id.slice(0, 8)}.pdf"`,
-      },
-    });
   } catch (err) {
     console.error('PDF generation error:', err);
     return Response.json({ error: err.message }, { status: 500 });

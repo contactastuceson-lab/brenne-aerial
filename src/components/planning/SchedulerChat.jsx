@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { Bot, Send, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReactMarkdown from 'react-markdown';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export default function SchedulerChat() {
   const [open, setOpen] = useState(false);
@@ -12,17 +14,58 @@ export default function SchedulerChat() {
   const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
 
-  // Create conversation on first open
+  // Create conversation on first open, with user context + available slots
   useEffect(() => {
-    if (open && !conversation) {
-      base44.agents.createConversation({
+    if (!open || conversation) return;
+
+    const init = async () => {
+      // Fetch user and available slots in parallel
+      const [user, allAppointments] = await Promise.all([
+        base44.auth.me().catch(() => null),
+        base44.entities.Appointment.list('-date', 200),
+      ]);
+
+      // Filter available slots (confirmed + no client_email)
+      const available = allAppointments.filter(
+        a => a.status === 'confirmed' && (!a.client_email || a.client_email.trim() === '')
+      );
+
+      // Build context message
+      let contextMsg = '=== CONTEXTE SYSTÈME (ne pas afficher au client) ===\n\n';
+
+      if (user) {
+        contextMsg += `UTILISATEUR CONNECTÉ :\n- Nom : ${user.full_name || 'Non renseigné'}\n- Email : ${user.email}\n\nUtilise ces informations pour pré-remplir le nom et l'email lors d'une réservation, sans les redemander sauf si l'utilisateur veut les modifier.\n\n`;
+      } else {
+        contextMsg += `UTILISATEUR : Non connecté (invité).\n\n`;
+      }
+
+      if (available.length === 0) {
+        contextMsg += `CRÉNEAUX DISPONIBLES : Aucun créneau disponible pour le moment.\n`;
+      } else {
+        contextMsg += `CRÉNEAUX DISPONIBLES (${available.length} au total) :\n`;
+        available.forEach(a => {
+          const dateLabel = format(new Date(a.date), 'EEEE d MMMM yyyy', { locale: fr });
+          contextMsg += `- ID: ${a.id} | ${dateLabel} | ${a.time_start}${a.time_end ? ' → ' + a.time_end : ''}${a.service_type ? ' | ' + a.service_type : ''}${a.location ? ' | ' + a.location : ''}\n`;
+        });
+        contextMsg += `\nPour réserver un créneau, utilise l'ID correspondant pour mettre à jour l'Appointment.`;
+      }
+
+      const conv = await base44.agents.createConversation({
         agent_name: 'appointment_scheduler',
         metadata: { name: 'Planification RDV' },
-      }).then(conv => {
-        setConversation(conv);
-        setMessages(conv.messages || []);
       });
-    }
+
+      // Send context as first system-like user message (hidden)
+      await base44.agents.addMessage(conv, {
+        role: 'user',
+        content: contextMsg,
+      });
+
+      setConversation(conv);
+      setMessages(conv.messages || []);
+    };
+
+    init();
   }, [open]);
 
   // Subscribe to real-time updates
@@ -94,7 +137,7 @@ export default function SchedulerChat() {
                 <Loader2 className="w-5 h-5 text-primary animate-spin" />
               </div>
             )}
-            {messages.map((msg, i) => (
+            {messages.filter(msg => !msg.content?.startsWith('=== CONTEXTE SYSTÈME')).map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${
                   msg.role === 'user'

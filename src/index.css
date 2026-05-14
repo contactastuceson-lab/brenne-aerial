@@ -90,6 +90,11 @@
   }
 }
 
+/* Safe area for bottom tab bar */
+main {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: hsl(var(--background)); }

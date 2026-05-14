@@ -27,8 +27,8 @@ const STATS = [
 
 function useIsOpen() {
   const now = new Date();
-  const day = now.getDay(); // 0 = dimanche
-  if (day === 0) return false;
+  const day = now.getDay(); // 0 = dimanche, 6 = samedi
+  if (day === 0) return false; // dimanche fermé
   const h = now.getHours();
   const m = now.getMinutes();
   const total = h * 60 + m;
@@ -37,12 +37,44 @@ function useIsOpen() {
   return matin || apresmidi;
 }
 
+function getStatusMood() {
+  const now = new Date();
+  const day = now.getDay();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const total = h * 60 + m;
+
+  if (day === 0) return { emoji: '😴', label: 'C\'est dimanche.', sub: 'On recharge les batteries (et les drones). On se retrouve lundi !', color: 'border-purple-400/30 bg-purple-400/5 text-purple-400' };
+
+  const matin = total >= 10 * 60 && total < 12 * 60 + 30;
+  const apresmidi = total >= 14 * 60 + 30 && total < 18 * 60 + 30;
+
+  if (matin || apresmidi) {
+    return { emoji: '🟢', label: 'On est là !', sub: 'L\'équipe est disponible et répond à vos messages en direct.', color: 'border-green-400/30 bg-green-400/5 text-green-400' };
+  }
+
+  if (total >= 12 * 60 + 30 && total < 14 * 60 + 30) {
+    return { emoji: '🍽️', label: 'Pause méridienne.', sub: 'On est en train de manger — les drones aussi ont faim. Revenez à 14h30 !', color: 'border-amber-400/30 bg-amber-400/5 text-amber-400' };
+  }
+
+  if (total >= 18 * 60 + 30 && total < 22 * 60) {
+    return { emoji: '🌅', label: 'On a rangé les drones.', sub: 'La journée est terminée pour nous. On vous répond demain dès 10h00 !', color: 'border-orange-400/30 bg-orange-400/5 text-orange-400' };
+  }
+
+  if (total >= 22 * 60 || total < 6 * 60) {
+    return { emoji: '🌙', label: 'La nuit, c\'est fait pour dormir.', sub: 'Même les pilotes de drone ont besoin de sommeil. On se retrouve demain à 10h00 !', color: 'border-indigo-400/30 bg-indigo-400/5 text-indigo-400' };
+  }
+
+  return { emoji: '☕', label: 'On prépare le café.', sub: 'On ouvre à 10h00. Le temps de décoller les yeux, on arrive !', color: 'border-amber-400/30 bg-amber-400/5 text-amber-400' };
+}
+
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', subject: 'devis', message: '' });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [activeField, setActiveField] = useState(null);
   const isOpen = useIsOpen();
+  const mood = getStatusMood();
   const u = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleSubmit = async (e) => {
@@ -136,6 +168,19 @@ export default function ContactPage() {
             <p className="font-inter text-muted-foreground text-lg max-w-lg mx-auto">
               Une idée, un projet, une urgence — notre équipe vous répond sous 48h.
             </p>
+
+            {/* Mood status pill */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }}
+              className={`mt-6 inline-flex items-center gap-3 px-6 py-3 rounded-full border text-sm font-inter backdrop-blur-sm ${mood.color}`}
+            >
+              <span className="text-xl">{mood.emoji}</span>
+              <div className="text-left">
+                <span className="font-grotesk font-bold">{mood.label}</span>
+                <span className="ml-2 opacity-70 hidden sm:inline">{mood.sub}</span>
+              </div>
+            </motion.div>
+            <p className="font-inter text-xs text-muted-foreground mt-2 sm:hidden opacity-70">{mood.sub}</p>
           </motion.div>
 
           {/* Stats row */}
@@ -186,17 +231,27 @@ export default function ContactPage() {
                 <Clock className="w-4 h-4 text-primary" />
                 <h3 className="font-grotesk font-bold text-sm">Horaires</h3>
               </div>
-              <div className="space-y-2">
-                {[
-                  { j: 'Lun — Ven', h: '8h00 — 19h00', open: true },
-                  { j: 'Samedi', h: '9h00 — 17h00', open: true },
-                  { j: 'Dimanche', h: 'Fermé', open: false },
-                ].map(({ j, h, open }) => (
-                  <div key={j} className="flex items-center justify-between">
-                    <span className="font-inter text-sm text-muted-foreground">{j}</span>
-                    <span className={`font-mono text-xs font-semibold ${open ? 'text-green-400' : 'text-muted-foreground'}`}>{h}</span>
+              <div className="space-y-3">
+                <div className="rounded-lg border border-border bg-secondary/30 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-inter text-sm font-medium text-foreground">Lundi — Samedi</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-green-400/10 text-green-400 border border-green-400/20">Ouvert</span>
                   </div>
-                ))}
+                  <div className="space-y-1.5 pl-1 border-l-2 border-green-400/30">
+                    <div className="flex justify-between items-center">
+                      <span className="font-inter text-xs text-muted-foreground">Matin</span>
+                      <span className="font-mono text-xs font-bold text-green-400">10h00 — 12h30</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-inter text-xs text-muted-foreground">Après-midi</span>
+                      <span className="font-mono text-xs font-bold text-green-400">14h30 — 18h30</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-lg border border-border bg-secondary/30 p-3 flex items-center justify-between">
+                  <span className="font-inter text-sm font-medium text-foreground">Dimanche</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-destructive/10 text-destructive border border-destructive/20">Fermé</span>
+                </div>
               </div>
             </motion.div>
 
@@ -240,22 +295,38 @@ export default function ContactPage() {
                     <Clock className="w-10 h-10 text-amber-400" />
                   </div>
                   <h3 className="font-grotesk font-black text-2xl mb-3 text-amber-400">Hors des horaires</h3>
-                  <p className="font-inter text-muted-foreground max-w-sm mb-5 leading-relaxed">
-                    Notre équipe n'est pas disponible pour le moment.<br />
+                  <div className={`inline-flex items-center gap-3 px-5 py-2.5 rounded-full border text-sm font-inter mb-4 ${mood.color}`}>
+                    <span className="text-xl">{mood.emoji}</span>
+                    <div className="text-left">
+                      <span className="font-grotesk font-bold">{mood.label}</span>
+                    </div>
+                  </div>
+                  <p className="font-inter text-muted-foreground max-w-sm mb-2 leading-relaxed text-sm">{mood.sub}</p>
+                  <p className="font-inter text-muted-foreground max-w-sm mb-5 leading-relaxed text-sm">
                     Le formulaire de contact est accessible uniquement pendant nos horaires d'ouverture.
                   </p>
-                  <div className="bg-card border border-border rounded-xl p-5 text-left w-full max-w-xs space-y-2 mb-6">
-                    <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-3">Horaires d'ouverture</p>
-                    {[
-                      { j: 'Lun — Sam', h: '10h00 — 12h30' },
-                      { j: 'Lun — Sam', h: '14h30 — 18h30' },
-                      { j: 'Dimanche', h: 'Fermé' },
-                    ].map(({ j, h }, i) => (
-                      <div key={i} className="flex justify-between items-center">
-                        <span className="font-inter text-sm text-muted-foreground">{j}</span>
-                        <span className={`font-mono text-xs font-bold ${h === 'Fermé' ? 'text-destructive' : 'text-green-400'}`}>{h}</span>
+                  <div className="bg-card border border-border rounded-xl p-5 text-left w-full max-w-xs mb-6 space-y-3">
+                    <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">Horaires d'ouverture</p>
+                    <div className="rounded-lg border border-green-400/20 bg-green-400/5 p-3 space-y-1.5">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-inter text-sm font-semibold text-foreground">Lun — Sam</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-green-400/10 text-green-400 border border-green-400/20">Ouvert</span>
                       </div>
-                    ))}
+                      <div className="pl-2 border-l-2 border-green-400/30 space-y-1">
+                        <div className="flex justify-between">
+                          <span className="font-inter text-xs text-muted-foreground">Matin</span>
+                          <span className="font-mono text-xs font-bold text-green-400">10h00 — 12h30</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-inter text-xs text-muted-foreground">Après-midi</span>
+                          <span className="font-mono text-xs font-bold text-green-400">14h30 — 18h30</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 flex justify-between items-center">
+                      <span className="font-inter text-sm text-foreground">Dimanche</span>
+                      <span className="font-mono text-xs font-bold text-destructive">Fermé</span>
+                    </div>
                   </div>
                   <p className="font-inter text-xs text-muted-foreground">
                     Vous pouvez aussi nous écrire à{' '}

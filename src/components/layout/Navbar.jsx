@@ -1,56 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Bell, User, MessageCircle, Compass, LayoutDashboard, LogOut, ChevronDown, FolderOpen, Warehouse, Building2, Users, Shield, Building, ZoomIn, ArrowLeftRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { Home, FileText, Compass, MessageCircle, Bell, User, LogOut, LayoutDashboard, Menu, X, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
-
-const EXTRA_LINKS = [
-  { to: '/forum',           label: 'Forum',                 icon: MessageCircle,   desc: 'Communauté & discussions' },
-  { to: '/espace-client',   label: 'Espace Client',         icon: FolderOpen,      desc: 'Vos fichiers & rapports' },
-  { to: '/garage',          label: 'Garage Drones',         icon: Warehouse,       desc: 'Notre flotte' },
-  { to: '/partenaires',     label: 'Partenaires',           icon: Building2,       desc: 'Notre réseau' },
-  { to: '/parrainage',      label: 'Parrainage',            icon: Users,           desc: 'Gagnez des crédits' },
-  { to: '/avant-apres',     label: 'Avant / Après',         icon: ArrowLeftRight,  desc: 'Galerie comparaisons' },
-  { to: '/reglementation',  label: 'Réglementation',        icon: Shield,          desc: 'Guide vol drone' },
-  { to: '/simulateur-vue',  label: 'Simulateur de vue',     icon: Building,        desc: 'Outil immobilier' },
-  { to: '/comparateur',     label: 'Comparateur résolution',icon: ZoomIn,          desc: 'Qualité photo' },
-];
+import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_LINKS = [
-  { to: '/', label: 'Accueil' },
-  { to: '/about', label: 'À propos' },
-  { to: '/services', label: 'Services' },
+  { to: '/',         label: 'Accueil' },
+  { to: '/discover', label: 'Explorer' },
   { to: '/portfolio', label: 'Portfolio' },
-  { to: '/planning', label: 'Planning' },
-  { to: '/blog', label: 'Blog' },
-  { to: '/contact', label: 'Contact' },
+  { to: '/planning',  label: 'Planning' },
+  { to: '/blog',      label: 'Blog' },
+  { to: '/forum',     label: 'Forum' },
+];
+
+const TOOLS = [
+  { to: '/calculateur',      label: 'Calculateur de prix' },
+  { to: '/garage',           label: 'Garage Drones' },
+  { to: '/partenaires',      label: 'Partenaires' },
+  { to: '/parrainage',       label: 'Parrainage' },
+  { to: '/avant-apres',      label: 'Avant / Après' },
+  { to: '/reglementation',   label: 'Réglementation' },
+  { to: '/simulateur-vue',   label: 'Simulateur de vue' },
+  { to: '/comparateur',      label: 'Comparateur résolution' },
+  { to: '/flash-delivery',   label: 'Flash Delivery' },
+  { to: '/espace-client',    label: 'Espace Client' },
 ];
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [user, setUser] = useState(null);
-  const [extraOpen, setExtraOpen] = useState(false);
-  const [mobileExtraOpen, setMobileExtraOpen] = useState(false);
-  const extraRef = useRef(null);
   const location = useLocation();
-
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (extraRef.current && !extraRef.current.contains(e.target)) setExtraOpen(false);
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  const [user, setUser] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(auth => {
@@ -58,286 +40,240 @@ export default function Navbar() {
     });
   }, []);
 
-  const { data: notifs = [], refetch: refetchNotifs } = useQuery({
-    queryKey: ['nav-notifs', user?.email],
+  const { data: notifs = [] } = useQuery({
+    queryKey: ['navbar-notifs', user?.email],
     queryFn: () => base44.entities.Notification.filter({ user_email: user.email, is_read: false }),
     enabled: !!user?.email,
     refetchInterval: 15000,
   });
 
-  // Real-time subscription for notifications
-  useEffect(() => {
-    if (!user?.email) return;
-    const unsub = base44.entities.Notification.subscribe((event) => {
-      if (event.data?.user_email === user.email) {
-        refetchNotifs();
-      }
-    });
-    return unsub;
-  }, [user?.email, refetchNotifs]);
-
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
+  };
 
   return (
-    <nav className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'glass shadow-lg' : 'glass'}`}>
-      <div className="max-w-7xl mx-auto px-5 lg:px-10 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="relative w-8 h-8">
-            <div className="absolute inset-0 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition-colors" />
-            <svg viewBox="0 0 32 32" className="w-8 h-8 relative z-10" fill="none">
-              <path d="M16 4 L28 10 L28 22 L16 28 L4 22 L4 10 Z" stroke="hsl(205 90% 58%)" strokeWidth="1.5" fill="none" />
-              <circle cx="16" cy="16" r="3" fill="hsl(205 90% 58%)" />
-              <path d="M16 4 L16 13 M16 19 L16 28 M4 10 L13 13.5 M19 18.5 L28 22 M4 22 L13 18.5 M19 13.5 L28 10" stroke="hsl(205 90% 58%)" strokeWidth="1" opacity="0.5" />
-            </svg>
-          </div>
-          <div>
-            <span className="font-grotesk font-bold text-lg text-foreground tracking-tight">
-              Brenne <span className="text-primary">Aerial</span>
-            </span>
-          </div>
-        </Link>
+    <nav className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/60">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link to="/" className="flex-shrink-0">
+            <div className="text-xl font-grotesk font-bold gradient-text">Brenne Aerial</div>
+          </Link>
 
-        {/* Desktop links */}
-        <div className="hidden lg:flex items-center gap-1">
-          {NAV_LINKS.map(link => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className={`px-3 py-1.5 rounded-lg font-inter text-sm transition-all duration-200 ${
-                isActive(link.to)
-                  ? 'text-primary bg-primary/10'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {/* Desktop Nav Links */}
+          <div className="hidden md:flex items-center gap-1">
+            {NAV_LINKS.map(link => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`px-3 py-2 rounded-lg text-sm font-inter transition-colors ${
+                  isActive(link.to)
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
 
-          {/* Dropdown "Outils & Plus" */}
-          <div className="relative" ref={extraRef}>
-            <button
-              onClick={() => setExtraOpen(v => !v)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-inter text-sm transition-all duration-200 ${
-                extraOpen ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-              }`}
-            >
-              Outils & Plus <ChevronDown className={`w-3.5 h-3.5 transition-transform ${extraOpen ? 'rotate-180' : ''}`} />
-            </button>
-            <AnimatePresence>
-              {extraOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-full left-0 mt-2 w-64 glass border border-border rounded-xl shadow-xl overflow-hidden z-50"
-                >
-                  {EXTRA_LINKS.map(link => {
-                    const Icon = link.icon;
-                    return (
+            {/* Tools Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setToolsOpen(!toolsOpen)}
+                className={`px-3 py-2 rounded-lg text-sm font-inter flex items-center gap-1.5 transition-colors ${
+                  toolsOpen
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Outils
+                <ChevronDown className={`w-4 h-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {toolsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full left-0 mt-1 w-48 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-50"
+                  >
+                    {TOOLS.map(tool => (
                       <Link
-                        key={link.to}
-                        to={link.to}
-                        onClick={() => setExtraOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-primary/5 transition-colors group"
+                        key={tool.to}
+                        to={tool.to}
+                        onClick={() => setToolsOpen(false)}
+                        className={`block px-4 py-2.5 text-sm font-inter border-b border-border/50 last:border-b-0 transition-colors ${
+                          isActive(tool.to)
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                        }`}
                       >
-                        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                          <Icon className="w-3.5 h-3.5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-inter text-sm font-medium text-foreground">{link.label}</p>
-                          <p className="font-mono text-[10px] text-muted-foreground">{link.desc}</p>
-                        </div>
+                        {tool.label}
                       </Link>
-                    );
-                  })}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
 
-        {/* Right */}
-        <div className="hidden lg:flex items-center gap-3">
-          {user ? (
-            <>
-              <Link to="/discover">
-                <Button variant="ghost" size="sm" className={`text-muted-foreground hover:text-foreground gap-1.5 ${isActive('/discover') ? 'text-primary' : ''}`}>
-                  <Compass className="w-4 h-4" />
-                  <span className="font-inter text-sm hidden xl:inline">Découvrir</span>
-                </Button>
-              </Link>
-              <Link to="/messages" className="relative">
-                <Button variant="ghost" size="sm" className={`text-muted-foreground hover:text-foreground ${isActive('/messages') ? 'text-primary' : ''}`}>
-                  <MessageCircle className="w-4 h-4" />
-                </Button>
-              </Link>
-              <Link to="/dashboard" className="relative">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                  <Bell className="w-4 h-4" />
+          {/* Right side: Notifs, Profile, Auth */}
+          <div className="flex items-center gap-3">
+            {user ? (
+              <>
+                {/* Notifications */}
+                <Link
+                  to="/dashboard"
+                  className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                >
+                  <Bell className="w-5 h-5" />
                   {notifs.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-mono flex items-center justify-center">
+                    <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-mono flex items-center justify-center">
                       {notifs.length > 9 ? '9+' : notifs.length}
                     </span>
                   )}
-                </Button>
-              </Link>
-              <Link to="/profile">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5">
-                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                </Link>
+
+                {/* Profile dropdown menu */}
+                <div className="hidden sm:flex items-center gap-2">
+                  <Link
+                    to="/profile"
+                    className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden hover:bg-primary/20 transition-colors"
+                  >
                     {user.avatar_url
                       ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
-                      : <User className="w-3.5 h-3.5 text-primary" />
-                    }
+                      : <User className="w-4 h-4 text-primary" />}
+                  </Link>
+                  <div className="hidden md:block">
+                    <p className="text-sm font-inter font-medium">{user.full_name}</p>
+                    <p className="text-xs text-muted-foreground">{user.role}</p>
                   </div>
-                  <span className="font-inter text-sm">{user.full_name?.split(' ')[0]}</span>
-                </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => base44.auth.logout('/')}
-                title="Déconnexion"
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
-              {hasAdminAccess(user) && (
-                <Link to="/admin">
-                  <Button size="sm" className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-inter text-xs gap-1.5">
-                    <LayoutDashboard className="w-3.5 h-3.5" /> Admin
-                  </Button>
-                </Link>
-              )}
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" size="sm" onClick={() => base44.auth.redirectToLogin()} className="font-inter text-sm text-muted-foreground hover:text-foreground">
-                Connexion
-              </Button>
-              <Link to="/quote">
-                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 font-grotesk font-semibold text-sm px-4 sky-glow">
+                </div>
+
+                {/* Admin link */}
+                {hasAdminAccess(user) && (
+                  <Link
+                    to="/admin"
+                    className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-inter bg-secondary hover:bg-secondary/80 transition-colors"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Admin
+                  </Link>
+                )}
+
+                {/* Logout */}
+                <button
+                  onClick={() => base44.auth.logout('/')}
+                  className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  title="Déconnexion"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => base44.auth.redirectToLogin()}
+                  className="hidden sm:inline-flex px-4 py-2 rounded-lg text-sm font-inter text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                >
+                  Connexion
+                </button>
+                <Link
+                  to="/quote"
+                  className="hidden sm:inline-flex px-4 py-2 rounded-lg text-sm font-inter text-foreground bg-secondary hover:bg-secondary/80 transition-colors"
+                >
                   Devis gratuit
-                </Button>
-              </Link>
-            </>
-          )}
+                </Link>
+              </>
+            )}
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
 
-        {/* Mobile burger */}
-        <button onClick={() => setOpen(!open)} className="lg:hidden text-foreground p-1">
-          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {open && (
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.15 }}
-            className="lg:hidden glass border-t border-border"
+            exit={{ opacity: 0, y: -10 }}
+            className="md:hidden py-4 space-y-2 border-t border-border/60"
           >
-            <div className="px-4 py-3">
-              {/* Nav links — grille compacte */}
-              <div className="grid grid-cols-4 gap-1 mb-3">
-                {NAV_LINKS.map(link => (
-                  <Link key={link.to} to={link.to} onClick={() => setOpen(false)}
-                    className={`text-center px-1 py-2 rounded-lg font-inter text-xs transition-colors ${
-                      isActive(link.to) ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                    }`}>
-                    {link.label}
-                  </Link>
-                ))}
+            {NAV_LINKS.map(link => (
+              <Link
+                key={link.to}
+                to={link.to}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-3 py-2 rounded-lg text-sm font-inter transition-colors ${
+                  isActive(link.to)
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+            
+            {/* Mobile Tools Submenu */}
+            <button
+              onClick={() => setToolsOpen(!toolsOpen)}
+              className={`block w-full text-left px-3 py-2 rounded-lg text-sm font-inter transition-colors ${
+                toolsOpen
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span>Outils</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
               </div>
-
-              {/* Outils & Plus — accordion mobile */}
-              <div className="mb-3 border border-border rounded-xl overflow-hidden">
-                <button
-                  onClick={() => setMobileExtraOpen(v => !v)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 bg-secondary/40 font-inter text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+            </button>
+            <AnimatePresence>
+              {toolsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-1 px-3"
                 >
-                  <span>Outils & Plus</span>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${mobileExtraOpen ? 'rotate-180' : ''}`} />
-                </button>
-                <AnimatePresence>
-                  {mobileExtraOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
+                  {TOOLS.map(tool => (
+                    <Link
+                      key={tool.to}
+                      to={tool.to}
+                      onClick={() => { setMobileMenuOpen(false); setToolsOpen(false); }}
+                      className={`block px-3 py-2 rounded-lg text-sm font-inter transition-colors ${
+                        isActive(tool.to)
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
                     >
-                      <div className="grid grid-cols-2 gap-1 p-2">
-                        {EXTRA_LINKS.map(link => {
-                          const Icon = link.icon;
-                          return (
-                            <Link
-                              key={link.to}
-                              to={link.to}
-                              onClick={() => { setOpen(false); setMobileExtraOpen(false); }}
-                              className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-primary/5 border border-transparent hover:border-primary/15 transition-all"
-                            >
-                              <Icon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                              <span className="font-inter text-xs text-foreground leading-tight">{link.label}</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Actions utilisateur */}
-              {user ? (
-                <div className="border-t border-border pt-3 flex items-center gap-2">
-                  {/* Avatar + nom */}
-                  <Link to="/profile" onClick={() => setOpen(false)} className="flex items-center gap-1.5 flex-1 min-w-0">
-                    <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {user.avatar_url
-                        ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
-                        : <User className="w-3.5 h-3.5 text-primary" />
-                      }
-                    </div>
-                    <span className="font-inter text-xs text-foreground truncate">{user.full_name?.split(' ')[0]}</span>
-                  </Link>
-                  {/* Icônes rapides */}
-                  <Link to="/discover" onClick={() => setOpen(false)} className={`p-2 rounded-lg ${isActive('/discover') ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}>
-                    <Compass className="w-4 h-4" />
-                  </Link>
-                  <Link to="/messages" onClick={() => setOpen(false)} className={`p-2 rounded-lg ${isActive('/messages') ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}>
-                    <MessageCircle className="w-4 h-4" />
-                  </Link>
-                  <Link to="/dashboard" onClick={() => setOpen(false)} className={`relative p-2 rounded-lg ${isActive('/dashboard') ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}>
-                    <Bell className="w-4 h-4" />
-                    {notifs.length > 0 && <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary" />}
-                  </Link>
-                  {hasAdminAccess(user) && (
-                    <Link to="/admin" onClick={() => setOpen(false)} className="p-2 rounded-lg text-primary bg-primary/10 hover:bg-primary/20">
-                      <LayoutDashboard className="w-4 h-4" />
+                      {tool.label}
                     </Link>
-                  )}
-                  <button onClick={() => base44.auth.logout('/')} className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10">
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="border-t border-border pt-3 flex gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => base44.auth.redirectToLogin()} className="flex-1 font-inter text-sm">Connexion</Button>
-                  <Link to="/quote" onClick={() => setOpen(false)} className="flex-1">
-                    <Button size="sm" className="w-full bg-primary text-primary-foreground font-grotesk font-semibold">Devis gratuit</Button>
-                  </Link>
-                </div>
+                  ))}
+                </motion.div>
               )}
-            </div>
+            </AnimatePresence>
+            {!user && (
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => { base44.auth.redirectToLogin(); setMobileMenuOpen(false); }}
+                  className="flex-1 px-3 py-2 rounded-lg text-sm font-inter text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                >
+                  Connexion
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
-      </AnimatePresence>
+      </div>
     </nav>
   );
 }

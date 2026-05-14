@@ -10,16 +10,8 @@ export function useUserPreferences(user) {
   const { data: preferences = null, isLoading } = useQuery({
     queryKey: ['user-preferences', user?.email],
     queryFn: async () => {
-      if (!user?.email) return null;
-      try {
-        const result = await base44.functions.invoke('getUserPreferences', {
-          user_email: user.email,
-        });
-        return result.preferences || null;
-      } catch (error) {
-        console.error('Error loading preferences:', error);
-        return null;
-      }
+      // Preferences loaded from localStorage, no backend call needed
+      return null;
     },
     enabled: !!user?.email,
     staleTime: 10 * 60 * 1000, // 10 minutes

@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Eye, Check, X, Loader2, FileText, Settings } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -54,20 +56,93 @@ export default function AdminQuotes() {
   });
 
   const handleAction = async (quote, status) => {
-    await updateQ.mutateAsync({ id: quote.id, data: { status, admin_notes: adminNotes, prix_final: prixFinal ? parseFloat(prixFinal) : undefined } });
+    const prix = prixFinal ? parseFloat(prixFinal) : undefined;
+    await updateQ.mutateAsync({ id: quote.id, data: { status, admin_notes: adminNotes, prix_final: prix } });
+
+    // Notification in-app
     await base44.entities.Notification.create({
       user_email: quote.client_email,
       title: status === 'accepted' ? '✅ Votre devis a été accepté !' : '❌ Votre devis a été refusé',
-      content: `Prestation : ${SERVICE_PRICES[quote.service_type]?.label || quote.service_type}${prixFinal ? ` — Prix final : ${formatPrice(parseFloat(prixFinal))}` : ''}`,
+      content: `Prestation : ${SERVICE_PRICES[quote.service_type]?.label || quote.service_type}${prix ? ` — Prix final : ${formatPrice(prix)}` : ''}`,
       type: status === 'accepted' ? 'quote_accepted' : 'quote_refused',
       link: '/dashboard',
     });
-    await base44.integrations.Core.SendEmail({
-      to: quote.client_email,
-      subject: status === 'accepted' ? '✅ Devis accepté — Brenne Aerial' : 'Mise à jour de votre devis — Brenne Aerial',
-      body: `Bonjour ${quote.client_name},\n\n${status === 'accepted' ? `Votre demande de devis pour "${SERVICE_PRICES[quote.service_type]?.label}" a été acceptée.${prixFinal ? `\nPrix final : ${formatPrice(parseFloat(prixFinal))}` : ''}\n\nNous vous contacterons rapidement pour organiser la prestation.` : `Votre demande de devis pour "${SERVICE_PRICES[quote.service_type]?.label}" n'a pas pu être acceptée.${adminNotes ? `\nRaison : ${adminNotes}` : ''}`}\n\nCordialement,\nEnor Lefoulon Meyer — Brenne Aerial`,
+
+    // Email HTML via sendQuoteEmail
+    await base44.functions.invoke('sendQuoteEmail', {
+      type: status === 'accepted' ? 'quote_accepted' : 'quote_refused',
+      clientName: quote.client_name,
+      clientEmail: quote.client_email,
+      serviceType: quote.service_type,
+      quoteId: quote.id,
+      prix_final: prix ? String(prix) : null,
+      adminNotes: adminNotes || null,
     });
+
     setSelected(null);
+  };
+
+  const [pdfLoading, setPdfLoading] = useState(null);
+
+  const downloadQuotePDF = async (quoteId) => {
+    setPdfLoading(quoteId);
+    try {
+      const res = await base44.functions.invoke('generateQuotePDF', { quoteId });
+      if (!res.data?.html) { toast.error('Erreur lors de la génération'); return; }
+
+      const { html, ref } = res.data;
+
+      // Render HTML in a hidden iframe
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:none;';
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      iframeDoc.open();
+      iframeDoc.write(html);
+      iframeDoc.close();
+
+      // Wait for images to load
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const canvas = await html2canvas(iframeDoc.body, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        width: 794,
+        windowWidth: 794,
+        backgroundColor: '#ffffff',
+      });
+
+      document.body.removeChild(iframe);
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
+      const ratio = canvas.height / canvas.width;
+      const imgH = pdfW * ratio;
+
+      let position = 0;
+      let remaining = imgH;
+      let page = 0;
+
+      while (remaining > 0) {
+        if (page > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, -position, pdfW, imgH);
+        position += pdfH;
+        remaining -= pdfH;
+        page++;
+      }
+
+      pdf.save(`devis-DEV-${ref}.pdf`);
+      toast.success('Devis PDF téléchargé !');
+    } catch (e) {
+      console.error(e);
+      toast.error('Erreur génération PDF');
+    } finally {
+      setPdfLoading(null);
+    }
   };
 
   const filtered = filter === 'all' ? quotes : quotes.filter(q => q.status === filter);
@@ -128,20 +203,8 @@ export default function AdminQuotes() {
                 <Button variant="ghost" size="sm" onClick={() => { setSelected(q); setAdminNotes(q.admin_notes || ''); setPrixFinal(q.prix_final?.toString() || ''); }}>
                   <Eye className="w-4 h-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={async () => {
-                  const res = await base44.functions.invoke('generateQuotePDF', { quoteId: q.id });
-                  if (res.data) {
-                    const blob = new Blob([res.data], { type: 'application/pdf' });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `devis-${q.id.slice(0, 8)}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                  } else toast.error('Erreur lors de la génération');
-                }} className="gap-1 text-primary">
-                  <FileText className="w-4 h-4" /> PDF
+                <Button variant="outline" size="sm" onClick={() => downloadQuotePDF(q.id)} disabled={pdfLoading === q.id} className="gap-1 text-primary">
+                  {pdfLoading === q.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} PDF
                 </Button>
                 {(q.status === 'pending' || q.status === 'reviewing') && (
                   <>
@@ -246,24 +309,12 @@ export default function AdminQuotes() {
                 </Button>
               )}
               <Button
-                onClick={async () => {
-                  const res = await base44.functions.invoke('generateQuotePDF', { quoteId: selected.id });
-                  if (res.data) {
-                    const blob = new Blob([res.data], { type: 'application/pdf' });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `devis-${selected.id.slice(0, 8)}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    toast.success('Devis téléchargé');
-                  } else toast.error('Erreur lors de la génération');
-                }}
+                onClick={() => downloadQuotePDF(selected.id)}
+                disabled={pdfLoading === selected.id}
                 variant="outline"
                 className="w-full gap-2 text-primary"
               >
-                <FileText className="w-4 h-4" /> Télécharger le devis PDF
+                {pdfLoading === selected.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} Télécharger le devis PDF
               </Button>
             </div>
           )}

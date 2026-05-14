@@ -95,5 +95,32 @@
     "client_name",
     "client_email",
     "service_type"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "data.client_email": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.client_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

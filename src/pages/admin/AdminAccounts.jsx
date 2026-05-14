@@ -133,20 +133,20 @@ export default function AdminAccounts() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 lg:p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="font-grotesk font-bold text-3xl mb-1">Gestion des comptes</h1>
-          <p className="font-inter text-sm text-muted-foreground">{accounts.length} compte(s) au total</p>
+          <h1 className="font-grotesk font-bold text-2xl lg:text-3xl mb-1">Gestion des comptes</h1>
+          <p className="font-inter text-xs lg:text-sm text-muted-foreground">{accounts.length} compte(s) au total</p>
         </div>
-        <Button onClick={() => { resetForm(); setShowForm(true); }} className="bg-primary text-primary-foreground gap-2">
-          <Plus className="w-4 h-4" /> Créer un compte
+        <Button onClick={() => { resetForm(); setShowForm(true); }} className="bg-primary text-primary-foreground gap-2 w-full sm:w-auto">
+          <Plus className="w-4 h-4" /> Créer
         </Button>
       </div>
 
-      {/* Accounts table */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      {/* Accounts List - Desktop Table */}
+      <div className="hidden lg:block bg-card border border-border rounded-xl overflow-hidden">
         {accounts.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">Aucun compte créé</div>
         ) : (
@@ -216,6 +216,75 @@ export default function AdminAccounts() {
               </tbody>
             </table>
           </div>
+        )}
+      </div>
+
+      {/* Accounts List - Mobile Cards */}
+      <div className="lg:hidden space-y-3">
+        {accounts.length === 0 ? (
+          <div className="p-8 text-center text-muted-foreground bg-card border border-border rounded-xl">Aucun compte créé</div>
+        ) : (
+          accounts.map(account => (
+            <motion.div
+              key={account.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-card border border-border rounded-xl p-4"
+            >
+              {/* Avatar + Info */}
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-12 h-12 rounded-lg bg-secondary border border-border overflow-hidden flex-shrink-0">
+                  {account.avatar_url ? (
+                    <img src={account.avatar_url} alt={account.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm font-bold">
+                      {account.name?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-grotesk font-bold text-sm truncate">{account.name || '—'}</p>
+                  <p className="font-mono text-xs text-muted-foreground truncate">{account.email}</p>
+                  {account.location && (
+                    <p className="font-inter text-xs text-muted-foreground mt-1">{account.location}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Role badge */}
+              <div className="flex items-center gap-2 mb-4">
+                <span className={`font-mono text-xs px-2 py-1 rounded-full ${
+                  account.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                }`}>
+                  {account.role === 'admin' ? '👤 Admin' : '👤 User'}
+                </span>
+                <span className={`font-mono text-xs px-2 py-1 rounded-full ${
+                  account.status === 'active' ? 'bg-green-500/10 text-green-400' : 'bg-muted text-muted-foreground'
+                }`}>
+                  {account.status === 'active' ? '🟢 Actif' : '⚫ Inactif'}
+                </span>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 h-9 text-sm border-border"
+                  onClick={() => handleEdit(account)}
+                >
+                  <Edit2 className="w-4 h-4 mr-2" /> Modifier
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 h-9 text-sm border-destructive/20 text-destructive hover:bg-destructive/10"
+                  onClick={() => handleDelete(account.id)}
+                  disabled={deleteMutation.isPending}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" /> Supprimer
+                </Button>
+              </div>
+            </motion.div>
+          ))
         )}
       </div>
 

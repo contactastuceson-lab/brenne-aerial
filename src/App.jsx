@@ -58,7 +58,11 @@ import AdminMapProjects from "@/pages/admin/AdminMapProjects";
 import AdminClientFiles from "@/pages/admin/AdminClientFiles";
 import AdminPartners from "@/pages/admin/AdminPartners";
 import AdminDroneMaintenance from "@/pages/admin/AdminDroneMaintenance.jsx";
+import AdminMonitoring from "@/pages/admin/AdminMonitoring";
+import AdminForum from "@/pages/admin/AdminForum";
 import AdminBeforeAfter from "@/pages/admin/AdminBeforeAfter.jsx";
+import AdminSessions from "@/pages/admin/AdminSessions";
+import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import ToitureCheckupPage from "@/pages/ToitureCheckupPage";
 import BeforeAfterPage from "@/pages/BeforeAfterPage.jsx";
 import EspaceClientPage from "@/pages/EspaceClientPage";
@@ -78,6 +82,7 @@ import DonationPage from "@/pages/DonationPage";
 import DonationSuccessPage from "@/pages/DonationSuccessPage";
 import AccountDeletionPage from "@/pages/AccountDeletionPage";
 import ForumPage from "@/pages/ForumPage";
+import PublicProfilePage from "@/pages/PublicProfilePage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -147,6 +152,8 @@ const AuthenticatedApp = () => {
         <Route path="/parrainage" element={<ParrainagePage />} />
         <Route path="/avant-apres" element={<BeforeAfterPage />} />
         <Route path="/forum" element={<ForumPage />} />
+        {/* Profile catch-all route for /@username - must be last in public routes */}
+        <Route path="/:pathUsername" element={<PublicProfilePage />} />
       </Route>
 
       {/* Admin */}
@@ -181,6 +188,10 @@ const AuthenticatedApp = () => {
         <Route path="/admin/partners" element={<AdminPartners />} />
         <Route path="/admin/drones" element={<AdminDroneMaintenance />} />
         <Route path="/admin/before-after" element={<AdminBeforeAfter />} />
+        <Route path="/admin/sessions" element={<AdminSessions />} />
+        <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+        <Route path="/admin/monitoring" element={<AdminMonitoring />} />
+        <Route path="/admin/forum" element={<AdminForum />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

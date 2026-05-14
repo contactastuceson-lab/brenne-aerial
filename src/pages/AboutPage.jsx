@@ -53,7 +53,7 @@ export default function AboutPage() {
             <div className="relative">
               <div className="absolute -inset-6 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl" />
               <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=700&auto=format&fit=crop&q=80"
+                src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/69e824fda_IMG_20260108_192238_6241-converti-depuis-webp.png"
                 alt="Enor Lefoulon Meyer"
                 className="relative w-full rounded-2xl object-cover"
                 style={{ filter: 'contrast(1.05) saturate(0.85)', aspectRatio: '4/5', objectFit: 'cover' }}

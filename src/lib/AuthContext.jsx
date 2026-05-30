@@ -145,7 +145,7 @@ export const AuthProvider = ({ children }) => {
       checkAppState
     }}>
       {children}
-      {needsLoginVerification && isAuthenticated && (
+      {needsLoginVerification && isAuthenticated && !isLoadingAuth && (
         <LoginVerificationModal onVerified={() => setNeedsLoginVerification(false)} />
       )}
     </AuthContext.Provider>

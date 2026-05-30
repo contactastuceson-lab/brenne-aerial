@@ -40,7 +40,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
       return [...sent, ...recv];
     },
     enabled: !!user.email,
-    refetchInterval: 5000,
+    staleTime: 10000,
   });
 
   useEffect(() => {

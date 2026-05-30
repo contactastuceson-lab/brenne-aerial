@@ -115,13 +115,8 @@ export default function LoginVerificationModal({ onVerified }) {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-sm">
-        <div className="w-8 h-8 border-2 border-muted border-t-primary rounded-full animate-spin" />
-      </div>
-    );
-  }
+  // While checking if verification is needed, render nothing (non-blocking)
+  if (loading) return null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-sm px-4">

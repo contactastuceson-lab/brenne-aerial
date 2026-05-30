@@ -84,12 +84,24 @@ export default function MessageThread({ user, conv, onBack }) {
     },
   });
 
-  const { data: messages = [] } = useQuery({
+  const { data: messages = [], refetch: refetchThread } = useQuery({
     queryKey: ['thread', convId],
     queryFn: () => base44.entities.ChatMessage.filter({ conversation_id: convId }, 'created_date'),
     enabled: !!convId,
-    refetchInterval: 2000,
+    staleTime: 5000,
   });
+
+  // Real-time subscription for the thread instead of polling
+  useEffect(() => {
+    if (!convId) return;
+    const unsub = base44.entities.ChatMessage.subscribe((event) => {
+      const d = event.data;
+      if (d?.conversation_id === convId) {
+        refetchThread();
+      }
+    });
+    return unsub;
+  }, [convId, refetchThread]);
 
   const pendingRequest = messages.find(
     m => m.is_request && m.request_status === 'pending' && m.sender_email === conv.email && m.recipient_email === user.email
@@ -100,12 +112,15 @@ export default function MessageThread({ user, conv, onBack }) {
   const isOpen = messages.some(m => m.is_request && m.request_status === 'accepted');
   const hasAnyRequest = messages.some(m => m.is_request);
 
-  // Mark as read
+  // Mark as read — debounced to avoid spamming on every re-render
   useEffect(() => {
-    messages
-      .filter(m => !m.is_read && m.recipient_email === user.email)
-      .forEach(m => base44.entities.ChatMessage.update(m.id, { is_read: true }));
-  }, [messages, user.email]);
+    const unread = messages.filter(m => !m.is_read && m.recipient_email === user.email);
+    if (unread.length === 0) return;
+    const timer = setTimeout(() => {
+      unread.forEach(m => base44.entities.ChatMessage.update(m.id, { is_read: true }));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [messages.length, user.email]);
 
   // Auto-scroll
   useEffect(() => {

@@ -28,23 +28,21 @@ export default function PublicLayout() {
 
   useEffect(() => {
     const init = async () => {
-      // Fetch app settings
-      try {
-        const allSettings = await base44.entities.AppSettings.list();
+      // Fetch app settings and user in parallel
+      const [settingsResult, userResult] = await Promise.allSettled([
+        base44.entities.AppSettings.list(),
+        base44.auth.me(),
+      ]);
+
+      if (settingsResult.status === 'fulfilled') {
         const map = {};
-        allSettings.forEach(s => { map[s.key] = s.value; });
+        settingsResult.value.forEach(s => { map[s.key] = s.value; });
         setSettings(map);
-      } catch (_) {}
+      }
 
-      // Fetch user
-      try {
-        const auth = await base44.auth.isAuthenticated();
-        if (auth) {
-          const me = await base44.auth.me();
-          setUser(me);
-        }
-      } catch (_) {}
-
+      if (userResult.status === 'fulfilled') {
+        setUser(userResult.value);
+      }
 
       setLoading(false);
     };

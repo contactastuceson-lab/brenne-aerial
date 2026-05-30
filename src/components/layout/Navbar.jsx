@@ -35,16 +35,15 @@ export default function Navbar() {
   const [toolsOpen, setToolsOpen] = useState(false);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(auth => {
-      if (auth) base44.auth.me().then(setUser);
-    });
+    base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
   const { data: notifs = [] } = useQuery({
-    queryKey: ['navbar-notifs', user?.email],
+    queryKey: ['unread-notifs', user?.email],
     queryFn: () => base44.entities.Notification.filter({ user_email: user.email, is_read: false }),
     enabled: !!user?.email,
-    refetchInterval: 15000,
+    refetchInterval: 60000,
+    staleTime: 30000,
   });
 
   const isActive = (path) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, Radar, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 const navSections = [
@@ -54,7 +54,6 @@ const navSections = [
   {
     label: 'Système',
     items: [
-      { key: 'monitoring', icon: Radar, path: '/admin/monitoring', label: 'Monitoring IA' },
       { key: 'maintenance', icon: Zap, path: '/admin/maintenance', label: 'Maintenance' },
       { key: 'status', icon: Server, path: '/admin/status', label: 'Statut Site' },
       { key: 'site_config', icon: Settings, path: '/admin/site-config', label: 'Config. Site' },

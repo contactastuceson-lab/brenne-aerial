@@ -59,7 +59,6 @@ import AdminMapProjects from "@/pages/admin/AdminMapProjects";
 import AdminClientFiles from "@/pages/admin/AdminClientFiles";
 import AdminPartners from "@/pages/admin/AdminPartners";
 import AdminDroneMaintenance from "@/pages/admin/AdminDroneMaintenance.jsx";
-import AdminMonitoring from "@/pages/admin/AdminMonitoring";
 import AdminForum from "@/pages/admin/AdminForum";
 import AdminBeforeAfter from "@/pages/admin/AdminBeforeAfter.jsx";
 import AdminSessions from "@/pages/admin/AdminSessions";
@@ -191,7 +190,6 @@ const AuthenticatedApp = () => {
         <Route path="/admin/before-after" element={<AdminBeforeAfter />} />
         <Route path="/admin/sessions" element={<AdminSessions />} />
         <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
-        <Route path="/admin/monitoring" element={<AdminMonitoring />} />
         <Route path="/admin/forum" element={<AdminForum />} />
       </Route>
 

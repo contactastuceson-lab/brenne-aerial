@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
+import LoginVerificationModal from '@/components/auth/LoginVerificationModal';
 
 const AuthContext = createContext();
 
@@ -12,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
+  const [needsLoginVerification, setNeedsLoginVerification] = useState(false);
 
   useEffect(() => {
     checkAppState();
@@ -95,6 +97,8 @@ export const AuthProvider = ({ children }) => {
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
+      // Trigger login verification for new devices
+      setNeedsLoginVerification(true);
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
@@ -141,6 +145,9 @@ export const AuthProvider = ({ children }) => {
       checkAppState
     }}>
       {children}
+      {needsLoginVerification && isAuthenticated && (
+        <LoginVerificationModal onVerified={() => setNeedsLoginVerification(false)} />
+      )}
     </AuthContext.Provider>
   );
 };

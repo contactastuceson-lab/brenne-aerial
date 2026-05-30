@@ -31,7 +31,11 @@ export default function UsernameChanger({ user, username, onUpdate }) {
     try {
       const result = await base44.functions.invoke('checkUsernameAvailable', { username: normalizedUn });
       if (!result.data.available) {
-        setUsernameError('Ce username est déjà pris');
+        if (result.data.reserved && result.data.message) {
+          setUsernameError(result.data.message);
+        } else {
+          setUsernameError('Ce username est déjà pris');
+        }
         return false;
       }
     } catch {

@@ -1,0 +1,25 @@
+{
+  "name": "DeletedUsername",
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string",
+      "description": "Username r\u00e9serv\u00e9 apr\u00e8s suppression de compte"
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de suppression du compte"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date d'expiration de la r\u00e9servation (30 jours apr\u00e8s suppression)"
+    }
+  },
+  "required": [
+    "username",
+    "deleted_at",
+    "expires_at"
+  ]
+}

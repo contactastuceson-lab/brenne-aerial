@@ -29,6 +29,55 @@ function emailTemplate({ title, preheader, bodyHtml }) {
 </body></html>`;
 }
 
+async function deleteUserData(base44, userEmail, userId) {
+  const results = { deleted: {} };
+
+  // Helper to safely delete all records matching a filter
+  async function purge(entityName, filterObj) {
+    try {
+      const records = await base44.asServiceRole.entities[entityName].filter(filterObj);
+      for (const r of records) {
+        await base44.asServiceRole.entities[entityName].delete(r.id);
+      }
+      results.deleted[entityName] = (results.deleted[entityName] || 0) + records.length;
+    } catch (_) { /* entity may not exist or no records */ }
+  }
+
+  // Delete all user-related data by email and userId
+  await purge('ForumPost', { author_email: userEmail });
+  await purge('ForumTopic', { author_email: userEmail });
+  await purge('Review', { author_email: userEmail });
+  await purge('ChatMessage', { sender_email: userEmail });
+  await purge('ChatMessage', { recipient_email: userEmail });
+  await purge('Message', { sender_email: userEmail });
+  await purge('Message', { recipient_email: userEmail });
+  await purge('Notification', { user_email: userEmail });
+  await purge('Follow', { follower_email: userEmail });
+  await purge('Follow', { following_email: userEmail });
+  await purge('Report', { reporter_email: userEmail });
+  await purge('Report', { target_email: userEmail });
+  await purge('DeletionRequest', { user_email: userEmail });
+  await purge('DeviceSession', { user_email: userEmail });
+  await purge('CertificationRequest', { user_email: userEmail });
+  await purge('Donation', { donor_email: userEmail });
+  await purge('Referral', { referrer_email: userEmail });
+  await purge('Referral', { referred_email: userEmail });
+  await purge('Block', { blocker_email: userEmail });
+  await purge('Block', { blocked_email: userEmail });
+  await purge('NexusConversation', { user_email: userEmail });
+
+  // Also delete by created_by_id if available
+  if (userId) {
+    await purge('Quote', { created_by_id: userId });
+    await purge('Appointment', { created_by_id: userId });
+    await purge('ClientFile', { created_by_id: userId });
+    await purge('MapProject', { created_by_id: userId });
+    await purge('RoofCheckup', { created_by_id: userId });
+  }
+
+  return results;
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
@@ -40,27 +89,56 @@ Deno.serve(async (req) => {
   const { userId, userEmail, userName, reason } = await req.json();
   if (!userId) return Response.json({ error: 'userId requis' }, { status: 400 });
 
-  // Delete the user
+  // Fetch user data before deletion to grab username
+  let targetUsername = null;
+  try {
+    const targetUsers = await base44.asServiceRole.entities.User.filter({ id: userId });
+    if (targetUsers.length > 0) {
+      targetUsername = targetUsers[0].username || null;
+    }
+  } catch (_) {}
+
+  // 1. Delete all associated data first
+  await deleteUserData(base44, userEmail, userId);
+
+  // 2. Delete the user account
   try {
     await base44.asServiceRole.entities.User.delete(userId);
   } catch (e) {
     if (e?.status === 403 || e?.message?.includes('owner')) {
-      return Response.json({ error: 'Impossible de supprimer le propriétaire de l\'application.' }, { status: 403 });
+      return Response.json({ error: "Impossible de supprimer le propriétaire de l'application." }, { status: 403 });
     }
     throw e;
   }
 
-  // Check if there was a pending deletion request
-  let hadRequest = false;
-  if (userEmail) {
-    const requests = await base44.asServiceRole.entities.DeletionRequest.filter({ user_email: userEmail, status: 'pending' });
-    for (const r of requests) {
-      await base44.asServiceRole.entities.DeletionRequest.update(r.id, { status: 'processed' });
-    }
-    hadRequest = requests.length > 0;
+  // 3. Reserve the username for 30 days
+  if (targetUsername) {
+    try {
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      // Remove any existing reservation for this username first
+      const existing = await base44.asServiceRole.entities.DeletedUsername.filter({ username: targetUsername.toLowerCase() });
+      for (const r of existing) {
+        await base44.asServiceRole.entities.DeletedUsername.delete(r.id);
+      }
+      await base44.asServiceRole.entities.DeletedUsername.create({
+        username: targetUsername.toLowerCase(),
+        deleted_at: now.toISOString(),
+        expires_at: expiresAt.toISOString(),
+      });
+    } catch (_) {}
   }
 
-  // Send email to user
+  // 4. Check if there was a pending deletion request
+  let hadRequest = false;
+  if (userEmail) {
+    try {
+      const requests = await base44.asServiceRole.entities.DeletionRequest.filter({ user_email: userEmail, status: 'pending' });
+      hadRequest = requests.length > 0;
+    } catch (_) {}
+  }
+
+  // 5. Send email to user
   if (userEmail) {
     try {
       const isAdminInitiated = !hadRequest;
@@ -71,7 +149,7 @@ Deno.serve(async (req) => {
           ${reason ? `<p style="margin:6px 0 0;color:#8aaec8;font-size:13px;"><strong style="color:#e8f4fc;">Raison :</strong> ${reason}</p>` : ''}
         </div>
         <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Toutes vos données personnelles ont été <strong style="color:#e8f4fc;">définitivement effacées</strong> de notre plateforme.</p>
-        <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Si vous pensez qu'il s'agit d'une erreur ou souhaitez plus d'informations, contactez-nous à <a href="mailto:contact@brenneaerial.fr" style="color:#3ab0dc;">contact@brenneaerial.fr</a></p>
+        <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Si vous pensez qu'il s'agit d'une erreur, contactez-nous à <a href="mailto:contact@brenneaerial.fr" style="color:#3ab0dc;">contact@brenneaerial.fr</a></p>
       ` : `
         <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Bonjour <strong style="color:#e8f4fc;">${userName || ''}</strong>,</p>
         <div style="background:#0a1120;border-left:3px solid #22c55e;border-radius:8px;padding:16px 20px;margin:0 0 20px;">

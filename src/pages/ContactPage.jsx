@@ -151,6 +151,16 @@ export default function ContactPage() {
 
     setSending(false);
     setSent(true);
+
+    // Track successful contact form submission
+    base44.analytics.track({
+      eventName: 'contact_form_sent',
+      properties: {
+        subject: form.subject,
+        has_phone: !!form.phone,
+        has_company: !!form.company,
+      },
+    });
   };
 
   return (

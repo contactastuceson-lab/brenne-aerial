@@ -158,6 +158,7 @@ export default function MessageThread({ user, conv, onBack }) {
       queryClient.invalidateQueries({ queryKey: ['all-chat-messages'] });
       queryClient.invalidateQueries({ queryKey: ['message-requests'] });
       toast.success('Demande envoyée');
+      base44.analytics.track({ eventName: 'contact_request_sent', properties: { channel: 'direct_message' } });
     },
   });
 
@@ -180,6 +181,7 @@ export default function MessageThread({ user, conv, onBack }) {
       setText('');
       queryClient.invalidateQueries({ queryKey: ['thread', convId] });
       queryClient.invalidateQueries({ queryKey: ['all-chat-messages'] });
+      base44.analytics.track({ eventName: 'message_sent', properties: { channel: 'direct_message' } });
     },
   });
 
@@ -192,6 +194,7 @@ export default function MessageThread({ user, conv, onBack }) {
       queryClient.invalidateQueries({ queryKey: ['message-requests'] });
       queryClient.invalidateQueries({ queryKey: ['all-chat-messages'] });
       toast.success('Demande acceptée !');
+      base44.analytics.track({ eventName: 'contact_request_accepted', properties: { channel: 'direct_message' } });
     },
   });
 

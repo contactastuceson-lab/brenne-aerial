@@ -1,70 +1,14 @@
-import React, { useEffect } from 'react';
-import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useEffect } from 'react';
 
-/**
- * Component that applies user preferences on mount
- * Should be placed inside AuthProvider to have access to user
- */
-export function PreferencesApplier({ user }) {
-  // Apply theme from localStorage on mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme-preference') || 'auto';
-    applyTheme(savedTheme);
-  }, []);
-
-  return null; // This component doesn't render anything
-}
-
-/**
- * Apply all user preferences to the DOM and localStorage
- */
-function applyAllPreferences(preferences) {
-  if (!preferences) return;
-
-  // Apply theme
-  applyTheme(preferences.theme);
-
-  // Apply language
-  if (preferences.language) {
-    localStorage.setItem('user-language', preferences.language);
-    document.documentElement.lang = preferences.language;
-  }
-
-  // Apply compact mode
-  if (preferences.compact_mode) {
-    document.documentElement.classList.add('compact-mode');
-  } else {
-    document.documentElement.classList.remove('compact-mode');
-  }
-
-  // Store notification preferences in context/state if needed
-  localStorage.setItem('notification-prefs', JSON.stringify({
-    email_notifications: preferences.email_notifications,
-    push_notifications: preferences.push_notifications,
-    quote_updates: preferences.quote_updates,
-    appointment_reminders: preferences.appointment_reminders,
-    new_messages: preferences.new_messages,
-    badge_awarded: preferences.badge_awarded,
-    donation_updates: preferences.donation_updates,
-    newsletter: preferences.newsletter,
-    marketing_emails: preferences.marketing_emails,
-  }));
-}
-
-/**
- * Apply theme to document
- */
 function applyTheme(theme) {
   const html = document.documentElement;
-  
   if (theme === 'light') {
     html.classList.remove('dark');
     html.style.colorScheme = 'light';
   } else if (theme === 'dark') {
     html.classList.add('dark');
     html.style.colorScheme = 'dark';
-  } else if (theme === 'auto') {
-    // Use system preference
+  } else {
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       html.classList.add('dark');
       html.style.colorScheme = 'dark';
@@ -73,8 +17,45 @@ function applyTheme(theme) {
       html.style.colorScheme = 'light';
     }
   }
-
   localStorage.setItem('theme-preference', theme);
+}
+
+function applyCompactMode(enabled) {
+  if (enabled) {
+    document.documentElement.classList.add('compact-mode');
+  } else {
+    document.documentElement.classList.remove('compact-mode');
+  }
+}
+
+export function PreferencesApplier({ user }) {
+  // Apply theme from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme-preference') || 'auto';
+    applyTheme(savedTheme);
+  }, []);
+
+  // Apply compact mode from localStorage on mount
+  useEffect(() => {
+    const compact = localStorage.getItem('compact-mode') === 'true';
+    applyCompactMode(compact);
+  }, []);
+
+  // When user loads, apply their saved preferences from profile
+  useEffect(() => {
+    if (!user) return;
+    if (user.compact_mode !== undefined) {
+      applyCompactMode(user.compact_mode);
+      localStorage.setItem('compact-mode', user.compact_mode);
+    }
+    if (user.preferences_language) {
+      localStorage.setItem('user-language', user.preferences_language);
+      document.documentElement.lang = user.preferences_language;
+      window.dispatchEvent(new CustomEvent('language-changed', { detail: { lang: user.preferences_language } }));
+    }
+  }, [user?.id]);
+
+  return null;
 }
 
 export default PreferencesApplier;

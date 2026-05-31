@@ -78,7 +78,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
               </Avatar>
               <div className="flex flex-col gap-1 min-w-0 flex-1">
                 <span className="font-grotesk font-bold text-sm text-white leading-tight">
-                  {post.author_name || post.author_email}
+                  {post.author_name || author?.full_name || post.author_email || 'Utilisateur supprimé'}
                 </span>
               </div>
             </div>

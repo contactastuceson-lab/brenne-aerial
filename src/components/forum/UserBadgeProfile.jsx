@@ -39,7 +39,7 @@ const UserBadgeProfile = ({ userId, small = false }) => {
         </Avatar>
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           <span className="font-grotesk font-bold text-sm text-slate-400 leading-tight">
-            Auteur inconnu
+            Utilisateur supprimé
           </span>
         </div>
       </div>
@@ -152,7 +152,7 @@ const UserBadgeProfile = ({ userId, small = false }) => {
           </Avatar>
           <div className="flex flex-col gap-1 min-w-0 flex-1">
             <span className="font-grotesk font-bold text-sm text-slate-400 leading-tight">
-              Auteur inconnu
+              Utilisateur supprimé
             </span>
           </div>
         </div>
@@ -211,7 +211,7 @@ const UserBadgeProfile = ({ userId, small = false }) => {
           </Avatar>
           <div className="flex-1">
             <h4 className={cn('font-bold text-gray-900', small ? 'text-sm' : 'text-base')}>
-              Auteur inconnu
+              Utilisateur supprimé
             </h4>
           </div>
         </div>

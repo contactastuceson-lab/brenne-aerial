@@ -353,22 +353,22 @@ export default function AdminSiteConfig() {
   const togglePage = async (key, val) => {
     setLocal(p => ({ ...p, [key]: val ? 'true' : 'false' }));
     await saveSetting(key, val ? 'true' : 'false');
+  };
 
-    // Notifications automatiques pour le mode hors ligne
-    if (key === 'site_offline') {
-      setSendingOfflineAlert(true);
-      const mode = val ? 'site_offline' : 'site_restored';
-      base44.functions.invoke('notifyPageDisabled', { mode })
-        .then(res => {
-          if (val) {
-            toast.error(`🚨 Panne générale — ${res?.data?.notified ?? 0} utilisateur(s) notifié(s)`);
-          } else {
-            toast.success(`✅ Rétablissement confirmé — ${res?.data?.notified ?? 0} utilisateur(s) notifié(s)`);
-          }
-        })
-        .catch(() => {})
-        .finally(() => setSendingOfflineAlert(false));
-    }
+  const sendOfflineNotification = async () => {
+    const isOffline = getVal('site_offline', 'false');
+    const mode = isOffline ? 'site_offline' : 'site_restored';
+    setSendingOfflineAlert(true);
+    base44.functions.invoke('notifyPageDisabled', { mode })
+      .then(res => {
+        if (isOffline) {
+          toast.error(`🚨 Notification hors ligne envoyée — ${res?.data?.notified ?? 0} utilisateur(s)`);
+        } else {
+          toast.success(`✅ Notification de rétablissement envoyée — ${res?.data?.notified ?? 0} utilisateur(s)`);
+        }
+      })
+      .catch(err => toast.error(`Erreur: ${err.message}`))
+      .finally(() => setSendingOfflineAlert(false));
   };
 
   const [sendingUp, setSendingUp] = useState(false);
@@ -474,10 +474,23 @@ export default function AdminSiteConfig() {
                     </p>
                   </div>
                 </div>
-                <Switch
-                  checked={isOffline}
-                  onCheckedChange={v => togglePage('site_offline', v)}
-                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 border-orange-500/40 text-orange-400 hover:bg-orange-500/10 text-xs"
+                    onClick={sendOfflineNotification}
+                    disabled={sendingOfflineAlert}
+                    title="Envoyer un email de notification aux utilisateurs"
+                  >
+                    {sendingOfflineAlert ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BellRing className="w-3.5 h-3.5" />}
+                    {sendingOfflineAlert ? 'Envoi...' : 'Notifier'}
+                  </Button>
+                  <Switch
+                    checked={isOffline}
+                    onCheckedChange={v => togglePage('site_offline', v)}
+                  />
+                </div>
               </div>
             );
           })()}

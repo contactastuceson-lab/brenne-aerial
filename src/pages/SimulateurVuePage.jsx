@@ -7,12 +7,48 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 const FLOORS = [
-  { floor: 1, height: '~3m', view: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop&q=80', desc: 'Vue sur la rue, rez-de-chaussée surélevé. Présence des toits voisins.' },
-  { floor: 2, height: '~6m', view: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&auto=format&fit=crop&q=80', desc: 'Légère dégagée. Premiers volumes architecturaux visibles.' },
-  { floor: 3, height: '~9m', view: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&auto=format&fit=crop&q=80', desc: 'Vue sur la place et les toits. Lumière optimale en journée.' },
-  { floor: 4, height: '~12m', view: 'https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1200&auto=format&fit=crop&q=80', desc: 'Panorama dégagé. Les obstacles visuels disparaissent. Vue prime.' },
-  { floor: 5, height: '~15m', view: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&auto=format&fit=crop&q=80', desc: 'Vue sur les toits. Horizon dégagé. Luminosité exceptionnelle.' },
-  { floor: 6, height: '~18m', view: 'https://images.unsplash.com/photo-1494526585095-c41746248156?w=1200&auto=format&fit=crop&q=80', desc: 'Vue imprenable. Les couchers de soleil sont spectaculaires depuis cet étage.' },
+  {
+    floor: 1,
+    height: '~3m',
+    // Vue de rue, niveau piéton — façades, trottoir, voitures au premier plan
+    view: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1400&auto=format&fit=crop&q=85',
+    desc: 'Vue de rue au niveau du sol. Façades et obstacles au premier plan, horizon bouché par les immeubles voisins.',
+  },
+  {
+    floor: 2,
+    height: '~6m',
+    // Vue légèrement surélevée — début de dégagement, toits bas visibles
+    view: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1400&auto=format&fit=crop&q=85',
+    desc: 'Léger dégagement. Les toits des immeubles bas deviennent visibles. Rue encore visible au premier plan.',
+  },
+  {
+    floor: 3,
+    height: '~9m',
+    // Vue mi-hauteur — panorama urbain qui commence à se dégager
+    view: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1400&auto=format&fit=crop&q=85',
+    desc: 'Vue sur les toitures et la place centrale. La lumière du jour pénètre mieux. Horizon partiellement dégagé.',
+  },
+  {
+    floor: 4,
+    height: '~12m',
+    // Vue aérienne intermédiaire — skyline urbaine bien visible
+    view: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1400&auto=format&fit=crop&q=85',
+    desc: 'Panorama urbain dégagé. Les obstacles visuels disparaissent. Vue considérée comme "prime" en immobilier.',
+  },
+  {
+    floor: 5,
+    height: '~15m',
+    // Vue haute sur toits — horizon très dégagé
+    view: 'https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=1400&auto=format&fit=crop&q=85',
+    desc: 'Vue dominante sur les toits. Horizon très dégagé. Luminosité exceptionnelle toute la journée.',
+  },
+  {
+    floor: 6,
+    height: '~18m',
+    // Vue aérienne drone — ville à vol d'oiseau, coucher de soleil
+    view: 'https://images.unsplash.com/photo-1512100356356-de1b84283e18?w=1400&auto=format&fit=crop&q=85',
+    desc: 'Vue imprenable à 18m. Les couchers de soleil sont spectaculaires. Dernier étage — valorisation maximale.',
+  },
 ];
 
 export default function SimulateurVuePage() {

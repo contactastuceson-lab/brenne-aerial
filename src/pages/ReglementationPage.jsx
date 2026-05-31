@@ -424,7 +424,7 @@ export default function ReglementationPage() {
           })}
         </div>
         <div className="mt-4 flex flex-col sm:flex-row gap-3">
-          <a href="https://www.geoportail.gouv.fr/donnees/drones" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme" target="_blank" rel="noopener noreferrer">
             <Button variant="outline" size="sm" className="border-border gap-2 font-inter text-xs">
               <MapPin className="w-3.5 h-3.5" /> Carte Géoportail Drones <ExternalLink className="w-3 h-3" />
             </Button>
@@ -536,7 +536,7 @@ export default function ReglementationPage() {
               { label: 'Service-Public.fr — Règles de pilotage', url: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F34630' },
               { label: 'AlphaTango — Portail DGAC', url: 'https://alphatango.aviation-civile.gouv.fr' },
               { label: 'Règlement UE 2019/947 (EUR-Lex)', url: 'https://eur-lex.europa.eu/eli/reg_impl/2019/947/oj/fra' },
-              { label: 'Géoportail Drones (carte interactive)', url: 'https://www.geoportail.gouv.fr/donnees/drones' },
+              { label: 'Géoportail Drones (carte interactive)', url: 'https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme' },
             ].map((s, i) => (
               <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-2 font-inter text-xs text-primary hover:underline">

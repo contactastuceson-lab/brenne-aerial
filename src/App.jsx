@@ -64,7 +64,7 @@ import AdminBeforeAfter from "@/pages/admin/AdminBeforeAfter.jsx";
 import AdminSessions from "@/pages/admin/AdminSessions";
 import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import ToitureCheckupPage from "@/pages/ToitureCheckupPage";
-import BeforeAfterPage from "@/pages/BeforeAfterPage.jsx";
+
 import EspaceClientPage from "@/pages/EspaceClientPage";
 import PartenairesPage from "@/pages/PartenairesPage";
 import ParrainagePage from "@/pages/ParrainagePage";
@@ -72,8 +72,8 @@ import GaragePage from "@/pages/GaragePage";
 import QuoteCalculatorPage from "@/pages/QuoteCalculatorPage";
 import ReglementationPage from "@/pages/ReglementationPage";
 import FlashDeliveryPage from "@/pages/FlashDeliveryPage";
-import SimulateurVuePage from "@/pages/SimulateurVuePage";
 import ComparateurPage from "@/pages/ComparateurPage";
+import BlogArticlePage from "@/pages/BlogArticlePage";
 import { Navigate } from "react-router-dom";
 import UptimePage from "@/pages/UptimePage";
 import ProfilePage from "@/pages/ProfilePage";
@@ -126,7 +126,6 @@ const AuthenticatedApp = () => {
         <Route path="/quote" element={<QuotePage />} />
         <Route path="/planning" element={<PlanningPage />} />
         <Route path="/blog" element={<BlogPage />} />
-        <Route path="/blog/:id" element={<BlogPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/discover" element={<DiscoverPage />} />
@@ -144,13 +143,13 @@ const AuthenticatedApp = () => {
         <Route path="/calculateur" element={<QuoteCalculatorPage />} />
         <Route path="/reglementation" element={<ReglementationPage />} />
         <Route path="/flash-delivery" element={<FlashDeliveryPage />} />
-        <Route path="/simulateur-vue" element={<SimulateurVuePage />} />
         <Route path="/comparateur" element={<ComparateurPage />} />
+        <Route path="/blog/:id" element={<BlogArticlePage />} />
         <Route path="/toiture-checkup" element={<ToitureCheckupPage />} />
         <Route path="/espace-client" element={<EspaceClientPage />} />
         <Route path="/partenaires" element={<PartenairesPage />} />
         <Route path="/parrainage" element={<ParrainagePage />} />
-        <Route path="/avant-apres" element={<BeforeAfterPage />} />
+
         <Route path="/forum" element={<ForumPage />} />
         {/* Profile catch-all route for /@username - must be last in public routes */}
         <Route path="/:pathUsername" element={<PublicProfilePage />} />

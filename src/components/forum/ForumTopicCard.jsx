@@ -108,7 +108,7 @@ const ForumTopicCard = ({ topic, onSelect }) => {
       {/* Footer avec auteur et date */}
       <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <UserBadgeProfile userId={topic.author} fallbackName={topic.author_name} fallbackUsername={topic.author_username} small />
+          <UserBadgeProfile userId={topic.author} fallbackName={topic.author_name} fallbackUsername={topic.author_username} fallbackAvatarUrl={topic.author_avatar_url} fallbackBadges={topic.author_badges} small />
         </div>
         <span className="text-xs text-slate-500 whitespace-nowrap">
           {topic.created_date && formatDistanceToNow(new Date(topic.created_date), { locale: fr, addSuffix: true })}

@@ -46,6 +46,8 @@ const CreateForumTopic = ({ onSuccess }) => {
         author_name: user.full_name || user.name,
         author_username: username,
         author_email: user.email,
+        author_avatar_url: user.avatar_url,
+        author_badges: user.badges || [],
         tags: tagList,
         views_count: 0,
         replies_count: 0,

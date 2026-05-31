@@ -38,6 +38,17 @@
       "type": "string",
       "description": "Email de l'auteur"
     },
+    "author_avatar_url": {
+      "type": "string",
+      "description": "Avatar URL de l'auteur (sauvegard\u00e9 pour fallback)"
+    },
+    "author_badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Badges de l'auteur au moment de la cr\u00e9ation"
+    },
     "tags": {
       "type": "array",
       "items": {

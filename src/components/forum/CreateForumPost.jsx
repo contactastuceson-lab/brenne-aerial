@@ -23,6 +23,8 @@ const CreateForumPost = ({ topicId, currentRepliesCount = 0, onSuccess }) => {
            author_name: user.full_name || user.name,
            author_username: username,
            author_email: user.email,
+           author_avatar_url: user.avatar_url,
+           author_badges: user.badges || [],
            is_solution: false,
            likes_count: 0,
            liked_by: [],

@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import BadgeChip from '@/components/ui/BadgeChip';
 
-const UserBadgeProfile = ({ userId, small = false, fallbackName, fallbackUsername }) => {
+const UserBadgeProfile = ({ userId, small = false, fallbackName, fallbackUsername, fallbackAvatarUrl, fallbackBadges }) => {
   const { data: allPublicUsers = [] } = useQuery({
     queryKey: ['public-users-forum'],
     queryFn: async () => {
@@ -190,6 +190,84 @@ const UserBadgeProfile = ({ userId, small = false, fallbackName, fallbackUsernam
             </span>
           </div>
         </div>
+      );
+    }
+
+    // If user is deleted but we have fallback data, show them with fallback avatar and badges
+    if (!user && (fallbackName || fallbackUsername)) {
+      const badgesToShow = fallbackBadges || [];
+      return (
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <button className="flex items-start gap-3 hover:opacity-85 transition-opacity group w-full">
+              <Avatar className="w-8 h-8 border border-cyan-500/20 flex-shrink-0">
+                <AvatarImage src={fallbackAvatarUrl} />
+                <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white text-xs font-bold">
+                  {(fallbackName || fallbackUsername)?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-1 min-w-0 flex-1">
+                <span className="font-grotesk font-bold text-sm text-white group-hover:text-cyan-300 transition-colors leading-tight text-left">
+                  {fallbackName || `@${fallbackUsername}`}
+                </span>
+                {badgesToShow.length > 0 && (
+                  <div className="flex gap-1 items-center flex-wrap">
+                    {badgesToShow.slice(0, 3).map((badge) => {
+                      const cfg = BADGE_CONFIG[badge];
+                      if (!cfg) return null;
+                      const Icon = cfg.icon;
+                      return (
+                        <div
+                          key={badge}
+                          className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 border ${cfg.color} ${cfg.bg} ${cfg.border}`}
+                          title={badge}
+                        >
+                          <Icon className="w-2.5 h-2.5" strokeWidth={2.5} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </button>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80" align="start">
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <Avatar className="w-16 h-16">
+                  <AvatarImage src={fallbackAvatarUrl} />
+                  <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white text-lg font-bold">
+                    {(fallbackName || fallbackUsername)?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h4 className="font-bold text-base text-gray-900">
+                    {fallbackName || `@${fallbackUsername}`}
+                  </h4>
+                </div>
+              </div>
+              {badgesToShow.length > 0 && (
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm mb-2">
+                    Badges ({badgesToShow.length})
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {badgesToShow.map((badge) => {
+                      const cfg = BADGE_CONFIG[badge];
+                      if (!cfg) return <span key={badge} className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-900">{badge}</span>;
+                      const Icon = cfg.icon;
+                      return (
+                        <span key={badge} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+                          <Icon className="w-3 h-3" /> {badge}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </HoverCardContent>
+        </HoverCard>
       );
     }
 

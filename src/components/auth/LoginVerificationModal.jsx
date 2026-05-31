@@ -7,6 +7,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
 const FINGERPRINT_KEY = 'ba_device_fingerprint';
+const SESSION_VERIFIED_KEY = 'ba_session_verified';
 
 function getOrCreateFingerprint() {
   let fp = localStorage.getItem(FINGERPRINT_KEY);
@@ -48,6 +49,11 @@ export default function LoginVerificationModal({ onVerified }) {
   }, []);
 
   const checkIfNeeded = async () => {
+    // Already verified in this browser session — skip entirely
+    if (sessionStorage.getItem(SESSION_VERIFIED_KEY) === 'true') {
+      onVerified();
+      return;
+    }
     setLoading(true);
     try {
       const res = await base44.functions.invoke('verifyLoginCode', {
@@ -55,7 +61,8 @@ export default function LoginVerificationModal({ onVerified }) {
         fingerprint,
       });
       if (!res.data.needed) {
-        // Device already trusted
+        // Device already trusted — remember for the whole session
+        sessionStorage.setItem(SESSION_VERIFIED_KEY, 'true');
         onVerified();
         return;
       }
@@ -97,6 +104,7 @@ export default function LoginVerificationModal({ onVerified }) {
       });
       if (res.data?.valid) {
         toast.success('✅ Identité vérifiée');
+        sessionStorage.setItem(SESSION_VERIFIED_KEY, 'true');
         onVerified();
       } else {
         toast.error('Code invalide');

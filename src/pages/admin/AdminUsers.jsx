@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Save, Loader2, Search, ShieldCheck, ShieldOff, CheckCircle, Flag, Download, Trash2, UserX, AlertTriangle, RefreshCw
+import { Save, Loader2, Search, ShieldCheck, ShieldOff, CheckCircle, Flag, Download, Trash2, UserX, AlertTriangle, RefreshCw, UserPlus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -107,6 +107,9 @@ export default function AdminUsers() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [deleteReason, setDeleteReason] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [createModal, setCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({ email: '', role: 'user' });
+  const [createLoading, setCreateLoading] = useState(false);
 
   const sendDeletionEmail = useMutation({
     mutationFn: ({ userEmail, userName, reason, hadRequest }) =>
@@ -209,9 +212,14 @@ export default function AdminUsers() {
             </p>
           )}
         </div>
-        <Button size="sm" variant="outline" onClick={exportCSV} className="border-border text-xs gap-1.5">
-          <Download className="w-3.5 h-3.5" /> Exporter CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={() => { setCreateModal(true); setCreateForm({ email: '', role: 'user' }); }} className="bg-primary text-primary-foreground text-xs gap-1.5">
+            <UserPlus className="w-3.5 h-3.5" /> Créer un compte
+          </Button>
+          <Button size="sm" variant="outline" onClick={exportCSV} className="border-border text-xs gap-1.5">
+            <Download className="w-3.5 h-3.5" /> Exporter CSV
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -463,6 +471,79 @@ export default function AdminUsers() {
         </div>
         );
       })()}
+
+      {/* Create user modal */}
+      {createModal && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/70 z-50 flex items-center justify-center p-4">
+          <div className="rounded-2xl p-6 max-w-sm w-full space-y-4 bg-card border border-border">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
+                <UserPlus className="w-4 h-4 text-primary" />
+              </div>
+              <h3 className="font-grotesk font-bold text-base">Créer un compte utilisateur</h3>
+            </div>
+
+            <p className="font-inter text-xs text-muted-foreground">
+              Un email d'invitation sera envoyé à l'adresse indiquée avec un lien de connexion.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="font-inter text-xs text-muted-foreground mb-1 block">Adresse email <span className="text-destructive">*</span></label>
+                <Input
+                  type="email"
+                  placeholder="utilisateur@exemple.com"
+                  value={createForm.email}
+                  onChange={e => setCreateForm(p => ({ ...p, email: e.target.value }))}
+                  className="bg-secondary border-border text-sm"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="font-inter text-xs text-muted-foreground mb-1 block">Rôle</label>
+                <Select value={createForm.role} onValueChange={v => setCreateForm(p => ({ ...p, role: v }))}>
+                  <SelectTrigger className="bg-secondary border-border">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {assignableRoles.map(role => {
+                      const cfg = ROLE_CONFIG[role];
+                      return <SelectItem key={role} value={role}>{cfg?.emoji} {cfg?.label || role}</SelectItem>;
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex gap-2 justify-end pt-1">
+              <Button size="sm" variant="outline" className="border-border text-xs" onClick={() => setCreateModal(false)}>
+                Annuler
+              </Button>
+              <Button
+                size="sm"
+                className="bg-primary text-primary-foreground text-xs gap-1.5"
+                disabled={!createForm.email.trim() || createLoading}
+                onClick={async () => {
+                  setCreateLoading(true);
+                  try {
+                    await base44.users.inviteUser(createForm.email.trim(), createForm.role);
+                    toast.success(`Invitation envoyée à ${createForm.email}`);
+                    setCreateModal(false);
+                    setTimeout(() => qc.invalidateQueries({ queryKey: ['adm-users-list'] }), 2000);
+                  } catch (err) {
+                    toast.error(err?.message || 'Erreur lors de la création du compte');
+                  } finally {
+                    setCreateLoading(false);
+                  }
+                }}
+              >
+                {createLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
+                Envoyer l'invitation
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {editUser && (
         <UserEditModal

@@ -68,6 +68,7 @@ export default function ReglementationPage() {
               { label: 'Géoportail Drones', url: 'https://www.geoportail.gouv.fr/donnees/restrictions-uas-categorie-ouverte-et-aeromodelisme' },
               { label: 'AlphaTango DGAC', url: 'https://alphatango.aviation-civile.gouv.fr' },
               { label: 'Règlement UE 2019/947', url: 'https://eur-lex.europa.eu/eli/reg_impl/2019/947/oj/fra' },
+              { label: 'Documentation', url: 'https://support.brenneaerial.org' },
             ].map((l, i) => (
               <a key={i} href={l.url} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" size="sm" className="border-border gap-1.5 font-inter text-xs h-8">
@@ -283,6 +284,9 @@ export default function ReglementationPage() {
               </Button>
             </Link>
           </div>
+          <p className="font-inter text-xs text-muted-foreground mt-5 pt-5 border-t border-border">
+            Des questions ? Consultez notre <a href="https://support.brenneaerial.org" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">documentation complète</a> ou contactez notre <a href="https://support.brenneaerial.org/support" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">équipe support</a>.
+          </p>
         </motion.div>
       </div>
 

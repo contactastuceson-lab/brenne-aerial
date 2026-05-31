@@ -162,6 +162,9 @@ export default function QuotePage() {
           <p className="font-inter text-sm text-muted-foreground">
             Réponse garantie sous <span className="text-primary font-semibold">48 heures</span> à {form.client_email}.
           </p>
+          <p className="font-inter text-xs text-muted-foreground mt-4">
+            Des questions en attendant ? Consultez notre <a href="https://support.brenneaerial.org" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">documentation</a> ou <a href="https://support.brenneaerial.org/support" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">contactez le support</a>.
+          </p>
           {estimatedPrice && (
             <div className="mt-6 p-4 rounded-xl bg-primary/10 border border-primary/20">
               <p className="font-mono text-xs text-muted-foreground mb-1">Prix estimatif</p>

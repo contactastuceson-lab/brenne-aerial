@@ -6,7 +6,7 @@ import {
   FolderOpen, Download, FileVideo, FileImage, FileText, File,
   Lock, LogIn, ChevronDown, ChevronUp, Award,
   CheckCircle, Clock, XCircle, AlertCircle, Plus, ArrowRight,
-  Rocket, MapPin, Calendar, Shield, Zap, User, Settings
+  Rocket, MapPin, Calendar, Shield, Zap, User, Settings, Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -38,6 +38,7 @@ const SERVICE_LABELS = {
 
 const NAV = [
   { id: 'overview', label: 'Vue d\'ensemble', icon: Zap },
+  { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'files',    label: 'Mes fichiers',     icon: FolderOpen },
   { id: 'quotes',   label: 'Mes devis',         icon: FileText },
   { id: 'certs',    label: 'Certifications',    icon: Shield },
@@ -218,6 +219,12 @@ export default function EspaceClientPage() {
   const { data: myCertifications = [] } = useQuery({
     queryKey: ['my-certifications', user?.email],
     queryFn: () => base44.entities.CertificationRequest.filter({ user_email: user.email }, '-created_date', 5),
+    enabled: !!user?.email,
+  });
+
+  const { data: myNotifications = [] } = useQuery({
+    queryKey: ['my-notifications', user?.email],
+    queryFn: () => base44.entities.Notification.filter({ user_email: user.email }, '-created_date', 50),
     enabled: !!user?.email,
   });
 
@@ -499,6 +506,51 @@ export default function EspaceClientPage() {
                 </div>
               )}
 
+              {/* NOTIFICATIONS */}
+              {activeTab === 'notifications' && (
+                <div className="space-y-4">
+                  <h2 className="font-grotesk font-bold text-lg">Notifications</h2>
+                  {myNotifications.length === 0 ? (
+                    <EmptyState icon={Bell} title="Aucune notification"
+                      desc="Vous recevrez ici les mises à jour sur vos devis, missions et autres événements." />
+                  ) : (
+                    <div className="space-y-3">
+                      {myNotifications.map(n => {
+                        const typeColors = {
+                          quote_pending: { bg: 'bg-amber-400/10', border: 'border-amber-400/30', text: 'text-amber-400' },
+                          quote_accepted: { bg: 'bg-green-400/10', border: 'border-green-400/30', text: 'text-green-400' },
+                          quote_refused: { bg: 'bg-red-400/10', border: 'border-red-400/30', text: 'text-red-400' },
+                          new_message: { bg: 'bg-blue-400/10', border: 'border-blue-400/30', text: 'text-blue-400' },
+                          appointment: { bg: 'bg-purple-400/10', border: 'border-purple-400/30', text: 'text-purple-400' },
+                          system: { bg: 'bg-muted', border: 'border-border', text: 'text-muted-foreground' },
+                          badge: { bg: 'bg-purple-400/10', border: 'border-purple-400/30', text: 'text-purple-400' },
+                          blog: { bg: 'bg-blue-400/10', border: 'border-blue-400/30', text: 'text-blue-400' },
+                        };
+                        const cfg = typeColors[n.type] || typeColors.system;
+                        return (
+                          <motion.div key={n.id} whileHover={{ y: -1 }} className={`p-5 rounded-2xl bg-card border ${cfg.border} ${!n.is_read ? cfg.bg : ''}`}>
+                            <div className="flex items-start gap-3">
+                              <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-2 ${!n.is_read ? cfg.text : 'bg-muted-foreground/30'}`} />
+                              <div className="flex-1 min-w-0">
+                                <p className={`font-grotesk font-semibold text-sm ${!n.is_read ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                  {n.title}
+                                </p>
+                                {n.content && (
+                                  <p className="font-inter text-xs text-muted-foreground mt-1">{n.content}</p>
+                                )}
+                                <p className="font-mono text-[10px] text-muted-foreground mt-2">
+                                  {n.created_date ? format(new Date(n.created_date), 'd MMM yyyy à HH:mm', { locale: fr }) : ''}
+                                </p>
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* BADGES */}
               {activeTab === 'badges' && (
                 <div className="space-y-4">
@@ -518,7 +570,7 @@ export default function EspaceClientPage() {
                 </div>
               )}
 
-            </motion.div>
+              </motion.div>
           </AnimatePresence>
         </main>
       </div>

@@ -105,7 +105,7 @@ export default function DiscussionDetailPage() {
                   {discussion.author_name?.[0]?.toUpperCase() || '?'}
                 </div>
               )}
-              <span className={discussion.author_is_supreme ? 'text-amber-300' : ''}>
+              <span className={discussion.author_is_supreme ? 'text-amber-300 bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text animate-shimmer' : ''}>
                 {discussion.author_display_name || discussion.author_name}
               </span>
               <VerificationIcons 
@@ -160,7 +160,7 @@ export default function DiscussionDetailPage() {
                             {reply.author_name?.[0]?.toUpperCase() || '?'}
                           </div>
                         )}
-                        <p className={`font-semibold ${reply.author_is_supreme ? 'text-amber-300' : 'text-white'}`}>
+                        <p className={`font-semibold ${reply.author_is_supreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
                           {reply.author_display_name || reply.author_name}
                         </p>
                         <VerificationIcons 

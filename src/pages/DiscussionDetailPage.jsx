@@ -105,7 +105,9 @@ export default function DiscussionDetailPage() {
                   {discussion.author_name?.[0]?.toUpperCase() || '?'}
                 </div>
               )}
-              <span>{discussion.author_display_name || discussion.author_name}</span>
+              <span className={discussion.author_is_supreme ? 'text-yellow-400' : ''}>
+                {discussion.author_display_name || discussion.author_name}
+              </span>
               <VerificationIcons 
                 verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
                 size="sm" 
@@ -158,7 +160,7 @@ export default function DiscussionDetailPage() {
                             {reply.author_name?.[0]?.toUpperCase() || '?'}
                           </div>
                         )}
-                        <p className="font-semibold text-white">
+                        <p className={`font-semibold ${reply.author_is_supreme ? 'text-yellow-400' : 'text-white'}`}>
                           {reply.author_display_name || reply.author_name}
                         </p>
                         <VerificationIcons 

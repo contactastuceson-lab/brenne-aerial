@@ -1,0 +1,66 @@
+{
+  "name": "Discussion",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre du sujet"
+    },
+    "content": {
+      "type": "string",
+      "description": "Contenu initial"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "general",
+        "technique",
+        "aide",
+        "partages",
+        "autres"
+      ],
+      "default": "general",
+      "description": "Cat\u00e9gorie"
+    },
+    "author_id": {
+      "type": "string",
+      "description": "ID de l'auteur"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Nom de l'auteur (snapshot)"
+    },
+    "author_avatar": {
+      "type": "string",
+      "description": "Avatar de l'auteur (snapshot)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags"
+    },
+    "replies_count": {
+      "type": "number",
+      "default": 0
+    },
+    "views_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_reply_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_locked": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "content",
+    "author_id"
+  ]
+}

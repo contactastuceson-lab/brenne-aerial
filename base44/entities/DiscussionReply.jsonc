@@ -1,0 +1,46 @@
+{
+  "name": "DiscussionReply",
+  "type": "object",
+  "properties": {
+    "discussion_id": {
+      "type": "string",
+      "description": "ID de la discussion"
+    },
+    "content": {
+      "type": "string",
+      "description": "Contenu de la r\u00e9ponse"
+    },
+    "author_id": {
+      "type": "string",
+      "description": "ID de l'auteur"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Nom de l'auteur (snapshot)"
+    },
+    "author_avatar": {
+      "type": "string",
+      "description": "Avatar de l'auteur (snapshot)"
+    },
+    "likes_count": {
+      "type": "number",
+      "default": 0
+    },
+    "liked_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs des utilisateurs qui ont aim\u00e9"
+    },
+    "is_solution": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "discussion_id",
+    "content",
+    "author_id"
+  ]
+}

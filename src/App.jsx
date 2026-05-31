@@ -59,7 +59,7 @@ import AdminMapProjects from "@/pages/admin/AdminMapProjects";
 import AdminClientFiles from "@/pages/admin/AdminClientFiles";
 import AdminPartners from "@/pages/admin/AdminPartners";
 import AdminDroneMaintenance from "@/pages/admin/AdminDroneMaintenance.jsx";
-import AdminForum from "@/pages/admin/AdminForum";
+
 import AdminBeforeAfter from "@/pages/admin/AdminBeforeAfter.jsx";
 import AdminSessions from "@/pages/admin/AdminSessions";
 import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
@@ -83,6 +83,7 @@ import DonationPage from "@/pages/DonationPage";
 import DonationSuccessPage from "@/pages/DonationSuccessPage";
 import AccountDeletionPage from "@/pages/AccountDeletionPage";
 import ForumPage from "@/pages/ForumPage";
+import DiscussionDetailPage from "@/pages/DiscussionDetailPage";
 import PublicProfilePage from "@/pages/PublicProfilePage";
 
 function ExternalRedirect({ to }) {
@@ -153,6 +154,7 @@ const AuthenticatedApp = () => {
         <Route path="/parrainage/rejoindre" element={<ParrainageRejoindre />} />
 
         <Route path="/forum" element={<ForumPage />} />
+        <Route path="/forum/:id" element={<DiscussionDetailPage />} />
         {/* Profile catch-all route for /@username - must be last in public routes */}
         <Route path="/:pathUsername" element={<PublicProfilePage />} />
       </Route>
@@ -191,7 +193,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/before-after" element={<AdminBeforeAfter />} />
         <Route path="/admin/sessions" element={<AdminSessions />} />
         <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
-        <Route path="/admin/forum" element={<AdminForum />} />
+
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

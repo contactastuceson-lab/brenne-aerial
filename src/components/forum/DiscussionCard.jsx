@@ -50,9 +50,14 @@ export default function DiscussionCard({ discussion }) {
               </div>
             )}
             
-            {/* Nom + Badges */}
+            {/* Nom + Badge suprême + Badges */}
             <div className="flex items-center gap-1">
               <span>{discussion.author_name}</span>
+              {discussion.author_is_supreme && (
+                <span title="Statut Suprême" className="text-sm">
+                  👑
+                </span>
+              )}
               {discussion.author_certification_badge && (
                 <img 
                   src={discussion.author_certification_badge} 

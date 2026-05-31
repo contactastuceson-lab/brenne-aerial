@@ -34,6 +34,11 @@
       "type": "string",
       "description": "Avatar de l'auteur (snapshot)"
     },
+    "author_is_supreme": {
+      "type": "boolean",
+      "default": false,
+      "description": "L'auteur a le statut Supr\u00eame"
+    },
     "author_certification_badge": {
       "type": "string",
       "description": "Badge de certification de l'auteur (URL)"

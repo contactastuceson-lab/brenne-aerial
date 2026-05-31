@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Info, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 
 const TYPE_CONFIG = {
-  info:    { icon: Info,          bg: 'bg-gradient-to-r from-primary to-accent border-primary/30',         text: 'text-white', iconColor: 'text-white' },
-  warning: { icon: AlertTriangle, bg: 'bg-gradient-to-r from-yellow-500 to-orange-500 border-yellow-600/30', text: 'text-white', iconColor: 'text-white' },
-  success: { icon: CheckCircle,   bg: 'bg-gradient-to-r from-green-600 to-teal-600 border-green-600/30',     text: 'text-white', iconColor: 'text-white' },
-  error:   { icon: AlertCircle,   bg: 'bg-gradient-to-r from-red-600 to-pink-600 border-red-600/30',         text: 'text-white', iconColor: 'text-white' },
+  info:    { icon: Info,          accent: 'primary',   glowColor: 'rgba(56, 170, 220, 0.1)' },
+  warning: { icon: AlertTriangle, accent: 'yellow',    glowColor: 'rgba(250, 204, 21, 0.08)' },
+  success: { icon: CheckCircle,   accent: 'green',     glowColor: 'rgba(34, 197, 94, 0.08)' },
+  error:   { icon: AlertCircle,   accent: 'red',       glowColor: 'rgba(239, 68, 68, 0.08)' },
 };
 
 // Parse text and make URLs + emails clickable
@@ -60,31 +60,44 @@ export default function AnnouncementBanner({ user }) {
       {visible.map(a => {
         const cfg = TYPE_CONFIG[a.type] || TYPE_CONFIG.info;
         const Icon = cfg.icon;
+        const accentColors = {
+          primary: 'text-primary',
+          yellow: 'text-yellow-500',
+          green: 'text-green-500',
+          red: 'text-red-500',
+        };
+        const accentClass = accentColors[cfg.accent] || 'text-primary';
+        
         return (
           <motion.div
             key={a.id}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`w-full border-b-2 ${cfg.bg} px-5 py-4 flex items-center gap-4 shadow-sm backdrop-blur-sm`}
+            className="w-full border-b border-border/40 px-5 py-4 flex items-center gap-4 backdrop-blur-md"
+            style={{
+              background: `linear-gradient(135deg, rgba(8, 20, 40, 0.4) 0%, rgba(20, 30, 50, 0.3) 100%), ${cfg.glowColor}`,
+              borderTop: `1px solid ${cfg.glowColor}`,
+            }}
           >
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
-                <Icon className={`w-4 h-4 ${cfg.iconColor}`} />
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center`}
+                style={{ background: cfg.glowColor }}>
+                <Icon className={`w-4 h-4 ${accentClass}`} />
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              {a.title && <span className={`font-grotesk font-bold text-sm mr-2 ${cfg.text}`}>{a.title}</span>}
-              <span className={`font-inter text-sm ${cfg.text} block`}><RichContent text={a.content} textClass={cfg.text} /></span>
+              {a.title && <span className={`font-grotesk font-bold text-sm mr-2 text-foreground`}>{a.title}</span>}
+              <span className="font-inter text-sm text-muted-foreground block"><RichContent text={a.content} textClass="text-muted-foreground" /></span>
               {a.link_url && (
                 <a href={a.link_url} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex mt-2 gap-1 items-center px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-inter text-xs font-semibold text-white transition-colors whitespace-nowrap">
+                  className={`inline-flex mt-2 gap-1 items-center px-3 py-1.5 rounded-lg font-inter text-xs font-semibold transition-all whitespace-nowrap ${accentClass} hover:opacity-70 border border-current/20 bg-current/5`}>
                   {a.link_label || 'En savoir plus'} →
                 </a>
               )}
             </div>
             {a.dismissible !== false && (
-              <button onClick={() => dismiss(a.id)} className="text-white/70 hover:text-white hover:bg-white/10 rounded-lg p-1 flex-shrink-0 transition-colors" title="Masquer">
+              <button onClick={() => dismiss(a.id)} className="text-muted-foreground hover:text-foreground hover:bg-primary/10 rounded-lg p-1 flex-shrink-0 transition-colors" title="Masquer">
                 <X className="w-4 h-4" />
               </button>
             )}

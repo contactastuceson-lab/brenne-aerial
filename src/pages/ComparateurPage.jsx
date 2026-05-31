@@ -6,74 +6,115 @@ import { ZoomIn, Camera, ArrowRight, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
+// Même image haute qualité — on simule la dégradation "standard" via CSS
 const COMPARISONS = [
   {
-    id: 'fissure',
-    label: 'Fissure de façade',
-    standard: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=60',
-    drone: 'https://images.unsplash.com/photo-1618090584176-7132b9911657?w=800&auto=format&fit=crop&q=90',
-    stdDesc: 'Photo smartphone — 12 MP — Distance 10m',
-    droneDesc: 'Drone 45MP — Zoom optique x10 — Distance 5m',
+    id: 'toiture',
+    label: 'Inspection toiture',
+    image: 'https://images.unsplash.com/photo-1516156008625-3a9d6067fab5?w=1600&auto=format&fit=crop&q=95',
+    // filtres CSS appliqués côté "standard"
+    stdFilter: 'blur(3.5px) saturate(0.6) brightness(0.85)',
+    stdDesc: 'Smartphone 12MP — Distance 30m — flou de distance',
+    droneDesc: 'Drone 45MP — Distance 5m — netteté centimétrique',
   },
   {
     id: 'chantier',
-    label: 'Vue de chantier',
-    standard: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=60',
-    drone: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=90',
-    stdDesc: 'Photo au sol — angle limité',
-    droneDesc: 'Orthophoto drone — Vue verticale 100% du site',
+    label: 'Suivi de chantier',
+    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&auto=format&fit=crop&q=95',
+    stdFilter: 'blur(4px) saturate(0.5) brightness(0.8) contrast(0.85)',
+    stdDesc: 'Photo au sol — angle limité — distorsion perspective',
+    droneDesc: 'Orthophoto drone — Vue à la verticale — GSD 2cm/px',
   },
   {
-    id: 'toit',
-    label: 'Inspection toiture',
-    standard: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=60',
-    drone: 'https://images.unsplash.com/photo-1611795664523-4eca7e1c9af7?w=800&auto=format&fit=crop&q=90',
-    stdDesc: 'Jumelles depuis la rue — flou et angle difficile',
-    droneDesc: 'Drone centimétrique — chaque tuile visible',
+    id: 'facade',
+    label: 'Façade & fissures',
+    image: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&auto=format&fit=crop&q=95',
+    stdFilter: 'blur(5px) saturate(0.4) brightness(0.75) contrast(0.8)',
+    stdDesc: 'Jumelles depuis la rue — flou, tremblement, mauvais angle',
+    droneDesc: 'Drone zoom x10 — chaque fissure identifiée',
+  },
+  {
+    id: 'paysage',
+    label: 'Vue aérienne',
+    image: 'https://images.unsplash.com/photo-1473186505569-9c61870c11f9?w=1600&auto=format&fit=crop&q=95',
+    stdFilter: 'blur(2px) saturate(0.55) brightness(0.8) contrast(0.9)',
+    stdDesc: 'Photo au sol — champ de vision limité',
+    droneDesc: 'Vue aérienne drone — 100% du site cartographié',
   },
 ];
 
-function SliderComparator({ before, after, beforeDesc, afterDesc }) {
+function SliderComparator({ image, stdFilter, beforeDesc, afterDesc }) {
   const [pos, setPos] = useState(50);
+  const [dragging, setDragging] = useState(false);
   const ref = useRef(null);
 
-  const handleMove = (e) => {
+  const updatePos = (clientX) => {
+    if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
-    const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
-    setPos(Math.max(0, Math.min(100, (x / rect.width) * 100)));
+    const x = clientX - rect.left;
+    setPos(Math.max(2, Math.min(98, (x / rect.width) * 100)));
   };
+
+  const handleMouseMove = (e) => { if (dragging) updatePos(e.clientX); };
+  const handleTouchMove = (e) => { e.preventDefault(); updatePos(e.touches[0].clientX); };
 
   return (
     <div
       ref={ref}
-      className="relative select-none overflow-hidden rounded-xl aspect-video cursor-col-resize"
-      onMouseMove={handleMove}
-      onTouchMove={handleMove}
+      className="relative select-none overflow-hidden rounded-xl aspect-video cursor-col-resize touch-none"
+      onMouseMove={handleMouseMove}
+      onMouseDown={(e) => { setDragging(true); updatePos(e.clientX); }}
+      onMouseUp={() => setDragging(false)}
+      onMouseLeave={() => setDragging(false)}
+      onTouchMove={handleTouchMove}
+      onTouchStart={(e) => updatePos(e.touches[0].clientX)}
     >
-      {/* After (drone) */}
-      <img src={after} alt="Drone" className="absolute inset-0 w-full h-full object-cover" />
+      {/* RIGHT side — Drone (sharp) */}
+      <img
+        src={image}
+        alt="Drone HD"
+        className="absolute inset-0 w-full h-full object-cover"
+        draggable={false}
+      />
 
-      {/* Before (standard) - clipped */}
-      <div className="absolute inset-0 overflow-hidden" style={{ width: `${pos}%` }}>
-        <img src={before} alt="Standard" className="absolute inset-0 w-full h-full object-cover" style={{ width: `${100 / (pos / 100) * 0.01 * 100}vw`, maxWidth: 'none' }} />
-        <img src={before} alt="Standard" className="w-full h-full object-cover" />
+      {/* LEFT side — Standard (degraded via CSS filter), clipped */}
+      <div
+        className="absolute inset-0 overflow-hidden"
+        style={{ width: `${pos}%` }}
+      >
+        <img
+          src={image}
+          alt="Standard"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            width: ref.current ? `${ref.current.offsetWidth}px` : '100%',
+            maxWidth: 'none',
+            filter: stdFilter,
+          }}
+          draggable={false}
+        />
       </div>
 
-      {/* Divider */}
-      <div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg" style={{ left: `${pos}%` }}>
-        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white shadow-xl flex items-center justify-center">
-          <div className="flex gap-0.5">
-            <div className="w-0.5 h-4 bg-gray-400 rounded" />
-            <div className="w-0.5 h-4 bg-gray-400 rounded" />
-          </div>
+      {/* Divider line */}
+      <div
+        className="absolute top-0 bottom-0 w-0.5 bg-white/90 shadow-[0_0_8px_rgba(0,0,0,0.5)]"
+        style={{ left: `${pos}%` }}
+      >
+        {/* Handle circle */}
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white shadow-xl border-2 border-white/80 flex items-center justify-center gap-1">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M4 7L1 4m0 6l3-3M10 7l3-3m0 6-3-3" stroke="#555" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
         </div>
       </div>
 
-      {/* Labels */}
-      <div className="absolute bottom-3 left-3 font-mono text-[10px] bg-black/70 text-white px-2 py-1 rounded">{beforeDesc}</div>
-      <div className="absolute bottom-3 right-3 font-mono text-[10px] bg-primary/80 text-white px-2 py-1 rounded">{afterDesc}</div>
-      <div className="absolute top-3 left-3 font-mono text-[10px] bg-black/50 text-white px-2 py-1 rounded">📱 Standard</div>
-      <div className="absolute top-3 right-3 font-mono text-[10px] bg-primary/70 text-white px-2 py-1 rounded">🚁 Drone 45MP</div>
+      {/* Top labels */}
+      <div className="absolute top-3 left-3 font-mono text-[10px] font-bold bg-black/60 backdrop-blur-sm text-white px-2.5 py-1 rounded-full">📱 Standard</div>
+      <div className="absolute top-3 right-3 font-mono text-[10px] font-bold bg-primary/80 backdrop-blur-sm text-white px-2.5 py-1 rounded-full">🚁 Drone 45MP</div>
+
+      {/* Bottom descriptions */}
+      <div className="absolute bottom-3 left-3 font-mono text-[9px] bg-black/70 text-gray-300 px-2 py-1 rounded max-w-[45%] leading-tight">{beforeDesc}</div>
+      <div className="absolute bottom-3 right-3 font-mono text-[9px] bg-primary/70 text-white px-2 py-1 rounded max-w-[45%] leading-tight text-right">{afterDesc}</div>
     </div>
   );
 }
@@ -114,8 +155,8 @@ export default function ComparateurPage() {
         {/* Main comparator */}
         <motion.div key={active} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="mb-8">
           <SliderComparator
-            before={comp.standard}
-            after={comp.drone}
+            image={comp.image}
+            stdFilter={comp.stdFilter}
             beforeDesc={comp.stdDesc}
             afterDesc={comp.droneDesc}
           />

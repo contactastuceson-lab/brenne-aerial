@@ -546,6 +546,9 @@ export default function HomePage() {
                   </Button>
                 </Link>
               </div>
+              <p className="font-inter text-xs text-muted-foreground mt-8 pt-8 border-t border-primary/10">
+                Des questions ? Consultez notre <a href="https://support.brenneaerial.org" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">documentation</a> ou contactez notre <a href="https://support.brenneaerial.org/support" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">support</a>.
+              </p>
             </div>
           </motion.div>
         </div>

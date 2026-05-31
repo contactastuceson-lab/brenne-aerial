@@ -211,6 +211,15 @@ export default function ServicesPage() {
 
       {/* Security section */}
       <SecuritySection />
-    </div>
-  );
-}
+
+      {/* Support footer */}
+      <section className="py-12 px-5 lg:px-10 border-t border-border/40">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="font-inter text-sm text-muted-foreground">
+            Besoin d'aide pour choisir ? Consultez notre <a href="https://support.brenneaerial.org" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">documentation complète</a> ou contactez notre <a href="https://support.brenneaerial.org/support" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">équipe support</a>.
+          </p>
+        </div>
+      </section>
+      </div>
+      );
+      }

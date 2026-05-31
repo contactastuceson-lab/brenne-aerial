@@ -472,7 +472,16 @@ export default function ContactPage() {
             </AnimatePresence>
           </div>
         </div>
-      </section>
-    </div>
-  );
-}
+        </section>
+
+        {/* Support footer */}
+        <section className="py-12 px-5 lg:px-10 border-t border-border/40">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="font-inter text-sm text-muted-foreground">
+            Consultez notre <a href="https://support.brenneaerial.org" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">documentation</a> pour plus d'informations ou contactez notre <a href="https://support.brenneaerial.org/support" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">support</a>.
+          </p>
+        </div>
+        </section>
+        </div>
+        );
+        }

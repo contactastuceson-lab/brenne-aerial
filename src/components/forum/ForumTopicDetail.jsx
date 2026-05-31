@@ -39,17 +39,7 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
     enabled: !!topicId,
   });
 
-  // Fetch all public users once
-  const { data: allPublicUsers = [] } = useQuery({
-    queryKey: ['public-users-forum'],
-    queryFn: async () => {
-      const res = await base44.functions.invoke('getPublicUsers', {});
-      return res.data.users || [];
-    },
-  });
 
-  // Get topic author from public users list
-  const authorData = allPublicUsers.find(u => u.id === topic?.author);
 
   // Increment view count
   useEffect(() => {
@@ -99,7 +89,6 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
   const isAuthor = topic.author === user?.id;
   const canMarkSolution = isAuthor || user?.role === 'admin' || user?.role === 'owner';
   const hasSolution = posts.some((post) => post.is_solution);
-  const isSupreme = authorData?.role === 'owner' || authorData?.role === 'pdg_adjoint';
 
   return (
     <div className="space-y-6">
@@ -147,33 +136,20 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
       </div>
 
       {/* Topic Content */}
-      <div className={cn(
-        "backdrop-blur-md border rounded-2xl p-8 shadow-lg transition-colors",
-        isSupreme
-          ? 'bg-gradient-to-br from-purple-900/20 to-slate-900/40 border-purple-500/40 hover:border-purple-500/50 shadow-purple-500/10'
-          : 'bg-gradient-to-br from-slate-800/60 to-slate-900/40 border-cyan-500/15 hover:border-cyan-500/25'
-      )}>
+      <div className="backdrop-blur-md border rounded-2xl p-8 shadow-lg transition-colors bg-gradient-to-br from-slate-800/60 to-slate-900/40 border-cyan-500/15 hover:border-cyan-500/25">
         <div className="mb-6 pb-6 border-b border-slate-700/50">
-           {authorData ? (
-             <UserBadgeProfile userId={topic.author} small />
-           ) : (
-             <div className="flex items-start gap-3">
-               <Avatar className="w-8 h-8 border border-cyan-500/20">
-                 <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white text-xs font-bold">
-                   {(topic.author_name || topic.author_username)?.charAt(0).toUpperCase() || 'U'}
-                 </AvatarFallback>
-               </Avatar>
-               <div className="flex flex-col gap-1">
-                 <span className="font-grotesk font-bold text-sm text-slate-400">
-                   {topic.author_name || `@${topic.author_username}` || 'Utilisateur supprimé'}
-                 </span>
-               </div>
-             </div>
-           )}
-           <p className="text-xs text-slate-400 mt-3">
-             {topic.created_date && formatDistanceToNow(new Date(topic.created_date), { locale: fr, addSuffix: true })}
-           </p>
-         </div>
+          <UserBadgeProfile 
+            userId={topic.author} 
+            fallbackName={topic.author_name}
+            fallbackUsername={topic.author_username}
+            fallbackAvatarUrl={topic.author_avatar_url}
+            fallbackBadges={topic.author_badges}
+            small 
+          />
+          <p className="text-xs text-slate-400 mt-3">
+            {topic.created_date && formatDistanceToNow(new Date(topic.created_date), { locale: fr, addSuffix: true })}
+          </p>
+        </div>
 
         {/* Tags */}
         {topic.tags && topic.tags.length > 0 && (

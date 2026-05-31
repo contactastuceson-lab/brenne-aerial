@@ -18,17 +18,7 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   const isCurrentUserAuthor = post.author === user?.id;
 
-  const { data: allPublicUsers = [] } = useQuery({
-    queryKey: ['public-users-forum'],
-    queryFn: async () => {
-      const res = await base44.functions.invoke('getPublicUsers', {});
-      return res.data.users || [];
-    },
-  });
 
-  const author = allPublicUsers.find(u => u.id === post.author);
-
-  const isSupreme = author && (author?.role === 'owner' || author?.role === 'pdg_adjoint');
 
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -60,8 +50,6 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
         'group rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm',
         post.is_solution
           ? 'bg-gradient-to-br from-green-900/30 to-emerald-900/20 border-green-500/40 shadow-xl shadow-green-500/20'
-          : isSupreme
-          ? 'bg-gradient-to-br from-purple-900/30 to-purple-800/20 border-purple-500/60 shadow-2xl shadow-purple-500/30'
           : 'bg-gradient-to-br from-slate-800/50 to-slate-900/30 border-cyan-500/20 hover:border-cyan-400/30 hover:shadow-md hover:shadow-cyan-500/10'
       )}
     >
@@ -69,34 +57,14 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
       <div className="px-6 py-4 border-b border-slate-700/30 flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="text-white mb-2">
-            {author ? (
-              <div className="flex items-start gap-3">
-                <Avatar className="w-8 h-8 border border-cyan-500/20 flex-shrink-0">
-                  <AvatarImage src={author?.avatar_url} alt={post.author_name} />
-                  <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs font-bold">
-                    {(author?.full_name)?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col gap-1 min-w-0 flex-1">
-                  <span className="font-grotesk font-bold text-sm text-white leading-tight">
-                    {author?.full_name}
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-start gap-3">
-                <Avatar className="w-8 h-8 border border-cyan-500/20 flex-shrink-0">
-                  <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white text-xs font-bold">
-                    {(post.author_name || post.author_username)?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col gap-1 min-w-0 flex-1">
-                  <span className="font-grotesk font-bold text-sm text-slate-400 leading-tight">
-                    {post.author_name || `@${post.author_username}` || 'Utilisateur supprimé'}
-                  </span>
-                </div>
-              </div>
-            )}
+            <UserBadgeProfile 
+              userId={post.author}
+              fallbackName={post.author_name}
+              fallbackUsername={post.author_username}
+              fallbackAvatarUrl={post.author_avatar_url}
+              fallbackBadges={post.author_badges}
+              small
+            />
           </div>
           <p className="text-xs text-slate-400">
             {post.created_date && formatDistanceToNow(new Date(post.created_date), { locale: fr, addSuffix: true })}
@@ -105,11 +73,6 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
         </div>
 
         <div className="flex items-center gap-2">
-          {isSupreme && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white border border-purple-400/50 rounded-full font-grotesk text-xs font-bold whitespace-nowrap flex-shrink-0 shadow-lg shadow-purple-500/40">
-              👑 SUPRÊME
-            </div>
-          )}
           {post.is_solution && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 rounded-full font-grotesk text-xs font-semibold whitespace-nowrap flex-shrink-0">
               <Check size={14} />

@@ -48,6 +48,7 @@ export default function NewDiscussionDialog() {
         author_name: user.display_name || user.full_name,
         author_avatar: user.avatar_url,
         author_badges: user.badges || [],
+        author_verified: user.verified_status === 'yes',
       });
     },
     onSuccess: () => {

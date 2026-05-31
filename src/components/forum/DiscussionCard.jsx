@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MessageCircle, Eye, Star, UserCheck, Award, Shield, Zap, CheckCircle, Heart } from 'lucide-react';
+import { MessageCircle, Eye, Star, UserCheck, Award, Shield, Zap, CheckCircle, Heart, Check } from 'lucide-react';
 
 const BADGE_CONFIG = {
   'Fondateur':      { icon: Star,      color: 'text-yellow-400' },
@@ -50,8 +50,15 @@ export default function DiscussionCard({ discussion }) {
               </div>
             )}
             
-            {/* Nom */}
-            <span>{discussion.author_name}</span>
+            {/* Nom + Badge certifié */}
+            <div className="flex items-center gap-1">
+              <span>{discussion.author_name}</span>
+              {discussion.author_verified && (
+                <div className="w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0">
+                  <Check size={12} className="text-white" />
+                </div>
+              )}
+            </div>
 
             {/* Badges de certification */}
             {discussion.author_badges?.length > 0 && (

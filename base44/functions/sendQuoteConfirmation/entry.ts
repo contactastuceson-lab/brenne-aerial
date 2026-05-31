@@ -73,10 +73,15 @@ Deno.serve(async (req) => {
 </table>
 </body></html>`;
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: clientEmail,
-      subject: `📋 Demande de devis reçue — Brenne Aerial${ref ? ' (#' + ref + ')' : ''}`,
-      body: html,
+    // Use the sendQuoteEmail function which handles external emails
+    await base44.asServiceRole.functions.invoke('sendQuoteEmail', {
+      clientName,
+      clientEmail,
+      serviceType,
+      estimatedPrice,
+      dateStr,
+      quoteId: ref,
+      emailType: 'received',
     });
 
     return Response.json({ success: true });

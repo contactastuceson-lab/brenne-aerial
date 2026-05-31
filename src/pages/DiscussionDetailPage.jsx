@@ -5,12 +5,13 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, MessageCircle, Eye, Heart, Check } from 'lucide-react';
+import { ArrowLeft, Eye, Heart, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
+import VerificationIcons from '@/components/ui/VerificationIcon';
 
 export default function DiscussionDetailPage() {
   const { id } = useParams();
@@ -54,6 +55,8 @@ export default function DiscussionDetailPage() {
         author_id: user.id,
         author_name: user.full_name,
         author_avatar: user.avatar_url,
+        author_is_supreme: user.verifications?.includes('supreme') || false,
+        author_verifications: Array.isArray(user.verifications) ? user.verifications.filter(v => v !== 'supreme') : [],
       });
     },
     onSuccess: () => {
@@ -92,7 +95,13 @@ export default function DiscussionDetailPage() {
           </div>
           <h1 className="text-4xl font-bold text-white">{discussion.title}</h1>
           <div className="flex items-center gap-6 text-sm text-slate-400">
-            <span>{discussion.author_name}</span>
+            <div className="flex items-center gap-2">
+              <span>{discussion.author_name}</span>
+              <VerificationIcons 
+                verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
+                size="sm" 
+              />
+            </div>
             <span>{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
             <div className="flex items-center gap-1">
               <Eye size={14} />
@@ -132,9 +141,15 @@ export default function DiscussionDetailPage() {
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <p className="font-semibold text-white">
-                        {reply.author_name}
-                      </p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold text-white">
+                          {reply.author_name}
+                        </p>
+                        <VerificationIcons 
+                          verifications={reply.author_verifications} 
+                          size="sm" 
+                        />
+                      </div>
                       <p className="text-xs text-slate-400">
                         {formatDistanceToNow(new Date(reply.created_date), { locale: fr, addSuffix: true })}
                       </p>

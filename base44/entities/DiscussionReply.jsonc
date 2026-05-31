@@ -22,6 +22,18 @@
       "type": "string",
       "description": "Avatar de l'auteur (snapshot)"
     },
+    "author_is_supreme": {
+      "type": "boolean",
+      "default": false,
+      "description": "L'auteur a le statut Supr\u00eame"
+    },
+    "author_verifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Certifications de l'auteur (verified, certified, official, pro)"
+    },
     "likes_count": {
       "type": "number",
       "default": 0

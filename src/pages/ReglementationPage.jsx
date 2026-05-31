@@ -16,6 +16,10 @@ import ObligationsSection from '@/components/reglementation/ObligationsSection';
 import SecuriteRGPDSection from '@/components/reglementation/SecuriteRGPDSection';
 import EngagementSection from '@/components/reglementation/EngagementSection';
 import FAQSection from '@/components/reglementation/FAQSection';
+import GlossaireTermes from '@/components/reglementation/GlossaireTermes';
+import BrennAerialProces from '@/components/reglementation/BrennAerialProces';
+import ExemplesReels from '@/components/reglementation/ExemplesReels';
+import BrennAerialCredibilite from '@/components/reglementation/BrennAerialCredibilite';
 
 const ZONES_INTERDITES = [
   { icon: Building2, title: 'Agglomérations / centres-villes', desc: 'Vol en espace public interdit sans autorisation (A3 interdite en zone urbaine). STS-01 requis avec drone C5.', color: '#ef4444' },
@@ -100,6 +104,9 @@ export default function ReglementationPage() {
         </motion.div>
       </div>
 
+      {/* ── Glossaire (explications simples) ── */}
+      <GlossaireTermes />
+
       {/* ── Timeline ── */}
       <TimelineSection />
 
@@ -131,6 +138,9 @@ export default function ReglementationPage() {
           })}
         </div>
       </div>
+
+      {/* ── Comment Brenne Aerial prépare ses missions ── */}
+      <BrennAerialProces />
 
       {/* ── 3 Catégories ── */}
       <CategoriesSection />
@@ -178,6 +188,12 @@ export default function ReglementationPage() {
           </a>
         </div>
       </div>
+
+      {/* ── Exemples réels ── */}
+      <ExemplesReels />
+
+      {/* ── Crédibilité & confiance ── */}
+      <BrennAerialCredibilite />
 
       {/* ── Sécurité & RGPD ── */}
       <SecuriteRGPDSection />

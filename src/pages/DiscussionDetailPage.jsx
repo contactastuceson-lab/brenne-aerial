@@ -101,7 +101,12 @@ export default function DiscussionDetailPage() {
               {discussion.author_avatar && (
                 <img src={discussion.author_avatar} alt="" className="w-6 h-6 rounded-full" />
               )}
-              <span>{discussion.author_display_name || discussion.author_name}</span>
+              <div className="flex items-center gap-1">
+                <span>{discussion.author_display_name || discussion.author_name}</span>
+                {discussion.author_username && (
+                  <span className="text-slate-600">@{discussion.author_username}</span>
+                )}
+              </div>
               <VerificationIcons 
                 verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
                 size="sm" 

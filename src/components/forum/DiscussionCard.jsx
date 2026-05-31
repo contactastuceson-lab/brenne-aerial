@@ -62,14 +62,14 @@ export default function DiscussionCard({ discussion }) {
             {/* Nom + Certifications (ronds) + Badges */}
             <div className="flex items-center gap-2">
               <span>{discussion.author_name}</span>
-              {/* Chips de certifications */}
+              {/* Chips de certifications (ronds icônes seuls) */}
               <div className="flex items-center gap-0.5">
                 {discussion.author_is_supreme && (
-                  <VerificationChip type="supreme" size="xs" />
+                  <VerificationChip type="supreme" size="sm" iconOnly />
                 )}
                 {discussion.author_verifications?.length > 0 && (
                   discussion.author_verifications.map(v => (
-                    <VerificationChip key={v} type={v} size="xs" />
+                    <VerificationChip key={v} type={v} size="sm" iconOnly />
                   ))
                 )}
               </div>

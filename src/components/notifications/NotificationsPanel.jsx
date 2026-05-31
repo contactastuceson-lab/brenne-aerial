@@ -21,11 +21,21 @@ const TYPE_COLORS = {
 export default function NotificationsPanel({ user, open, onClose }) {
   const queryClient = useQueryClient();
 
-  const { data: notifs = [] } = useQuery({
+  const { data: rawNotifs = [] } = useQuery({
     queryKey: ['notifs-panel', user?.email],
     queryFn: () => base44.entities.Notification.filter({ user_email: user.email }, '-created_date', 30),
     enabled: !!user?.email && open,
   });
+
+  // Déduplication: garder la plus récente par titre+type
+  const notifs = rawNotifs.reduce((acc, n) => {
+    const key = `${n.type}|${n.title}`;
+    const existing = acc.find(x => `${x.type}|${x.title}` === key);
+    if (!existing || new Date(n.created_date) > new Date(existing.created_date)) {
+      return [...acc.filter(x => `${x.type}|${x.title}` !== key), n];
+    }
+    return acc;
+  }, []);
 
   const markRead = useMutation({
     mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),

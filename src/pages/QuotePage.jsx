@@ -65,6 +65,13 @@ export default function QuotePage() {
         setQuotesEnabled(map['page_quote_enabled'] !== 'false' && map['quotes_enabled'] !== 'false');
         const prices = await getServicePrices();
         setServicePrices(prices);
+
+        // Si connecté, pré-remplir le formulaire
+        const authed = await base44.auth.isAuthenticated();
+        if (authed) {
+          const user = await base44.auth.me();
+          setForm(p => ({ ...p, client_name: user.full_name, client_email: user.email, client_phone: user.phone || '' }));
+        }
       } finally {
         setLoading(false);
       }

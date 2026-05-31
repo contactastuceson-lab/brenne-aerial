@@ -18,13 +18,10 @@ const NAV_LINKS = [
 ];
 
 const TOOLS = [
-  { to: '/calculateur',      label: 'Calculateur de prix' },
   { to: '/garage',           label: 'Garage Drones' },
   { to: '/partenaires',      label: 'Partenaires' },
   { to: '/parrainage',       label: 'Parrainage' },
-  { to: '/avant-apres',      label: 'Avant / Après' },
   { to: '/reglementation',   label: 'Réglementation' },
-  { to: '/simulateur-vue',   label: 'Simulateur de vue' },
   { to: '/comparateur',      label: 'Comparateur résolution' },
   { to: '/flash-delivery',   label: 'Flash Delivery' },
   { to: '/espace-client',    label: 'Espace Client' },

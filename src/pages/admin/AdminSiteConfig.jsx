@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import ImageUploadOrUrl from '@/components/ui/ImageUploadOrUrl';
 
 const TABS = [
   { id: 'pages', label: 'Pages & Modules', icon: LayoutDashboard },
@@ -64,13 +65,13 @@ const TEXT_FIELDS = {
     { key: 'hero_desc', label: 'Description', placeholder: 'Brenne Aerial propulse votre vision...', textarea: true },
     { key: 'hero_cta_primary', label: 'Bouton principal', placeholder: 'Demander un devis' },
     { key: 'hero_cta_secondary', label: 'Bouton secondaire', placeholder: 'Voir le portfolio' },
-    { key: 'hero_image_url', label: 'Image de fond (URL)', placeholder: 'https://...' },
+    { key: 'hero_image_url', label: 'Image de fond', placeholder: 'https://...', image: true },
     { key: 'newsletter_url', label: 'URL Newsletter (Sendinblue etc.)', placeholder: 'https://...' },
   ],
   about: [
     { key: 'about_name', label: 'Nom du fondateur', placeholder: 'Enor Lefoulon Meyer' },
     { key: 'about_title', label: 'Titre fondateur', placeholder: 'Fondateur & PDG' },
-    { key: 'about_photo_url', label: 'Photo fondateur (URL)', placeholder: 'https://...' },
+    { key: 'about_photo_url', label: 'Photo fondateur', placeholder: 'https://...', image: true },
     { key: 'about_headline', label: 'Titre section À propos', placeholder: 'Expertise aérienne au service de vos projets.' },
     { key: 'about_desc', label: 'Description À propos', placeholder: 'Brenne Aerial offre...', textarea: true },
   ],
@@ -259,6 +260,26 @@ function SettingField({ field, value, onChange, onSave, saving }) {
 
   const handleChange = (v) => { setLocal(v); setDirty(true); };
   const handleSave = () => { onChange(local); onSave(field.key, local); setDirty(false); };
+
+  // Image fields get the upload+URL picker
+  if (field.image) {
+    return (
+      <div className="space-y-2">
+        <ImageUploadOrUrl
+          label={field.label}
+          value={local}
+          onChange={v => { setLocal(v); setDirty(true); }}
+          previewHeight="h-28"
+        />
+        {dirty && (
+          <Button size="sm" className="bg-primary gap-1.5" onClick={handleSave} disabled={saving}>
+            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+            Sauvegarder
+          </Button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-1">

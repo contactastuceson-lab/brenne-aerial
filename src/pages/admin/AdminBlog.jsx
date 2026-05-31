@@ -5,6 +5,7 @@ import { Plus, Trash2, Eye, EyeOff, Loader2, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import ImageUploadOrUrl from '@/components/ui/ImageUploadOrUrl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -98,7 +99,7 @@ export default function AdminBlog() {
               </Select>
               <Input placeholder="Temps de lecture (min)" type="number" value={form.reading_time} onChange={e => setForm(p => ({ ...p, reading_time: parseInt(e.target.value) || 3 }))} className="bg-secondary border-border" />
             </div>
-            <Input placeholder="URL de couverture" value={form.cover_url} onChange={e => setForm(p => ({ ...p, cover_url: e.target.value }))} className="bg-secondary border-border" />
+            <ImageUploadOrUrl label="Image de couverture" value={form.cover_url} onChange={v => setForm(p => ({ ...p, cover_url: v }))} previewHeight="h-32" />
             <Textarea placeholder="Résumé court..." value={form.excerpt} onChange={e => setForm(p => ({ ...p, excerpt: e.target.value }))} className="bg-secondary border-border h-20" />
             <Textarea placeholder="Contenu complet de l'article..." value={form.content} onChange={e => setForm(p => ({ ...p, content: e.target.value }))} className="bg-secondary border-border min-h-[200px]" />
             <div className="flex items-center gap-3">

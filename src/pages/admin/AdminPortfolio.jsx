@@ -5,6 +5,7 @@ import { Plus, Trash2, Eye, EyeOff, Star, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import ImageUploadOrUrl from '@/components/ui/ImageUploadOrUrl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -107,8 +108,8 @@ export default function AdminPortfolio() {
                 <SelectContent>{MEDIA_TYPES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <Input placeholder="URL média (YouTube, image...)" value={form.media_url} onChange={e => setForm(p => ({ ...p, media_url: e.target.value }))} className="bg-secondary border-border" />
-            <Input placeholder="URL miniature" value={form.thumbnail_url} onChange={e => setForm(p => ({ ...p, thumbnail_url: e.target.value }))} className="bg-secondary border-border" />
+            <Input placeholder="URL média (YouTube, vidéo...)" value={form.media_url} onChange={e => setForm(p => ({ ...p, media_url: e.target.value }))} className="bg-secondary border-border" />
+            <ImageUploadOrUrl label="Miniature (image d'aperçu)" value={form.thumbnail_url} onChange={v => setForm(p => ({ ...p, thumbnail_url: v }))} previewHeight="h-24" />
             <Input placeholder="Nom client" value={form.client_name} onChange={e => setForm(p => ({ ...p, client_name: e.target.value }))} className="bg-secondary border-border" />
             <Textarea placeholder="Description" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} className="bg-secondary border-border" />
             <div className="flex items-center gap-4">

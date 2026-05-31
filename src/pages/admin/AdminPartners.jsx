@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, Loader2, X, Check, Star, Eye, EyeOff } from 'luci
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import ImageUploadOrUrl from '@/components/ui/ImageUploadOrUrl';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -54,10 +55,7 @@ function PartnerForm({ initial, onSave, onCancel, isSaving }) {
         <label className="font-inter text-xs text-muted-foreground mb-1 block">Description</label>
         <Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Description du partenaire…" className="bg-secondary border-border" rows={2} />
       </div>
-      <div>
-        <label className="font-inter text-xs text-muted-foreground mb-1 block">URL Logo</label>
-        <Input value={form.logo_url} onChange={e => set('logo_url', e.target.value)} placeholder="https://…" className="bg-secondary border-border" />
-      </div>
+      <ImageUploadOrUrl label="Logo du partenaire" value={form.logo_url} onChange={v => set('logo_url', v)} previewHeight="h-24" />
       <div className="flex gap-4">
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={form.is_featured} onChange={e => set('is_featured', e.target.checked)} />

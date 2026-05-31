@@ -196,34 +196,36 @@ const UserBadgeProfile = ({ userId, small = false, fallbackName, fallbackUsernam
     return (
       <HoverCard>
         <HoverCardTrigger asChild>
-          <button className="flex items-start gap-3 hover:opacity-85 transition-opacity group">
-            <Avatar className="w-8 h-8 border border-cyan-500/20">
+          <button className="flex items-start gap-3 hover:opacity-85 transition-opacity group w-full">
+            <Avatar className="w-8 h-8 border border-cyan-500/20 flex-shrink-0">
               <AvatarImage src={user.avatar_url} />
               <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs font-bold">
                 {(user.full_name || user.name)?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
-            <div className="flex items-center gap-1 min-w-0 flex-1">
-              <span className="font-grotesk font-bold text-sm text-white group-hover:text-cyan-300 transition-colors leading-tight">
+            <div className="flex flex-col gap-1 min-w-0 flex-1">
+              <span className="font-grotesk font-bold text-sm text-white group-hover:text-cyan-300 transition-colors leading-tight text-left">
                 {user.full_name || user.name}
               </span>
-              <div className="flex gap-0.5 items-center flex-shrink-0">
-              <VerificationIcons verifications={user.verifications} size="sm" />
-              {user.badges && user.badges.length > 0 && user.badges.slice(0, 3).map((badge) => {
-                const cfg = BADGE_CONFIG[badge];
-                if (!cfg) return null;
-                const Icon = cfg.icon;
-                return (
-                  <div
-                    key={badge}
-                    className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 border ${cfg.color} ${cfg.bg} ${cfg.border}`}
-                    title={badge}
-                  >
-                    <Icon className="w-2.5 h-2.5" strokeWidth={2.5} />
-                  </div>
-                );
-              })}
-              </div>
+              {user.badges && user.badges.length > 0 && (
+                <div className="flex gap-1 items-center flex-wrap">
+                  <VerificationIcons verifications={user.verifications} size="sm" />
+                  {user.badges.slice(0, 3).map((badge) => {
+                    const cfg = BADGE_CONFIG[badge];
+                    if (!cfg) return null;
+                    const Icon = cfg.icon;
+                    return (
+                      <div
+                        key={badge}
+                        className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 border ${cfg.color} ${cfg.bg} ${cfg.border}`}
+                        title={badge}
+                      >
+                        <Icon className="w-2.5 h-2.5" strokeWidth={2.5} />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </button>
         </HoverCardTrigger>

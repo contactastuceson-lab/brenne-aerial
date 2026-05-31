@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Megaphone, Plus, Trash2, Edit, Info, AlertTriangle, CheckCircle, AlertCircle, Save, X, Download } from 'lucide-react';
+import { Megaphone, Plus, Trash2, Edit, Info, AlertTriangle, CheckCircle, AlertCircle, Save, X, Download, Bell, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -96,6 +96,41 @@ export default function AdminAnnouncements() {
       qc.invalidateQueries({ queryKey: ['announcements-banner'] });
       setSelectedIds([]);
       toast.success('Annonces mises à jour');
+    },
+  });
+
+  const notifyMutation = useMutation({
+    mutationFn: async (id) => {
+      const ann = announcements.find(a => a.id === id);
+      if (!ann) throw new Error('Annonce non trouvée');
+      // Get all users and send notification
+      const users = await base44.asServiceRole.entities.User.list('', 1000);
+      await Promise.all(users.map(u =>
+        base44.integrations.Core.SendEmail({
+          to: u.email,
+          from_name: 'Brenne Aerial',
+          subject: `📢 ${ann.title || 'Nouvelle annonce'}`,
+          body: `
+<div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a1628; color: #e8edf5; border-radius: 12px; overflow: hidden;">
+  <div style="background: linear-gradient(135deg, #1a6fa8, #0e5a8a); padding: 32px 36px;">
+    <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px;">📢 ${ann.title || 'Nouvelle annonce'}</h1>
+  </div>
+  <div style="padding: 32px 36px; background: #0d1f35;">
+    <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.7; color: #c8d8e8;">${ann.content.replace(/\n/g, '<br>')}</p>
+    ${ann.link_url ? `<a href="${ann.link_url}" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #1a6fa8, #0e5a8a); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 13px;">${ann.link_label || 'En savoir plus'}</a>` : ''}
+  </div>
+  <div style="padding: 16px 36px; background: #060e1a; text-align: center;">
+    <p style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.2);">Brenne Aerial • ${new Date().toLocaleDateString('fr-FR')}</p>
+  </div>
+</div>`
+        })
+      ));
+    },
+    onSuccess: () => {
+      toast.success('Notification envoyée à tous les utilisateurs');
+    },
+    onError: (err) => {
+      toast.error('Erreur lors de l\'envoi: ' + err.message);
     },
   });
 
@@ -295,6 +330,10 @@ export default function AdminAnnouncements() {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <Switch checked={a.is_active} onCheckedChange={v => toggleActive.mutate({ id: a.id, val: v })} />
+                <Button size="icon" variant="ghost" className="w-7 h-7 text-muted-foreground hover:text-primary" title="Notifier les utilisateurs"
+                  onClick={() => notifyMutation.mutate(a.id)} disabled={notifyMutation.isPending}>
+                  {notifyMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Bell className="w-3 h-3" />}
+                </Button>
                 <Button size="icon" variant="ghost" className="w-7 h-7 text-muted-foreground hover:text-foreground" onClick={() => openEdit(a)}>
                   <Edit className="w-3 h-3" />
                 </Button>

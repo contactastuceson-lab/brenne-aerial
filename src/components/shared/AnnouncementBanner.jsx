@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Info, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 
 const TYPE_CONFIG = {
-  info:    { icon: Info,          bg: 'bg-primary border-primary/80',         text: 'text-white',         iconColor: 'text-white' },
-  warning: { icon: AlertTriangle, bg: 'bg-yellow-500 border-yellow-600',       text: 'text-white',         iconColor: 'text-white' },
-  success: { icon: CheckCircle,   bg: 'bg-green-600 border-green-700',         text: 'text-white',         iconColor: 'text-white' },
-  error:   { icon: AlertCircle,   bg: 'bg-red-600 border-red-700',             text: 'text-white',         iconColor: 'text-white' },
+  info:    { icon: Info,          bg: 'bg-gradient-to-r from-primary to-accent border-primary/30',         text: 'text-white', iconColor: 'text-white' },
+  warning: { icon: AlertTriangle, bg: 'bg-gradient-to-r from-yellow-500 to-orange-500 border-yellow-600/30', text: 'text-white', iconColor: 'text-white' },
+  success: { icon: CheckCircle,   bg: 'bg-gradient-to-r from-green-600 to-teal-600 border-green-600/30',     text: 'text-white', iconColor: 'text-white' },
+  error:   { icon: AlertCircle,   bg: 'bg-gradient-to-r from-red-600 to-pink-600 border-red-600/30',         text: 'text-white', iconColor: 'text-white' },
 };
 
 // Parse text and make URLs + emails clickable
@@ -66,22 +66,26 @@ export default function AnnouncementBanner({ user }) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`w-full border-b ${cfg.bg} px-5 py-3 flex items-center gap-3`}
+            className={`w-full border-b-2 ${cfg.bg} px-5 py-4 flex items-center gap-4 shadow-sm backdrop-blur-sm`}
           >
-            <Icon className={`w-4 h-4 flex-shrink-0 ${cfg.iconColor}`} />
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
+                <Icon className={`w-4 h-4 ${cfg.iconColor}`} />
+              </div>
+            </div>
             <div className="flex-1 min-w-0">
-              {a.title && <span className={`font-grotesk font-semibold text-sm mr-2 ${cfg.text}`}>{a.title}</span>}
-              <span className={`font-inter text-sm ${cfg.text}`}><RichContent text={a.content} textClass={cfg.text} /></span>
+              {a.title && <span className={`font-grotesk font-bold text-sm mr-2 ${cfg.text}`}>{a.title}</span>}
+              <span className={`font-inter text-sm ${cfg.text} block`}><RichContent text={a.content} textClass={cfg.text} /></span>
               {a.link_url && (
                 <a href={a.link_url} target="_blank" rel="noopener noreferrer"
-                  className="flex-shrink-0 ml-2 font-inter text-xs font-semibold underline text-white hover:text-white/80 whitespace-nowrap">
+                  className="inline-flex mt-2 gap-1 items-center px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-inter text-xs font-semibold text-white transition-colors whitespace-nowrap">
                   {a.link_label || 'En savoir plus'} →
                 </a>
               )}
             </div>
             {a.dismissible !== false && (
-              <button onClick={() => dismiss(a.id)} className="text-white/70 hover:text-white flex-shrink-0" title="Masquer jusqu'au refresh">
-                <X className="w-3.5 h-3.5" />
+              <button onClick={() => dismiss(a.id)} className="text-white/70 hover:text-white hover:bg-white/10 rounded-lg p-1 flex-shrink-0 transition-colors" title="Masquer">
+                <X className="w-4 h-4" />
               </button>
             )}
           </motion.div>

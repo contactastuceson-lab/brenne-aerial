@@ -50,13 +50,16 @@ export default function DiscussionCard({ discussion }) {
               </div>
             )}
             
-            {/* Nom + Badge certifié */}
-            <div className="flex items-center gap-1">
+            {/* Nom + Badge certification */}
+            <div className="flex items-center gap-1.5">
               <span>{discussion.author_name}</span>
-              {discussion.author_verified && (
-                <div className="w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center flex-shrink-0">
-                  <Check size={12} className="text-white" />
-                </div>
+              {discussion.author_certification_badge && (
+                <img 
+                  src={discussion.author_certification_badge} 
+                  alt="certification" 
+                  className="w-4 h-4 object-contain"
+                  title="Certifié"
+                />
               )}
             </div>
 

@@ -15,6 +15,8 @@ const ICON_MAP = {
   Video, Building2, HardHat, Camera, Briefcase, Wifi,
 };
 
+const DISABLED_SERVICES = ['photogrammetrie_3d', 'cartographie_releves', 'thermographie', 'surveillance', 'agriculture'];
+
 const SERVICE_DESCRIPTIONS = {
   video_evenement: { tagline: 'Captez chaque instant depuis les airs', desc: "Mariages, concerts, festivals, compétitions sportives — faites vivre vos événements avec des prises de vue aériennes spectaculaires en 4K. Chaque moment devient une œuvre cinématographique.", features: ['Vidéo 4K Ultra HD', 'Stabilisation 3 axes', 'Montage professionnel', 'Livraison sous 48h', 'Photos aériennes incluses'], color: 'text-primary', icon: 'Video', image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=70' },
   inspection_toiture: { tagline: 'Diagnostic précis, zéro risque', desc: "Évaluez l'état de vos toitures, cheminées, façades et structures en hauteur sans échafaudage ni intervention risquée. Images haute résolution et rapport technique complet.", features: ['Caméra thermique optionnel', 'Images 48 MP', 'Rapport PDF détaillé', 'Géolocalisation des défauts', 'Sans interruption d\'activité'], color: 'text-accent', icon: 'Building2', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=70' },
@@ -22,15 +24,15 @@ const SERVICE_DESCRIPTIONS = {
   captation_particulier: { tagline: 'Vos souvenirs vus du ciel', desc: "Propriétés, portraits, anniversaires, aventures — immortalisez vos moments de vie avec une perspective unique. Un regard aérien personnel et authentique.", features: ['Photos & vidéo 4K', 'Retouche incluse', 'Galerie privée en ligne', 'Droits d\'utilisation', 'Tarifs accessibles'], color: 'text-green-400', icon: 'Camera', image: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&auto=format&fit=crop&q=70' },
   captation_entreprise: { tagline: 'Valorisez votre image de marque', desc: "Clips institutionnels, présentations immobilières, vidéos marketing — donnez une dimension aérienne exceptionnelle à votre communication d'entreprise.", features: ['Brief personnalisé', 'Script & storyboard', 'Tournage multi-jours', 'Post-production avancée', 'Formats multi-plateformes'], color: 'text-primary', icon: 'Briefcase', image: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&auto=format&fit=crop&q=70' },
   retour_temps_reel: { tagline: 'Opérations critiques en live', desc: "Diffusion vidéo en direct depuis le drone vers vos équipes au sol ou en salle de crise. Parfait pour la sécurité, la gestion d'événements et les opérations industrielles.", features: ['Latence < 100ms', 'Cryptage sécurisé', 'Multi-récepteurs', 'Intégration streaming', 'Support 24/7 on-site'], color: 'text-destructive', icon: 'Wifi', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=70' },
-  photogrammetrie_3d: { tagline: 'Modélisation numérique précise', desc: "Créez des modèles 3D détaillés par photogramm métrie aérienne. Parfait pour la documentation, la conservation du patrimoine et les projets d'architecture.", features: ['Nuages de points HD', 'Maillage 3D haute précision', 'Ortho-mosaïques', 'Rapport de mesure', 'Export multi-formats'], color: 'text-primary', icon: 'Building2', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=70' },
-  cartographie_releves: { tagline: 'Cartographie aérienne topographique', desc: "Cartes précises géoréférencées et relevés topographiques pour vos projets d'aménagement, d'études d'impact et de planification urbaine.", features: ['Cartes géoréférencées', 'Relevés précis', 'Plans topographiques', 'Intégration SIG', 'Certification RTK'], color: 'text-chart-5', icon: 'HardHat', image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=70' },
-  thermographie: { tagline: 'Inspection thermique aérienne', desc: "Détectez les déperditions énergétiques, diagnostiquez les problèmes mécaniques et inspectez les installations électriques sans contact.", features: ['Caméra thermique 640x512', 'Analyse radiométrique', 'Rapports d\'anomalie', 'Haute précision', 'Industries variées'], color: 'text-destructive', icon: 'Camera', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=70' },
-  surveillance: { tagline: 'Couverture aérienne continue', desc: "Surveillance de sites sensibles, gardiennage aérien et monitoring de zones étendues. Dissuasion efficace et documentation en temps réel.", features: ['Couverture 24/7', 'Alertes temps réel', 'Archivage sécurisé', 'Intégration CMS', 'Intervention rapide'], color: 'text-destructive', icon: 'Video', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=70' },
+  photogrammetrie_3d: { tagline: 'Modélisation numérique précise', desc: "Créez des modèles 3D détaillés par photogramm métrie aérienne. Parfait pour la documentation, la conservation du patrimoine et les projets d'architecture.", features: ['Nuages de points HD', 'Maillage 3D haute précision', 'Ortho-mosaïques', 'Rapport de mesure', 'Export multi-formats'], color: 'text-primary', icon: 'Building2', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=70', disabled: true },
+  cartographie_releves: { tagline: 'Cartographie aérienne topographique', desc: "Cartes précises géoréférencées et relevés topographiques pour vos projets d'aménagement, d'études d'impact et de planification urbaine.", features: ['Cartes géoréférencées', 'Relevés précis', 'Plans topographiques', 'Intégration SIG', 'Certification RTK'], color: 'text-chart-5', icon: 'HardHat', image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=70', disabled: true },
+  thermographie: { tagline: 'Inspection thermique aérienne', desc: "Détectez les déperditions énergétiques, diagnostiquez les problèmes mécaniques et inspectez les installations électriques sans contact.", features: ['Caméra thermique 640x512', 'Analyse radiométrique', 'Rapports d\'anomalie', 'Haute précision', 'Industries variées'], color: 'text-destructive', icon: 'Camera', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=70', disabled: true },
+  surveillance: { tagline: 'Couverture aérienne continue', desc: "Surveillance de sites sensibles, gardiennage aérien et monitoring de zones étendues. Dissuasion efficace et documentation en temps réel.", features: ['Couverture 24/7', 'Alertes temps réel', 'Archivage sécurisé', 'Intégration CMS', 'Intervention rapide'], color: 'text-destructive', icon: 'Video', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=70', disabled: true },
   contenu_social: { tagline: 'Vidéos créatives pour vos plateformes', desc: "Reels, shorts, TikToks avec perspective aérienne. Contenu viral et engageant pour amplifier votre présence sur les réseaux.", features: ['Format verticaux/horizontaux', 'Effets & transitions', 'Musique & colorisation', 'Optimisation SEO', 'Multi-plateforme'], color: 'text-primary', icon: 'Video', image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=70' },
   reportage: { tagline: 'Contenu documentaire professionnel', desc: "Reportages aériens, documentaires et contenus éditoriaux avec production cinématographique complète. Narration, montage et post-production avancés.", features: ['Production complète', 'Narration professionnelle', 'Montage cinéma', 'Étalonnage couleur', 'Master DCI 4K'], color: 'text-accent', icon: 'Video', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=70' },
   mariage_aero: { tagline: 'Photos aériennes d\'amour', desc: "Captez votre plus beau jour depuis le ciel. Photos aériennes romantiques et vidéo cinématographique pour vos plus beaux souvenirs.", features: ['Séance d\'une journée', 'Photos retouchées', 'Album numérique', 'Diaporama musical', 'Tirage premium'], color: 'text-green-400', icon: 'Camera', image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=70' },
   immobilier_virtuelle: { tagline: 'Tour 360° de vos propriétés', desc: "Visite virtuelle immersive 360° de vos biens immobiliers. Décuplé la visibilité et facilitez les visites à distance.", features: ['Visite 360° complète', 'Navigation fluide', 'Géolocalisation', 'Intégration portails', 'Multidevices'], color: 'text-primary', icon: 'Building2', image: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&auto=format&fit=crop&q=70' },
-  agriculture: { tagline: 'Monitoring aérien agricole intelligent', desc: "Surveillance de cultures, détection de maladies, cartographie d'irrigation. Optimisez vos rendements avec l'analyse aérienne.", features: ['Imagerie multispectrale', 'Indices NDVI', 'Cartographie d\'humidité', 'Alertes anomalies', 'Rapports agronomes'], color: 'text-chart-5', icon: 'HardHat', image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=70' },
+  agriculture: { tagline: 'Monitoring aérien agricole intelligent', desc: "Surveillance de cultures, détection de maladies, cartographie d'irrigation. Optimisez vos rendements avec l'analyse aérienne.", features: ['Imagerie multispectrale', 'Indices NDVI', 'Cartographie d\'humidité', 'Alertes anomalies', 'Rapports agronomes'], color: 'text-chart-5', icon: 'HardHat', image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&auto=format&fit=crop&q=70', disabled: true },
 };
 
 export default function ServicesPage() {
@@ -87,16 +89,16 @@ export default function ServicesPage() {
         {activeProfile && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6 flex items-center gap-2">
             <span className="font-inter text-sm text-muted-foreground">
-              {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} pour votre profil
+              {filteredServices.filter(s => !SERVICE_DESCRIPTIONS[s.slug]?.disabled).length} service{filteredServices.filter(s => !SERVICE_DESCRIPTIONS[s.slug]?.disabled).length !== 1 ? 's' : ''} pour votre profil
             </span>
             <button onClick={() => setActiveProfile(null)} className="font-mono text-xs text-primary hover:underline">
               Voir tout
             </button>
           </motion.div>
         )}
-        <div className="space-y-8">
+        <div className="space-y-8 mb-12">
           <AnimatePresence mode="wait">
-            {filteredServices.map((svc, i) => {
+            {filteredServices.filter(svc => !SERVICE_DESCRIPTIONS[svc.slug]?.disabled).map((svc, i) => {
               const desc = SERVICE_DESCRIPTIONS[svc.slug] || { color: 'text-primary', icon: 'Video', features: [] };
               const Icon = ICON_MAP[desc.icon] || Video;
               const price = { base: svc.base_price, per_hour: svc.price_per_hour };
@@ -140,10 +142,7 @@ export default function ServicesPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-mono text-xs text-muted-foreground">À partir de</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="font-grotesk font-bold text-xl text-primary">{formatPrice(price?.base || 0)}</p>
-                          <span className="font-mono text-[10px] px-2 py-1 rounded-full bg-chart-5/10 text-chart-5 font-semibold">Bientôt</span>
-                        </div>
+                        <p className="font-grotesk font-bold text-xl text-primary mt-1">{formatPrice(price?.base || 0)}</p>
                       </div>
                       <Link to="/quote">
                         <Button className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-grotesk font-semibold">
@@ -157,6 +156,54 @@ export default function ServicesPage() {
             })}
           </AnimatePresence>
         </div>
+
+        {/* Bientôt disponible */}
+        {filteredServices.some(svc => SERVICE_DESCRIPTIONS[svc.slug]?.disabled) && (
+          <div>
+            <h3 className="font-grotesk font-semibold text-lg text-muted-foreground mb-6">Bientôt disponible</h3>
+            <div className="space-y-8 opacity-60">
+              <AnimatePresence mode="wait">
+                {filteredServices.filter(svc => SERVICE_DESCRIPTIONS[svc.slug]?.disabled).map((svc, i) => {
+                  const desc = SERVICE_DESCRIPTIONS[svc.slug] || { color: 'text-primary', icon: 'Video', features: [] };
+                  const Icon = ICON_MAP[desc.icon] || Video;
+                  return (
+                    <motion.div key={svc.slug || svc.id}
+                      initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+                      transition={{ delay: i * 0.05 }}
+                      className={`grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-2xl overflow-hidden border border-border/50 bg-muted/20 ${
+                        i % 2 !== 0 ? 'lg:grid-flow-dense' : ''
+                      }`}
+                    >
+                      {/* Image */}
+                      <div className={`relative overflow-hidden ${i % 2 !== 0 ? 'lg:order-2' : ''}`}>
+                        <img src={desc?.image} alt={svc.name}
+                          className="w-full h-full object-cover min-h-[250px] lg:min-h-0"
+                          style={{ filter: 'brightness(0.5) contrast(1.1) saturate(0.5)' }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-muted/40 to-transparent lg:bg-gradient-to-r lg:from-muted/40 lg:to-transparent" />
+                        <div className="absolute top-4 left-4">
+                          <div className="inline-flex items-center gap-2 font-mono text-xs border rounded-full px-3 py-1 bg-background/40 backdrop-blur-sm text-muted-foreground border-current/20">
+                            <Icon className="w-3 h-3" />
+                            {svc.name}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className={`p-8 lg:p-12 flex flex-col justify-center ${i % 2 !== 0 ? 'lg:order-1' : ''}`}>
+                        <Icon className="w-8 h-8 text-muted-foreground/50 mb-4" />
+                        <p className="font-mono text-xs text-muted-foreground/60 mb-2">{desc?.tagline}</p>
+                        <h3 className="font-grotesk font-bold text-2xl text-muted-foreground mb-4">{svc.name}</h3>
+                        <p className="font-inter text-sm text-muted-foreground/70 leading-relaxed mb-6">{desc?.desc}</p>
+                        <p className="font-mono text-xs text-muted-foreground/60">Disponible prochainement</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Combo packs */}

@@ -258,27 +258,46 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            {SERVICES_PREVIEW.map((s, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+            {SERVICES_PREVIEW.filter(s => !s.disabled).map((s, i) => (
               <motion.div
                 key={s.label}
                 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
               >
-                <Link to={s.disabled ? '#' : '/services'} onClick={e => s.disabled && e.preventDefault()}
-                  className={`block p-5 rounded-xl border transition-all duration-300 group h-full ${
-                    s.disabled ? 'bg-destructive/5 border-destructive/30 opacity-60 cursor-not-allowed' : 'bg-card border-border hover:border-primary/30 hover:sky-glow'
-                  }`}>
+                <Link to="/services"
+                  className="block p-5 rounded-xl border transition-all duration-300 group h-full bg-card border-border hover:border-primary/30 hover:sky-glow">
                   <div className="flex justify-between items-start mb-4">
-                    <s.icon className={`w-7 h-7 ${s.disabled ? 'text-destructive/60' : 'text-primary'} group-hover:scale-110 transition-transform`} />
-                    {s.disabled && <span className="font-mono text-[9px] px-2 py-1 rounded bg-destructive/20 text-destructive font-semibold">Bientôt</span>}
+                    <s.icon className="w-7 h-7 text-primary group-hover:scale-110 transition-transform" />
                   </div>
-                  <h3 className={`font-grotesk font-semibold text-sm mb-1.5 ${s.disabled ? 'text-destructive' : ''}`}>{s.label}</h3>
+                  <h3 className="font-grotesk font-semibold text-sm mb-1.5">{s.label}</h3>
                   <p className="font-inter text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
                 </Link>
               </motion.div>
             ))}
           </div>
+
+          {/* Bientôt disponible */}
+          {SERVICES_PREVIEW.some(s => s.disabled) && (
+            <div>
+              <h3 className="font-grotesk font-semibold text-sm text-muted-foreground mb-3">Bientôt disponible</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 opacity-60">
+                {SERVICES_PREVIEW.filter(s => s.disabled).map(s => {
+                  const Icon = s.icon;
+                  return (
+                    <div key={s.label}
+                      className="p-5 rounded-xl border border-border/50 bg-muted/20 h-full">
+                      <div className="flex justify-between items-start mb-4">
+                        <Icon className="w-7 h-7 text-muted-foreground" />
+                      </div>
+                      <h3 className="font-grotesk font-semibold text-sm mb-1.5 text-muted-foreground">{s.label}</h3>
+                      <p className="font-inter text-xs text-muted-foreground/70 leading-relaxed">{s.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </motion.div>
       </section>
 

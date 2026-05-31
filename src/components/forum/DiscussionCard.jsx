@@ -65,16 +65,7 @@ export default function DiscussionCard({ discussion }) {
                 verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
                 size="sm" 
               />
-              {/* Anciens badges */}
-              {discussion.author_badges?.length > 0 && (
-                <div className="flex items-center gap-0.5">
-                  {discussion.author_badges.map(badge => (
-                    <span key={badge} title={badge} className="text-sm">
-                      {BADGE_ICONS[badge] || badge}
-                    </span>
-                  ))}
-                </div>
-              )}
+
             </div>
 
             <span>{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>

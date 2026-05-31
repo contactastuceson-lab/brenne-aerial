@@ -42,10 +42,44 @@ export default function NotificationSettings({ user }) {
     },
   });
 
+  const sendConfirmEmail = async (label, enabled) => {
+    const action = enabled ? 'activée' : 'désactivée';
+    await base44.integrations.Core.SendEmail({
+      to: user.email,
+      subject: `🔔 Préférence notification ${action} — ${label}`,
+      body: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#060e1a;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#060e1a;padding:40px 16px;">
+<tr><td align="center">
+<table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;background:#0c1a30;border:1px solid rgba(56,170,220,0.2);border-radius:16px;overflow:hidden;">
+<tr><td style="height:3px;background:linear-gradient(90deg,#38aadc,#1dd8b4,#38aadc);"></td></tr>
+<tr><td style="padding:36px 40px;">
+  <p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#38aadc;opacity:0.8;">BRENNE AERIAL</p>
+  <h1 style="margin:0 0 20px;font-size:22px;font-weight:800;color:#e8edf5;">Confirmation de modification</h1>
+  <p style="margin:0 0 16px;font-size:14px;color:#6a8aaa;line-height:1.6;">Bonjour <strong style="color:#a0c0d8;">${user.display_name || user.full_name || user.email}</strong>,</p>
+  <p style="margin:0 0 24px;font-size:14px;color:#6a8aaa;line-height:1.6;">La préférence de notification <strong style="color:#e8edf5;">${label}</strong> vient d'être <strong style="color:${enabled ? '#1dd8b4' : '#f87171'};">${action}</strong> sur votre compte.</p>
+  <div style="background:rgba(10,22,40,0.7);border:1px solid rgba(56,170,220,0.15);border-left:3px solid ${enabled ? '#1dd8b4' : '#f87171'};border-radius:10px;padding:16px 20px;margin-bottom:28px;">
+    <p style="margin:0;font-size:13px;color:#c8d8e8;">📌 <strong>${label}</strong> — <span style="color:${enabled ? '#1dd8b4' : '#f87171'};">${enabled ? '✓ Activée' : '✗ Désactivée'}</span></p>
+  </div>
+  <p style="margin:0;font-size:12px;color:#3a5a7a;">Si vous n'êtes pas à l'origine de cette modification, <a href="https://brenneaerial.fr/profile" style="color:#38aadc;">sécurisez votre compte</a>.</p>
+</td></tr>
+<tr><td style="padding:16px 40px;border-top:1px solid rgba(56,170,220,0.1);text-align:center;">
+  <p style="font-size:11px;color:#1e3050;margin:0;">Brenne Aerial · <a href="https://brenneaerial.fr" style="color:#38aadc;text-decoration:none;">brenneaerial.fr</a></p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`,
+    });
+  };
+
   const togglePref = (key) => {
-    const updated = { ...localPrefs, [key]: !localPrefs[key] };
+    const newValue = !localPrefs[key];
+    const updated = { ...localPrefs, [key]: newValue };
     setLocalPrefs(updated);
     saveMutation.mutate(updated);
+    // Find label for the toggled key
+    const label = notificationOptions.flatMap(s => s.items).find(i => i.key === key)?.label || key;
+    sendConfirmEmail(label, newValue).catch(() => {});
   };
 
   const notificationOptions = [

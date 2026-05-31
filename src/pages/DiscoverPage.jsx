@@ -22,6 +22,46 @@ function getConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join('_');
 }
 
+// Génère un dégradé unique et cohérent basé sur le nom
+function getAvatarGradient(name = '') {
+  const GRADIENTS = [
+    ['#1a237e', '#0d47a1', '#01579b'],
+    ['#1b5e20', '#2e7d32', '#00695c'],
+    ['#4a148c', '#6a1b9a', '#880e4f'],
+    ['#bf360c', '#e65100', '#f57f17'],
+    ['#006064', '#00838f', '#0277bd'],
+    ['#311b92', '#4527a0', '#1565c0'],
+    ['#1a237e', '#283593', '#37474f'],
+    ['#004d40', '#00695c', '#006064'],
+    ['#37474f', '#455a64', '#263238'],
+    ['#b71c1c', '#c62828', '#6a1b9a'],
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  const idx = Math.abs(hash) % GRADIENTS.length;
+  const [c1, c2, c3] = GRADIENTS[idx];
+  return `linear-gradient(135deg, ${c1} 0%, ${c2} 55%, ${c3} 100%)`;
+}
+
+function getCoverGradient(name = '') {
+  const COVERS = [
+    'linear-gradient(135deg, #0d47a1 0%, #1565c0 40%, #0288d1 100%)',
+    'linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #43a047 100%)',
+    'linear-gradient(135deg, #4a148c 0%, #7b1fa2 50%, #ab47bc 100%)',
+    'linear-gradient(135deg, #bf360c 0%, #e64a19 50%, #ff7043 100%)',
+    'linear-gradient(135deg, #006064 0%, #0097a7 50%, #00bcd4 100%)',
+    'linear-gradient(135deg, #311b92 0%, #512da8 50%, #7e57c2 100%)',
+    'linear-gradient(135deg, #1a237e 0%, #283593 50%, #5c6bc0 100%)',
+    'linear-gradient(135deg, #004d40 0%, #00796b 50%, #26a69a 100%)',
+    'linear-gradient(135deg, #263238 0%, #37474f 50%, #546e7a 100%)',
+    'linear-gradient(135deg, #b71c1c 0%, #c62828 50%, #ef5350 100%)',
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  const idx = (Math.abs(hash) + 3) % COVERS.length;
+  return COVERS[idx];
+}
+
 const BADGE_CONFIG = {
   'Fondateur':      { icon: Star,         color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
   'Collaborateur':  { icon: UserCheck,    color: 'text-blue-400',   bg: 'bg-blue-400/10',   border: 'border-blue-400/30' },
@@ -308,14 +348,28 @@ export default function DiscoverPage() {
                   )}
 
                   {/* Cover */}
-                  <div className="h-20 relative overflow-hidden">
+                  <div className="h-24 relative overflow-hidden">
                     {profile.cover_url
                       ? <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
-                      : <div className="w-full h-full bg-gradient-to-br from-primary/20 via-accent/10 to-secondary"><div className="absolute inset-0 grid-bg opacity-50" /></div>
+                      : (
+                        <div className="w-full h-full relative" style={{ background: getCoverGradient(profile.full_name) }}>
+                          {/* Pattern overlay */}
+                          <div className="absolute inset-0 opacity-20" style={{
+                            backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)',
+                          }} />
+                          <div className="absolute inset-0 grid-bg opacity-30" />
+                          {/* Initials watermark */}
+                          <div className="absolute inset-0 flex items-center justify-end pr-4 opacity-10">
+                            <span className="font-grotesk font-black text-6xl text-white select-none">
+                              {(profile.display_name || profile.full_name)?.[0]?.toUpperCase() || '?'}
+                            </span>
+                          </div>
+                        </div>
+                      )
                     }
                     {/* Report button */}
                     <button
-                      onClick={() => setReportTarget(profile)}
+                      onClick={e => { e.stopPropagation(); setReportTarget(profile); }}
                       className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center hover:bg-background"
                     >
                       <Flag className="w-3 h-3 text-muted-foreground" />
@@ -327,13 +381,16 @@ export default function DiscoverPage() {
                     <div className="relative w-14 h-14 mb-3">
                       <div
                         className="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden"
-                        style={isSupreme ? { border: '2px solid #d97706', boxShadow: '0 0 12px rgba(245,158,11,0.5)', background: '#1a0e00' } : { border: '2px solid var(--background)', background: 'var(--secondary)' }}
+                        style={isSupreme
+                          ? { border: '2px solid #d97706', boxShadow: '0 0 12px rgba(245,158,11,0.5)', background: '#1a0e00' }
+                          : { border: '2px solid var(--background)', background: profile.avatar_url ? 'var(--secondary)' : getAvatarGradient(profile.full_name) }
+                        }
                       >
                         {profile.avatar_url ? (
                           <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="font-grotesk font-bold text-xl text-primary">
-                            {profile.full_name?.[0]?.toUpperCase() || '?'}
+                          <span className="font-grotesk font-bold text-xl text-white drop-shadow-sm">
+                            {(profile.display_name || profile.full_name)?.[0]?.toUpperCase() || '?'}
                           </span>
                         )}
                       </div>

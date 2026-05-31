@@ -7,7 +7,8 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
 const FINGERPRINT_KEY = 'ba_device_fingerprint';
-const SESSION_VERIFIED_KEY = 'ba_session_verified';
+const VERIFIED_UNTIL_KEY = 'ba_device_verified_until';
+const VERIFIED_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 jours
 
 function getOrCreateFingerprint() {
   let fp = localStorage.getItem(FINGERPRINT_KEY);
@@ -49,8 +50,9 @@ export default function LoginVerificationModal({ onVerified }) {
   }, []);
 
   const checkIfNeeded = async () => {
-    // Already verified in this browser session — skip entirely
-    if (sessionStorage.getItem(SESSION_VERIFIED_KEY) === 'true') {
+    // Already verified on this device recently — skip entirely
+    const verifiedUntil = parseInt(localStorage.getItem(VERIFIED_UNTIL_KEY) || '0');
+    if (Date.now() < verifiedUntil) {
       onVerified();
       return;
     }
@@ -61,8 +63,8 @@ export default function LoginVerificationModal({ onVerified }) {
         fingerprint,
       });
       if (!res.data.needed) {
-        // Device already trusted — remember for the whole session
-        sessionStorage.setItem(SESSION_VERIFIED_KEY, 'true');
+        // Device already trusted — remember locally for 30 jours
+        localStorage.setItem(VERIFIED_UNTIL_KEY, String(Date.now() + VERIFIED_DURATION_MS));
         onVerified();
         return;
       }
@@ -104,7 +106,7 @@ export default function LoginVerificationModal({ onVerified }) {
       });
       if (res.data?.valid) {
         toast.success('✅ Identité vérifiée');
-        sessionStorage.setItem(SESSION_VERIFIED_KEY, 'true');
+        localStorage.setItem(VERIFIED_UNTIL_KEY, String(Date.now() + VERIFIED_DURATION_MS));
         onVerified();
       } else {
         toast.error('Code invalide');

@@ -15,12 +15,13 @@ const CreateForumPost = ({ topicId, currentRepliesCount = 0, onSuccess }) => {
   const createMutation = useMutation({
     mutationFn: async () => {
       const now = new Date().toISOString();
+       const username = user.username || user.email.split('@')[0];
        const response = await base44.entities.ForumPost.create({
            topic_id: topicId,
            content,
            author: user.id,
            author_name: user.full_name || user.name,
-           author_username: user.username,
+           author_username: username,
            author_email: user.email,
            is_solution: false,
            likes_count: 0,

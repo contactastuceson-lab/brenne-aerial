@@ -37,13 +37,14 @@ const CreateForumTopic = ({ onSuccess }) => {
     mutationFn: async () => {
       setSubmissionError(null);
       const now = new Date().toISOString();
+      const username = user.username || user.email.split('@')[0];
       const response = await base44.entities.ForumTopic.create({
         title,
         content,
         category,
         author: user.id,
         author_name: user.full_name || user.name,
-        author_username: user.username,
+        author_username: username,
         author_email: user.email,
         tags: tagList,
         views_count: 0,

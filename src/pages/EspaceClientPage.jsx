@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { usePageEnabled } from '@/hooks/usePageEnabled';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion } from 'framer-motion';
-import { FolderOpen, Download, FileVideo, FileImage, FileText, File, Lock, LogIn, ChevronDown, ChevronUp } from 'lucide-react';
+import { FolderOpen, Download, FileVideo, FileImage, FileText, File, Lock, LogIn, ChevronDown, ChevronUp, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import BadgeChip from '@/components/ui/BadgeChip';
+import StatusBadge from '@/components/ui/StatusBadge';
+import CertificationTracking from '@/components/dashboard/CertificationTracking';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { Link, useSearchParams } from 'react-router-dom';
 
 const FILE_ICONS = {
   photo: FileImage,
@@ -76,6 +81,8 @@ export default function EspaceClientPage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_espace_client_enabled');
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get('tab') || 'files';
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(async (authed) => {
@@ -84,14 +91,24 @@ export default function EspaceClientPage() {
     });
   }, []);
 
-  const { data: files = [], isLoading } = useQuery({
-
+  const { data: files = [], isLoading: filesLoading } = useQuery({
     queryKey: ['client-files', user?.email],
     queryFn: () => base44.entities.ClientFile.filter({ client_email: user.email }, '-mission_date'),
     enabled: !!user?.email,
   });
 
-  // Group by mission
+  const { data: myQuotes = [] } = useQuery({
+    queryKey: ['my-quotes', user?.email],
+    queryFn: () => base44.entities.Quote.filter({ client_email: user.email }, '-created_date', 10),
+    enabled: !!user?.email,
+  });
+
+  const { data: myCertifications = [] } = useQuery({
+    queryKey: ['my-certifications', user?.email],
+    queryFn: () => base44.entities.CertificationRequest.filter({ user_email: user.email }, '-created_date', 5),
+    enabled: !!user?.email,
+  });
+
   const missions = files.reduce((acc, f) => {
     if (!acc[f.mission_name]) acc[f.mission_name] = [];
     acc[f.mission_name].push(f);
@@ -107,83 +124,152 @@ export default function EspaceClientPage() {
     </div>
   );
 
-  return (
-    <div className="pt-16 min-h-screen">
-      {/* Hero */}
-      <section className="relative py-20 px-5 text-center overflow-hidden">
-        <div className="absolute inset-0 grid-bg" />
-        <div className="relative max-w-3xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
-            <p className="font-mono text-xs text-primary mb-4 tracking-widest uppercase">— Espace Client</p>
-            <h1 className="font-grotesk font-bold text-4xl sm:text-6xl mb-4">
-              Vos <span className="gradient-text">relevés aériens</span>
-            </h1>
-            <p className="font-inter text-lg text-muted-foreground max-w-xl mx-auto">
-              Accédez à tous vos fichiers de missions — photos 4K, vidéos, rapports et attestations — en permanence.
-            </p>
-          </motion.div>
+  if (!user) return (
+    <div className="pt-16 min-h-screen flex items-center justify-center px-5">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        className="text-center space-y-6 max-w-sm">
+        <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto">
+          <Lock className="w-10 h-10 text-primary" />
         </div>
-      </section>
+        <h2 className="font-grotesk font-bold text-2xl">Connexion requise</h2>
+        <p className="font-inter text-sm text-muted-foreground">
+          Connectez-vous pour accéder à votre espace personnel.
+        </p>
+        <Button onClick={() => base44.auth.redirectToLogin('/espace-client')}
+          className="bg-primary text-primary-foreground gap-2 font-grotesk font-semibold">
+          <LogIn className="w-4 h-4" /> Se connecter
+        </Button>
+      </motion.div>
+    </div>
+  );
 
-      <div className="max-w-3xl mx-auto px-5 pb-24">
-        {!user ? (
-          /* Not logged in */
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="text-center py-16 space-y-6">
-            <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto">
-              <Lock className="w-10 h-10 text-primary" />
+  return (
+    <div className="pt-20 min-h-screen px-5 lg:px-10 py-10">
+      <div className="max-w-5xl mx-auto">
+
+        {/* Profile header */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 p-5 rounded-2xl bg-card border border-border">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt="" className="w-full h-full object-cover rounded-xl" />
+              ) : (
+                <span className="font-grotesk font-bold text-primary text-lg">
+                  {user.full_name?.[0]?.toUpperCase() || 'U'}
+                </span>
+              )}
             </div>
-            <h2 className="font-grotesk font-bold text-2xl">Connexion requise</h2>
-            <p className="font-inter text-sm text-muted-foreground max-w-sm mx-auto">
-              Connectez-vous pour accéder à votre espace personnel et retrouver tous vos fichiers de missions.
-            </p>
-            <Button onClick={() => base44.auth.redirectToLogin('/espace-client')}
-              className="bg-primary text-primary-foreground gap-2 font-grotesk font-semibold">
-              <LogIn className="w-4 h-4" /> Se connecter
-            </Button>
-            <p className="font-inter text-xs text-muted-foreground">
-              Pas encore de compte ? Contactez-nous après votre mission — nous créons votre accès.
-            </p>
-          </motion.div>
-        ) : isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : Object.keys(missions).length === 0 ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="text-center py-16 space-y-4">
-            <FolderOpen className="w-16 h-16 text-muted-foreground/30 mx-auto" />
-            <h2 className="font-grotesk font-bold text-xl">Aucun fichier disponible</h2>
-            <p className="font-inter text-sm text-muted-foreground max-w-sm mx-auto">
-              Vos fichiers de missions apparaîtront ici dès que votre pilote les aura déposés.
-            </p>
-            <a href="/quote">
-              <Button className="bg-primary text-primary-foreground gap-2 mt-4">
-                Commander une mission
+            <div className="flex-1 min-w-0">
+              <h1 className="font-grotesk font-bold text-lg">Bonjour, {user.full_name?.split(' ')[0]} 👋</h1>
+              <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
+              {user.badges?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {user.badges.map(b => <BadgeChip key={b} badge={b} />)}
+                </div>
+              )}
+            </div>
+            <Link to="/quote">
+              <Button size="sm" className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-grotesk">
+                Nouveau devis
               </Button>
-            </a>
-          </motion.div>
-        ) : (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            {/* Welcome */}
-            <div className="p-5 rounded-2xl bg-card border border-primary/20 flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <span className="font-grotesk font-bold text-lg text-primary">{user.full_name?.[0]}</span>
-              </div>
-              <div>
-                <p className="font-grotesk font-semibold">Bonjour, {user.full_name?.split(' ')[0]} 👋</p>
-                <p className="font-inter text-xs text-muted-foreground">
-                  {Object.keys(missions).length} mission{Object.keys(missions).length > 1 ? 's' : ''} · {files.length} fichier{files.length > 1 ? 's' : ''}
-                </p>
-              </div>
-            </div>
+            </Link>
+          </div>
+        </motion.div>
 
-            {/* Missions */}
-            {Object.entries(missions).map(([mission, mFiles]) => (
-              <MissionFolder key={mission} mission={mission} files={mFiles} />
+        <Tabs defaultValue={defaultTab}>
+          <TabsList className="bg-card border border-border mb-6">
+            <TabsTrigger value="files" className="gap-1.5 font-inter text-sm">
+              <FolderOpen className="w-4 h-4" /> Mes fichiers
+            </TabsTrigger>
+            <TabsTrigger value="quotes" className="gap-1.5 font-inter text-sm">
+              <FileText className="w-4 h-4" /> Mes devis
+            </TabsTrigger>
+            <TabsTrigger value="certifications" className="gap-1.5 font-inter text-sm">
+              <Award className="w-4 h-4" /> Certifications
+            </TabsTrigger>
+            <TabsTrigger value="badges" className="gap-1.5 font-inter text-sm">
+              <Award className="w-4 h-4" /> Badges
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Fichiers missions */}
+          <TabsContent value="files" className="space-y-3">
+            {filesLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : Object.keys(missions).length === 0 ? (
+              <div className="text-center py-14 space-y-4">
+                <FolderOpen className="w-14 h-14 text-muted-foreground/20 mx-auto" />
+                <p className="font-grotesk font-bold text-lg">Aucun fichier disponible</p>
+                <p className="font-inter text-sm text-muted-foreground max-w-xs mx-auto">
+                  Vos fichiers de missions apparaîtront ici dès que votre pilote les aura déposés.
+                </p>
+                <Link to="/quote">
+                  <Button className="bg-primary text-primary-foreground gap-2 mt-2">Commander une mission</Button>
+                </Link>
+              </div>
+            ) : (
+              Object.entries(missions).map(([mission, mFiles]) => (
+                <MissionFolder key={mission} mission={mission} files={mFiles} />
+              ))
+            )}
+          </TabsContent>
+
+          {/* Devis */}
+          <TabsContent value="quotes" className="space-y-3">
+            {myQuotes.length === 0 ? (
+              <div className="text-center py-10">
+                <p className="font-inter text-sm text-muted-foreground mb-4">Aucun devis pour le moment</p>
+                <Link to="/quote"><Button size="sm" className="bg-primary text-primary-foreground">Demander un devis</Button></Link>
+              </div>
+            ) : myQuotes.map(q => (
+              <div key={q.id} className="p-4 rounded-xl bg-card border border-border">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <StatusBadge status={q.status} />
+                      <span className="font-mono text-xs text-muted-foreground">{q.date_souhaitee || '—'}</span>
+                    </div>
+                    <p className="font-grotesk font-semibold text-sm">{q.service_type?.replace(/_/g, ' ')}</p>
+                    {q.prix_estime && <p className="font-mono text-xs text-primary mt-1">{q.prix_estime}€ estimé</p>}
+                  </div>
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    {q.created_date ? format(new Date(q.created_date), 'd MMM yy', { locale: fr }) : ''}
+                  </span>
+                </div>
+              </div>
             ))}
-          </motion.div>
-        )}
+          </TabsContent>
+
+          {/* Certifications */}
+          <TabsContent value="certifications" className="space-y-3">
+            <div className="bg-card border border-border rounded-xl p-6">
+              {myCertifications.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="font-inter text-sm text-muted-foreground mb-4">Aucune demande de certification</p>
+                  <Link to="/profile"><Button size="sm" className="bg-primary text-primary-foreground">Demander une certification</Button></Link>
+                </div>
+              ) : (
+                <CertificationTracking request={myCertifications[0]} />
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Badges */}
+          <TabsContent value="badges">
+            <div className="p-6 rounded-xl bg-card border border-border">
+              <h3 className="font-grotesk font-bold text-base mb-4">Vos badges</h3>
+              {user.badges?.length > 0 ? (
+                <div className="flex flex-wrap gap-3">
+                  {user.badges.map(b => <BadgeChip key={b} badge={b} size="lg" />)}
+                </div>
+              ) : (
+                <p className="font-inter text-sm text-muted-foreground">Aucun badge attribué pour l'instant.</p>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

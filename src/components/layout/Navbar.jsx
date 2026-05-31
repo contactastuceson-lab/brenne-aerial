@@ -14,7 +14,7 @@ const NAV_LINKS = [
   { to: '/planning',  label: 'Planning' },
   { to: '/blog',      label: 'Blog' },
   { to: '/forum',     label: 'Forum' },
-  { to: '/dashboard', label: 'Espace Client' },
+  { to: '/espace-client', label: 'Espace Client' },
 ];
 
 const TOOLS = [

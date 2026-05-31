@@ -15,19 +15,20 @@ const CreateForumPost = ({ topicId, currentRepliesCount = 0, onSuccess }) => {
   const createMutation = useMutation({
     mutationFn: async () => {
       const now = new Date().toISOString();
-      const response = await base44.entities.ForumPost.create({
-          topic_id: topicId,
-          content,
-          author: user.id,
-          author_name: user.full_name || user.name,
-          author_email: user.email,
-          is_solution: false,
-          likes_count: 0,
-          liked_by: [],
-        edited: false,
-        created_at: now,
-        updated_at: now,
-      });
+       const response = await base44.entities.ForumPost.create({
+           topic_id: topicId,
+           content,
+           author: user.id,
+           author_name: user.full_name || user.name,
+           author_username: user.username,
+           author_email: user.email,
+           is_solution: false,
+           likes_count: 0,
+           liked_by: [],
+         edited: false,
+         created_at: now,
+         updated_at: now,
+       });
 
       // Update topic replies count
       await base44.entities.ForumTopic.update(topicId, {

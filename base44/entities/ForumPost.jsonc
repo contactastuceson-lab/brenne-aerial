@@ -18,6 +18,10 @@
       "type": "string",
       "description": "Nom de l'auteur"
     },
+    "author_username": {
+      "type": "string",
+      "description": "Username de l'auteur (persistent m\u00eame apr\u00e8s suppression du compte)"
+    },
     "author_email": {
       "type": "string",
       "description": "Email de l'auteur"

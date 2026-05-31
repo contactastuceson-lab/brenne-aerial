@@ -153,11 +153,21 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
           : 'bg-gradient-to-br from-slate-800/60 to-slate-900/40 border-cyan-500/15 hover:border-cyan-500/25'
       )}>
         <div className="mb-6 pb-6 border-b border-slate-700/50">
-          <UserBadgeProfile userId={topic.author} small />
-          <p className="text-xs text-slate-400 mt-3">
-            {topic.created_date && formatDistanceToNow(new Date(topic.created_date), { locale: fr, addSuffix: true })}
-          </p>
-        </div>
+           {authorData ? (
+             <UserBadgeProfile userId={topic.author} small />
+           ) : (
+             <div className="flex items-start gap-3">
+               <div className="flex flex-col gap-1">
+                 <span className="font-grotesk font-bold text-sm text-white">
+                   {topic.author_name || `@${topic.author_username}` || 'Utilisateur supprimé'}
+                 </span>
+               </div>
+             </div>
+           )}
+           <p className="text-xs text-slate-400 mt-3">
+             {topic.created_date && formatDistanceToNow(new Date(topic.created_date), { locale: fr, addSuffix: true })}
+           </p>
+         </div>
 
         {/* Tags */}
         {topic.tags && topic.tags.length > 0 && (

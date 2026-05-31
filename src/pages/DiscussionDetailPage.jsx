@@ -55,6 +55,7 @@ export default function DiscussionDetailPage() {
         author_id: user.id,
         author_name: user.full_name,
         author_display_name: user.display_name || user.full_name,
+        author_username: user.username,
         author_avatar: user.avatar_url,
         author_is_supreme: user.verifications?.includes('supreme') || false,
         author_verifications: Array.isArray(user.verifications) ? user.verifications.filter(v => v !== 'supreme') : [],
@@ -149,9 +150,14 @@ export default function DiscussionDetailPage() {
                         {reply.author_avatar && (
                           <img src={reply.author_avatar} alt="" className="w-5 h-5 rounded-full" />
                         )}
-                        <p className="font-semibold text-white">
-                          {reply.author_display_name || reply.author_name}
-                        </p>
+                        <div className="flex items-center gap-1">
+                          <p className="font-semibold text-white">
+                            {reply.author_display_name || reply.author_name}
+                          </p>
+                          {reply.author_username && (
+                            <span className="text-slate-500 text-sm">@{reply.author_username}</span>
+                          )}
+                        </div>
                         <VerificationIcons 
                           verifications={reply.author_verifications} 
                           size="sm" 

@@ -22,6 +22,10 @@
       "type": "string",
       "description": "Nom d'affichage de l'auteur (snapshot)"
     },
+    "author_username": {
+      "type": "string",
+      "description": "Username de l'auteur (snapshot)"
+    },
     "author_avatar": {
       "type": "string",
       "description": "Avatar de l'auteur (snapshot)"

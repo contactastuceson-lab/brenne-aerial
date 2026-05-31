@@ -295,7 +295,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Main layout: sidebar + content */}
-        <div className="flex gap-6">
+        <div className="md:flex md:gap-6">
 
           {/* Sidebar nav — desktop */}
           <aside className="hidden md:flex flex-col gap-1 w-52 flex-shrink-0">
@@ -320,32 +320,33 @@ export default function ProfilePage() {
             })}
           </aside>
 
-          {/* Mobile tabs */}
-          <div className="md:hidden w-full mb-4">
-            <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
-              {NAV_TABS.map(tab => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg font-inter text-xs whitespace-nowrap flex-shrink-0 transition-all ${
-                      isActive
-                        ? 'bg-primary/10 text-primary border border-primary/20 font-medium'
-                        : 'text-muted-foreground bg-secondary/40 hover:text-foreground'
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 md:block">
+            {/* Mobile: Show nav above content */}
+            {typeof window !== 'undefined' && window.innerWidth < 768 && (
+              <div className="w-full mb-4 -mx-4 px-4">
+                <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+                  {NAV_TABS.map(tab => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg font-inter text-xs whitespace-nowrap flex-shrink-0 transition-all ${
+                          isActive
+                            ? 'bg-primary/10 text-primary border border-primary/20 font-medium'
+                            : 'text-muted-foreground bg-secondary/40 hover:text-foreground'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}

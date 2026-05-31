@@ -50,18 +50,25 @@ export default function DiscussionCard({ discussion }) {
               </div>
             )}
             
-            {/* Nom + Badges emojis */}
-            <div className="flex items-center gap-1">
+            {/* Nom + Badges images */}
+            <div className="flex items-center gap-1.5">
               <span>{discussion.author_name}</span>
-              {discussion.author_badges?.length > 0 && (
-                <div className="flex items-center gap-0.5">
-                  {discussion.author_badges.map(badge => (
-                    <span key={badge} title={badge} className="text-sm">
-                      {BADGE_EMOJI[badge] || badge}
-                    </span>
-                  ))}
-                </div>
+              {discussion.author_certification_badge && (
+                <img 
+                  src={discussion.author_certification_badge} 
+                  alt="certification" 
+                  className="w-4 h-4 object-contain rounded-full"
+                  title="Certifié"
+                />
               )}
+              {discussion.author_badges?.map(badgeUrl => (
+                <img 
+                  key={badgeUrl}
+                  src={badgeUrl} 
+                  alt="badge" 
+                  className="w-4 h-4 object-contain"
+                />
+              ))}
             </div>
 
             <span>{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>

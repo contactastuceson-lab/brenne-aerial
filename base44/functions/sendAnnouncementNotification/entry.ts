@@ -22,8 +22,8 @@ Deno.serve(async (req) => {
 
     const announcement = ann[0];
 
-    // Get all users via admin function
-    const users = await base44.functions.invoke('getAdminUsers', {});
+    // Get all users
+    const users = await base44.asServiceRole.entities.User.list();
     
     // Send email to all users
     await Promise.all(

@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MessageCircle, Eye, Star, UserCheck, Award, Shield, Zap, CheckCircle, Heart, Check, BadgeCheck, Building2, Gem, ShieldCheck } from 'lucide-react';
-import VerificationChip from '@/components/ui/VerificationChip';
+import { MessageCircle, Eye, Star, UserCheck, Award, Shield, Zap, CheckCircle, Heart, Check } from 'lucide-react';
+import VerificationIcons from '@/components/ui/VerificationIcon';
 
 const BADGE_ICONS = {
   'Fondateur': '⭐',
@@ -15,13 +15,7 @@ const BADGE_ICONS = {
   'Donateur': '❤️',
 };
 
-const VERIFICATION_TYPES = [
-  { key: 'verified',  label: 'Vérifié',  icon: CheckCircle },
-  { key: 'certified', label: 'Certifié', icon: BadgeCheck },
-  { key: 'official',  label: 'Officiel', icon: Building2 },
-  { key: 'pro',       label: 'Pro',      icon: Gem },
-  { key: 'supreme',   label: 'Suprême',  icon: ShieldCheck },
-];
+
 
 export default function DiscussionCard({ discussion }) {
   const isOfficial = discussion.author_name === 'Contact Astuceson';
@@ -59,20 +53,13 @@ export default function DiscussionCard({ discussion }) {
               </div>
             )}
             
-            {/* Nom + Certifications (ronds) + Badges */}
+            {/* Nom + Certifications (VerificationIcons) + Badges */}
             <div className="flex items-center gap-2">
               <span>{discussion.author_name}</span>
-              {/* Chips de certifications (ronds icônes seuls) */}
-              <div className="flex items-center gap-0.5">
-                {discussion.author_is_supreme && (
-                  <VerificationChip type="supreme" size="sm" iconOnly />
-                )}
-                {discussion.author_verifications?.length > 0 && (
-                  discussion.author_verifications.map(v => (
-                    <VerificationChip key={v} type={v} size="sm" iconOnly />
-                  ))
-                )}
-              </div>
+              <VerificationIcons 
+                verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
+                size="sm" 
+              />
               {/* Anciens badges */}
               {discussion.author_badges?.length > 0 && (
                 <div className="flex items-center gap-0.5">

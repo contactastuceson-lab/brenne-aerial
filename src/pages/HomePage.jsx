@@ -1,21 +1,29 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play, Camera, Building2, HardHat, Video, Wifi, ChevronDown, Star, Award, Zap, Mail, FolderOpen, ScanSearch, Users } from 'lucide-react';
+import { ArrowRight, Play, Camera, Building2, HardHat, Video, Wifi, Briefcase, ChevronDown, Star, Award, Zap, Mail, FolderOpen, ScanSearch, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import DroneWeatherWidget from '@/components/home/DronWeatherWidget';
 
 const SERVICES_PREVIEW = [
-  { icon: Video,      label: 'Vidéo événement',    desc: 'Captez chaque instant depuis les airs' },
-  { icon: Building2,  label: 'Inspection toiture', desc: 'Diagnostic précis sans intervention humaine' },
-  { icon: HardHat,    label: 'Suivi chantier',     desc: 'Monitoring aérien de vos chantiers' },
-  { icon: Camera,     label: 'Photogramm. 3D',     desc: 'Modélisation 3D précise de vos projets' },
-  { icon: Wifi,       label: 'Retour temps réel',  desc: 'Diffusion live de vos opérations' },
-  { icon: Building2,  label: 'Thermographie',      desc: 'Inspection thermique infrarouge', disabled: true },
-  { icon: Video,      label: 'Surveillance aérienne', desc: 'Gardiennage et monitoring continu' },
-  { icon: Camera,     label: 'Contenu réseaux',    desc: 'Vidéos pour vos plateformes sociales' },
+  { icon: Video,      label: 'Vidéo événement',       desc: 'Captez chaque instant depuis les airs' },
+  { icon: Building2,  label: 'Inspection toiture',    desc: 'Diagnostic précis sans intervention humaine' },
+  { icon: HardHat,    label: 'Suivi chantier',        desc: 'Monitoring aérien de vos chantiers' },
+  { icon: Camera,     label: 'Captation particulier', desc: 'Vos souvenirs et propriétés vus du ciel' },
+  { icon: Briefcase,  label: 'Captation entreprise',  desc: 'Clips institutionnels et vidéos marketing' },
+  { icon: Wifi,       label: 'Retour temps réel',     desc: 'Diffusion live de vos opérations' },
+  { icon: Video,      label: 'Contenu réseaux',       desc: 'Vidéos créatives pour vos plateformes' },
+  { icon: Camera,     label: 'Reportage',             desc: 'Documentaires et contenus éditoriaux' },
+  { icon: Building2,  label: 'Visite immobilière',    desc: 'Tour 360° de vos propriétés' },
+  { icon: Camera,     label: 'Mariage photo aérienne',desc: 'Captez votre plus beau jour depuis le ciel' },
+  // Bientôt disponible
+  { icon: Building2,  label: 'Photogramm. 3D',        desc: 'Modélisation 3D précise de vos projets',       disabled: true },
+  { icon: HardHat,    label: 'Cartographie/Relevés',  desc: 'Cartes géoréférencées et relevés topographiques', disabled: true },
+  { icon: Camera,     label: 'Thermographie',         desc: 'Inspection thermique infrarouge',              disabled: true },
+  { icon: Video,      label: 'Surveillance aérienne', desc: 'Gardiennage et monitoring continu',            disabled: true },
+  { icon: HardHat,    label: 'Agriculture/Monitoring',desc: 'Surveillance de cultures et monitoring aérien',disabled: true },
 ];
 
 const STATS = [

@@ -39,6 +39,13 @@
       "default": false,
       "description": "L'auteur a le statut Supr\u00eame"
     },
+    "author_verifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Certifications de l'auteur (verified, certified, official, pro)"
+    },
     "author_certification_badge": {
       "type": "string",
       "description": "Badge de certification de l'auteur (URL)"

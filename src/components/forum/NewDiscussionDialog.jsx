@@ -48,6 +48,7 @@ export default function NewDiscussionDialog() {
         author_name: user.full_name || user.email,
         author_avatar: user.avatar_url,
         author_is_supreme: user.verifications?.includes('supreme') || false,
+        author_verifications: Array.isArray(user.verifications) ? user.verifications.filter(v => v !== 'supreme') : [],
         author_badges: Array.isArray(user.badges) ? user.badges : [],
         author_certification_badge: user.certification_badge || null,
       });

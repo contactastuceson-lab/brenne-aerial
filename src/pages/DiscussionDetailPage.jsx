@@ -98,15 +98,14 @@ export default function DiscussionDetailPage() {
           <h1 className="text-4xl font-bold text-white">{discussion.title}</h1>
           <div className="flex items-center gap-6 text-sm text-slate-400">
             <div className="flex items-center gap-2">
-              {discussion.author_avatar && (
-                <img src={discussion.author_avatar} alt="" className="w-6 h-6 rounded-full" />
+              {discussion.author_avatar ? (
+                <img src={discussion.author_avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white">
+                  {discussion.author_name?.[0]?.toUpperCase() || '?'}
+                </div>
               )}
-              <div className="flex items-center gap-1">
-                <span>{discussion.author_display_name || discussion.author_name}</span>
-                {discussion.author_username && (
-                  <span className="text-slate-600">@{discussion.author_username}</span>
-                )}
-              </div>
+              <span>{discussion.author_display_name || discussion.author_name}</span>
               <VerificationIcons 
                 verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
                 size="sm" 
@@ -152,17 +151,16 @@ export default function DiscussionDetailPage() {
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        {reply.author_avatar && (
-                          <img src={reply.author_avatar} alt="" className="w-5 h-5 rounded-full" />
+                        {reply.author_avatar ? (
+                          <img src={reply.author_avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
+                            {reply.author_name?.[0]?.toUpperCase() || '?'}
+                          </div>
                         )}
-                        <div className="flex items-center gap-1">
-                          <p className="font-semibold text-white">
-                            {reply.author_display_name || reply.author_name}
-                          </p>
-                          {reply.author_username && (
-                            <span className="text-slate-500 text-sm">@{reply.author_username}</span>
-                          )}
-                        </div>
+                        <p className="font-semibold text-white">
+                          {reply.author_display_name || reply.author_name}
+                        </p>
                         <VerificationIcons 
                           verifications={reply.author_verifications} 
                           size="sm" 

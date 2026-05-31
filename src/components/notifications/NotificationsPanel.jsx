@@ -36,25 +36,28 @@ export default function NotificationsPanel({ user, open, onClose }) {
   });
 
   const markAllRead = async () => {
-    const unread = notifs.filter(n => !n.is_read);
+    // Fetch fresh list first to avoid stale IDs
+    const fresh = await base44.entities.Notification.filter({ user_email: user.email }, '-created_date', 30);
+    const unread = fresh.filter(n => !n.is_read);
     for (const n of unread) {
       try {
         await base44.entities.Notification.update(n.id, { is_read: true });
-      } catch (e) {
-        // ignore not found or individual errors
-      }
+      } catch (e) { /* ignore */ }
     }
     queryClient.invalidateQueries({ queryKey: ['notifs-panel'] });
     queryClient.invalidateQueries({ queryKey: ['unread-notifs'] });
   };
 
   const deleteAll = async () => {
-    for (const n of notifs) {
+    // Fetch fresh list first to avoid stale IDs
+    const fresh = await base44.entities.Notification.filter({ user_email: user.email }, '-created_date', 30);
+    // Optimistically clear UI immediately
+    queryClient.setQueryData(['notifs-panel', user?.email], []);
+    queryClient.setQueryData(['unread-notifs', user?.email], []);
+    for (const n of fresh) {
       try {
         await base44.entities.Notification.delete(n.id);
-      } catch (e) {
-        // ignore not found or individual errors
-      }
+      } catch (e) { /* ignore */ }
     }
     queryClient.invalidateQueries({ queryKey: ['notifs-panel'] });
     queryClient.invalidateQueries({ queryKey: ['unread-notifs'] });

@@ -72,14 +72,15 @@ export default function OnboardingModal({ user, onComplete }) {
   };
 
   const handleFinish = async () => {
-    if (!form.username) {
-      setUsernameError('Le username est requis');
-      return;
-    }
-    const isValid = await validateUsername(form.username);
-    if (!isValid) return;
-    
     setSaving(true);
+    // Only validate username if user changed it from the original
+    if (form.username && form.username !== (user?.username || '')) {
+      const isValid = await validateUsername(form.username);
+      if (!isValid) {
+        setSaving(false);
+        return;
+      }
+    }
     // Ensure display_name is set, default to full_name if empty
     const dataToUpdate = {
       ...form,

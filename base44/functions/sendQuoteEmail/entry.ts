@@ -290,8 +290,25 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { type, ...data } = body;
 
-    // Auth minimal — certains appels viennent de l'admin
-    // On utilise asServiceRole pour l'envoi
+    // Vérifier les préférences de notification du client
+    if (data.clientEmail) {
+      try {
+        const users = await base44.asServiceRole.entities.User.filter({ email: data.clientEmail });
+        const clientUser = users?.[0] || null;
+        const prefs = clientUser?.notification_prefs || {};
+        if (prefs.email_notifications === false) {
+          return Response.json({ skipped: 'email_notifications_disabled' });
+        }
+        // quote_updates couvre: quote_accepted, quote_refused
+        if ((type === 'quote_accepted' || type === 'quote_refused') && prefs.quote_updates === false) {
+          return Response.json({ skipped: 'quote_updates_disabled' });
+        }
+        // appointment_reminders couvre: appointment_confirmed
+        if (type === 'appointment_confirmed' && prefs.appointment_reminders === false) {
+          return Response.json({ skipped: 'appointment_reminders_disabled' });
+        }
+      } catch (_) {}
+    }
 
     let subject, html;
 

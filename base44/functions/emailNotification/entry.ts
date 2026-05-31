@@ -285,12 +285,23 @@ Deno.serve(async (req) => {
 
     if (!recipientEmail) return Response.json({ error: 'No recipient' }, { status: 400 });
 
-    // Récupérer le rôle du destinataire pour détecter les Suprêmes
+    // Récupérer le destinataire pour vérifier ses préférences + rang Suprême
     let recipientUser = null;
     try {
       const users = await base44.asServiceRole.entities.User.filter({ email: recipientEmail });
       recipientUser = users?.[0] || null;
     } catch (_) {}
+
+    // Vérifier les préférences de notification
+    const prefs = recipientUser?.notification_prefs || {};
+    // email_notifications: false => on n'envoie aucun email
+    if (prefs.email_notifications === false) {
+      return Response.json({ skipped: 'email_notifications_disabled' });
+    }
+    // new_messages: false => on n'envoie pas les notifications de messages
+    if (!isOfficial && prefs.new_messages === false) {
+      return Response.json({ skipped: 'new_messages_disabled' });
+    }
 
     const recipientIsSupreme = isSupreme(recipientUser);
 

@@ -24,6 +24,19 @@ Deno.serve(async (req) => {
 
     if (!recipientEmail) return Response.json({ error: 'No recipient email' }, { status: 400 });
 
+    // Vérifier les préférences de notification du destinataire
+    try {
+      const users = await base44.asServiceRole.entities.User.filter({ email: recipientEmail });
+      const recipientUser = users?.[0] || null;
+      const prefs = recipientUser?.notification_prefs || {};
+      if (prefs.email_notifications === false) {
+        return Response.json({ skipped: 'email_notifications_disabled' });
+      }
+      if (!isOfficial && prefs.new_messages === false) {
+        return Response.json({ skipped: 'new_messages_disabled' });
+      }
+    } catch (_) {}
+
     let subject, body;
 
     if (isOfficial) {

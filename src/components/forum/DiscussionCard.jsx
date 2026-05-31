@@ -40,25 +40,22 @@ export default function DiscussionCard({ discussion }) {
         </p>
 
         <div className="flex items-center justify-between text-xs text-slate-500">
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Avatar + Nom + Badges */}
-            <div className="flex items-center gap-2">
-              {discussion.author_avatar ? (
-                <img src={discussion.author_avatar} alt="" className="w-6 h-6 rounded-full object-cover border border-slate-600" />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
-                  {discussion.author_name?.[0]?.toUpperCase() || '?'}
-                </div>
-              )}
-              <span className={isOfficial ? 'text-yellow-300 font-grotesk font-semibold' : ''}>
-                {discussion.author_name}
-              </span>
-              {isOfficial && <span className="text-lg">👑</span>}
-            </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Avatar */}
+            {discussion.author_avatar ? (
+              <img src={discussion.author_avatar} alt="" className="w-5 h-5 rounded-full object-cover" />
+            ) : (
+              <div className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold text-white">
+                {discussion.author_name?.[0]?.toUpperCase() || '?'}
+              </div>
+            )}
+            
+            {/* Nom */}
+            <span>{discussion.author_name}</span>
 
-            {/* Badges */}
+            {/* Badges de certification */}
             {discussion.author_badges?.length > 0 && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5">
                 {discussion.author_badges.map(badge => {
                   const cfg = BADGE_CONFIG[badge];
                   if (!cfg) return null;

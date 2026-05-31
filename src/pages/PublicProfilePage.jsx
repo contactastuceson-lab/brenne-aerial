@@ -19,6 +19,45 @@ const BADGE_CONFIG = {
   'Donateur': { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/30' },
 };
 
+function getAvatarGradient(name = '') {
+  const GRADIENTS = [
+    ['#1a237e', '#0d47a1', '#01579b'],
+    ['#1b5e20', '#2e7d32', '#00695c'],
+    ['#4a148c', '#6a1b9a', '#880e4f'],
+    ['#bf360c', '#e65100', '#f57f17'],
+    ['#006064', '#00838f', '#0277bd'],
+    ['#311b92', '#4527a0', '#1565c0'],
+    ['#1a237e', '#283593', '#37474f'],
+    ['#004d40', '#00695c', '#006064'],
+    ['#37474f', '#455a64', '#263238'],
+    ['#b71c1c', '#c62828', '#6a1b9a'],
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  const idx = Math.abs(hash) % GRADIENTS.length;
+  const [c1, c2, c3] = GRADIENTS[idx];
+  return `linear-gradient(135deg, ${c1} 0%, ${c2} 55%, ${c3} 100%)`;
+}
+
+function getCoverGradient(name = '') {
+  const COVERS = [
+    'linear-gradient(135deg, #0d47a1 0%, #1565c0 40%, #0288d1 100%)',
+    'linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #43a047 100%)',
+    'linear-gradient(135deg, #4a148c 0%, #7b1fa2 50%, #ab47bc 100%)',
+    'linear-gradient(135deg, #bf360c 0%, #e64a19 50%, #ff7043 100%)',
+    'linear-gradient(135deg, #006064 0%, #0097a7 50%, #00bcd4 100%)',
+    'linear-gradient(135deg, #311b92 0%, #512da8 50%, #7e57c2 100%)',
+    'linear-gradient(135deg, #1a237e 0%, #283593 50%, #5c6bc0 100%)',
+    'linear-gradient(135deg, #004d40 0%, #00796b 50%, #26a69a 100%)',
+    'linear-gradient(135deg, #263238 0%, #37474f 50%, #546e7a 100%)',
+    'linear-gradient(135deg, #b71c1c 0%, #c62828 50%, #ef5350 100%)',
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  const idx = (Math.abs(hash) + 3) % COVERS.length;
+  return COVERS[idx];
+}
+
 export default function PublicProfilePage() {
   const { pathUsername } = useParams();
   const navigate = useNavigate();
@@ -186,15 +225,27 @@ export default function PublicProfilePage() {
           className="relative h-40 rounded-2xl overflow-hidden mb-0"
           style={isSupreme
             ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', border: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
-            : { background: 'linear-gradient(to bottom right, hsl(var(--primary)/0.2), hsl(var(--accent)/0.1), hsl(var(--secondary)))' }
+            : user.cover_url
+            ? {}
+            : { background: getCoverGradient(user.full_name) }
           }
         >
           {user.cover_url ? (
             <img src={user.cover_url} alt="cover" className="w-full h-full object-cover" />
-          ) : isSupreme ? (
-            <div className="absolute inset-0 grid-bg opacity-20" />
           ) : (
-            <div className="absolute inset-0 grid-bg" />
+            <>
+              {/* Pattern overlay */}
+              <div className="absolute inset-0 opacity-20" style={{
+                backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)',
+              }} />
+              <div className="absolute inset-0 grid-bg opacity-30" />
+              {/* Initials watermark */}
+              <div className="absolute inset-0 flex items-center justify-end pr-6 opacity-10">
+                <span className="font-grotesk font-black text-7xl text-white select-none">
+                  {user.full_name?.[0]?.toUpperCase() || '?'}
+                </span>
+              </div>
+            </>
           )}
         </div>
 
@@ -205,13 +256,13 @@ export default function PublicProfilePage() {
               className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0"
               style={isSupreme
                 ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
-                : { border: '4px solid hsl(var(--background))', background: 'hsl(var(--secondary))' }
+                : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
               }
             >
               {user.avatar_url ? (
                 <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="font-grotesk font-bold text-3xl text-primary">
+                <span className="font-grotesk font-bold text-3xl text-white drop-shadow-sm">
                   {user.full_name?.[0]?.toUpperCase() || '?'}
                 </span>
               )}

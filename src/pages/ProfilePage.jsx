@@ -218,30 +218,34 @@ export default function ProfilePage() {
           </label>
         </div>
 
-        {/* Avatar + meta row */}
-        <div className="relative px-4 -mt-10 mb-8 flex items-end justify-between">
-          <div className="flex items-end gap-4">
-            <div className="relative">
-              <div
-                className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden"
-                style={isSupreme
-                  ? { border: '3px solid #d97706', boxShadow: '0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
-                  : { border: '4px solid hsl(var(--background))', background: 'hsl(var(--secondary))' }
-                }
-              >
-                {user.avatar_url
-                  ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                  : <span className="font-grotesk font-bold text-3xl text-primary">{user.full_name?.[0]?.toUpperCase() || '?'}</span>
-                }
-              </div>
-              <label className="absolute -bottom-2 -right-2 cursor-pointer">
-                <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center border-2 border-background hover:bg-primary/80 transition-colors">
-                  {uploading ? <Loader2 className="w-3 h-3 animate-spin text-primary-foreground" /> : <Camera className="w-3 h-3 text-primary-foreground" />}
-                </div>
-                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-              </label>
+        {/* Avatar — chevauchement cover */}
+        <div className="relative px-4 -mt-10 mb-2">
+          <div className="relative w-20 h-20">
+            <div
+              className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden"
+              style={isSupreme
+                ? { border: '3px solid #d97706', boxShadow: '0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
+                : { border: '4px solid hsl(var(--background))', background: 'hsl(var(--secondary))' }
+              }
+            >
+              {user.avatar_url
+                ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                : <span className="font-grotesk font-bold text-3xl text-primary">{user.full_name?.[0]?.toUpperCase() || '?'}</span>
+              }
             </div>
-            <div className="mb-1">
+            <label className="absolute -bottom-2 -right-2 cursor-pointer">
+              <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center border-2 border-background hover:bg-primary/80 transition-colors">
+                {uploading ? <Loader2 className="w-3 h-3 animate-spin text-primary-foreground" /> : <Camera className="w-3 h-3 text-primary-foreground" />}
+              </div>
+              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+            </label>
+          </div>
+        </div>
+
+        {/* Infos profil + badges + statuts */}
+        <div className="px-4 mt-3 mb-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
               <div className="flex items-center gap-1.5 flex-wrap">
                 <h1
                   className="font-grotesk font-bold text-xl"
@@ -251,28 +255,28 @@ export default function ProfilePage() {
                 </h1>
                 <VerificationIcons verifications={user.verifications} size="md" />
               </div>
-              <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
+              <p className="font-mono text-xs text-muted-foreground mt-0.5">{user.email}</p>
               {roleCfg && (
-                <span className={`inline-block mt-1 font-mono text-[10px] px-2 py-0.5 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
+                <span className={`inline-block mt-1.5 font-mono text-[10px] px-2 py-0.5 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
                   {roleCfg.emoji} {roleCfg.label}
                 </span>
               )}
             </div>
-          </div>
-          <div className="flex items-center gap-2 mb-1">
-            {user.verified_status === 'yes' && (
-              <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
-                <CheckCircle className="w-3 h-3" /> Vérifié
+            <div className="flex items-center gap-2 mt-1 flex-shrink-0">
+              {user.verified_status === 'yes' && (
+                <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
+                  <CheckCircle className="w-3 h-3" /> Vérifié
+                </span>
+              )}
+              <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
+                {user.account_status === 'active' ? 'Actif' : user.account_status === 'suspended' ? 'Suspendu' : user.account_status === 'banned' ? 'Banni' : 'Restreint'}
               </span>
-            )}
-            <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
-              {user.account_status === 'active' ? 'Actif' : user.account_status === 'suspended' ? 'Suspendu' : user.account_status === 'banned' ? 'Banni' : 'Restreint'}
-            </span>
+            </div>
           </div>
         </div>
 
         {/* Badges + followers */}
-        <div className="px-1 mb-6 flex flex-wrap items-center gap-3">
+        <div className="px-4 mb-6 flex flex-wrap items-center gap-3">
           {user.badges?.length > 0 && user.badges.map(b => {
             const cfg = BADGE_CONFIG[b];
             if (!cfg) return <BadgeChip key={b} badge={b} />;

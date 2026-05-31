@@ -506,10 +506,9 @@ export default function AdminUsers() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {assignableRoles.map(role => {
-                      const cfg = ROLE_CONFIG[role];
-                      return <SelectItem key={role} value={role}>{cfg?.emoji} {cfg?.label || role}</SelectItem>;
-                    })}
+                    {assignableRoles.map(r => (
+                      <SelectItem key={r.role} value={r.role}>{r.emoji} {r.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

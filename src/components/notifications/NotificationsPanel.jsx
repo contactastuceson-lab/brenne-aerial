@@ -37,7 +37,13 @@ export default function NotificationsPanel({ user, open, onClose }) {
 
   const markAllRead = async () => {
     const unread = notifs.filter(n => !n.is_read);
-    await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
+    for (const n of unread) {
+      try {
+        await base44.entities.Notification.update(n.id, { is_read: true });
+      } catch (e) {
+        // ignore not found or individual errors
+      }
+    }
     queryClient.invalidateQueries({ queryKey: ['notifs-panel'] });
     queryClient.invalidateQueries({ queryKey: ['unread-notifs'] });
   };

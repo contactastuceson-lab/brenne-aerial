@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Camera, Save, Loader2, MapPin, Globe, Phone,
-  CheckCircle, Shield, Star, Zap, Award, UserCheck, Heart, Crown, Sparkles, Users
+  CheckCircle, Shield, Star, Zap, Award, UserCheck, Heart, Crown, Sparkles, Users,
+  User, Settings, Bell, Lock, ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,9 @@ import CertificationRequest from '@/components/profile/CertificationRequest';
 import ThemeSelector from '@/components/profile/ThemeSelector';
 import SecurityAndPrivacy from '@/components/security/SecurityAndPrivacy';
 import UsernameChanger from '@/components/profile/UsernameChanger';
-import UserSettings from '@/components/settings/UserSettings';
+import AccountSettings from '@/components/settings/AccountSettings';
+import PreferencesSettings from '@/components/settings/PreferencesSettings';
+import NotificationSettings from '@/components/settings/NotificationSettings';
 import { ROLE_CONFIG, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 
 const BADGE_CONFIG = {
@@ -31,17 +34,31 @@ const BADGE_CONFIG = {
   'Donateur':       { icon: Heart,     color: 'text-red-400',    bg: 'bg-red-400/10',    border: 'border-red-400/30' },
 };
 
+const NAV_TABS = [
+  { id: 'profil',        label: 'Mon profil',     icon: User },
+  { id: 'compte',        label: 'Compte',         icon: Settings },
+  { id: 'preferences',  label: 'Préférences',    icon: Bell },
+  { id: 'notifications', label: 'Notifications',  icon: Bell },
+  { id: 'securite',      label: 'Sécurité',       icon: Lock },
+];
+
+const statusColors = {
+  active:     'text-green-400 bg-green-400/10 border-green-400/30',
+  suspended:  'text-yellow-400 bg-yellow-400/10 border-yellow-400/30',
+  banned:     'text-red-400 bg-red-400/10 border-red-400/30',
+  restricted: 'text-orange-400 bg-orange-400/10 border-orange-400/30',
+};
+
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [form, setForm] = useState({});
   const [uploading, setUploading] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [showCertification, setShowCertification] = useState(false);
-  const [certificationsEnabled, setCertificationsEnabled] = useState(true);
+  const [activeTab, setActiveTab] = useState('profil');
 
   useEffect(() => {
     let unsubscribe = () => {};
-
     const loadUser = async () => {
       const u = await base44.auth.me();
       setUser(u);
@@ -53,12 +70,9 @@ export default function ProfilePage() {
         location: u.location || '',
         website: u.website || '',
       });
-
-      // Subscribe after user is loaded so we have the email
       unsubscribe = base44.entities.User.subscribe((event) => {
         if (event.type === 'update' && event.data?.email === u.email) {
           setUser(event.data);
-          // Sync form with updated user data
           setForm({
             display_name: event.data.display_name || event.data.full_name || '',
             username: event.data.username || '',
@@ -70,43 +84,24 @@ export default function ProfilePage() {
         }
       });
     };
-
     loadUser().catch(() => base44.auth.redirectToLogin('/profile'));
-
-    base44.entities.AppSettings.filter({ key: 'certifications_enabled' }).then(settings => {
-      if (settings.length > 0) {
-        setCertificationsEnabled(settings[0].value === 'true');
-      }
-    });
-
     return () => unsubscribe();
   }, []);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const dataToSave = {
+      await base44.auth.updateMe({
         display_name: form.display_name,
         full_name: form.display_name,
-        username: user.username,
         bio: form.bio,
         phone: form.phone,
         location: form.location,
         website: form.website,
-      };
-      await base44.auth.updateMe(dataToSave);
-      const updated = await base44.auth.me();
-      return updated;
+      });
+      return await base44.auth.me();
     },
     onSuccess: (updated) => {
       setUser(updated);
-      setForm({
-        display_name: updated.display_name || updated.full_name || '',
-        username: updated.username || '',
-        bio: updated.bio || '',
-        phone: updated.phone || '',
-        location: updated.location || '',
-        website: updated.website || '',
-      });
       toast.success('Profil mis à jour !');
     },
     onError: () => toast.error('Erreur lors de la sauvegarde'),
@@ -149,19 +144,14 @@ export default function ProfilePage() {
   }
 
   const isSupreme = user.verifications?.includes('supreme');
-  const isPdgAdjoint = user.role === 'pdg_adjoint' || PDG_ADJOINT_EMAILS.includes(user.email);
   const roleCfg = ROLE_CONFIG[user.role];
 
-  const statusColors = {
-    active: 'text-green-400 bg-green-400/10 border-green-400/30',
-    suspended: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30',
-    banned: 'text-red-400 bg-red-400/10 border-red-400/30',
-    restricted: 'text-orange-400 bg-orange-400/10 border-orange-400/30',
-  };
-
   return (
-    <div className="pt-20 min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
-      {/* Supreme ambient particles */}
+    <div
+      className="pt-20 min-h-screen pb-20"
+      style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}
+    >
+      {/* Supreme particles */}
       {isSupreme && (
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
           {[...Array(18)].map((_, idx) => (
@@ -169,36 +159,29 @@ export default function ProfilePage() {
               key={idx}
               className="absolute rounded-full"
               style={{
-                width: (idx % 3) + 1 + 1,
-                height: (idx % 3) + 1 + 1,
+                width: (idx % 3) + 2, height: (idx % 3) + 2,
                 left: `${(idx * 17 + 7) % 100}%`,
                 top: `${(idx * 23 + 11) % 100}%`,
                 background: `rgba(245,158,11,${0.1 + (idx % 4) * 0.1})`,
                 boxShadow: '0 0 6px rgba(245,158,11,0.6)',
               }}
               animate={{ y: [-20, 20, -20], opacity: [0.2, 0.8, 0.2] }}
-              transition={{ duration: 3 + (idx % 4), repeat: Infinity, delay: (idx % 3) }}
+              transition={{ duration: 3 + (idx % 4), repeat: Infinity, delay: idx % 3 }}
             />
           ))}
         </div>
       )}
 
-      <div className="max-w-2xl mx-auto px-5 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 relative z-10">
 
-        {/* Supreme crown banner */}
+        {/* Supreme banner */}
         {isSupreme && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
             className="mb-4 rounded-2xl overflow-hidden relative"
-            style={{
-              background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)',
-              border: '1px solid rgba(217,119,6,0.4)',
-              boxShadow: '0 0 40px rgba(245,158,11,0.12), inset 0 1px 0 rgba(245,158,11,0.15)',
-            }}
+            style={{ background: 'linear-gradient(135deg, #1a0c00, #2d1500)', border: '1px solid rgba(217,119,6,0.4)', boxShadow: '0 0 40px rgba(245,158,11,0.12)' }}
           >
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, transparent, rgba(245,158,11,0.04), transparent)' }} />
-            <div className="relative flex items-center justify-center gap-4 py-3 px-6">
+            <div className="flex items-center justify-center gap-4 py-3 px-6">
               <motion.div animate={{ rotate: [-5, 5, -5] }} transition={{ duration: 3, repeat: Infinity }}>
                 <Crown className="w-5 h-5" style={{ color: '#f59e0b', filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.8))' }} />
               </motion.div>
@@ -213,24 +196,16 @@ export default function ProfilePage() {
           </motion.div>
         )}
 
-        {/* Cover */}
+        {/* Cover + Avatar */}
         <div
-          className="relative h-40 rounded-2xl overflow-hidden mb-0"
+          className="relative h-44 rounded-2xl overflow-hidden"
           style={isSupreme
-            ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', border: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
+            ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500)', border: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
             : { background: 'linear-gradient(to bottom right, hsl(var(--primary)/0.2), hsl(var(--accent)/0.1), hsl(var(--secondary)))' }
           }
         >
           {user.cover_url ? (
             <img src={user.cover_url} alt="cover" className="w-full h-full object-cover" />
-          ) : isSupreme ? (
-            <>
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.12) 0%, transparent 50%, rgba(217,119,6,0.08) 100%)' }} />
-              <div className="absolute inset-0 grid-bg opacity-20" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Sparkles className="w-16 h-16 opacity-10" style={{ color: '#f59e0b' }} />
-              </div>
-            </>
           ) : (
             <div className="absolute inset-0 grid-bg" />
           )}
@@ -243,24 +218,21 @@ export default function ProfilePage() {
           </label>
         </div>
 
-        {/* Avatar + infos */}
-        <div className="relative px-6 -mt-10 mb-6">
-          <div className="flex items-end justify-between">
+        {/* Avatar + meta row */}
+        <div className="relative px-4 -mt-10 mb-8 flex items-end justify-between">
+          <div className="flex items-end gap-4">
             <div className="relative">
               <div
                 className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden"
                 style={isSupreme
-                  ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
+                  ? { border: '3px solid #d97706', boxShadow: '0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
                   : { border: '4px solid hsl(var(--background))', background: 'hsl(var(--secondary))' }
                 }
               >
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-grotesk font-bold text-3xl text-primary">
-                    {user.full_name?.[0]?.toUpperCase() || '?'}
-                  </span>
-                )}
+                {user.avatar_url
+                  ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                  : <span className="font-grotesk font-bold text-3xl text-primary">{user.full_name?.[0]?.toUpperCase() || '?'}</span>
+                }
               </div>
               <label className="absolute -bottom-2 -right-2 cursor-pointer">
                 <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center border-2 border-background hover:bg-primary/80 transition-colors">
@@ -269,208 +241,257 @@ export default function ProfilePage() {
                 <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
               </label>
             </div>
-
-            <div className="flex items-center gap-2 pb-1">
-              {user.verified_status === 'yes' && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
-                  <CheckCircle className="w-3 h-3" /> Vérifié
+            <div className="mb-1">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h1
+                  className="font-grotesk font-bold text-xl"
+                  style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : {}}
+                >
+                  {user.display_name || user.full_name}
+                </h1>
+                <VerificationIcons verifications={user.verifications} size="md" />
+              </div>
+              <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
+              {roleCfg && (
+                <span className={`inline-block mt-1 font-mono text-[10px] px-2 py-0.5 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
+                  {roleCfg.emoji} {roleCfg.label}
                 </span>
               )}
-              <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
-                {user.account_status === 'active' ? 'Actif' :
-                 user.account_status === 'suspended' ? 'Suspendu' :
-                 user.account_status === 'banned' ? 'Banni' : 'Restreint'}
-              </span>
             </div>
           </div>
-
-          <div className="mt-4">
-            <div className="flex items-center gap-1.5">
-              <h1
-                className="font-grotesk font-bold text-xl"
-                style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.3))' } : {}}
-              >{user.display_name || user.full_name}</h1>
-              <VerificationIcons verifications={user.verifications} size="md" />
-            </div>
-            <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
-            {user.role && roleCfg && (
-              <span className={`inline-block mt-1 font-mono text-[10px] px-2 py-0.5 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
-                {roleCfg.emoji} {roleCfg.label}
+          <div className="flex items-center gap-2 mb-1">
+            {user.verified_status === 'yes' && (
+              <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
+                <CheckCircle className="w-3 h-3" /> Vérifié
               </span>
             )}
+            <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
+              {user.account_status === 'active' ? 'Actif' : user.account_status === 'suspended' ? 'Suspendu' : user.account_status === 'banned' ? 'Banni' : 'Restreint'}
+            </span>
           </div>
+        </div>
 
-          {/* Badges */}
-          {user.badges?.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {user.badges.map(b => {
-                const cfg = BADGE_CONFIG[b];
-                if (!cfg) return <BadgeChip key={b} badge={b} />;
-                const Icon = cfg.icon;
+        {/* Badges + followers */}
+        <div className="px-1 mb-6 flex flex-wrap items-center gap-3">
+          {user.badges?.length > 0 && user.badges.map(b => {
+            const cfg = BADGE_CONFIG[b];
+            if (!cfg) return <BadgeChip key={b} badge={b} />;
+            const Icon = cfg.icon;
+            return (
+              <span key={b} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+                <Icon className="w-3 h-3" /> {b}
+              </span>
+            );
+          })}
+          <div className="flex items-center gap-1.5 text-foreground ml-auto py-1.5 px-3 rounded-xl bg-secondary/50 border border-border">
+            <Users className="w-4 h-4 text-primary" />
+            <span className="font-grotesk font-semibold text-sm">{followers.length}</span>
+            <span className="font-inter text-xs text-muted-foreground">abonné{followers.length > 1 ? 's' : ''}</span>
+          </div>
+        </div>
+
+        {/* Main layout: sidebar + content */}
+        <div className="flex gap-6">
+
+          {/* Sidebar nav — desktop */}
+          <aside className="hidden md:flex flex-col gap-1 w-52 flex-shrink-0">
+            {NAV_TABS.map(tab => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-inter text-sm transition-all text-left ${
+                    isActive
+                      ? 'bg-primary/10 text-primary border border-primary/20 font-medium'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  {tab.label}
+                  {isActive && <ChevronRight className="w-3 h-3 ml-auto" />}
+                </button>
+              );
+            })}
+          </aside>
+
+          {/* Mobile tabs */}
+          <div className="md:hidden w-full mb-4">
+            <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+              {NAV_TABS.map(tab => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
                 return (
-                  <span key={b} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
-                    <Icon className="w-3 h-3" /> {b}
-                  </span>
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg font-inter text-xs whitespace-nowrap flex-shrink-0 transition-all ${
+                      isActive
+                        ? 'bg-primary/10 text-primary border border-primary/20 font-medium'
+                        : 'text-muted-foreground bg-secondary/40 hover:text-foreground'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {tab.label}
+                  </button>
                 );
               })}
             </div>
-          )}
-
-          {/* Followers stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 flex items-center gap-3 py-3 px-3 rounded-xl bg-secondary/50 border border-border"
-          >
-            <div className="flex items-center gap-1.5 text-foreground">
-              <Users className="w-4 h-4 text-primary" />
-              <span className="font-grotesk font-semibold">{followers.length}</span>
-              <span className="font-inter text-sm text-muted-foreground">
-                abonné{followers.length > 1 ? 's' : ''}
-              </span>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Form */}
-         <motion.div
-           initial={{ opacity: 0, y: 20 }}
-           animate={{ opacity: 1, y: 0 }}
-           className="rounded-2xl p-6 space-y-5"
-           style={isSupreme
-             ? { background: 'linear-gradient(145deg, #1a0c00, #150a00)', border: '1px solid rgba(217,119,6,0.3)', boxShadow: '0 0 30px rgba(245,158,11,0.07)' }
-             : { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }
-           }
-         >
-           <h2 className="font-grotesk font-semibold text-base">Modifier mon profil</h2>
-
-           <div>
-             <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Nom d'affichage</label>
-             <Input
-               value={form.display_name}
-               onChange={e => setForm(p => ({ ...p, display_name: e.target.value }))}
-               placeholder="Ex: Jean Dupont"
-               className="bg-secondary border-border font-inter"
-             />
-           </div>
-
-           <UsernameChanger user={user} username={user.username || form.username} onUpdate={(newUsername) => {
-             setForm(p => ({ ...p, username: newUsername }));
-             setUser(u => ({ ...u, username: newUsername }));
-           }} />
-
-           <div>
-             <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Bio</label>
-             <Textarea
-               value={form.bio}
-               onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-               placeholder="Parlez de vous en quelques mots..."
-               className="bg-secondary border-border font-inter text-sm resize-none h-24"
-             />
-           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="font-inter text-xs text-muted-foreground mb-1.5 flex items-center gap-1.5">
-                <Phone className="w-3 h-3" /> Téléphone
-              </label>
-              <Input
-                value={form.phone}
-                onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
-                placeholder="+33 6 00 00 00 00"
-                className="bg-secondary border-border font-inter"
-              />
-            </div>
-            <div>
-              <label className="font-inter text-xs text-muted-foreground mb-1.5 flex items-center gap-1.5">
-                <MapPin className="w-3 h-3" /> Localisation
-              </label>
-              <Input
-                value={form.location}
-                onChange={e => setForm(p => ({ ...p, location: e.target.value }))}
-                placeholder="Paris, France"
-                className="bg-secondary border-border font-inter"
-              />
-            </div>
           </div>
 
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18 }}
+              >
+                {activeTab === 'profil' && (
+                  <ProfileEditSection
+                    form={form}
+                    setForm={setForm}
+                    user={user}
+                    setUser={setUser}
+                    saveMutation={saveMutation}
+                    isSupreme={isSupreme}
+                    showCertification={showCertification}
+                    setShowCertification={setShowCertification}
+                  />
+                )}
+                {activeTab === 'compte' && <AccountSettings user={user} />}
+                {activeTab === 'preferences' && <PreferencesSettings user={user} />}
+                {activeTab === 'notifications' && <NotificationSettings user={user} />}
+                {activeTab === 'securite' && (
+                  <div className="space-y-6">
+                    <SecurityAndPrivacy user={user} />
+                    <DangerZone user={user} />
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+        </div>
+      </div>
+
+      {showCertification && <CertificationRequest onClose={() => setShowCertification(false)} user={user} />}
+    </div>
+  );
+}
+
+function ProfileEditSection({ form, setForm, user, setUser, saveMutation, isSupreme, showCertification, setShowCertification }) {
+  return (
+    <div className="space-y-5">
+      <div
+        className="rounded-2xl p-6 space-y-5"
+        style={isSupreme
+          ? { background: 'linear-gradient(145deg, #1a0c00, #150a00)', border: '1px solid rgba(217,119,6,0.3)' }
+          : { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }
+        }
+      >
+        <h2 className="font-grotesk font-semibold text-base">Modifier mon profil</h2>
+
+        <div>
+          <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Nom d'affichage</label>
+          <Input
+            value={form.display_name}
+            onChange={e => setForm(p => ({ ...p, display_name: e.target.value }))}
+            placeholder="Ex: Jean Dupont"
+            className="bg-secondary border-border font-inter"
+          />
+        </div>
+
+        <UsernameChanger user={user} username={user.username || form.username} onUpdate={(newUsername) => {
+          setForm(p => ({ ...p, username: newUsername }));
+          setUser(u => ({ ...u, username: newUsername }));
+        }} />
+
+        <div>
+          <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Bio</label>
+          <Textarea
+            value={form.bio}
+            onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
+            placeholder="Parlez de vous en quelques mots..."
+            className="bg-secondary border-border font-inter text-sm resize-none h-24"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="font-inter text-xs text-muted-foreground mb-1.5 flex items-center gap-1.5">
-              <Globe className="w-3 h-3" /> Site web
+              <Phone className="w-3 h-3" /> Téléphone
             </label>
             <Input
-              value={form.website}
-              onChange={e => setForm(p => ({ ...p, website: e.target.value }))}
-              placeholder="https://mon-site.com"
+              value={form.phone}
+              onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
+              placeholder="+33 6 00 00 00 00"
               className="bg-secondary border-border font-inter"
             />
           </div>
-
-          <ThemeSelector />
-
-          <Button
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending}
-            className="w-full gap-2 font-grotesk font-semibold"
-            style={isSupreme
-              ? { background: 'linear-gradient(135deg, #92400e, #d97706, #92400e)', color: '#fff', border: 'none', boxShadow: '0 4px 20px rgba(245,158,11,0.3)' }
-              : {}
-            }
-          >
-            {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Sauvegarder
-          </Button>
-        </motion.div>
-
-        {/* Certification request */}
-        {!user.badges?.includes('Officiel') && !user.badges?.includes('Pilote') && !user.badges?.includes('Fondateur') && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-card border border-primary/20 rounded-2xl p-6 mb-6 mt-6"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Award className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-grotesk font-semibold text-sm">Demander une certification</h3>
-                  <p className="font-inter text-xs text-muted-foreground mt-1">Valorisez votre profil professionnel</p>
-                </div>
-              </div>
-              <Button
-                onClick={() => setShowCertification(true)}
-                className="bg-primary text-primary-foreground gap-2 whitespace-nowrap"
-              >
-                <Award className="w-4 h-4" />
-                Postuler
-              </Button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* User Settings */}
-        <div className="mt-8">
-          <UserSettings user={user} />
+          <div>
+            <label className="font-inter text-xs text-muted-foreground mb-1.5 flex items-center gap-1.5">
+              <MapPin className="w-3 h-3" /> Localisation
+            </label>
+            <Input
+              value={form.location}
+              onChange={e => setForm(p => ({ ...p, location: e.target.value }))}
+              placeholder="Paris, France"
+              className="bg-secondary border-border font-inter"
+            />
+          </div>
         </div>
 
-        {/* Security & Privacy */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mt-8"
-        >
-          <SecurityAndPrivacy user={user} />
-        </motion.div>
+        <div>
+          <label className="font-inter text-xs text-muted-foreground mb-1.5 flex items-center gap-1.5">
+            <Globe className="w-3 h-3" /> Site web
+          </label>
+          <Input
+            value={form.website}
+            onChange={e => setForm(p => ({ ...p, website: e.target.value }))}
+            placeholder="https://mon-site.com"
+            className="bg-secondary border-border font-inter"
+          />
+        </div>
 
-        {/* Danger zone */}
-        <DangerZone user={user} />
+        <ThemeSelector />
+
+        <Button
+          onClick={() => saveMutation.mutate()}
+          disabled={saveMutation.isPending}
+          className="w-full gap-2 font-grotesk font-semibold"
+          style={isSupreme
+            ? { background: 'linear-gradient(135deg, #92400e, #d97706, #92400e)', color: '#fff', border: 'none', boxShadow: '0 4px 20px rgba(245,158,11,0.3)' }
+            : {}
+          }
+        >
+          {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          Sauvegarder
+        </Button>
       </div>
 
-      {/* Certification modal */}
-      {showCertification && <CertificationRequest onClose={() => setShowCertification(false)} user={user} />}
+      {/* Certification */}
+      {!user.badges?.includes('Officiel') && !user.badges?.includes('Pilote') && !user.badges?.includes('Fondateur') && (
+        <div className="bg-card border border-primary/20 rounded-2xl p-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Award className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-grotesk font-semibold text-sm">Demander une certification</h3>
+                <p className="font-inter text-xs text-muted-foreground mt-0.5">Valorisez votre profil professionnel</p>
+              </div>
+            </div>
+            <Button onClick={() => setShowCertification(true)} className="gap-2 whitespace-nowrap flex-shrink-0" size="sm">
+              <Award className="w-4 h-4" /> Postuler
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

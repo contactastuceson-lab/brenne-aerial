@@ -321,32 +321,30 @@ export default function ProfilePage() {
           </aside>
 
           {/* Content */}
-          <div className="flex-1 min-w-0 md:block">
-            {/* Mobile: Show nav above content */}
-            {typeof window !== 'undefined' && window.innerWidth < 768 && (
-              <div className="w-full mb-4 -mx-4 px-4">
-                <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
-                  {NAV_TABS.map(tab => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg font-inter text-xs whitespace-nowrap flex-shrink-0 transition-all ${
-                          isActive
-                            ? 'bg-primary/10 text-primary border border-primary/20 font-medium'
-                            : 'text-muted-foreground bg-secondary/40 hover:text-foreground'
-                        }`}
-                      >
-                        <Icon className="w-3.5 h-3.5" />
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </div>
+          <div className="w-full flex-1 min-w-0">
+            {/* Mobile tabs — shown above content on small screens */}
+            <div className="md:hidden w-full mb-4">
+              <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+                {NAV_TABS.map(tab => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg font-inter text-xs whitespace-nowrap flex-shrink-0 transition-all ${
+                        isActive
+                          ? 'bg-primary/10 text-primary border border-primary/20 font-medium'
+                          : 'text-muted-foreground bg-secondary/40 hover:text-foreground'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      {tab.label}
+                    </button>
+                  );
+                })}
               </div>
-            )}
+            </div>
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}

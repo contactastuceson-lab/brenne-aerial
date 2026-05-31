@@ -201,21 +201,18 @@ export default function QuotePage() {
             {step === 0 && (
               <div>
                 <h2 className="font-grotesk font-semibold text-lg mb-5">Quel service vous intéresse ?</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  {SERVICE_OPTIONS.map(s => {
+                <div className="grid grid-cols-2 gap-3 mb-8">
+                  {SERVICE_OPTIONS.filter(s => !s.disabled).map(s => {
                     const Icon = s.icon;
                     const sel = form.service_type === s.key;
                     return (
-                      <button key={s.key} onClick={() => !s.disabled && u('service_type', s.key)} disabled={s.disabled}
+                      <button key={s.key} onClick={() => u('service_type', s.key)}
                         className={`p-4 rounded-xl border text-left transition-all duration-200 ${
-                          s.disabled ? 'border-destructive/30 bg-destructive/5 opacity-60 cursor-not-allowed' :
                           sel ? 'border-primary bg-primary/10' : 'border-border bg-card hover:border-muted-foreground/40'
                         }`}>
-                        <Icon className={`w-6 h-6 mb-2.5 ${s.disabled ? 'text-destructive/60' : sel ? 'text-primary' : 'text-muted-foreground'}`} />
-                        <p className={`font-grotesk font-semibold text-sm ${s.disabled ? 'text-destructive' : sel ? 'text-primary' : ''}`}>{s.label}</p>
-                        {s.disabled ? (
-                          <p className="font-mono text-[10px] text-destructive mt-1 font-semibold">Non disponible</p>
-                        ) : prices[s.key] ? (
+                        <Icon className={`w-6 h-6 mb-2.5 ${sel ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <p className={`font-grotesk font-semibold text-sm ${sel ? 'text-primary' : ''}`}>{s.label}</p>
+                        {prices[s.key] ? (
                           <p className="font-mono text-[10px] text-muted-foreground mt-1">
                             Dès {formatPrice(prices[s.key].base)}
                           </p>
@@ -224,6 +221,26 @@ export default function QuotePage() {
                     );
                   })}
                 </div>
+
+                {/* Bientôt disponible */}
+                {SERVICE_OPTIONS.some(s => s.disabled) && (
+                  <div>
+                    <h3 className="font-grotesk font-semibold text-sm text-muted-foreground mb-3">Bientôt disponible</h3>
+                    <div className="grid grid-cols-2 gap-3 opacity-60">
+                      {SERVICE_OPTIONS.filter(s => s.disabled).map(s => {
+                        const Icon = s.icon;
+                        return (
+                          <div key={s.key}
+                            className="p-4 rounded-xl border border-border/50 bg-muted/20 text-left">
+                            <Icon className="w-6 h-6 mb-2.5 text-muted-foreground" />
+                            <p className="font-grotesk font-semibold text-sm text-muted-foreground">{s.label}</p>
+                            <p className="font-mono text-[10px] text-muted-foreground/70 mt-1">Disponible prochainement</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

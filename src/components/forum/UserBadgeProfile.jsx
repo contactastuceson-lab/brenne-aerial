@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import BadgeChip from '@/components/ui/BadgeChip';
 
-const UserBadgeProfile = ({ userId, small = false }) => {
+const UserBadgeProfile = ({ userId, small = false, fallbackName, fallbackUsername }) => {
   const { data: allPublicUsers = [] } = useQuery({
     queryKey: ['public-users-forum'],
     queryFn: async () => {
@@ -23,12 +23,29 @@ const UserBadgeProfile = ({ userId, small = false }) => {
   });
 
   const user = allPublicUsers.find(u => u.id === userId);
+  const displayAsUnknown = !user && !fallbackName && !fallbackUsername;
 
 
 
-  // Fallback display if user data not found - used when user ID doesn't resolve
-  const displayAsUnknown = !user;
+  // If user is deleted but we have fallback data, use it
+  if (!user && (fallbackName || fallbackUsername)) {
+    return (
+      <div className="flex items-start gap-3">
+        <Avatar className="w-8 h-8 border border-cyan-500/20">
+          <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white text-xs font-bold">
+            {(fallbackName || fallbackUsername)?.charAt(0).toUpperCase() || 'U'}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col gap-1 min-w-0 flex-1">
+          <span className="font-grotesk font-bold text-sm text-slate-400 leading-tight">
+            {fallbackName || `@${fallbackUsername}`}
+          </span>
+        </div>
+      </div>
+    );
+  }
 
+  // Fallback display if user data not found AND no fallback provided
   if (displayAsUnknown) {
     return (
       <div className="flex items-start gap-3">
@@ -142,6 +159,23 @@ const UserBadgeProfile = ({ userId, small = false }) => {
 
   if (small) {
     // If no user data, return minimal display
+    if (!user && (fallbackName || fallbackUsername)) {
+      return (
+        <div className="flex items-start gap-3">
+          <Avatar className="w-8 h-8 border border-cyan-500/20">
+            <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white text-xs font-bold">
+              {(fallbackName || fallbackUsername)?.charAt(0).toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col gap-1 min-w-0 flex-1">
+            <span className="font-grotesk font-bold text-sm text-slate-400 leading-tight">
+              {fallbackName || `@${fallbackUsername}`}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
     if (displayAsUnknown) {
       return (
         <div className="flex items-start gap-3">
@@ -197,6 +231,25 @@ const UserBadgeProfile = ({ userId, small = false }) => {
           {profileContent}
         </HoverCardContent>
       </HoverCard>
+    );
+  }
+
+  if (!user && (fallbackName || fallbackUsername)) {
+    return (
+      <div className={cn('space-y-3', small && 'space-y-2')}>
+        <div className="flex items-start gap-3">
+          <Avatar className={cn(small ? 'w-12 h-12' : 'w-16 h-16')}>
+            <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white text-lg font-bold">
+              {(fallbackName || fallbackUsername)?.charAt(0).toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <h4 className={cn('font-bold text-gray-900', small ? 'text-sm' : 'text-base')}>
+              {fallbackName || `@${fallbackUsername}`}
+            </h4>
+          </div>
+        </div>
+      </div>
     );
   }
 

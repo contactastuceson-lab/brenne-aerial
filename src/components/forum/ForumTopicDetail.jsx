@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { ArrowLeft, Lock, Pin, MessageCircle, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import UserBadgeProfile from './UserBadgeProfile';
 import ForumPostItem from './ForumPostItem';
 import CreateForumPost from './CreateForumPost';
@@ -157,8 +158,13 @@ const ForumTopicDetail = ({ topicId, onBack }) => {
              <UserBadgeProfile userId={topic.author} small />
            ) : (
              <div className="flex items-start gap-3">
+               <Avatar className="w-8 h-8 border border-cyan-500/20">
+                 <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white text-xs font-bold">
+                   {(topic.author_name || topic.author_username)?.charAt(0).toUpperCase() || 'U'}
+                 </AvatarFallback>
+               </Avatar>
                <div className="flex flex-col gap-1">
-                 <span className="font-grotesk font-bold text-sm text-white">
+                 <span className="font-grotesk font-bold text-sm text-slate-400">
                    {topic.author_name || `@${topic.author_username}` || 'Utilisateur supprimé'}
                  </span>
                </div>

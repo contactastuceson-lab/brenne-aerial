@@ -69,19 +69,34 @@ const ForumPostItem = ({ post, isTopicAuthor, onMarkSolution, canMarkSolution })
       <div className="px-6 py-4 border-b border-slate-700/30 flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="text-white mb-2">
-            <div className="flex items-start gap-3">
-              <Avatar className="w-8 h-8 border border-cyan-500/20 flex-shrink-0">
-                <AvatarImage src={author?.avatar_url} alt={post.author_name} />
-                <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs font-bold">
-                  {(post.author_name || post.author_email)?.charAt(0).toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col gap-1 min-w-0 flex-1">
-                <span className="font-grotesk font-bold text-sm text-white leading-tight">
-                  {post.author_name || author?.full_name || `@${post.author_username}` || 'Utilisateur supprimé'}
-                </span>
+            {author ? (
+              <div className="flex items-start gap-3">
+                <Avatar className="w-8 h-8 border border-cyan-500/20 flex-shrink-0">
+                  <AvatarImage src={author?.avatar_url} alt={post.author_name} />
+                  <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs font-bold">
+                    {(author?.full_name)?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  <span className="font-grotesk font-bold text-sm text-white leading-tight">
+                    {author?.full_name}
+                  </span>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-start gap-3">
+                <Avatar className="w-8 h-8 border border-cyan-500/20 flex-shrink-0">
+                  <AvatarFallback className="bg-gradient-to-br from-slate-600 to-slate-700 text-white text-xs font-bold">
+                    {(post.author_name || post.author_username)?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  <span className="font-grotesk font-bold text-sm text-slate-400 leading-tight">
+                    {post.author_name || `@${post.author_username}` || 'Utilisateur supprimé'}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           <p className="text-xs text-slate-400">
             {post.created_date && formatDistanceToNow(new Date(post.created_date), { locale: fr, addSuffix: true })}

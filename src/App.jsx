@@ -68,6 +68,7 @@ import ToitureCheckupPage from "@/pages/ToitureCheckupPage";
 import EspaceClientPage from "@/pages/EspaceClientPage";
 import PartenairesPage from "@/pages/PartenairesPage";
 import ParrainagePage from "@/pages/ParrainagePage";
+import ParrainageRejoindre from "@/pages/ParrainageRejoindre";
 import GaragePage from "@/pages/GaragePage";
 import QuoteCalculatorPage from "@/pages/QuoteCalculatorPage";
 import ReglementationPage from "@/pages/ReglementationPage";
@@ -149,6 +150,7 @@ const AuthenticatedApp = () => {
         <Route path="/espace-client" element={<EspaceClientPage />} />
         <Route path="/partenaires" element={<PartenairesPage />} />
         <Route path="/parrainage" element={<ParrainagePage />} />
+        <Route path="/parrainage/rejoindre" element={<ParrainageRejoindre />} />
 
         <Route path="/forum" element={<ForumPage />} />
         {/* Profile catch-all route for /@username - must be last in public routes */}

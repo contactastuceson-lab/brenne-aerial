@@ -41,11 +41,44 @@ function buildEmail(userName, subject, message, senderName, senderRole, senderTh
       ${files.map(f => `<a href="${f.url}" style="display:block;margin:6px 0;padding:8px 14px;background:#111823;border:1px solid ${t.topBorder}20;border-radius:6px;color:${t.accent};font-size:13px;text-decoration:none;font-family:monospace;">${f.name}</a>`).join('')}
     </div>` : '';
 
-  const paragraphs = message.split('\n').map(line => {
-    const trimmed = line.trim();
-    if (!trimmed) return `<div style="height:10px;"></div>`;
-    return `<p style="margin:0 0 16px;color:#c4daf0;font-size:15px;line-height:1.85;font-family:'Helvetica Neue',Arial,sans-serif;">${trimmed}</p>`;
-  }).join('');
+  function parseMarkdown(text) {
+    const lines = text.split('\n');
+    let html = '';
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) { html += `<div style="height:10px;"></div>`; continue; }
+
+      // Headings
+      if (trimmed.startsWith('### ')) {
+        html += `<h3 style="margin:18px 0 8px;font-size:16px;font-weight:700;color:#ffffff;">${renderInline(trimmed.slice(4))}</h3>`;
+      } else if (trimmed.startsWith('## ')) {
+        html += `<h2 style="margin:20px 0 10px;font-size:18px;font-weight:800;color:#ffffff;">${renderInline(trimmed.slice(3))}</h2>`;
+      } else if (trimmed.startsWith('# ')) {
+        html += `<h1 style="margin:22px 0 12px;font-size:22px;font-weight:800;color:#ffffff;">${renderInline(trimmed.slice(2))}</h1>`;
+      // Bullet list
+      } else if (/^[-*•] /.test(trimmed)) {
+        html += `<div style="display:flex;align-items:flex-start;gap:8px;margin:0 0 8px;"><span style="color:${t.accent};font-weight:700;flex-shrink:0;">•</span><p style="margin:0;color:#c4daf0;font-size:15px;line-height:1.75;">${renderInline(trimmed.replace(/^[-*•] /, ''))}</p></div>`;
+      // Horizontal rule
+      } else if (/^---+$/.test(trimmed)) {
+        html += `<hr style="border:none;border-top:1px solid ${t.topBorder}30;margin:20px 0;" />`;
+      // Normal paragraph
+      } else {
+        html += `<p style="margin:0 0 14px;color:#c4daf0;font-size:15px;line-height:1.85;font-family:'Helvetica Neue',Arial,sans-serif;">${renderInline(trimmed)}</p>`;
+      }
+    }
+    return html;
+  }
+
+  function renderInline(text) {
+    return text
+      .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em style="color:#ffffff;">$1</em></strong>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#ffffff;">$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, `<code style="background:#0a0f1a;border:1px solid ${t.topBorder}30;padding:1px 6px;border-radius:4px;font-family:monospace;font-size:13px;color:${t.accent};">$1</code>`)
+      .replace(/\[(.+?)\]\((.+?)\)/g, `<a href="$2" style="color:${t.accent};text-decoration:underline;">$1</a>`);
+  }
+
+  const paragraphs = parseMarkdown(message);
 
   return `<!DOCTYPE html>
 <html lang="fr">

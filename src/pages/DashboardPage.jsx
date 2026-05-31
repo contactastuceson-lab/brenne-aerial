@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Bell, Award, FileText } from 'lucide-react';
+import { Award, FileText, FolderOpen, Download, FileVideo, FileImage, File, ChevronDown, ChevronUp, LogIn } from 'lucide-react';
 import CertificationTracking from '@/components/dashboard/CertificationTracking';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,22 +12,61 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Link, useSearchParams } from 'react-router-dom';
 
+const FILE_ICONS = { photo: FileImage, video: FileVideo, rapport: FileText, attestation: FileText, autre: File };
+const FILE_COLORS = { photo: 'text-blue-400', video: 'text-purple-400', rapport: 'text-green-400', attestation: 'text-amber-400', autre: 'text-muted-foreground' };
+
+function MissionFolder({ mission, files }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="border border-border rounded-xl overflow-hidden">
+      <button onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center gap-3 px-5 py-4 bg-card hover:bg-secondary/50 transition-colors">
+        <FolderOpen className="w-5 h-5 text-primary flex-shrink-0" />
+        <div className="flex-1 text-left">
+          <p className="font-grotesk font-semibold text-sm">{mission}</p>
+          <p className="font-inter text-xs text-muted-foreground">{files.length} fichier{files.length > 1 ? 's' : ''}</p>
+        </div>
+        {files[0]?.mission_date && (
+          <span className="font-mono text-xs text-muted-foreground mr-2">
+            {format(new Date(files[0].mission_date), 'd MMM yyyy', { locale: fr })}
+          </span>
+        )}
+        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="divide-y divide-border">
+          {files.map(file => {
+            const Icon = FILE_ICONS[file.file_type] || File;
+            return (
+              <div key={file.id} className="flex items-center gap-3 px-5 py-3 bg-background hover:bg-card/50 transition-colors">
+                <Icon className={`w-4 h-4 flex-shrink-0 ${FILE_COLORS[file.file_type] || 'text-muted-foreground'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="font-inter text-sm truncate">{file.file_name}</p>
+                  {file.description && <p className="font-inter text-xs text-muted-foreground truncate">{file.description}</p>}
+                </div>
+                {file.file_size_mb && <span className="font-mono text-xs text-muted-foreground flex-shrink-0">{file.file_size_mb} Mo</span>}
+                <a href={file.file_url} target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="outline" className="border-border gap-1.5 text-xs flex-shrink-0">
+                    <Download className="w-3 h-3" /> Télécharger
+                  </Button>
+                </a>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
-  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
   const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get('tab') || 'notifications';
-
+  const defaultTab = searchParams.get('tab') || 'files';
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin('/dashboard'));
   }, []);
-
-  const { data: notifs = [] } = useQuery({
-    queryKey: ['my-notifs', user?.email],
-    queryFn: () => base44.entities.Notification.filter({ user_email: user.email }, '-created_date', 30),
-    enabled: !!user?.email,
-  });
 
   const { data: myQuotes = [] } = useQuery({
     queryKey: ['my-quotes', user?.email],
@@ -41,36 +80,44 @@ export default function DashboardPage() {
     enabled: !!user?.email,
   });
 
-  const markRead = useMutation({
-    mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-notifs'] }),
+  const { data: files = [], isLoading: filesLoading } = useQuery({
+    queryKey: ['client-files', user?.email],
+    queryFn: () => base44.entities.ClientFile.filter({ client_email: user.email }, '-mission_date'),
+    enabled: !!user?.email,
   });
 
-
+  const missions = files.reduce((acc, f) => {
+    if (!acc[f.mission_name]) acc[f.mission_name] = [];
+    acc[f.mission_name].push(f);
+    return acc;
+  }, {});
 
   if (!user) {
-    return <div className="min-h-screen flex items-center justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
-
-  const unread = notifs.filter(n => !n.is_read).length;
 
   return (
     <div className="pt-20 min-h-screen px-5 lg:px-10 py-10">
       <div className="max-w-5xl mx-auto">
+
         {/* Profile header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10 p-6 rounded-2xl bg-card border border-border">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 p-5 rounded-2xl bg-card border border-border">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0 sky-glow">
+            <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
               {user.avatar_url ? (
                 <img src={user.avatar_url} alt="" className="w-full h-full object-cover rounded-xl" />
               ) : (
-                <span className="font-grotesk font-bold text-primary text-xl">
+                <span className="font-grotesk font-bold text-primary text-lg">
                   {user.full_name?.[0]?.toUpperCase() || 'U'}
                 </span>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="font-grotesk font-bold text-xl">{user.full_name}</h1>
+              <h1 className="font-grotesk font-bold text-lg">Bonjour, {user.full_name?.split(' ')[0]} 👋</h1>
               <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
               {user.badges?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
@@ -88,8 +135,8 @@ export default function DashboardPage() {
 
         <Tabs defaultValue={defaultTab}>
           <TabsList className="bg-card border border-border mb-6">
-            <TabsTrigger value="notifications" className="gap-1.5 font-inter text-sm">
-              <Bell className="w-4 h-4" /> Notifs {unread > 0 && <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground font-mono text-[10px] flex items-center justify-center">{unread}</span>}
+            <TabsTrigger value="files" className="gap-1.5 font-inter text-sm">
+              <FolderOpen className="w-4 h-4" /> Mes fichiers
             </TabsTrigger>
             <TabsTrigger value="quotes" className="gap-1.5 font-inter text-sm">
               <FileText className="w-4 h-4" /> Mes devis
@@ -102,30 +149,31 @@ export default function DashboardPage() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Notifications */}
-          <TabsContent value="notifications" className="space-y-2">
-            {notifs.length === 0 ? (
-              <div className="text-center py-10 text-muted-foreground font-inter text-sm">Aucune notification</div>
-            ) : notifs.map(n => (
-              <div key={n.id} onClick={() => !n.is_read && markRead.mutate(n.id)}
-                className={`p-4 rounded-xl border cursor-pointer transition-colors ${n.is_read ? 'bg-card border-border' : 'bg-primary/5 border-primary/20'}`}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-inter text-sm font-medium">{n.title}</p>
-                    {n.content && <p className="font-inter text-xs text-muted-foreground mt-1">{n.content}</p>}
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="font-mono text-[10px] text-muted-foreground">
-                      {n.created_date ? format(new Date(n.created_date), 'd MMM', { locale: fr }) : ''}
-                    </span>
-                    {!n.is_read && <div className="w-2 h-2 rounded-full bg-primary" />}
-                  </div>
-                </div>
+          {/* Fichiers missions */}
+          <TabsContent value="files" className="space-y-3">
+            {filesLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
-            ))}
+            ) : Object.keys(missions).length === 0 ? (
+              <div className="text-center py-14 space-y-4">
+                <FolderOpen className="w-14 h-14 text-muted-foreground/20 mx-auto" />
+                <p className="font-grotesk font-bold text-lg">Aucun fichier disponible</p>
+                <p className="font-inter text-sm text-muted-foreground max-w-xs mx-auto">
+                  Vos fichiers de missions apparaîtront ici dès que votre pilote les aura déposés.
+                </p>
+                <Link to="/quote">
+                  <Button className="bg-primary text-primary-foreground gap-2 mt-2">Commander une mission</Button>
+                </Link>
+              </div>
+            ) : (
+              Object.entries(missions).map(([mission, mFiles]) => (
+                <MissionFolder key={mission} mission={mission} files={mFiles} />
+              ))
+            )}
           </TabsContent>
 
-          {/* Quotes */}
+          {/* Devis */}
           <TabsContent value="quotes" className="space-y-3">
             {myQuotes.length === 0 ? (
               <div className="text-center py-10">

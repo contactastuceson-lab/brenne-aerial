@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
 import { motion, AnimatePresence } from 'framer-motion';
+import NotificationsPanel from '@/components/notifications/NotificationsPanel';
 
 const NAV_LINKS = [
   { to: '/',         label: 'Accueil' },
@@ -13,6 +14,7 @@ const NAV_LINKS = [
   { to: '/planning',  label: 'Planning' },
   { to: '/blog',      label: 'Blog' },
   { to: '/forum',     label: 'Forum' },
+  { to: '/dashboard', label: 'Espace Client' },
 ];
 
 const TOOLS = [
@@ -33,6 +35,7 @@ export default function Navbar() {
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [notifsOpen, setNotifsOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -123,8 +126,8 @@ export default function Navbar() {
             {user ? (
               <>
                 {/* Notifications */}
-                <Link
-                  to="/dashboard"
+                <button
+                  onClick={() => setNotifsOpen(v => !v)}
                   className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                 >
                   <Bell className="w-5 h-5" />
@@ -133,7 +136,8 @@ export default function Navbar() {
                       {notifs.length > 9 ? '9+' : notifs.length}
                     </span>
                   )}
-                </Link>
+                </button>
+                <NotificationsPanel user={user} open={notifsOpen} onClose={() => setNotifsOpen(false)} />
 
                 {/* Profile dropdown menu */}
                 <div className="hidden sm:flex items-center gap-2">

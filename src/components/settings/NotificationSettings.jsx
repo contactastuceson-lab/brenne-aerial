@@ -43,7 +43,9 @@ export default function NotificationSettings({ user }) {
   });
 
   const togglePref = (key) => {
-    setLocalPrefs(prev => ({ ...prev, [key]: !prev[key] }));
+    const updated = { ...localPrefs, [key]: !localPrefs[key] };
+    setLocalPrefs(updated);
+    saveMutation.mutate(updated);
   };
 
   const notificationOptions = [
@@ -130,31 +132,19 @@ export default function NotificationSettings({ user }) {
         );
       })}
 
-      <div className="flex gap-2">
-        <Button
-          onClick={() => saveMutation.mutate(localPrefs)}
-          disabled={saveMutation.isPending}
-          className="flex-1"
-        >
-          {saveMutation.isPending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            '💾 Sauvegarder les préférences'
-          )}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => setLocalPrefs(getDefaultPrefs())}
-          className="flex-1"
-        >
-          🔄 Réinitialiser
-        </Button>
-      </div>
-
-      <div className="p-3 rounded-lg bg-blue-400/10 border border-blue-400/20">
-        <p className="font-inter text-xs text-blue-600">
-          💡 Vous pouvez contrôler entièrement comment vous recevez les notifications. Ces paramètres ne s'appliquent qu'à vous.
+      <div className="flex items-center justify-between px-1">
+        <p className="font-inter text-xs text-muted-foreground flex items-center gap-1.5">
+          {saveMutation.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
+          {saveMutation.isPending ? 'Sauvegarde...' : saveMutation.isSuccess ? '✓ Sauvegardé' : 'Les changements sont sauvegardés automatiquement'}
         </p>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => { const d = getDefaultPrefs(); setLocalPrefs(d); saveMutation.mutate(d); }}
+          className="text-xs text-muted-foreground"
+        >
+          Réinitialiser
+        </Button>
       </div>
     </motion.div>
   );

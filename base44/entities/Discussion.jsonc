@@ -34,6 +34,17 @@
       "type": "string",
       "description": "Avatar de l'auteur (snapshot)"
     },
+    "author_certification_badge": {
+      "type": "string",
+      "description": "Badge de certification de l'auteur (URL)"
+    },
+    "author_badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Badges de l'auteur"
+    },
     "tags": {
       "type": "array",
       "items": {

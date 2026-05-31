@@ -108,19 +108,23 @@ export default function QuotePage() {
         prix_estime: estimatedPrice,
         status: 'pending',
       });
-      await base44.functions.invoke('sendQuoteConfirmation', {
+      setSent(true);
+
+      // Envoi de la confirmation en arrière-plan
+      base44.functions.invoke('sendQuoteConfirmation', {
         clientName: form.client_name,
         clientEmail: form.client_email,
         serviceType: form.service_type,
         estimatedPrice: estimatedPrice,
         quoteId: quote?.id || '',
         dateStr: form.date_souhaitee || null,
+      }).catch(err => {
+        console.error('Erreur envoi confirmation:', err);
+        // Erreur silencieuse - le devis a réussi à être créé
       });
-      setSent(true);
     } catch (err) {
-      toast.error('Erreur lors de l\'envoi de votre demande');
+      toast.error('Erreur lors de la création de votre demande');
       console.error(err);
-    } finally {
       setSending(false);
     }
   };

@@ -43,7 +43,13 @@ export default function NotificationsPanel({ user, open, onClose }) {
   };
 
   const deleteAll = async () => {
-    await Promise.all(notifs.map(n => base44.entities.Notification.delete(n.id)));
+    for (const n of notifs) {
+      try {
+        await base44.entities.Notification.delete(n.id);
+      } catch (e) {
+        // ignore not found or individual errors
+      }
+    }
     queryClient.invalidateQueries({ queryKey: ['notifs-panel'] });
     queryClient.invalidateQueries({ queryKey: ['unread-notifs'] });
   };

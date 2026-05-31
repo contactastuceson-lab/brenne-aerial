@@ -54,6 +54,7 @@ export default function DiscussionDetailPage() {
         content: replyContent,
         author_id: user.id,
         author_name: user.full_name,
+        author_display_name: user.display_name || user.full_name,
         author_avatar: user.avatar_url,
         author_is_supreme: user.verifications?.includes('supreme') || false,
         author_verifications: Array.isArray(user.verifications) ? user.verifications.filter(v => v !== 'supreme') : [],
@@ -96,7 +97,10 @@ export default function DiscussionDetailPage() {
           <h1 className="text-4xl font-bold text-white">{discussion.title}</h1>
           <div className="flex items-center gap-6 text-sm text-slate-400">
             <div className="flex items-center gap-2">
-              <span>{discussion.author_name}</span>
+              {discussion.author_avatar && (
+                <img src={discussion.author_avatar} alt="" className="w-6 h-6 rounded-full" />
+              )}
+              <span>{discussion.author_display_name || discussion.author_name}</span>
               <VerificationIcons 
                 verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
                 size="sm" 
@@ -142,8 +146,11 @@ export default function DiscussionDetailPage() {
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
+                        {reply.author_avatar && (
+                          <img src={reply.author_avatar} alt="" className="w-5 h-5 rounded-full" />
+                        )}
                         <p className="font-semibold text-white">
-                          {reply.author_name}
+                          {reply.author_display_name || reply.author_name}
                         </p>
                         <VerificationIcons 
                           verifications={reply.author_verifications} 

@@ -46,6 +46,7 @@ export default function NewDiscussionDialog() {
         category,
         author_id: user.id,
         author_name: user.full_name || user.email,
+        author_display_name: user.display_name || user.full_name || user.email,
         author_avatar: user.avatar_url,
         author_is_supreme: user.verifications?.includes('supreme') || false,
         author_verifications: Array.isArray(user.verifications) ? user.verifications.filter(v => v !== 'supreme') : [],

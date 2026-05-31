@@ -3,7 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MessageCircle, Eye, Star, UserCheck, Award, Shield, Zap, CheckCircle, Heart, Check } from 'lucide-react';
 
-const BADGE_EMOJI = {
+const BADGE_ICONS = {
   'Fondateur': '⭐',
   'Collaborateur': '👤',
   'VIP': '🔱',
@@ -50,25 +50,27 @@ export default function DiscussionCard({ discussion }) {
               </div>
             )}
             
-            {/* Nom + Badges images */}
-            <div className="flex items-center gap-1.5">
+            {/* Nom + Badges */}
+            <div className="flex items-center gap-1">
               <span>{discussion.author_name}</span>
               {discussion.author_certification_badge && (
                 <img 
                   src={discussion.author_certification_badge} 
                   alt="certification" 
-                  className="w-4 h-4 object-contain rounded-full"
+                  className="w-4 h-4 object-contain"
                   title="Certifié"
+                  onError={(e) => e.target.style.display = 'none'}
                 />
               )}
-              {discussion.author_badges?.map(badgeUrl => (
-                <img 
-                  key={badgeUrl}
-                  src={badgeUrl} 
-                  alt="badge" 
-                  className="w-4 h-4 object-contain"
-                />
-              ))}
+              {discussion.author_badges?.length > 0 && (
+                <div className="flex items-center gap-0.5">
+                  {discussion.author_badges.map(badge => (
+                    <span key={badge} title={badge} className="text-sm">
+                      {BADGE_ICONS[badge] || badge}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <span>{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>

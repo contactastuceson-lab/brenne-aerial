@@ -218,24 +218,25 @@ export default function ProfilePage() {
           </label>
         </div>
 
-        {/* Avatar — chevauchement cover */}
+        {/* Avatar — chevauchement cover avec bordure dorée */}
         <div className="relative px-4 -mt-10 mb-2">
-          <div className="relative w-20 h-20">
+          <div className="relative w-24 h-24">
             <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden"
-              style={isSupreme
-                ? { border: '3px solid #d97706', boxShadow: '0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
-                : { border: '4px solid hsl(var(--background))', background: 'hsl(var(--secondary))' }
-              }
+              className="w-24 h-24 rounded-3xl flex items-center justify-center overflow-hidden border-4"
+              style={{
+                borderColor: '#fbbf24',
+                boxShadow: '0 0 24px rgba(251, 191, 36, 0.4)',
+                background: 'hsl(var(--secondary))'
+              }}
             >
               {user.avatar_url
                 ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                : <span className="font-grotesk font-bold text-3xl text-primary">{user.full_name?.[0]?.toUpperCase() || '?'}</span>
+                : <span className="font-grotesk font-bold text-4xl text-primary">{user.display_name?.[0]?.toUpperCase() || user.full_name?.[0]?.toUpperCase() || '?'}</span>
               }
             </div>
             <label className="absolute -bottom-2 -right-2 cursor-pointer">
-              <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center border-2 border-background hover:bg-primary/80 transition-colors">
-                {uploading ? <Loader2 className="w-3 h-3 animate-spin text-primary-foreground" /> : <Camera className="w-3 h-3 text-primary-foreground" />}
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center border-2 border-background hover:bg-primary/80 transition-colors">
+                {uploading ? <Loader2 className="w-4 h-4 animate-spin text-primary-foreground" /> : <Camera className="w-4 h-4 text-primary-foreground" />}
               </div>
               <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
             </label>
@@ -243,19 +244,19 @@ export default function ProfilePage() {
         </div>
 
         {/* Infos profil + badges + statuts */}
-        <div className="px-4 mt-3 mb-6">
+        <div className="px-4 mt-4 mb-6">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <h1
-                  className="font-grotesk font-bold text-xl"
-                  style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : {}}
-                >
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="font-grotesk font-bold text-3xl text-yellow-400">
                   {user.display_name || user.full_name}
                 </h1>
+                {user.badges?.includes('Officiel') && (
+                  <span className="text-2xl">👑</span>
+                )}
                 <VerificationIcons verifications={user.verifications} size="md" />
               </div>
-              <p className="font-mono text-xs text-muted-foreground mt-0.5">{user.email}</p>
+              <p className="font-mono text-xs text-muted-foreground mt-1">{user.email}</p>
               {roleCfg && (
                 <span className={`inline-block mt-1.5 font-mono text-[10px] px-2 py-0.5 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
                   {roleCfg.emoji} {roleCfg.label}

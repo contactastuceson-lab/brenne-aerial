@@ -40,14 +40,15 @@ export default function NewDiscussionDialog() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
+      console.log('User data:', user); // Debug
       return await base44.entities.Discussion.create({
         title,
         content,
         category,
         author_id: user.id,
-        author_name: user.display_name || user.full_name,
+        author_name: user.full_name || user.email,
         author_avatar: user.avatar_url,
-        author_badges: user.badges || [],
+        author_badges: Array.isArray(user.badges) ? user.badges : [],
         author_certification_badge: user.certification_badge || null,
       });
     },

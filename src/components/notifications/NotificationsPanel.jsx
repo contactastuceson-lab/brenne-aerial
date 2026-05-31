@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, X, Check, CheckCheck } from 'lucide-react';
+import { Bell, X, Check, CheckCheck, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
@@ -38,6 +38,12 @@ export default function NotificationsPanel({ user, open, onClose }) {
   const markAllRead = async () => {
     const unread = notifs.filter(n => !n.is_read);
     await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
+    queryClient.invalidateQueries({ queryKey: ['notifs-panel'] });
+    queryClient.invalidateQueries({ queryKey: ['unread-notifs'] });
+  };
+
+  const deleteAll = async () => {
+    await Promise.all(notifs.map(n => base44.entities.Notification.delete(n.id)));
     queryClient.invalidateQueries({ queryKey: ['notifs-panel'] });
     queryClient.invalidateQueries({ queryKey: ['unread-notifs'] });
   };
@@ -80,6 +86,11 @@ export default function NotificationsPanel({ user, open, onClose }) {
                 {unreadCount > 0 && (
                   <Button size="sm" variant="ghost" onClick={markAllRead} className="text-xs h-7 gap-1 text-muted-foreground hover:text-foreground">
                     <CheckCheck className="w-3 h-3" /> Tout lire
+                  </Button>
+                )}
+                {notifs.length > 0 && (
+                  <Button size="sm" variant="ghost" onClick={deleteAll} className="text-xs h-7 gap-1 text-muted-foreground hover:text-destructive">
+                    <Trash2 className="w-3 h-3" /> Tout supprimer
                   </Button>
                 )}
                 <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">

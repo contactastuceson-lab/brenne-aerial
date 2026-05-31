@@ -1,11 +1,21 @@
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MessageCircle, Eye } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { MessageCircle, Eye, Star, UserCheck, Award, Shield, Zap, CheckCircle, Heart } from 'lucide-react';
+
+const BADGE_CONFIG = {
+  'Fondateur':      { icon: Star,      color: 'text-yellow-400' },
+  'Collaborateur':  { icon: UserCheck, color: 'text-blue-400' },
+  'VIP':            { icon: Award,     color: 'text-purple-400' },
+  'Admin':          { icon: Shield,    color: 'text-red-400' },
+  'Pilote':         { icon: Zap,       color: 'text-primary' },
+  'Officiel':       { icon: CheckCircle, color: 'text-accent' },
+  'Vérfifié':       { icon: CheckCircle, color: 'text-green-400' },
+  'Donateur':       { icon: Heart,     color: 'text-red-400' },
+};
 
 export default function DiscussionCard({ discussion }) {
-  const isOfficial = discussion.author_name === 'Astuceson Officiel';
+  const isOfficial = discussion.author_name === 'Contact Astuceson';
 
   return (
     <Link to={`/forum/${discussion.id}`}>
@@ -30,17 +40,36 @@ export default function DiscussionCard({ discussion }) {
         </p>
 
         <div className="flex items-center justify-between text-xs text-slate-500">
-          <div className="flex items-center gap-3">
-            {isOfficial && (
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/30">
-                <div className="w-5 h-5 rounded-full border-2 border-yellow-400 flex items-center justify-center">
-                  <img src={discussion.author_avatar} alt="" className="w-full h-full object-cover rounded-full" />
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Avatar + Nom + Badges */}
+            <div className="flex items-center gap-2">
+              {discussion.author_avatar ? (
+                <img src={discussion.author_avatar} alt="" className="w-6 h-6 rounded-full object-cover border border-slate-600" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
+                  {discussion.author_name?.[0]?.toUpperCase() || '?'}
                 </div>
-                <span className="text-yellow-300 font-grotesk font-semibold">{discussion.author_name}</span>
-                <span className="text-lg">👑</span>
+              )}
+              <span className={isOfficial ? 'text-yellow-300 font-grotesk font-semibold' : ''}>
+                {discussion.author_name}
+              </span>
+              {isOfficial && <span className="text-lg">👑</span>}
+            </div>
+
+            {/* Badges */}
+            {discussion.author_badges?.length > 0 && (
+              <div className="flex items-center gap-1">
+                {discussion.author_badges.map(badge => {
+                  const cfg = BADGE_CONFIG[badge];
+                  if (!cfg) return null;
+                  const Icon = cfg.icon;
+                  return (
+                    <Icon key={badge} className={`w-3 h-3 ${cfg.color}`} title={badge} />
+                  );
+                })}
               </div>
             )}
-            {!isOfficial && <span>{discussion.author_name}</span>}
+
             <span>{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
           </div>
           <div className="flex items-center gap-4">

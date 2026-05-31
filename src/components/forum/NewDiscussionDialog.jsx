@@ -45,8 +45,9 @@ export default function NewDiscussionDialog() {
         content,
         category,
         author_id: user.id,
-        author_name: user.full_name,
+        author_name: user.display_name || user.full_name,
         author_avatar: user.avatar_url,
+        author_badges: user.badges || [],
       });
     },
     onSuccess: () => {

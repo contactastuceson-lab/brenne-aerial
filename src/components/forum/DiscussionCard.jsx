@@ -3,15 +3,15 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MessageCircle, Eye, Star, UserCheck, Award, Shield, Zap, CheckCircle, Heart, Check } from 'lucide-react';
 
-const BADGE_CONFIG = {
-  'Fondateur':      { icon: Star,      color: 'text-yellow-400' },
-  'Collaborateur':  { icon: UserCheck, color: 'text-blue-400' },
-  'VIP':            { icon: Award,     color: 'text-purple-400' },
-  'Admin':          { icon: Shield,    color: 'text-red-400' },
-  'Pilote':         { icon: Zap,       color: 'text-primary' },
-  'Officiel':       { icon: CheckCircle, color: 'text-accent' },
-  'Vérfifié':       { icon: CheckCircle, color: 'text-green-400' },
-  'Donateur':       { icon: Heart,     color: 'text-red-400' },
+const BADGE_EMOJI = {
+  'Fondateur': '⭐',
+  'Collaborateur': '👤',
+  'VIP': '🔱',
+  'Admin': '🛡️',
+  'Pilote': '⚡',
+  'Officiel': '✓',
+  'Vérfifié': '✓',
+  'Donateur': '❤️',
 };
 
 export default function DiscussionCard({ discussion }) {
@@ -50,32 +50,19 @@ export default function DiscussionCard({ discussion }) {
               </div>
             )}
             
-            {/* Nom + Badge certification */}
-            <div className="flex items-center gap-1.5">
+            {/* Nom + Badges emojis */}
+            <div className="flex items-center gap-1">
               <span>{discussion.author_name}</span>
-              {discussion.author_certification_badge && (
-                <img 
-                  src={discussion.author_certification_badge} 
-                  alt="certification" 
-                  className="w-4 h-4 object-contain"
-                  title="Certifié"
-                />
+              {discussion.author_badges?.length > 0 && (
+                <div className="flex items-center gap-0.5">
+                  {discussion.author_badges.map(badge => (
+                    <span key={badge} title={badge} className="text-sm">
+                      {BADGE_EMOJI[badge] || badge}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
-
-            {/* Badges de certification */}
-            {discussion.author_badges?.length > 0 && (
-              <div className="flex items-center gap-0.5">
-                {discussion.author_badges.map(badge => {
-                  const cfg = BADGE_CONFIG[badge];
-                  if (!cfg) return null;
-                  const Icon = cfg.icon;
-                  return (
-                    <Icon key={badge} className={`w-3 h-3 ${cfg.color}`} title={badge} />
-                  );
-                })}
-              </div>
-            )}
 
             <span>{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
           </div>

@@ -248,7 +248,7 @@ export default function ProfilePage() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="font-grotesk font-bold text-3xl text-yellow-400">
+                <h1 className={`font-grotesk font-bold text-3xl ${isSupreme ? 'text-amber-300' : 'text-foreground'}`}>
                   {user.display_name || user.full_name}
                 </h1>
                 {user.badges?.includes('Officiel') && (

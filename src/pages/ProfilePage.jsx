@@ -224,8 +224,8 @@ export default function ProfilePage() {
             <div
               className="w-24 h-24 rounded-3xl flex items-center justify-center overflow-hidden border-4"
               style={{
-                borderColor: '#fbbf24',
-                boxShadow: '0 0 24px rgba(251, 191, 36, 0.4)',
+                borderColor: isSupreme ? '#fbbf24' : 'hsl(var(--border))',
+                boxShadow: isSupreme ? '0 0 24px rgba(251, 191, 36, 0.4)' : 'none',
                 background: 'hsl(var(--secondary))'
               }}
             >

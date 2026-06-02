@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { hasAdminAccess } from '@/lib/roles';
 import { motion } from 'framer-motion';
+import OfficialMessageEditor from '@/components/admin/OfficialMessageEditor';
 
 const OFFICIAL_CONV_ID = (recipientEmail) => `brenne_aerial_official_${recipientEmail}`;
 
@@ -141,11 +142,10 @@ export default function AdminMessaging() {
                 </div>
               )}
             </div>
-            <Textarea
-              placeholder="Contenu du message officiel..."
-              value={officialForm.content}
-              onChange={e => setOfficialForm(p => ({ ...p, content: e.target.value }))}
-              className="bg-card border-border min-h-24 lg:min-h-28 text-xs lg:text-sm rounded-xl"
+            <OfficialMessageEditor 
+              content={officialForm.content}
+              onChange={content => setOfficialForm(p => ({ ...p, content }))}
+              disabled={!officialForm.recipient_email}
             />
             <div className="bg-primary/10 border border-primary/20 rounded-xl px-3 py-2.5 font-inter text-[10px] lg:text-xs text-muted-foreground space-y-1">
               <p className="flex items-center gap-1"><Sparkles className="w-3 h-3" /> Message aparaîtra comme officiel Brenne Aerial</p>

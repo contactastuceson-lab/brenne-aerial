@@ -6,6 +6,7 @@ import { Users, MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, 
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import { VERIFICATION_CONFIG } from '@/components/ui/VerificationChip';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { ROLE_CONFIG } from '@/lib/roles';
 import { formatDistanceToNow } from 'date-fns';
@@ -75,6 +76,7 @@ export default function PublicProfilePage() {
   const [followingLoading, setFollowingLoading] = useState(false);
   const [recentDiscussions, setRecentDiscussions] = useState([]);
   const [followingCount, setFollowingCount] = useState(0);
+  const [badgeCounts, setBadgeCounts] = useState({});
 
   useEffect(() => {
     const loadUser = async () => {
@@ -119,6 +121,17 @@ export default function PublicProfilePage() {
           const isFollowingCheck = followersList.some(f => f.follower_email === me.email);
           setIsFollowing(isFollowingCheck);
         }
+
+        // Count profiles per verification level
+        const counts = { verified: 0, pro: 0, certified: 0, official: 0, supreme: 0 };
+        allUsers.forEach(u => {
+          if (u.verifications?.includes('verified')) counts.verified++;
+          if (u.verifications?.includes('pro')) counts.pro++;
+          if (u.verifications?.includes('certified')) counts.certified++;
+          if (u.verifications?.includes('official')) counts.official++;
+          if (u.verifications?.includes('supreme')) counts.supreme++;
+        });
+        setBadgeCounts(counts);
 
         // Subscribe aux changements en temps réel
         const unsubscribe = base44.entities.Follow.subscribe((event) => {
@@ -346,6 +359,25 @@ export default function PublicProfilePage() {
               </div>
             )}
           </div>
+
+          {/* Verifications with counts */}
+          {user.verifications?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {user.verifications.map(v => {
+                const cfg = VERIFICATION_CONFIG[v];
+                if (!cfg) return null;
+                const count = badgeCounts[v] || 0;
+                return (
+                  <span key={v} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.border} ${cfg.bg}`}>
+                    <span className={cfg.color}>•</span>
+                    <span className={cfg.color}>{cfg.label}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-muted-foreground font-mono text-[10px]">{count} {count <= 1 ? 'profil' : 'profils'}</span>
+                  </span>
+                );
+              })}
+            </div>
+          )}
 
           {/* Badges */}
           {user.badges?.length > 0 && (

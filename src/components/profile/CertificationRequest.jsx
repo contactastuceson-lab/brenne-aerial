@@ -295,10 +295,24 @@ export default function CertificationRequest({ onClose, user }) {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
   const [certEnabled, setCertEnabled] = useState(true);
+  const [badgeCounts, setBadgeCounts] = useState({});
 
   useEffect(() => {
     base44.entities.AppSettings.filter({ key: 'certifications_enabled' }).then(s => {
       if (s.length > 0) setCertEnabled(s[0].value === 'true');
+    }).catch(() => {});
+
+    // Count profiles per verification level
+    base44.entities.User.list().then(users => {
+      const counts = { verified: 0, pro: 0, certified: 0, official: 0, supreme: 0 };
+      users.forEach(u => {
+        if (u.verifications?.includes('verified')) counts.verified++;
+        if (u.verifications?.includes('pro')) counts.pro++;
+        if (u.verifications?.includes('certified')) counts.certified++;
+        if (u.verifications?.includes('official')) counts.official++;
+        if (u.verifications?.includes('supreme')) counts.supreme++;
+      });
+      setBadgeCounts(counts);
     }).catch(() => {});
   }, []);
 
@@ -399,35 +413,41 @@ export default function CertificationRequest({ onClose, user }) {
               <motion.div key="choose" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
                 <p className="font-inter text-sm text-muted-foreground mb-4">Sélectionnez le niveau correspondant à votre profil. Chaque niveau comporte plusieurs étapes de validation.</p>
                 {BADGE_LEVELS.map(level => {
-                  const Icon = level.icon;
-                  return (
-                    <button
-                      key={level.key}
-                      onClick={() => { if (!level.locked) { setSelectedLevel(level); setFormStep(0); setStage('form'); } }}
-                      disabled={level.locked}
-                      className={`w-full text-left rounded-xl border p-4 transition-all group ${level.locked ? 'opacity-50 cursor-not-allowed border-border bg-secondary/30' : `${level.border} ${level.bg} hover:scale-[1.01] cursor-pointer`}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${level.bg} border ${level.border}`}
-                            style={level.key === 'supreme' ? { background: 'linear-gradient(135deg,#92400e,#d97706)', border: '1px solid #f59e0b' } : {}}>
-                            <Icon className={`w-4 h-4 ${level.color}`} style={level.key === 'supreme' ? { color: '#fde68a' } : {}} />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className={`font-grotesk font-bold text-sm ${level.color}`} style={level.key === 'supreme' ? { color: '#f59e0b' } : {}}>{level.label}</p>
-                              {level.price > 0 && <span className="font-mono text-[9px] bg-secondary border border-border px-1.5 py-0.5 rounded-full text-muted-foreground">{(level.price / 100).toFixed(0)}€</span>}
-                              {!level.locked && level.steps.length > 0 && <span className="font-mono text-[9px] bg-secondary border border-border px-1.5 py-0.5 rounded-full text-muted-foreground">{level.steps.length} étapes</span>}
-                              {level.locked && <span className="font-mono text-[9px] bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 px-1.5 py-0.5 rounded-full">Sur invitation</span>}
-                            </div>
-                            <p className="font-inter text-[11px] text-muted-foreground">{level.desc}</p>
-                          </div>
-                        </div>
-                        {!level.locked && <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />}
-                      </div>
-                    </button>
-                  );
-                })}
+                   const Icon = level.icon;
+                   const count = badgeCounts[level.key] || 0;
+                   return (
+                     <button
+                       key={level.key}
+                       onClick={() => { if (!level.locked) { setSelectedLevel(level); setFormStep(0); setStage('form'); } }}
+                       disabled={level.locked}
+                       className={`w-full text-left rounded-xl border p-4 transition-all group ${level.locked ? 'opacity-50 cursor-not-allowed border-border bg-secondary/30' : `${level.border} ${level.bg} hover:scale-[1.01] cursor-pointer`}`}
+                     >
+                       <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-3 flex-1">
+                           <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${level.bg} border ${level.border} flex-shrink-0`}
+                             style={level.key === 'supreme' ? { background: 'linear-gradient(135deg,#92400e,#d97706)', border: '1px solid #f59e0b' } : {}}>
+                             <Icon className={`w-4 h-4 ${level.color}`} style={level.key === 'supreme' ? { color: '#fde68a' } : {}} />
+                           </div>
+                           <div className="flex-1 min-w-0">
+                             <div className="flex items-center gap-2 flex-wrap">
+                               <p className={`font-grotesk font-bold text-sm ${level.color}`} style={level.key === 'supreme' ? { color: '#f59e0b' } : {}}>{level.label}</p>
+                               <span className="font-mono text-[8px] bg-secondary border border-border px-1 py-0.5 rounded-full text-muted-foreground whitespace-nowrap">
+                                 {count} {count <= 1 ? 'profil' : 'profils'}
+                               </span>
+                               {level.price !== 0 && (
+                                 <span className="font-mono text-[8px] bg-secondary border border-border px-1 py-0.5 rounded-full text-muted-foreground whitespace-nowrap">
+                                   {typeof level.price === 'number' ? `${(level.price / 100).toFixed(0)}€` : level.price}
+                                 </span>
+                               )}
+                             </div>
+                             <p className="font-inter text-[11px] text-muted-foreground mt-0.5">{level.desc}</p>
+                           </div>
+                         </div>
+                         {!level.locked && <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0 ml-2" />}
+                       </div>
+                     </button>
+                   );
+                 })}
               </motion.div>
             )}
 

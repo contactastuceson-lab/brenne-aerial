@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Check, Upload, Loader2, Calculator, Video, Building2, HardHat, Camera, Briefcase, Wifi, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Upload, Loader2, Calculator, Video, Building2, HardHat, Camera, Briefcase, Wifi, Sparkles, Home, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
+import { useNavigate } from 'react-router-dom';
 import { calculatePrice, formatPrice, SERVICE_PRICES, getServicePrices } from '@/lib/droneUtils';
 import { toast } from 'sonner';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
@@ -40,6 +41,7 @@ const DURATIONS = [
 const STEPS = ['Service', 'Détails', 'Contact', 'Récapitulatif'];
 
 export default function QuotePage() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -172,6 +174,14 @@ export default function QuotePage() {
               <p className="font-mono text-xs text-muted-foreground mt-1">* Hors frais de déplacement</p>
             </div>
           )}
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+            <Button onClick={() => navigate('/espace-client')} className="gap-2 bg-primary text-primary-foreground font-grotesk">
+              <LogIn className="w-4 h-4" /> Espace client
+            </Button>
+            <Button onClick={() => navigate('/')} variant="outline" className="gap-2 border-border font-grotesk">
+              <Home className="w-4 h-4" /> Accueil
+            </Button>
+          </div>
         </motion.div>
       </div>
     );

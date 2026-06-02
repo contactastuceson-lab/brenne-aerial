@@ -48,6 +48,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder = "Ad
     const val = e.target.value;
     setQuery(val);
     onChange(val);
+    setSelectedAddress(null);
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => search(val), 300);
   };

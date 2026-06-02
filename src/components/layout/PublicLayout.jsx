@@ -8,6 +8,8 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import AnnouncementBanner from '@/components/shared/AnnouncementBanner';
 import AnnouncementPopup from '@/components/shared/AnnouncementPopup';
+import DonationFloatingButton from '@/components/DonationFloatingButton';
+import UpdatesFloatingButton from '@/components/shared/UpdatesFloatingButton';
 
 import MaintenancePage from '@/pages/MaintenancePage';
 import SiteOfflinePage from '@/pages/SiteOfflinePage';
@@ -21,7 +23,8 @@ export default function PublicLayout() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const hideFooter = true; // replaced by BottomTabBar
-  const hideFloatingButton = location.pathname === '/messages';
+  const hiddenPaths = ['/messages', '/planning', '/forum'];
+  const hideFloatingButton = hiddenPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/'));
 
   // Register device session when user logs in
   useRegisterDevice(user);
@@ -123,6 +126,14 @@ export default function PublicLayout() {
         <Outlet />
       </main>
       <AnnouncementPopup user={user} />
+
+      {/* Floating buttons (hidden on certain pages) */}
+      {!hideFloatingButton && (
+        <>
+          <DonationFloatingButton />
+          <UpdatesFloatingButton />
+        </>
+      )}
       
       {/* Mobile: BottomTabBar */}
       <div className="md:hidden">

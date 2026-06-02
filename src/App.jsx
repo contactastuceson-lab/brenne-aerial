@@ -61,6 +61,7 @@ import AdminPartners from "@/pages/admin/AdminPartners";
 import AdminDroneMaintenance from "@/pages/admin/AdminDroneMaintenance.jsx";
 
 import AdminBeforeAfter from "@/pages/admin/AdminBeforeAfter.jsx";
+import AdminUpdates from "@/pages/admin/AdminUpdates";
 import AdminSessions from "@/pages/admin/AdminSessions";
 import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import AdminForum from "@/pages/admin/AdminForum";
@@ -193,6 +194,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/sessions" element={<AdminSessions />} />
         <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
         <Route path="/admin/forum" element={<AdminForum />} />
+        <Route path="/admin/updates" element={<AdminUpdates />} />
 
       </Route>
 

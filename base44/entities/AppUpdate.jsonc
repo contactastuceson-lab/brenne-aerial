@@ -1,0 +1,43 @@
+{
+  "name": "AppUpdate",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre de la mise \u00e0 jour"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description de la nouveaut\u00e9"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "feature",
+        "improvement",
+        "fix",
+        "announcement"
+      ],
+      "default": "feature",
+      "description": "Type de mise \u00e0 jour"
+    },
+    "emoji": {
+      "type": "string",
+      "description": "Emoji repr\u00e9sentatif (ex: \ud83d\ude80, \u2728, \ud83d\udc1b)"
+    },
+    "is_published": {
+      "type": "boolean",
+      "default": true,
+      "description": "Publi\u00e9 ou non"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Date de publication"
+    }
+  },
+  "required": [
+    "title",
+    "description"
+  ]
+}

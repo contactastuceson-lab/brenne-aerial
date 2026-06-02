@@ -68,6 +68,7 @@ const NAV_GROUPS = [
     minLevel: 70,
     items: [
       { path: '/admin/announcements', icon: Megaphone, label: 'Annonces', minLevel: 70 },
+      { path: '/admin/updates', icon: Sparkles, label: 'Mises à jour', minLevel: 70 },
       { path: '/admin/emailing', icon: Mail, label: 'Emailing', minLevel: 80 },
     ]
   },

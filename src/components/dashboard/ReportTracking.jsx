@@ -1,7 +1,11 @@
-import React from 'react';
-import { CheckCircle, Clock, Flag, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import React, { useState } from 'react';
+import { CheckCircle, Clock, Flag, AlertCircle, Loader2, RotateCcw } from 'lucide-react';
+import { format, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 const StatusStep = ({ title, status, date, isCurrent }) => {
   let icon, color;
@@ -38,6 +42,27 @@ const StatusStep = ({ title, status, date, isCurrent }) => {
 };
 
 export default function ReportTracking({ report }) {
+  const queryClient = useQueryClient();
+  const [isEscalating, setIsEscalating] = useState(false);
+
+  const escalateMutation = useMutation({
+    mutationFn: async () => {
+      await base44.entities.Report.update(report.id, {
+        status: 'reviewing',
+        escalated_at: new Date().toISOString(),
+      });
+    },
+    onSuccess: () => {
+      toast.success('✓ Signalement relancé');
+      queryClient.invalidateQueries({ queryKey: ['my-reports'] });
+      setIsEscalating(false);
+    },
+    onError: () => {
+      toast.error('Erreur lors de la relance');
+      setIsEscalating(false);
+    },
+  });
+
   if (!report) {
     return (
       <div className="text-center py-10">
@@ -48,6 +73,9 @@ export default function ReportTracking({ report }) {
       </div>
     );
   }
+
+  const daysSinceUpdate = differenceInDays(new Date(), new Date(report.updated_date || report.created_date));
+  const canEscalate = ['pending', 'reviewing'].includes(report.status) && daysSinceUpdate > 7;
 
   const steps = [
     { title: 'Signalement reçu', status: 'completed', date: report.created_date },
@@ -125,18 +153,66 @@ export default function ReportTracking({ report }) {
 
       {/* Message based on status */}
       {report.status === 'pending' && (
-        <div className="bg-amber-400/10 border border-amber-400/30 rounded-lg p-4">
-          <p className="font-inter text-sm text-amber-300">
-            Votre signalement est en attente. Notre équipe de modération l'examinera sous peu.
-          </p>
+        <div className="space-y-3">
+          <div className="bg-amber-400/10 border border-amber-400/30 rounded-lg p-4">
+            <p className="font-inter text-sm text-amber-300">
+              Votre signalement est en attente. Notre équipe de modération l'examinera sous peu.
+            </p>
+          </div>
+          {canEscalate && (
+            <Button
+              onClick={() => {
+                setIsEscalating(true);
+                escalateMutation.mutate();
+              }}
+              disabled={escalateMutation.isPending}
+              className="w-full bg-amber-400/20 text-amber-400 border border-amber-400/30 hover:bg-amber-400/30 gap-2 font-inter"
+            >
+              {escalateMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Relance en cours...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-4 h-4" />
+                  Relancer le signalement
+                </>
+              )}
+            </Button>
+          )}
         </div>
       )}
 
       {report.status === 'reviewing' && (
-        <div className="bg-blue-400/10 border border-blue-400/30 rounded-lg p-4">
-          <p className="font-inter text-sm text-blue-300">
-            Votre signalement est actuellement examiné par nos modérateurs. Vous serez informé du résultat très bientôt.
-          </p>
+        <div className="space-y-3">
+          <div className="bg-blue-400/10 border border-blue-400/30 rounded-lg p-4">
+            <p className="font-inter text-sm text-blue-300">
+              Votre signalement est actuellement examiné par nos modérateurs. Vous serez informé du résultat très bientôt.
+            </p>
+          </div>
+          {canEscalate && (
+            <Button
+              onClick={() => {
+                setIsEscalating(true);
+                escalateMutation.mutate();
+              }}
+              disabled={escalateMutation.isPending}
+              className="w-full bg-blue-400/20 text-blue-400 border border-blue-400/30 hover:bg-blue-400/30 gap-2 font-inter"
+            >
+              {escalateMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Relance en cours...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-4 h-4" />
+                  Relancer le signalement
+                </>
+              )}
+            </Button>
+          )}
         </div>
       )}
 

@@ -61,25 +61,16 @@ function Popup({ info, anchorEl, onClose }) {
           <X className="w-3 h-3" />
         </button>
 
-        {/* Big icon — seal shape Twitter/Meta style */}
+        {/* Big icon */}
         <div className="flex flex-col items-center mb-3">
-          <span className="relative inline-flex items-center justify-center mb-2" style={{ width: 48, height: 48 }}>
-            <svg viewBox="0 0 24 24" width={48} height={48} style={{ position: 'absolute', inset: 0 }}>
-              {info.gradient && (
-                <defs>
-                  <linearGradient id="popupGold" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#f59e0b" />
-                    <stop offset="50%" stopColor="#fde68a" />
-                    <stop offset="100%" stopColor="#b45309" />
-                  </linearGradient>
-                </defs>
-              )}
-              <path
-                fill={info.gradient ? 'url(#popupGold)' : info.bg}
-                d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91C3.38 9.33 2.5 10.57 2.5 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.26 3.91.8c.66 1.31 1.9 2.19 3.33 2.19s2.68-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"
-              />
-            </svg>
-            <Icon className={`w-6 h-6 ${info.gradient ? 'text-yellow-900' : 'text-white'}`} strokeWidth={2.5} style={{ position: 'relative', zIndex: 1 }} />
+          <span
+            className="w-12 h-12 rounded-full flex items-center justify-center mb-2"
+            style={info.gradient
+              ? { background: 'linear-gradient(135deg, #f59e0b, #fde68a, #b45309)', boxShadow: '0 0 12px rgba(245,158,11,0.5)' }
+              : { background: info.bg }
+            }
+          >
+            <Icon className={`w-6 h-6 ${info.gradient ? 'text-yellow-900' : 'text-white'}`} strokeWidth={2.5} />
           </span>
           <p className="font-grotesk font-bold text-sm" style={info.gradient ? { color: '#fde68a' } : { color: info.bg }}>
             {info.label}

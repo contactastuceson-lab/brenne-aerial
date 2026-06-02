@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import BadgeChip from '@/components/ui/BadgeChip';
 import CertificationTracking from '@/components/dashboard/CertificationTracking';
 import ReportTracking from '@/components/dashboard/ReportTracking';
+import QuoteTracking from '@/components/dashboard/QuoteTracking';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -125,11 +126,11 @@ function MissionFolder({ mission, files }) {
   );
 }
 
-function QuoteCard({ q }) {
+function QuoteCard({ q, onExpand }) {
   const s = QUOTE_STATUS[q.status] || QUOTE_STATUS.pending;
   const StatusIcon = s.icon;
   return (
-    <motion.div whileHover={{ y: -1 }} className={`p-5 rounded-2xl bg-card border ${s.border} relative overflow-hidden`}>
+    <motion.button onClick={onExpand} whileHover={{ y: -1 }} className={`w-full text-left p-5 rounded-2xl bg-card border ${s.border} relative overflow-hidden transition-colors hover:bg-card/80`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -149,11 +150,6 @@ function QuoteCard({ q }) {
               <MapPin className="w-3 h-3" /> {q.location}
             </p>
           )}
-          {q.admin_notes && (
-            <p className="font-inter text-xs text-muted-foreground mt-2 p-2 rounded-lg bg-secondary/50 border border-border italic">
-              💬 {q.admin_notes}
-            </p>
-          )}
         </div>
         <div className="text-right flex-shrink-0">
           <p className="font-mono text-[11px] text-muted-foreground">
@@ -169,7 +165,7 @@ function QuoteCard({ q }) {
           )}
         </div>
       </div>
-    </motion.div>
+    </motion.button>
   );
 }
 
@@ -201,6 +197,7 @@ export default function EspaceClientPage() {
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [expandedQuote, setExpandedQuote] = useState(null);
   const activeTab = searchParams.get('tab') || 'overview';
 
   const setTab = (t) => setSearchParams({ tab: t }, { replace: true });
@@ -493,8 +490,19 @@ export default function EspaceClientPage() {
                       desc="Faites votre première demande et recevez un devis personnalisé sous 24h."
                       cta="Demander un devis" to="/quote" />
                   ) : (
-                    <div className="space-y-3">
-                      {myQuotes.map(q => <QuoteCard key={q.id} q={q} />)}
+                    <div className="space-y-2">
+                      {myQuotes.map(q => (
+                        <div key={q.id}>
+                          <QuoteCard q={q} onExpand={() => setExpandedQuote(expandedQuote === q.id ? null : q.id)} />
+                          <AnimatePresence>
+                            {expandedQuote === q.id && (
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-card border border-border border-t-0 rounded-b-2xl p-6">
+                                <QuoteTracking quote={q} />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

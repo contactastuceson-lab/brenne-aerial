@@ -25,10 +25,6 @@
       "type": "string",
       "description": "Emoji repr\u00e9sentatif (ex: \ud83d\ude80, \u2728, \ud83d\udc1b)"
     },
-    "link_path": {
-      "type": "string",
-      "description": "Chemin interne (ex: /planning, /forum) pour un bouton 'Voir'"
-    },
     "is_published": {
       "type": "boolean",
       "default": true,

@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X, Zap, Wrench, Megaphone, Star, ArrowRight } from 'lucide-react';
+import { Sparkles, X, Zap, Wrench, Megaphone, Star } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useNavigate } from 'react-router-dom';
 
 const TYPE_CONFIG = {
   feature:      { label: 'Nouveauté',     color: 'text-primary',    bg: 'bg-primary/10',    border: 'border-primary/30',    icon: Star },
@@ -17,7 +16,6 @@ export default function UpdatesFloatingButton() {
   const [open, setOpen] = useState(false);
   const [updates, setUpdates] = useState([]);
   const [hasNew, setHasNew] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const load = async () => {
@@ -151,14 +149,6 @@ export default function UpdatesFloatingButton() {
                             </div>
                             <p className="text-sm font-semibold text-foreground leading-snug">{update.title}</p>
                             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{update.description}</p>
-                            {update.link_path && (
-                              <button
-                                onClick={() => { setOpen(false); navigate(update.link_path); }}
-                                className={`mt-2 inline-flex items-center gap-1 text-[11px] font-semibold ${cfg.color} hover:underline`}
-                              >
-                                Voir <ArrowRight className="w-3 h-3" />
-                              </button>
-                            )}
                           </div>
                         </div>
                       </div>

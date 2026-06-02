@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Users, MapPin, Globe, CheckCircle, Award, MessageCircle, UserPlus, UserMinus, Loader2 } from 'lucide-react';
+import { Users, MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { ROLE_CONFIG } from '@/lib/roles';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const BADGE_CONFIG = {
   'Fondateur': { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -71,6 +73,8 @@ export default function PublicProfilePage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followingLoading, setFollowingLoading] = useState(false);
+  const [recentDiscussions, setRecentDiscussions] = useState([]);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -100,9 +104,15 @@ export default function PublicProfilePage() {
 
         setUser(foundUser);
 
-        // Charger les followers
-        const followersList = await base44.entities.Follow.filter({ following_email: foundUser.email });
+        // Charger les followers & following en parallèle + discussions récentes
+        const [followersList, followingList, discussions] = await Promise.all([
+          base44.entities.Follow.filter({ following_email: foundUser.email }),
+          base44.entities.Follow.filter({ follower_email: foundUser.email }),
+          base44.entities.Discussion.filter({ author_id: foundUser.id }, '-created_date', 5).catch(() => []),
+        ]);
         setFollowers(followersList);
+        setFollowingCount(followingList.length);
+        setRecentDiscussions(discussions);
 
         // Vérifier si l'utilisateur actuel suit ce profil
         if (me) {
@@ -216,15 +226,19 @@ export default function PublicProfilePage() {
     navigate(`/messages?to=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.display_name || user.full_name)}`);
   };
 
+  const memberSince = user.created_date
+    ? formatDistanceToNow(new Date(user.created_date), { addSuffix: true, locale: fr })
+    : null;
+
   return (
-    <div className="pt-20 min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
-      <div className="max-w-2xl mx-auto px-5">
+    <div className="pt-16 min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
+      <div className="max-w-2xl mx-auto">
 
         {/* Cover */}
         <div
-          className="relative h-40 rounded-2xl overflow-hidden mb-0"
+          className="relative h-52 overflow-hidden"
           style={isSupreme
-            ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', border: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
+            ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
             : user.cover_url
             ? {}
             : { background: getCoverGradient(user.full_name) }
@@ -234,26 +248,27 @@ export default function PublicProfilePage() {
             <img src={user.cover_url} alt="cover" className="w-full h-full object-cover" />
           ) : (
             <>
-              {/* Pattern overlay */}
               <div className="absolute inset-0 opacity-20" style={{
                 backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)',
               }} />
               <div className="absolute inset-0 grid-bg opacity-30" />
-              {/* Initials watermark */}
-              <div className="absolute inset-0 flex items-center justify-end pr-6 opacity-10">
-                <span className="font-grotesk font-black text-7xl text-white select-none">
+              <div className="absolute inset-0 flex items-center justify-end pr-10 opacity-10">
+                <span className="font-grotesk font-black text-[10rem] text-white select-none leading-none">
                   {user.full_name?.[0]?.toUpperCase() || '?'}
                 </span>
               </div>
             </>
           )}
+          {/* Gradient bottom fade */}
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
         </div>
 
-        {/* Avatar + infos */}
-        <div className="relative px-6 -mt-10 mb-6">
-          <div className="flex items-end justify-between gap-4">
+        {/* Avatar + header */}
+        <div className="relative px-5 -mt-12">
+          <div className="flex items-end justify-between gap-4 mb-4">
+            {/* Avatar */}
             <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0"
+              className="w-24 h-24 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
               style={isSupreme
                 ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
                 : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
@@ -262,13 +277,14 @@ export default function PublicProfilePage() {
               {user.avatar_url ? (
                 <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="font-grotesk font-bold text-3xl text-white drop-shadow-sm">
+                <span className="font-grotesk font-bold text-4xl text-white drop-shadow-sm">
                   {user.full_name?.[0]?.toUpperCase() || '?'}
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
+            {/* Status badges top right */}
+            <div className="flex items-center gap-2 flex-wrap pb-1">
               {user.verified_status === 'yes' && (
                 <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
                   <CheckCircle className="w-3 h-3" /> Vérifié
@@ -280,71 +296,60 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
-          <div className="mt-4">
-            <h1
-              className="font-grotesk font-bold text-3xl mb-1"
-              style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-            >
-              {user.display_name || user.full_name}
-            </h1>
+          {/* Name + username */}
+          <h1
+            className="font-grotesk font-bold text-3xl mb-1"
+            style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+          >
+            {user.display_name || user.full_name}
+          </h1>
 
-            <div className="flex items-center gap-2 mb-3">
-              {user.username && (
-                <p className="font-mono text-sm text-muted-foreground">{user.username}</p>
-              )}
-              <VerificationIcons verifications={user.verifications} size="md" />
-            </div>
-
-            {user.role && roleCfg && (
-              <span className={`inline-block mb-4 font-mono text-[10px] px-2.5 py-1 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
-                {roleCfg.emoji} {roleCfg.label}
-              </span>
+          <div className="flex items-center gap-2 mb-3">
+            {user.username && (
+              <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
             )}
+            <VerificationIcons verifications={user.verifications} size="md" />
+          </div>
 
-            {/* Action buttons */}
-            {currentUser && currentUser.email !== user.email && (
-              <div className="flex gap-2 mb-4">
-                {!isFollowing ? (
-                  <Button
-                    onClick={handleFollow}
-                    disabled={followingLoading}
-                    className="flex-1 gap-2 h-10 text-sm font-medium bg-primary hover:bg-primary/90 rounded-xl"
-                  >
-                    {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-                    S'abonner
-                  </Button>
-                ) : (
-                  <>
-                    <Button
-                      onClick={handleMessage}
-                      className="flex-1 gap-2 h-10 text-sm font-medium bg-secondary hover:bg-secondary/80 text-foreground rounded-xl"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      Message
-                    </Button>
-                    <Button
-                      onClick={handleUnfollow}
-                      disabled={followingLoading}
-                      className="h-10 px-4 text-sm font-medium bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30 rounded-xl"
-                    >
-                      {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
-                    </Button>
-                  </>
-                )}
+          {/* Role chip */}
+          {user.role && roleCfg && (
+            <span className={`inline-flex items-center gap-1 mb-4 font-mono text-[10px] px-2.5 py-1 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
+              {roleCfg.emoji} {roleCfg.label}
+            </span>
+          )}
+
+          {/* Bio */}
+          {user.bio && (
+            <p className="font-inter text-sm text-foreground/80 leading-relaxed mb-4 whitespace-pre-line">
+              {user.bio}
+            </p>
+          )}
+
+          {/* Info row */}
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4">
+            {user.location && (
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <MapPin className="w-3.5 h-3.5" /> {user.location}
+              </div>
+            )}
+            {user.website && (
+              <div className="flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-primary" />
+                <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate max-w-[200px]">
+                  {user.website.replace(/^https?:\/\//, '')}
+                </a>
+              </div>
+            )}
+            {memberSince && (
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Calendar className="w-3.5 h-3.5" /> Membre {memberSince}
               </div>
             )}
           </div>
 
-          {/* Bio */}
-          {user.bio && (
-            <div className="mt-4 p-3 bg-secondary/50 rounded-lg border border-border">
-              <p className="font-inter text-sm text-foreground">{user.bio}</p>
-            </div>
-          )}
-
           {/* Badges */}
           {user.badges?.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
+            <div className="flex flex-wrap gap-2 mb-4">
               {user.badges.map(b => {
                 const cfg = BADGE_CONFIG[b];
                 if (!cfg) return <BadgeChip key={b} badge={b} />;
@@ -357,44 +362,91 @@ export default function PublicProfilePage() {
             </div>
           )}
 
-          {/* Contact info */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 space-y-2"
-          >
-            {user.location && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="w-4 h-4" /> {user.location}
-              </div>
-            )}
-            {user.website && (
-              <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-primary" />
-                <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate">
-                  {user.website}
-                </a>
-              </div>
-            )}
-            {user.phone && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="text-xs">{user.phone}</span>
-              </div>
-            )}
-          </motion.div>
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
+              <p className="font-grotesk font-bold text-xl text-foreground">{followers.length}</p>
+              <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonné{followers.length > 1 ? 's' : ''}</p>
+            </div>
+            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
+              <p className="font-grotesk font-bold text-xl text-foreground">{followingCount}</p>
+              <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonnements</p>
+            </div>
+            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
+              <p className="font-grotesk font-bold text-xl text-foreground">{recentDiscussions.length}</p>
+              <p className="font-inter text-xs text-muted-foreground mt-0.5">Discussion{recentDiscussions.length > 1 ? 's' : ''}</p>
+            </div>
+          </div>
 
-          {/* Followers */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 flex items-center gap-3 py-3 px-3 rounded-xl bg-secondary/50 border border-border"
-          >
-            <Users className="w-4 h-4 text-primary" />
-            <span className="font-grotesk font-semibold">{followers.length}</span>
-            <span className="font-inter text-sm text-muted-foreground">
-              abonné{followers.length > 1 ? 's' : ''}
-            </span>
-          </motion.div>
+          {/* Action buttons */}
+          {currentUser && currentUser.email !== user.email && (
+            <div className="flex gap-2 mb-6">
+              <Button
+                onClick={handleMessage}
+                variant="outline"
+                className="flex-1 gap-2 h-10 text-sm font-medium rounded-xl"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Message
+              </Button>
+              {!isFollowing ? (
+                <Button
+                  onClick={handleFollow}
+                  disabled={followingLoading}
+                  className="flex-1 gap-2 h-10 text-sm font-medium bg-primary hover:bg-primary/90 rounded-xl"
+                >
+                  {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                  S'abonner
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleUnfollow}
+                  disabled={followingLoading}
+                  className="flex-1 h-10 text-sm font-medium bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30 rounded-xl gap-2"
+                >
+                  {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
+                  Se désabonner
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Discussions récentes */}
+          {recentDiscussions.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+              <h2 className="font-grotesk font-semibold text-base mb-3 flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-primary" />
+                Discussions récentes
+              </h2>
+              <div className="space-y-2">
+                {recentDiscussions.map(d => (
+                  <Link
+                    key={d.id}
+                    to={`/forum/${d.id}`}
+                    className="block p-3 bg-secondary/40 hover:bg-secondary/70 border border-border rounded-xl transition-colors group"
+                  >
+                    <p className="font-inter text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">{d.title}</p>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      {d.category && (
+                        <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
+                          <Hash className="w-2.5 h-2.5" />{d.category}
+                        </span>
+                      )}
+                      <span className="text-[10px] text-muted-foreground">
+                        {formatDistanceToNow(new Date(d.created_date), { addSuffix: true, locale: fr })}
+                      </span>
+                      {d.replies_count > 0 && (
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          <MessageSquare className="w-2.5 h-2.5" />{d.replies_count}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
         </div>
       </div>
     </div>

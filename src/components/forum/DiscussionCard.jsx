@@ -4,10 +4,22 @@ import { fr } from 'date-fns/locale';
 import { MessageCircle, Eye, Pin, Lock, Star, Megaphone } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 
+// Strip markdown to plain text for preview
+function stripMarkdown(text = '') {
+  return text
+    .replace(/!\[.*?\]\(.*?\)/g, '') // remove images
+    .replace(/\[.*?\]\(.*?\)/g, '')   // remove links
+    .replace(/#{1,6}\s/g, '')         // remove headings
+    .replace(/[*_`~]/g, '')           // remove formatting chars
+    .replace(/\n+/g, ' ')             // collapse newlines
+    .trim();
+}
+
 export default function DiscussionCard({ discussion }) {
   const isOfficial = discussion.is_official;
   const isPinned = discussion.is_pinned;
   const isLocked = discussion.is_locked;
+  const plainContent = stripMarkdown(discussion.content);
 
   return (
     <Link to={`/forum/${discussion.id}`}>
@@ -36,47 +48,29 @@ export default function DiscussionCard({ discussion }) {
           </span>
         </div>
         
-        <p className="text-sm text-slate-400 mb-3 line-clamp-2">
-          {discussion.content}
+        <p className="text-sm text-slate-400 mb-3 line-clamp-2 overflow-hidden">
+          {plainContent}
         </p>
 
-        <div className="flex items-center justify-between text-xs text-slate-500">
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Avatar */}
+        <div className="flex items-center justify-between gap-2 text-xs text-slate-500 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
             {discussion.author_avatar ? (
-              <img src={discussion.author_avatar} alt="" className="w-5 h-5 rounded-full object-cover" />
+              <img src={discussion.author_avatar} alt="" className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
             ) : (
-              <div className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold text-white">
+              <div className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0">
                 {discussion.author_name?.[0]?.toUpperCase() || '?'}
               </div>
             )}
-            
-            {/* Nom + Certifications (VerificationIcons) + Badges */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <span>{discussion.author_display_name || discussion.author_name}</span>
-                {discussion.author_username && (
-                  <span className="text-slate-600">@{discussion.author_username}</span>
-                )}
-              </div>
-              <VerificationIcons 
-                verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
-                size="sm" 
-              />
-
-            </div>
-
-            <span>{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
+            <span className="truncate max-w-[100px]">{discussion.author_display_name || discussion.author_name}</span>
+            <VerificationIcons 
+              verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
+              size="sm" 
+            />
+            <span className="hidden sm:inline text-slate-600 truncate">{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <MessageCircle size={14} />
-              {discussion.replies_count || 0}
-            </div>
-            <div className="flex items-center gap-1">
-              <Eye size={14} />
-              {discussion.views_count || 0}
-            </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="flex items-center gap-1"><MessageCircle size={13} />{discussion.replies_count || 0}</div>
+            <div className="flex items-center gap-1"><Eye size={13} />{discussion.views_count || 0}</div>
           </div>
         </div>
       </div>

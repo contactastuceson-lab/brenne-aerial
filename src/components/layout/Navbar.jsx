@@ -10,6 +10,7 @@ import NotificationsPanel from '@/components/notifications/NotificationsPanel';
 const NAV_LINKS = [
   { to: '/',         label: 'Accueil' },
   { to: '/discover', label: 'Explorer' },
+  { to: '/messages',  label: 'Messages' },
   { to: '/portfolio', label: 'Portfolio' },
   { to: '/planning',  label: 'Planning' },
   { to: '/blog',      label: 'Blog' },

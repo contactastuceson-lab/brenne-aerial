@@ -194,21 +194,27 @@ export default function DiscussionDetailPage() {
 
         {/* Reply Form */}
         {user && (
-          <div className="space-y-3">
-            <h3 className="font-semibold text-white">Votre réponse</h3>
-            <Textarea
-              value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
-              placeholder="Écrivez votre réponse..."
-              className="min-h-32"
-            />
-            <Button
-              onClick={() => replyMutation.mutate()}
-              disabled={!replyContent.trim() || replyMutation.isPending}
-            >
-              {replyMutation.isPending ? 'Envoi...' : 'Répondre'}
-            </Button>
-          </div>
+          discussion.is_locked ? (
+            <div className="flex items-center gap-2 p-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 text-sm">
+              🔒 Cette discussion est verrouillée — les nouvelles réponses sont désactivées.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <h3 className="font-semibold text-white">Votre réponse</h3>
+              <Textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder="Écrivez votre réponse..."
+                className="min-h-32"
+              />
+              <Button
+                onClick={() => replyMutation.mutate()}
+                disabled={!replyContent.trim() || replyMutation.isPending}
+              >
+                {replyMutation.isPending ? 'Envoi...' : 'Répondre'}
+              </Button>
+            </div>
+          )
         )}
       </div>
     </div>

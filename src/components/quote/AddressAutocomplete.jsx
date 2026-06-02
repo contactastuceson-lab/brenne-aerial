@@ -29,7 +29,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder = "Ad
     setLoading(true);
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=6&accept-language=fr`,
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=6&accept-language=fr&countrycodes=fr&viewbox=-5.1,51.1,9.6,41.3&bounded=1`,
         { headers: { 'Accept-Language': 'fr' } }
       );
       const data = await res.json();

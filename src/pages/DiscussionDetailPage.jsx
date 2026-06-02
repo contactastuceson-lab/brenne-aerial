@@ -95,17 +95,17 @@ export default function DiscussionDetailPage() {
               {discussion.category}
             </span>
           </div>
-          <h1 className="text-4xl font-bold text-white">{discussion.title}</h1>
-          <div className="flex items-center gap-6 text-sm text-slate-400">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">{discussion.title}</h1>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-400">
             <div className="flex items-center gap-2">
               {discussion.author_avatar ? (
-                <img src={discussion.author_avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
+                <img src={discussion.author_avatar} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
               ) : (
-                <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white">
+                <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
                   {discussion.author_name?.[0]?.toUpperCase() || '?'}
                 </div>
               )}
-              <span className={discussion.author_is_supreme ? 'text-amber-300 bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text animate-shimmer' : ''}>
+              <span className={`truncate max-w-[140px] ${discussion.author_is_supreme ? 'text-amber-300' : ''}`}>
                 {discussion.author_display_name || discussion.author_name}
               </span>
               <VerificationIcons 
@@ -113,9 +113,9 @@ export default function DiscussionDetailPage() {
                 size="sm" 
               />
             </div>
-            <span>{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
-            <div className="flex items-center gap-1">
-              <Eye size={14} />
+            <span className="text-xs">{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
+            <div className="flex items-center gap-1 text-xs">
+              <Eye size={12} />
               {discussion.views_count || 0} vues
             </div>
           </div>

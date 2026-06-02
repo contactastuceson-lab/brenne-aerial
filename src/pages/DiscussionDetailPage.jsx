@@ -97,7 +97,7 @@ export default function DiscussionDetailPage() {
           </div>
           <h1 className="text-4xl font-bold text-white">{discussion.title}</h1>
           <div className="flex items-center gap-6 text-sm text-slate-400">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {discussion.author_avatar ? (
                 <img src={discussion.author_avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
               ) : (
@@ -150,7 +150,7 @@ export default function DiscussionDetailPage() {
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-1 mb-1">
                         {reply.author_avatar ? (
                           <img src={reply.author_avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
                         ) : (

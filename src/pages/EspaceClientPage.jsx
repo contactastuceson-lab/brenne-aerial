@@ -13,6 +13,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import BadgeChip from '@/components/ui/BadgeChip';
 import CertificationTracking from '@/components/dashboard/CertificationTracking';
+import ReportTracking from '@/components/dashboard/ReportTracking';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -536,58 +537,21 @@ export default function EspaceClientPage() {
 
               {/* REPORTS */}
               {activeTab === 'reports' && (
-               <div className="space-y-4">
-                 <div className="flex items-center justify-between">
-                   <h2 className="font-grotesk font-bold text-lg">Mes signalements</h2>
-                   <span className="font-mono text-xs text-muted-foreground">{myReports.length} signalement{myReports.length > 1 ? 's' : ''}</span>
-                 </div>
-                 {myReports.length === 0 ? (
-                   <EmptyState icon={Flag} title="Aucun signalement"
-                     desc="Vous pouvez signaler un utilisateur ou du contenu inapproprié pour aider notre modération." />
-                 ) : (
-                   <div className="space-y-3">
-                     {myReports.map(r => {
-                       const s = REPORT_STATUS[r.status] || REPORT_STATUS.pending;
-                       const StatusIcon = s.icon;
-                       return (
-                         <motion.div key={r.id} whileHover={{ y: -1 }} className={`p-5 rounded-2xl bg-card border ${s.border} relative overflow-hidden`}>
-                           <div className="flex items-start justify-between gap-3">
-                             <div className="flex-1 min-w-0">
-                               <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                 <span className={`inline-flex items-center gap-1.5 text-[11px] font-inter font-medium px-2 py-0.5 rounded-full ${s.bg} ${s.color} border ${s.border}`}>
-                                   <StatusIcon className="w-3 h-3" />
-                                   {s.label}
-                                 </span>
-                               </div>
-                               <p className="font-grotesk font-bold text-base leading-tight">
-                                 {r.target_type === 'user' ? `Signalement d'utilisateur` : 'Signalement de contenu'}
-                               </p>
-                               <p className="font-inter text-xs text-muted-foreground mt-1">
-                                 <span className="font-medium">{r.target_name || r.target_email}</span>
-                               </p>
-                               {r.reason && (
-                                 <p className="font-inter text-xs text-muted-foreground mt-2 px-2 py-1.5 rounded-lg bg-secondary/50 border border-border inline-block">
-                                   {r.reason.replace(/_/g, ' ')}
-                                 </p>
-                               )}
-                               {r.admin_notes && (
-                                 <p className="font-inter text-xs text-muted-foreground mt-2 p-2 rounded-lg bg-secondary/50 border border-border italic">
-                                   💬 {r.admin_notes}
-                                 </p>
-                               )}
-                             </div>
-                             <div className="text-right flex-shrink-0">
-                               <p className="font-mono text-[11px] text-muted-foreground">
-                                 {r.created_date ? format(new Date(r.created_date), 'd MMM yy', { locale: fr }) : ''}
-                               </p>
-                             </div>
-                           </div>
-                         </motion.div>
-                       );
-                     })}
-                   </div>
-                 )}
-               </div>
+                <div className="space-y-4">
+                  <h2 className="font-grotesk font-bold text-lg">Mes signalements</h2>
+                  {myReports.length === 0 ? (
+                    <EmptyState icon={Flag} title="Aucun signalement"
+                      desc="Vous pouvez signaler un utilisateur ou du contenu inapproprié pour aider notre modération." />
+                  ) : (
+                    <div className="space-y-4">
+                      {myReports.map(r => (
+                        <div key={r.id} className="bg-card border border-border rounded-2xl p-6">
+                          <ReportTracking report={r} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
 
               </motion.div>

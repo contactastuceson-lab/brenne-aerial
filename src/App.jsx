@@ -73,7 +73,6 @@ import ParrainageRejoindre from "@/pages/ParrainageRejoindre";
 import GaragePage from "@/pages/GaragePage";
 import QuoteCalculatorPage from "@/pages/QuoteCalculatorPage";
 import ReglementationPage from "@/pages/ReglementationPage";
-import FlashDeliveryPage from "@/pages/FlashDeliveryPage";
 import ComparateurPage from "@/pages/ComparateurPage";
 import BlogArticlePage from "@/pages/BlogArticlePage";
 import { Navigate } from "react-router-dom";
@@ -145,7 +144,6 @@ const AuthenticatedApp = () => {
         <Route path="/garage" element={<GaragePage />} />
         <Route path="/calculateur" element={<QuoteCalculatorPage />} />
         <Route path="/reglementation" element={<ReglementationPage />} />
-        <Route path="/flash-delivery" element={<FlashDeliveryPage />} />
         <Route path="/comparateur" element={<ComparateurPage />} />
         <Route path="/blog/:id" element={<BlogArticlePage />} />
         <Route path="/toiture-checkup" element={<ToitureCheckupPage />} />

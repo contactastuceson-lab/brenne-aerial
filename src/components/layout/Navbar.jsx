@@ -23,7 +23,6 @@ const TOOLS = [
   { to: '/parrainage',       label: 'Parrainage' },
   { to: '/reglementation',   label: 'Réglementation' },
   { to: '/comparateur',      label: 'Comparateur résolution' },
-  { to: '/flash-delivery',   label: 'Flash Delivery' },
   { to: '/espace-client',    label: 'Espace Client' },
 ];
 

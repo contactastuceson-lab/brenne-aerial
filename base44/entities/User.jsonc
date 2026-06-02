@@ -89,5 +89,20 @@
     "ui_preferences": {
       "type": "object"
     }
-  }
+  },
+  "required": [
+    "username",
+    "display_name",
+    "bio",
+    "phone",
+    "location",
+    "website",
+    "avatar_url",
+    "cover_url",
+    "badges",
+    "verifications",
+    "totp_secret",
+    "notification_preferences",
+    "ui_preferences"
+  ]
 }

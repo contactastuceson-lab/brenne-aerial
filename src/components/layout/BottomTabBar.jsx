@@ -29,7 +29,6 @@ const MORE_ITEMS = [
   { to: '/forum',            icon: MessageSquare, label: 'Forum',                 color: 'text-blue-400' },
   { to: '/donation',         icon: Heart,         label: 'Donation',               color: 'text-red-400' },
   { to: '/toiture-checkup',  icon: Zap,           label: 'Inspection Toiture',     color: 'text-yellow-400' },
-  { to: '/flash-delivery',   icon: Zap,           label: 'Flash Delivery',         color: 'text-blue-400' },
   { to: '/legal/privacy',    icon: Lock,          label: 'Confidentialité',        color: 'text-slate-400' },
   { to: '/legal/terms',      icon: Scale,         label: 'Conditions',             color: 'text-slate-400' },
 ];

@@ -52,32 +52,5 @@
     "full_name",
     "email",
     "address"
-  ],
-  "rls": {
-    "create": {
-      "data.email": "{{user.email}}"
-    },
-    "read": {
-      "$or": [
-        {
-          "data.email": "{{user.email}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    },
-    "update": {
-      "user_condition": {
-        "role": "admin"
-      }
-    },
-    "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
-    }
-  }
+  ]
 }

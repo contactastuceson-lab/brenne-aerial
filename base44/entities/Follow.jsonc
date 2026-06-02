@@ -26,28 +26,5 @@
   "required": [
     "follower_email",
     "following_email"
-  ],
-  "rls": {
-    "create": {
-      "data.follower_email": "{{user.email}}"
-    },
-    "read": {
-      "$or": [
-        {
-          "data.follower_email": "{{user.email}}"
-        },
-        {
-          "data.following_email": "{{user.email}}"
-        }
-      ]
-    },
-    "update": {
-      "user_condition": {
-        "role": "admin"
-      }
-    },
-    "delete": {
-      "data.follower_email": "{{user.email}}"
-    }
-  }
+  ]
 }

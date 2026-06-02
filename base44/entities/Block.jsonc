@@ -14,19 +14,5 @@
   "required": [
     "blocker_email",
     "blocked_email"
-  ],
-  "rls": {
-    "create": {
-      "data.blocker_email": "{{user.email}}"
-    },
-    "read": {
-      "data.blocker_email": "{{user.email}}"
-    },
-    "update": {
-      "data.blocker_email": "{{user.email}}"
-    },
-    "delete": {
-      "data.blocker_email": "{{user.email}}"
-    }
-  }
+  ]
 }

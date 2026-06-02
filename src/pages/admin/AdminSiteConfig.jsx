@@ -16,6 +16,7 @@ import ImageUploadOrUrl from '@/components/ui/ImageUploadOrUrl';
 
 const TABS = [
   { id: 'pages', label: 'Pages & Modules', icon: LayoutDashboard },
+  { id: 'status-bar', label: 'Barre de Statut', icon: BellRing },
   { id: 'hero', label: 'Hero & Accueil', icon: Home },
   { id: 'about', label: 'À propos', icon: Users },
   { id: 'stats', label: 'Statistiques', icon: Star },
@@ -444,6 +445,74 @@ export default function AdminSiteConfig() {
           );
         })}
       </div>
+
+      {/* Status bar tab */}
+      {activeTab === 'status-bar' && (
+        <div className="space-y-4 max-w-3xl">
+          {/* Enable/Disable bar */}
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-grotesk font-semibold text-sm mb-1">Barre de statut visible</p>
+                <p className="font-inter text-xs text-muted-foreground">Afficher/masquer la barre en haut du site</p>
+              </div>
+              <Switch
+                checked={getVal('services_status_bar_enabled', 'true')}
+                onCheckedChange={v => {
+                  setLocal(p => ({ ...p, services_status_bar_enabled: v ? 'true' : 'false' }));
+                  saveSetting('services_status_bar_enabled', v ? 'true' : 'false');
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Status color selector */}
+          {getVal('services_status_bar_enabled', 'true') && (
+            <>
+              <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+                <div>
+                  <p className="font-grotesk font-semibold text-sm mb-3">Couleur du statut</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: 'green', label: '✓ Tous OK', color: 'bg-green-500' },
+                      { key: 'yellow', label: '⚠ Dégradé', color: 'bg-yellow-500' },
+                      { key: 'red', label: '✕ Erreur', color: 'bg-red-500' },
+                    ].map(option => (
+                      <button
+                        key={option.key}
+                        onClick={() => {
+                          setLocal(p => ({ ...p, services_status_bar_color: option.key }));
+                          saveSetting('services_status_bar_color', option.key);
+                        }}
+                        className={`p-3 rounded-lg border-2 transition-all font-inter text-xs font-semibold flex flex-col items-center gap-2 ${
+                          (local['services_status_bar_color'] || 'green') === option.key
+                            ? 'border-primary bg-primary/10'
+                            : 'border-border bg-card hover:border-primary/40'
+                        }`}
+                      >
+                        <div className={`w-5 h-5 rounded-full ${option.color}`} />
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Status message */}
+              <div className="bg-card border border-border rounded-xl p-5">
+                <label className="font-inter text-xs text-muted-foreground block mb-2">Message du statut</label>
+                <Input
+                  value={local['services_status_message'] || ''}
+                  onChange={e => setLocal(p => ({ ...p, services_status_message: e.target.value }))}
+                  onBlur={() => saveSetting('services_status_message', local['services_status_message'] || '')}
+                  placeholder="ex: Tous les systèmes opérationnels"
+                  className="bg-secondary border-border text-sm"
+                />
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Pages tab */}
       {activeTab === 'pages' && (

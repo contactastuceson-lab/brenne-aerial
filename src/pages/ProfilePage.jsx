@@ -148,7 +148,7 @@ export default function ProfilePage() {
 
   return (
     <div
-      className="pt-20 min-h-screen pb-20"
+      className="pt-16 md:pt-20 min-h-screen pb-20"
       style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}
     >
       {/* Supreme particles */}
@@ -198,7 +198,7 @@ export default function ProfilePage() {
 
         {/* Cover + Avatar */}
         <div
-          className="relative h-44 rounded-2xl overflow-hidden"
+          className="relative h-28 md:h-44 rounded-2xl overflow-hidden"
           style={isSupreme
             ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500)', border: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
             : { background: 'linear-gradient(to bottom right, hsl(var(--primary)/0.2), hsl(var(--accent)/0.1), hsl(var(--secondary)))' }
@@ -219,10 +219,10 @@ export default function ProfilePage() {
         </div>
 
         {/* Avatar — chevauchement cover avec bordure dorée */}
-        <div className="relative px-4 -mt-10 mb-2">
-          <div className="relative w-24 h-24">
+        <div className="relative px-4 -mt-7 md:-mt-10 mb-2">
+          <div className="relative w-16 h-16 md:w-24 md:h-24">
             <div
-              className="w-24 h-24 rounded-3xl flex items-center justify-center overflow-hidden border-4"
+              className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-3xl flex items-center justify-center overflow-hidden border-4"
               style={{
                 borderColor: isSupreme ? '#fbbf24' : 'hsl(var(--border))',
                 boxShadow: isSupreme ? '0 0 24px rgba(251, 191, 36, 0.4)' : 'none',
@@ -231,7 +231,7 @@ export default function ProfilePage() {
             >
               {user.avatar_url
                 ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                : <span className="font-grotesk font-bold text-4xl text-primary">{user.display_name?.[0]?.toUpperCase() || user.full_name?.[0]?.toUpperCase() || '?'}</span>
+                : <span className="font-grotesk font-bold text-2xl md:text-4xl text-primary">{user.display_name?.[0]?.toUpperCase() || user.full_name?.[0]?.toUpperCase() || '?'}</span>
               }
             </div>
             <label className="absolute -bottom-2 -right-2 cursor-pointer">
@@ -244,32 +244,32 @@ export default function ProfilePage() {
         </div>
 
         {/* Infos profil + badges + statuts */}
-        <div className="px-4 mt-4 mb-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
+        <div className="px-4 mt-2 md:mt-4 mb-4 md:mb-6">
+          <div className="flex items-start justify-between gap-2 md:gap-4">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className={`font-grotesk font-bold text-3xl ${isSupreme ? 'text-amber-300' : 'text-foreground'}`}>
+                <h1 className={`font-grotesk font-bold text-xl md:text-3xl ${isSupreme ? 'text-amber-300' : 'text-foreground'}`}>
                   {user.display_name || user.full_name}
                 </h1>
                 {user.badges?.includes('Officiel') && (
-                  <span className="text-2xl">👑</span>
+                  <span className="text-lg md:text-2xl">👑</span>
                 )}
-                <VerificationIcons verifications={user.verifications} size="md" />
+                <VerificationIcons verifications={user.verifications} size="sm" />
               </div>
-              <p className="font-mono text-xs text-muted-foreground mt-1">{user.email}</p>
+              <p className="font-mono text-[10px] md:text-xs text-muted-foreground mt-0.5 truncate">{user.email}</p>
               {roleCfg && (
                 <span className={`inline-block mt-1.5 font-mono text-[10px] px-2 py-0.5 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
                   {roleCfg.emoji} {roleCfg.label}
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2 mt-1 flex-shrink-0">
+            <div className="flex flex-col items-end gap-1 mt-1 flex-shrink-0">
               {user.verified_status === 'yes' && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
-                  <CheckCircle className="w-3 h-3" /> Vérifié
+                <span className="flex items-center gap-1 font-mono text-[9px] md:text-[10px] text-accent bg-accent/10 border border-accent/30 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full whitespace-nowrap">
+                  <CheckCircle className="w-2.5 h-2.5 md:w-3 md:h-3" /> Vérifié
                 </span>
               )}
-              <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
+              <span className={`font-mono text-[9px] md:text-[10px] border px-1.5 md:px-2 py-0.5 md:py-1 rounded-full whitespace-nowrap ${statusColors[user.account_status || 'active']}`}>
                 {user.account_status === 'active' ? 'Actif' : user.account_status === 'suspended' ? 'Suspendu' : user.account_status === 'banned' ? 'Banni' : 'Restreint'}
               </span>
             </div>
@@ -277,7 +277,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Badges + followers */}
-        <div className="px-4 mb-6 flex flex-wrap items-center gap-3">
+        <div className="px-4 mb-4 md:mb-6 flex flex-wrap items-center gap-2 md:gap-3">
           {user.badges?.length > 0 && user.badges.map(b => {
             const cfg = BADGE_CONFIG[b];
             if (!cfg) return <BadgeChip key={b} badge={b} />;

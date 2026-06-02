@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft, Send, Lock, Check, X, Flag, Clock,
@@ -21,6 +22,7 @@ function getConversationId(emailA, emailB) {
 }
 
 export default function MessageThread({ user, conv, onBack }) {
+  const navigate = useNavigate();
   const [text, setText] = useState('');
   const [reportMsg, setReportMsg] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
@@ -297,7 +299,7 @@ export default function MessageThread({ user, conv, onBack }) {
           </button>
 
           <div className="w-10 h-10 rounded-full bg-secondary border border-border hover:ring-2 hover:ring-primary/40 cursor-pointer transition-all flex items-center justify-center overflow-hidden flex-shrink-0"
-            onClick={() => setShowProfile(true)}>
+            onClick={() => conv.username ? navigate(`/@${conv.username}`) : setShowProfile(true)}>
             {conv.avatar ? (
               <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -307,7 +309,7 @@ export default function MessageThread({ user, conv, onBack }) {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <button onClick={() => setShowProfile(true)} className="font-grotesk font-semibold text-sm hover:text-primary transition-colors">{conv.name}</button>
+              <button onClick={() => conv.username ? navigate(`/@${conv.username}`) : setShowProfile(true)} className="font-grotesk font-semibold text-sm hover:text-primary transition-colors">{conv.name}</button>
               <VerificationIcons verifications={conv.verifications} />
               {conv.badges?.slice(0, 2).map(b => <BadgeChip key={b} badge={b} size="sm" />)}
             </div>
@@ -336,17 +338,13 @@ export default function MessageThread({ user, conv, onBack }) {
                 <div className="py-1">
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(conv.email);
-                      toast.success('Email copié');
+                      if (conv.username) {
+                        navigate(`/@${conv.username}`);
+                      } else {
+                        setShowProfile(true);
+                      }
                       setShowOptions(false);
                     }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-foreground hover:bg-secondary transition-colors"
-                  >
-                    <Copy className="w-4 h-4 text-muted-foreground" />
-                    Copier l'email
-                  </button>
-                  <button
-                    onClick={() => { setShowProfile(true); setShowOptions(false); }}
                     className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-foreground hover:bg-secondary transition-colors"
                   >
                     <Info className="w-4 h-4 text-muted-foreground" />

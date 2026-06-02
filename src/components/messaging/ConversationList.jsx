@@ -86,6 +86,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
         bio: profile?.bio,
         location: profile?.location,
         role: profile?.role,
+        username: profile?.username,
         badges: profile?.badges || [],
         verifications: profile?.verifications || [],
         is_verified: profile?.verified_status === 'yes',

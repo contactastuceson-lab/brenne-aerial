@@ -162,7 +162,7 @@ export default function DiscussionDetailPage() {
                           {reply.author_display_name || reply.author_name}
                         </p>
                         <VerificationIcons 
-                          verifications={reply.author_verifications} 
+                          verifications={reply.author_is_supreme ? ['supreme', ...(reply.author_verifications || [])] : (reply.author_verifications || [])} 
                           size="sm" 
                         />
                       </div>

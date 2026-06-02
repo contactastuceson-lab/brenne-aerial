@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { certificationRequestId } = await req.json();
+    const { certificationRequestId, paymentUrl } = await req.json();
 
     const certRequest = await base44.asServiceRole.entities.CertificationRequest.get(certificationRequestId);
     if (!certRequest) {
@@ -46,9 +46,10 @@ Deno.serve(async (req) => {
       <p>Merci d'avoir soumis votre demande de certification ! Nous avons bien reçu votre dossier.</p>
 
       <div class="payment-box">
-        <p style="margin-top: 0; font-weight: bold;">🔐 Paiement sécurisé</p>
-        <p>Prochaine étape : finalisez votre demande en effectuant le paiement de <strong>5€</strong>. Une fois le paiement confirmé, notre équipe examinera votre dossier sous 5 jours ouvrables.</p>
-      </div>
+         <p style="margin-top: 0; font-weight: bold;">🔐 Paiement sécurisé</p>
+         <p>Prochaine étape : finalisez votre demande en effectuant le paiement de <strong>5€</strong>. Une fois le paiement confirmé, notre équipe examinera votre dossier sous 5 jours ouvrables.</p>
+         ${paymentUrl ? `<p style="text-align: center; margin-bottom: 0;"><a href="${paymentUrl}" class="btn">💳 Procéder au paiement</a></p>` : ''}
+       </div>
 
       <div class="details-box">
         <p style="margin-top: 0; font-weight: bold; color: #333;">Vos informations :</p>

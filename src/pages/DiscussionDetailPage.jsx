@@ -10,8 +10,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import ReactMarkdown from 'react-markdown';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
 
 export default function DiscussionDetailPage() {
   const { id } = useParams();
@@ -123,9 +123,7 @@ export default function DiscussionDetailPage() {
 
         {/* Discussion Content */}
         <div className="p-6 rounded-lg border border-slate-700/50 bg-slate-800/30">
-          <div className="prose prose-invert max-w-none">
-            <ReactMarkdown>{discussion.content}</ReactMarkdown>
-          </div>
+          <DiscordMarkdown content={discussion.content} />
         </div>
 
         {/* Replies Section */}
@@ -179,8 +177,8 @@ export default function DiscussionDetailPage() {
                       </span>
                     )}
                   </div>
-                  <div className="prose prose-invert max-w-none text-sm mb-3">
-                    <ReactMarkdown>{reply.content}</ReactMarkdown>
+                  <div className="mb-3">
+                    <DiscordMarkdown content={reply.content} />
                   </div>
                   <div className="flex gap-2">
                     <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">

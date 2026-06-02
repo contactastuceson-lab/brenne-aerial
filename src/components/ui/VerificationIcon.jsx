@@ -16,8 +16,8 @@ const bgColorMap = {
 export default function VerificationIcons({ verifications = [], size = 'sm' }) {
   if (!verifications?.length) return null;
 
-  const s = size === 'sm' ? 15 : 18;
-  const iconSize = size === 'sm' ? 7 : 9;
+  const s = size === 'sm' ? 20 : 24;
+  const iconSize = size === 'sm' ? 10 : 12;
 
   return (
     <>

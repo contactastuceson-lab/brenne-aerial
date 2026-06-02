@@ -146,7 +146,7 @@ export default function Navbar() {
                       : <User className="w-4 h-4 text-primary" />}
                   </Link>
                   <div className="hidden md:block">
-                    <p className="text-sm font-inter font-medium">{user.full_name}</p>
+                    <p className="text-sm font-inter font-medium">{user.display_name || user.full_name}</p>
                     <p className="text-xs text-muted-foreground">{user.role}</p>
                   </div>
                 </div>

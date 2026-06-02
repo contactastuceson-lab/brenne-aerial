@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Send, Bell, Loader2, Flag, Users, ShieldCheck, Sparkles, MessageCircle, Clock } from 'lucide-react';
+import { Send, Bell, Loader2, Flag, Users, ShieldCheck, Sparkles, MessageCircle, Clock, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +11,8 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { hasAdminAccess } from '@/lib/roles';
 import { motion } from 'framer-motion';
+import OfficialMessageEditor from '@/components/admin/OfficialMessageEditor';
+import ReactMarkdown from 'react-markdown';
 
 const OFFICIAL_CONV_ID = (recipientEmail) => `brenne_aerial_official_${recipientEmail}`;
 
@@ -141,22 +143,22 @@ export default function AdminMessaging() {
                 </div>
               )}
             </div>
-            <Textarea
-              placeholder="Contenu du message officiel..."
-              value={officialForm.content}
-              onChange={e => setOfficialForm(p => ({ ...p, content: e.target.value }))}
-              className="bg-card border-border min-h-24 lg:min-h-28 text-xs lg:text-sm rounded-xl"
+            <OfficialMessageEditor
+              content={officialForm.content}
+              onChange={(content) => setOfficialForm(p => ({ ...p, content }))}
+              disabled={sendOfficialMsg.isPending}
             />
-            <div className="bg-primary/10 border border-primary/20 rounded-xl px-3 py-2.5 font-inter text-[10px] lg:text-xs text-muted-foreground space-y-1">
-              <p className="flex items-center gap-1"><Sparkles className="w-3 h-3" /> Message aparaîtra comme officiel Brenne Aerial</p>
+            <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20 rounded-xl px-3 py-2.5 font-inter text-[10px] lg:text-xs text-muted-foreground space-y-1.5">
+              <p className="flex items-center gap-1"><Zap className="w-3 h-3 text-primary" /> Message avec badge officiel Brenne Aerial</p>
+              <p className="flex items-center gap-1"><Sparkles className="w-3 h-3 text-accent" /> IA de reformulation intégrée</p>
             </div>
             <Button
               onClick={() => sendOfficialMsg.mutate()}
               disabled={!officialForm.recipient_email || !officialForm.content || sendOfficialMsg.isPending}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground gap-2 rounded-xl h-9 lg:h-10 text-xs lg:text-sm"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white gap-2 rounded-xl h-10 lg:h-11 text-xs lg:text-sm font-semibold"
             >
               {sendOfficialMsg.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-              Envoyer
+              Envoyer le message officiel
             </Button>
             </motion.div>
             )}

@@ -29,12 +29,11 @@ export default function AddressAutocomplete({ value, onChange, placeholder = "Ad
     setLoading(true);
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=6&accept-language=fr&countrycodes=fr&viewbox=-5.1,51.1,9.6,41.3&bounded=1`,
-        { headers: { 'Accept-Language': 'fr' } }
+        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6&autocomplete=1`
       );
       const data = await res.json();
-      setSuggestions(data);
-      setOpen(data.length > 0);
+      setSuggestions(data.features || []);
+      setOpen((data.features || []).length > 0);
     } catch {
       setSuggestions([]);
     } finally {
@@ -47,11 +46,11 @@ export default function AddressAutocomplete({ value, onChange, placeholder = "Ad
     setQuery(val);
     onChange(val);
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => search(val), 400);
+    debounceRef.current = setTimeout(() => search(val), 300);
   };
 
   const handleSelect = (suggestion) => {
-    const address = suggestion.display_name;
+    const address = suggestion.properties.label;
     setQuery(address);
     onChange(address);
     setSuggestions([]);
@@ -59,16 +58,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder = "Ad
   };
 
   const formatSuggestion = (s) => {
-    const a = s.address || {};
-    const parts = [
-      a.road || a.pedestrian || a.suburb,
-      a.house_number,
-      a.city || a.town || a.village || a.municipality,
-      a.postcode,
-      a.state || a.county,
-      a.country,
-    ].filter(Boolean);
-    return parts.join(', ') || s.display_name;
+    return s.properties.label;
   };
 
   return (
@@ -91,7 +81,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder = "Ad
         <div className="absolute z-50 w-full mt-1 rounded-xl border border-border bg-card shadow-xl overflow-hidden">
           {suggestions.map((s, i) => (
             <button
-              key={s.place_id || i}
+              key={s.properties?.id || i}
               type="button"
               onClick={() => handleSelect(s)}
               className="w-full text-left px-4 py-3 text-sm hover:bg-primary/10 transition-colors border-b border-border/50 last:border-0 flex items-start gap-3"
@@ -103,7 +93,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder = "Ad
             </button>
           ))}
           <div className="px-3 py-1.5 text-[10px] text-muted-foreground bg-muted/30 text-right font-mono">
-            © OpenStreetMap
+            © Base Adresse Nationale
           </div>
         </div>
       )}

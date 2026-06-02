@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 
 function getConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join('_');
@@ -463,7 +464,13 @@ export default function MessageThread({ user, conv, onBack }) {
                       boxShadow: '0 2px 12px rgba(56,170,220,0.08)',
                     } : {}}
                   >
-                    {msg.content}
+                    {msg.is_official ? (
+                      <ReactMarkdown className="prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_strong]:text-white [&_em]:text-white/90 [&_code]:bg-primary/30 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_a]:text-primary [&_ul]:list-disc [&_ul]:list-inside [&_ol]:list-decimal [&_ol]:list-inside [&_blockquote]:border-l-primary/40 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-white/70 [&_pre]:bg-background/50 [&_pre]:border [&_pre]:border-border [&_pre]:p-2 [&_pre]:rounded [&_pre]:my-2">
+                        {msg.content}
+                      </ReactMarkdown>
+                    ) : (
+                      msg.content
+                    )}
                   </div>
                   <div className={`flex items-center gap-2 px-1 ${isMine ? 'flex-row-reverse' : ''}`}>
                     <span className="font-mono text-[9px] text-muted-foreground">

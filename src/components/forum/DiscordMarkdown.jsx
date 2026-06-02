@@ -98,11 +98,27 @@ const components = {
   ),
 };
 
+// Convert bare URLs into clickable markdown links
+function linkifyContent(text) {
+  if (!text) return '';
+  // Match URLs not already inside markdown link syntax [...](...) 
+  return text.replace(
+    /(?<!\]\()(?<!\()(https?:\/\/[^\s)\]>]+)/g,
+    (match, url, offset, str) => {
+      // Check if this URL is already part of a markdown link
+      const before = str.slice(Math.max(0, offset - 2), offset);
+      if (before.includes('](') || before.endsWith('(')) return match;
+      return `[${url}](${url})`;
+    }
+  );
+}
+
 export default function DiscordMarkdown({ content, className = '' }) {
+  const processed = linkifyContent(content);
   return (
     <div className={`discord-md ${className}`}>
       <ReactMarkdown components={components}>
-        {content}
+        {processed}
       </ReactMarkdown>
     </div>
   );

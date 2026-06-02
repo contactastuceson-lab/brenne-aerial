@@ -63,7 +63,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
   const conversations = useMemo(() => {
     const map = {};
     allMessages
-      .filter(m => !m.is_request || m.request_status === 'accepted')
+      .filter(m => !m.is_request || m.request_status === 'accepted' || (m.is_request && m.request_status === 'pending'))
       .forEach(m => {
         const cid = m.conversation_id;
         if (!map[cid]) {

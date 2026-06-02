@@ -52,7 +52,7 @@
       "items": {
         "type": "string"
       },
-      "description": "Certifications de l'auteur (verified, certified, official, pro)"
+      "description": "Certifications de l'auteur"
     },
     "author_certification_badge": {
       "type": "string",
@@ -86,7 +86,27 @@
     },
     "is_locked": {
       "type": "boolean",
-      "default": false
+      "default": false,
+      "description": "Sujet verrouill\u00e9 (plus de r\u00e9ponses)"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sujet \u00e9pingl\u00e9 en haut"
+    },
+    "is_official": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sujet officiel Brenne Aerial"
+    },
+    "is_announcement": {
+      "type": "boolean",
+      "default": false,
+      "description": "Annonce affich\u00e9e en banni\u00e8re dans le forum"
+    },
+    "announcement_text": {
+      "type": "string",
+      "description": "Texte de l'annonce (si is_announcement = true)"
     }
   },
   "required": [

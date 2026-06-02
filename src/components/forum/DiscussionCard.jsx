@@ -1,38 +1,36 @@
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MessageCircle, Eye, Star, UserCheck, Award, Shield, Zap, CheckCircle, Heart, Check } from 'lucide-react';
+import { MessageCircle, Eye, Pin, Lock, Star, Megaphone } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 
-const BADGE_ICONS = {
-  'Fondateur': '⭐',
-  'Collaborateur': '👤',
-  'VIP': '🔱',
-  'Admin': '🛡️',
-  'Pilote': '⚡',
-  'Officiel': '✓',
-  'Vérfifié': '✓',
-  'Donateur': '❤️',
-};
-
-
-
 export default function DiscussionCard({ discussion }) {
-  const isOfficial = discussion.author_name === 'Contact Astuceson';
+  const isOfficial = discussion.is_official;
+  const isPinned = discussion.is_pinned;
+  const isLocked = discussion.is_locked;
 
   return (
     <Link to={`/forum/${discussion.id}`}>
       <div className={`group p-4 rounded-lg border transition-all ${
         isOfficial
-          ? 'border-yellow-500/50 hover:border-yellow-400 bg-slate-800/50 hover:bg-slate-800/70'
+          ? 'border-yellow-500/50 hover:border-yellow-400 bg-yellow-500/5 hover:bg-yellow-500/10'
+          : isPinned
+          ? 'border-cyan-500/40 hover:border-cyan-400 bg-cyan-500/5 hover:bg-cyan-500/10'
           : 'border-slate-700/50 hover:border-cyan-500/50 bg-slate-800/30 hover:bg-slate-800/60'
       }`}>
         <div className="flex justify-between items-start gap-4 mb-2">
-          <h3 className={`font-grotesk font-bold group-hover:text-cyan-300 transition-colors flex-1 ${
-            isOfficial ? 'text-yellow-400' : 'text-white'
-          }`}>
-            {discussion.title}
-          </h3>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+              {isPinned && <span className="inline-flex items-center gap-0.5 text-[10px] text-cyan-300 bg-cyan-500/15 px-1.5 py-0.5 rounded"><Pin size={9} /> Épinglé</span>}
+              {isOfficial && <span className="inline-flex items-center gap-0.5 text-[10px] text-yellow-300 bg-yellow-500/15 px-1.5 py-0.5 rounded"><Star size={9} /> Officiel</span>}
+              {isLocked && <span className="inline-flex items-center gap-0.5 text-[10px] text-red-300 bg-red-500/15 px-1.5 py-0.5 rounded"><Lock size={9} /> Verrouillé</span>}
+            </div>
+            <h3 className={`font-grotesk font-bold group-hover:text-cyan-300 transition-colors ${
+              isOfficial ? 'text-yellow-400' : 'text-white'
+            }`}>
+              {discussion.title}
+            </h3>
+          </div>
           <span className="text-xs px-2 py-1 bg-cyan-500/10 text-cyan-300 rounded-full whitespace-nowrap flex-shrink-0">
             {discussion.category}
           </span>

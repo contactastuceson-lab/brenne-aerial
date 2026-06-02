@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Megaphone, X } from 'lucide-react';
 
 const CATEGORIES = [
   { value: 'all', label: 'Toutes les catégories' },
@@ -47,6 +47,8 @@ export default function ForumPage() {
     },
   });
 
+  const announcement = useMemo(() => discussions.find(d => d.is_announcement), [discussions]);
+
   const filtered = useMemo(() => {
     let result = [...discussions];
 
@@ -74,6 +76,9 @@ export default function ForumPage() {
       default:
         result.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
     }
+
+    // Pinned always first
+    result.sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0));
 
     return result;
   }, [discussions, category, search, sort]);
@@ -136,6 +141,14 @@ export default function ForumPage() {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Announcement Banner */}
+        {announcement && (
+          <div className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3">
+            <Megaphone className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-amber-100 flex-1">{announcement.announcement_text || announcement.title}</p>
+          </div>
+        )}
 
         {/* List */}
         <div className="space-y-2">

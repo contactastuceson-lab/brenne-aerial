@@ -213,7 +213,7 @@ export default function PublicProfilePage() {
       navigate('/profile');
       return;
     }
-    navigate(`/messages?to=${user.email}`);
+    navigate(`/messages?to=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.display_name || user.full_name)}`);
   };
 
   return (

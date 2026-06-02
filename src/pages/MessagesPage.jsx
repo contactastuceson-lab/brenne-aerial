@@ -27,9 +27,9 @@ export default function MessagesPage() {
       const params = new URLSearchParams(window.location.search);
       const toEmail = params.get('to');
       const toName = params.get('name');
-      if (toEmail && toName) {
+      if (toEmail) {
         const convId = getConversationId(u.email, toEmail);
-        setSelectedConv({ email: toEmail, name: toName, convId });
+        setSelectedConv({ email: toEmail, name: toName || toEmail, convId });
       }
     }).catch(() => base44.auth.redirectToLogin('/messages'));
 

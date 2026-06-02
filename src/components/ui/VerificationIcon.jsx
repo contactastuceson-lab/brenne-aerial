@@ -29,10 +29,8 @@ export default function VerificationIcons({ verifications = [], size = 'sm' }) {
         const isGold = cfg.gradient;
         const fill = bgColorMap[cfg.color] || '#0ea5e9';
 
-        const supremeSize = size === 'sm' ? 28 : 34;
-        const supremeIconSize = size === 'sm' ? 13 : 16;
-        const finalSize = isSupreme ? supremeSize : s;
-        const finalIconSize = isSupreme ? supremeIconSize : iconSize;
+        const finalSize = s;
+        const finalIconSize = iconSize;
 
         return (
           <BadgePopup key={key} badgeKey={key}>

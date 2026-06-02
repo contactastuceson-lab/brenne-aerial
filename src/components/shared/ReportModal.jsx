@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
-import { Flag, Loader2, AlertCircle } from 'lucide-react';
+import { Flag, Loader2, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const REASONS = [
   { value: 'spam', label: '🚫 Spam', color: 'text-blue-400' },
@@ -17,8 +18,10 @@ const REASONS = [
 ];
 
 export default function ReportModal({ open, onClose, user, targetType, targetId, targetEmail, targetName, messageContent }) {
+  const navigate = useNavigate();
   const [reason, setReason] = useState('');
   const [details, setDetails] = useState('');
+  const [reportId, setReportId] = useState(null);
 
   const reportMutation = useMutation({
     mutationFn: async (newReportId) => {
@@ -46,11 +49,10 @@ export default function ReportModal({ open, onClose, user, targetType, targetId,
       
       return report;
     },
-    onSuccess: () => {
-      toast.success('✓ Signalement reçu. Merci de votre vigilance!');
+    onSuccess: (report) => {
+      setReportId(report.id);
       setReason('');
       setDetails('');
-      onClose();
     },
     onError: () => {
       toast.error('Erreur lors de l\'envoi du signalement');
@@ -58,6 +60,47 @@ export default function ReportModal({ open, onClose, user, targetType, targetId,
   });
 
   const reasonOption = REASONS.find(r => r.value === reason);
+
+  const handleGoToReports = () => {
+    onClose();
+    navigate('/espace-client?tab=reports');
+  };
+
+  if (reportId) {
+    return (
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className="bg-card border border-border/50 max-w-md shadow-2xl">
+          <div className="flex flex-col items-center text-center space-y-5 py-4">
+            <div className="w-12 h-12 rounded-full bg-green-400/20 flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-green-400" />
+            </div>
+            <div className="space-y-2">
+              <p className="font-grotesk font-bold text-lg">Merci d'avoir signalé</p>
+              <p className="font-inter text-sm text-muted-foreground">
+                Votre signalement a été envoyé à nos modérateurs. Nous examinons rapidement chaque rapport.
+              </p>
+            </div>
+            <div className="space-y-2 w-full">
+              <Button
+                className="w-full bg-green-400/20 text-green-400 border border-green-400/30 hover:bg-green-400/30 gap-2 font-inter"
+                onClick={handleGoToReports}
+              >
+                <ArrowRight className="w-4 h-4" />
+                Suivre mon signalement
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full border-border/50"
+                onClick={onClose}
+              >
+                Fermer
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

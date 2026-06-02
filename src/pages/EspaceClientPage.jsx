@@ -6,7 +6,7 @@ import {
   FolderOpen, Download, FileVideo, FileImage, FileText, File,
   Lock, LogIn, ChevronDown, ChevronUp, Award,
   CheckCircle, Clock, XCircle, AlertCircle, Plus, ArrowRight,
-  Rocket, MapPin, Calendar, Shield, Zap, User, Settings
+  Rocket, MapPin, Calendar, Shield, Zap, User, Settings, Flag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -42,7 +42,15 @@ const NAV = [
   { id: 'quotes',   label: 'Mes devis',         icon: FileText },
   { id: 'certs',    label: 'Certifications',    icon: Shield },
   { id: 'badges',   label: 'Badges',            icon: Award },
+  { id: 'reports',  label: 'Mes signalements',  icon: Flag },
 ];
+
+const REPORT_STATUS = {
+  pending:   { label: 'En attente',  color: 'text-amber-400',  bg: 'bg-amber-400/10',  border: 'border-amber-400/20',  icon: Clock },
+  reviewing: { label: 'En examen',   color: 'text-blue-400',   bg: 'bg-blue-400/10',   border: 'border-blue-400/20',   icon: AlertCircle },
+  resolved:  { label: 'Résolu',      color: 'text-green-400',  bg: 'bg-green-400/10',  border: 'border-green-400/20',  icon: CheckCircle },
+  dismissed: { label: 'Rejeté',      color: 'text-red-400',    bg: 'bg-red-400/10',    border: 'border-red-400/20',    icon: XCircle },
+};
 
 /* ─── sub-components ────────────────────────────────── */
 function StatCard({ icon: Icon, label, value, color, bg }) {
@@ -218,6 +226,12 @@ export default function EspaceClientPage() {
   const { data: myCertifications = [] } = useQuery({
     queryKey: ['my-certifications', user?.email],
     queryFn: () => base44.entities.CertificationRequest.filter({ user_email: user.email }, '-created_date', 5),
+    enabled: !!user?.email,
+  });
+
+  const { data: myReports = [] } = useQuery({
+    queryKey: ['my-reports', user?.email],
+    queryFn: () => base44.entities.Report.filter({ reporter_email: user.email }, '-created_date', 30),
     enabled: !!user?.email,
   });
 
@@ -503,26 +517,82 @@ export default function EspaceClientPage() {
 
               {/* BADGES */}
               {activeTab === 'badges' && (
-                <div className="space-y-4">
-                  <h2 className="font-grotesk font-bold text-lg">Mes badges</h2>
-                  {!user.badges?.length ? (
-                    <EmptyState icon={Award} title="Aucun badge pour l'instant"
-                      desc="Les badges s'obtiennent en participant à la communauté et en réalisant des missions." />
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                      {user.badges.map(b => (
-                        <div key={b} className="p-4 rounded-2xl bg-card border border-border flex flex-col items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
-                          <BadgeChip badge={b} size="lg" />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+               <div className="space-y-4">
+                 <h2 className="font-grotesk font-bold text-lg">Mes badges</h2>
+                 {!user.badges?.length ? (
+                   <EmptyState icon={Award} title="Aucun badge pour l'instant"
+                     desc="Les badges s'obtiennent en participant à la communauté et en réalisant des missions." />
+                 ) : (
+                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                     {user.badges.map(b => (
+                       <div key={b} className="p-4 rounded-2xl bg-card border border-border flex flex-col items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+                         <BadgeChip badge={b} size="lg" />
+                       </div>
+                     ))}
+                   </div>
+                 )}
+               </div>
+              )}
+
+              {/* REPORTS */}
+              {activeTab === 'reports' && (
+               <div className="space-y-4">
+                 <div className="flex items-center justify-between">
+                   <h2 className="font-grotesk font-bold text-lg">Mes signalements</h2>
+                   <span className="font-mono text-xs text-muted-foreground">{myReports.length} signalement{myReports.length > 1 ? 's' : ''}</span>
+                 </div>
+                 {myReports.length === 0 ? (
+                   <EmptyState icon={Flag} title="Aucun signalement"
+                     desc="Vous pouvez signaler un utilisateur ou du contenu inapproprié pour aider notre modération." />
+                 ) : (
+                   <div className="space-y-3">
+                     {myReports.map(r => {
+                       const s = REPORT_STATUS[r.status] || REPORT_STATUS.pending;
+                       const StatusIcon = s.icon;
+                       return (
+                         <motion.div key={r.id} whileHover={{ y: -1 }} className={`p-5 rounded-2xl bg-card border ${s.border} relative overflow-hidden`}>
+                           <div className="flex items-start justify-between gap-3">
+                             <div className="flex-1 min-w-0">
+                               <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                 <span className={`inline-flex items-center gap-1.5 text-[11px] font-inter font-medium px-2 py-0.5 rounded-full ${s.bg} ${s.color} border ${s.border}`}>
+                                   <StatusIcon className="w-3 h-3" />
+                                   {s.label}
+                                 </span>
+                               </div>
+                               <p className="font-grotesk font-bold text-base leading-tight">
+                                 {r.target_type === 'user' ? `Signalement d'utilisateur` : 'Signalement de contenu'}
+                               </p>
+                               <p className="font-inter text-xs text-muted-foreground mt-1">
+                                 <span className="font-medium">{r.target_name || r.target_email}</span>
+                               </p>
+                               {r.reason && (
+                                 <p className="font-inter text-xs text-muted-foreground mt-2 px-2 py-1.5 rounded-lg bg-secondary/50 border border-border inline-block">
+                                   {r.reason.replace(/_/g, ' ')}
+                                 </p>
+                               )}
+                               {r.admin_notes && (
+                                 <p className="font-inter text-xs text-muted-foreground mt-2 p-2 rounded-lg bg-secondary/50 border border-border italic">
+                                   💬 {r.admin_notes}
+                                 </p>
+                               )}
+                             </div>
+                             <div className="text-right flex-shrink-0">
+                               <p className="font-mono text-[11px] text-muted-foreground">
+                                 {r.created_date ? format(new Date(r.created_date), 'd MMM yy', { locale: fr }) : ''}
+                               </p>
+                             </div>
+                           </div>
+                         </motion.div>
+                       );
+                     })}
+                   </div>
+                 )}
+               </div>
               )}
 
               </motion.div>
-          </AnimatePresence>
-        </main>
+              </AnimatePresence>
+              </main>
       </div>
     </div>
   );

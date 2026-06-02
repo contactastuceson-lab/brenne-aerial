@@ -74,6 +74,12 @@ const BADGE_CONFIG = {
   'Partenaire':     { icon: Award,        color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/30' },
 };
 
+function formatFollowers(count) {
+  if (count === 1) return '1 abonné';
+  if (count < 1000) return `${count} abonnés`;
+  return `${(count / 1000).toFixed(1)}k abonnés`;
+}
+
 export default function DiscoverPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -82,7 +88,8 @@ export default function DiscoverPage() {
   const [activeTab, setActiveTab] = useState('members');
   const [filterPole, setFilterPole] = useState('all');
   const [viewEmployee, setViewEmployee] = useState(null);
-  const [membersViewMode, setMembersViewMode] = useState('grid');
+  const [membersViewMode, setMembersViewMode] = useState('list');
+  const [sortBy, setSortBy] = useState('recent');
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -197,7 +204,21 @@ export default function DiscoverPage() {
       !search ||
       u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
       u.email?.toLowerCase().includes(search.toLowerCase())
-    );
+    )
+    .sort((a, b) => {
+      if (sortBy === 'popular') {
+        return getFollowersCount(b.email) - getFollowersCount(a.email);
+      } else if (sortBy === 'verified') {
+        const aVerified = a.verifications?.includes('supreme') ? 0 : 1;
+        const bVerified = b.verifications?.includes('supreme') ? 0 : 1;
+        return aVerified - bVerified;
+      } else if (sortBy === 'premium') {
+        const aSupreme = a.verifications?.includes('supreme') ? 0 : 1;
+        const bSupreme = b.verifications?.includes('supreme') ? 0 : 1;
+        return aSupreme - bSupreme;
+      }
+      return 0;
+    });
 
   const filteredEmployees = employees
     .filter(e => filterPole === 'all' || e.pole === filterPole)
@@ -245,21 +266,33 @@ export default function DiscoverPage() {
               />
             </div>
             {activeTab === 'members' && (
-              <div className="flex gap-1 bg-secondary/50 rounded-lg p-1">
-                <button
-                  onClick={() => setMembersViewMode('grid')}
-                  className={`p-2 rounded transition-colors ${membersViewMode === 'grid' ? 'bg-card text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                  title="Mode Grille"
+              <div className="flex gap-2">
+                <select
+                  value={sortBy}
+                  onChange={e => setSortBy(e.target.value)}
+                  className="px-3 py-2 rounded-lg bg-card border border-border text-sm font-inter text-foreground"
                 >
-                  <Grid3x3 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setMembersViewMode('list')}
-                  className={`p-2 rounded transition-colors ${membersViewMode === 'list' ? 'bg-card text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                  title="Mode Liste"
-                >
-                  <List className="w-4 h-4" />
-                </button>
+                  <option value="recent">Plus récents</option>
+                  <option value="popular">Plus populaires</option>
+                  <option value="verified">Vérifiés</option>
+                  <option value="premium">Premium</option>
+                </select>
+                <div className="flex gap-1 bg-secondary/50 rounded-lg p-1">
+                  <button
+                    onClick={() => setMembersViewMode('grid')}
+                    className={`p-2 rounded transition-colors ${membersViewMode === 'grid' ? 'bg-card text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                    title="Mode Grille"
+                  >
+                    <Grid3x3 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setMembersViewMode('list')}
+                    className={`p-2 rounded transition-colors ${membersViewMode === 'list' ? 'bg-card text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                    title="Mode Liste"
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -349,12 +382,12 @@ export default function DiscoverPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ delay: i * 0.02 }}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors cursor-pointer group"
+                  className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors cursor-pointer group"
                   onClick={() => navigate(`/@${profile.username}`)}
                 >
                   {/* Avatar */}
                   <div
-                    className="w-14 h-14 flex-shrink-0 rounded-xl flex items-center justify-center overflow-hidden border-2"
+                    className="w-12 h-12 flex-shrink-0 rounded-lg flex items-center justify-center overflow-hidden border-2"
                     style={isSupreme
                       ? { border: '2px solid #d97706', boxShadow: '0 0 12px rgba(245,158,11,0.5)', background: '#1a0e00' }
                       : { borderColor: 'var(--border)', background: profile.avatar_url ? 'var(--secondary)' : getAvatarGradient(profile.full_name) }
@@ -363,7 +396,7 @@ export default function DiscoverPage() {
                     {profile.avatar_url ? (
                       <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="font-grotesk font-bold text-lg text-white drop-shadow-sm">
+                      <span className="font-grotesk font-bold text-base text-white drop-shadow-sm">
                         {(profile.display_name || profile.full_name)?.[0]?.toUpperCase() || '?'}
                       </span>
                     )}
@@ -371,7 +404,7 @@ export default function DiscoverPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-1.5">
                       <h3
                         className="font-grotesk font-semibold text-sm truncate"
                         style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
@@ -379,43 +412,49 @@ export default function DiscoverPage() {
                         {profile.display_name || profile.full_name}
                       </h3>
                       {isSupreme && (
-                        <span style={{ fontSize: '12px' }}>👑</span>
+                        <span style={{ fontSize: '11px' }}>👑</span>
                       )}
                       <VerificationIcons verifications={profile.verifications} size="sm" />
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       {profile.username && (
-                        <p className="font-mono text-xs text-muted-foreground">@{profile.username}</p>
+                        <p className="font-mono">@{profile.username}</p>
                       )}
                       {profile.location && (
-                        <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
-                          <MapPin className="w-3 h-3" /> {profile.location}
-                        </p>
+                        <>
+                          <span>•</span>
+                          <p className="flex items-center gap-0.5">
+                            <MapPin className="w-2.5 h-2.5" /> {profile.location}
+                          </p>
+                        </>
                       )}
-                      <p className="font-inter text-xs text-muted-foreground flex items-center gap-1">
-                        <Users className="w-3 h-3" /> {getFollowersCount(profile.email)}
-                      </p>
                     </div>
+                    {profile.bio && (
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{profile.bio}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      <Users className="w-2.5 h-2.5 inline mr-1" />
+                      {formatFollowers(getFollowersCount(profile.email))}
+                    </p>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
                     {isFollowing ? (
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-xs font-inter gap-1 h-8"
+                        className="text-xs font-inter gap-1 h-7 px-2"
                         style={isSupreme ? { borderColor: 'rgba(217,119,6,0.4)', color: '#d97706' } : {}}
                         onClick={() => unfollowMutation.mutate(followRecord.id)}
                         disabled={unfollowMutation.isPending}
                       >
                         <UserCheck className="w-3 h-3" />
-                        Suivi
                       </Button>
                     ) : (
                       <Button
                         size="sm"
-                        className="text-xs font-inter gap-1 h-8"
+                        className="text-xs font-inter gap-1 h-7 px-2"
                         style={isSupreme
                           ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
                           : { background: 'rgba(56,170,220,0.1)', color: 'hsl(var(--primary))', border: '1px solid rgba(56,170,220,0.2)' }
@@ -424,19 +463,18 @@ export default function DiscoverPage() {
                         disabled={followMutation.isPending}
                       >
                         <UserPlus className="w-3 h-3" />
-                        Suivre
                       </Button>
                     )}
 
                     {alreadyRequested ? (
-                      <Button size="sm" variant="outline" className="text-xs border-border font-inter gap-1 h-8 opacity-60" disabled>
+                      <Button size="sm" variant="outline" className="text-xs border-border font-inter gap-1 h-7 px-2 opacity-60" disabled>
                         <MessageCircle className="w-3 h-3" />
                       </Button>
                     ) : (
                       <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`}>
                         <Button
                           size="sm"
-                          className="text-xs font-inter gap-1 h-8"
+                          className="text-xs font-inter gap-1 h-7 px-2"
                           style={isSupreme
                             ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
                             : { background: 'rgba(56,200,180,0.1)', color: 'hsl(var(--accent))', border: '1px solid rgba(56,200,180,0.2)' }

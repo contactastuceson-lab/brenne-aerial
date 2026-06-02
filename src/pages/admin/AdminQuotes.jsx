@@ -34,6 +34,8 @@ export default function AdminQuotes() {
   const [editingService, setEditingService] = useState(null);
   const [selectedCoords, setSelectedCoords] = useState(null);
 
+  const { data: user } = useQuery({ queryKey: ['current-user'], queryFn: () => base44.auth.me() });
+
   const { data: quotes = [], isLoading } = useQuery({
     queryKey: ['adm-quotes-list'],
     queryFn: () => base44.entities.Quote.list('-created_date', 100),
@@ -46,8 +48,9 @@ export default function AdminQuotes() {
 
   const updateQ = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Quote.update(id, data),
-    onSuccess: () => { 
-      qc.invalidateQueries({ queryKey: ['adm-quotes-list'] }); 
+    onSuccess: (_, { id, data }) => { 
+      qc.invalidateQueries({ queryKey: ['adm-quotes-list'] });
+      base44.entities.AuditLog.create({ user_email: user?.email, user_name: user?.full_name, action: 'update', entity_type: 'Quote', entity_id: id, changes: data, status: 'success' }).catch(() => {});
       setSelected(null);
       toast.success('✓ Devis mis à jour'); 
     },
@@ -56,8 +59,9 @@ export default function AdminQuotes() {
 
   const deleteQ = useMutation({
     mutationFn: (id) => base44.entities.Quote.delete(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       qc.invalidateQueries({ queryKey: ['adm-quotes-list'] });
+      base44.entities.AuditLog.create({ user_email: user?.email, user_name: user?.full_name, action: 'delete', entity_type: 'Quote', entity_id: id, status: 'success' }).catch(() => {});
       setSelected(null);
       toast.success('✓ Devis supprimé');
     },

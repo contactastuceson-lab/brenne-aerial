@@ -50,10 +50,13 @@ export default function AdminReports() {
     queryFn: () => base44.entities.Report.list('-created_date', 100),
   });
 
+  const { data: user } = useQuery({ queryKey: ['current-user'], queryFn: () => base44.auth.me() });
+
   const updateReport = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Report.update(id, data),
-    onSuccess: () => {
+    onSuccess: (_, { id, data }) => {
       qc.invalidateQueries({ queryKey: ['admin-reports'] });
+      base44.entities.AuditLog.create({ user_email: user?.email, user_name: user?.full_name, action: 'update', entity_type: 'Report', entity_id: id, changes: data, status: 'success' }).catch(() => {});
       setSelected(null);
       setAction(null);
       toast.success('✓ Signalement mis à jour');
@@ -63,8 +66,9 @@ export default function AdminReports() {
 
   const deleteReport = useMutation({
     mutationFn: (id) => base44.entities.Report.delete(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       qc.invalidateQueries({ queryKey: ['admin-reports'] });
+      base44.entities.AuditLog.create({ user_email: user?.email, user_name: user?.full_name, action: 'delete', entity_type: 'Report', entity_id: id, status: 'success' }).catch(() => {});
       setSelected(null);
       toast.success('✓ Signalement supprimé');
     },

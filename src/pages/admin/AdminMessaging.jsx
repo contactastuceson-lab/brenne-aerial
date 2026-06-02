@@ -145,7 +145,6 @@ export default function AdminMessaging() {
             <OfficialMessageEditor 
               content={officialForm.content}
               onChange={content => setOfficialForm(p => ({ ...p, content }))}
-              disabled={!officialForm.recipient_email}
             />
             <div className="bg-primary/10 border border-primary/20 rounded-xl px-3 py-2.5 font-inter text-[10px] lg:text-xs text-muted-foreground space-y-1">
               <p className="flex items-center gap-1"><Sparkles className="w-3 h-3" /> Message aparaîtra comme officiel Brenne Aerial</p>

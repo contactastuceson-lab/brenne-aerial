@@ -25,20 +25,30 @@ export default function VerificationIcons({ verifications = [], size = 'sm' }) {
         const cfg = VERIFICATION_CONFIG[key];
         if (!cfg) return null;
         const Icon = cfg.icon;
+        const isSupreme = key === 'supreme';
         const isGold = cfg.gradient;
         const fill = bgColorMap[cfg.color] || '#0ea5e9';
+
+        const supremeSize = size === 'sm' ? 28 : 34;
+        const supremeIconSize = size === 'sm' ? 13 : 16;
+        const finalSize = isSupreme ? supremeSize : s;
+        const finalIconSize = isSupreme ? supremeIconSize : iconSize;
 
         return (
           <BadgePopup key={key} badgeKey={key}>
             <span
               className="inline-flex items-center justify-center flex-shrink-0 relative"
-              style={{ width: s, height: s }}
+              style={{
+                width: finalSize,
+                height: finalSize,
+                filter: isSupreme ? 'drop-shadow(0 0 6px rgba(245,158,11,0.9)) drop-shadow(0 0 12px rgba(245,158,11,0.5))' : 'none',
+              }}
             >
               {/* Seal shape */}
               <svg
                 viewBox="0 0 24 24"
-                width={s}
-                height={s}
+                width={finalSize}
+                height={finalSize}
                 style={{ position: 'absolute', inset: 0 }}
               >
                 <path fill={fill} d={TWITTER_SEAL} />
@@ -47,8 +57,8 @@ export default function VerificationIcons({ verifications = [], size = 'sm' }) {
               <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Icon
                   style={{
-                    width: iconSize,
-                    height: iconSize,
+                    width: finalIconSize,
+                    height: finalIconSize,
                     color: isGold ? '#451a03' : '#050d1a',
                     strokeWidth: 3,
                     flexShrink: 0,

@@ -165,13 +165,13 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
                     <span className={`font-inter text-sm truncate ${hasUnread ? 'font-semibold text-foreground' : 'font-medium text-foreground/90'}`}>
                       {conv.name}
                     </span>
+                    <VerificationIcons verifications={conv.verifications} size="sm" />
                     {conv.isOfficial ? (
                       <span className="flex items-center gap-0.5 font-mono text-[9px] text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-full flex-shrink-0">
                         <ShieldCheck className="w-2.5 h-2.5" /> Officiel
                       </span>
                     ) : (
                       <>
-                        <VerificationIcons verifications={conv.verifications} />
                         {BadgeIcon && (
                           <BadgeIcon className={`w-3 h-3 flex-shrink-0 ${badgeCfg.color}`} />
                         )}

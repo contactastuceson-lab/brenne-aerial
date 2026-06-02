@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { motion } from 'framer-motion';
-import { Eye, Check, X, Loader2, FileText, Settings, MapPin, Calendar, Clock, Phone, Mail, Building2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Eye, Check, X, Loader2, FileText, Settings, MapPin, Calendar, Clock, Phone, Mail, Building2, Search, TrendingUp, AlertCircle, Trash2, Send, Copy } from 'lucide-react';
+import { differenceInDays } from 'date-fns';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { formatPrice, SERVICE_PRICES } from '@/lib/droneUtils';
 import { toast } from 'sonner';
@@ -16,11 +18,15 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
+import QuoteTracking from '@/components/dashboard/QuoteTracking';
 
 export default function AdminQuotes() {
   const qc = useQueryClient();
   const [tab, setTab] = useState('quotes');
-  const [filter, setFilter] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterService, setFilterService] = useState('all');
+  const [sortBy, setSortBy] = useState('recent');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selected, setSelected] = useState(null);
   const [prixFinal, setPrixFinal] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
@@ -40,7 +46,21 @@ export default function AdminQuotes() {
 
   const updateQ = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Quote.update(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-quotes-list'] }); toast.success('Devis mis à jour'); },
+    onSuccess: () => { 
+      qc.invalidateQueries({ queryKey: ['adm-quotes-list'] }); 
+      setSelected(null);
+      toast.success('✓ Devis mis à jour'); 
+    },
+    onError: () => toast.error('Erreur lors de la mise à jour'),
+  });
+
+  const deleteQ = useMutation({
+    mutationFn: (id) => base44.entities.Quote.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['adm-quotes-list'] });
+      setSelected(null);
+      toast.success('✓ Devis supprimé');
+    },
   });
 
   const createService = useMutation({
@@ -158,7 +178,31 @@ export default function AdminQuotes() {
     }
   };
 
-  const filtered = filter === 'all' ? quotes : quotes.filter(q => q.status === filter);
+  const filtered = useMemo(() => {
+    let result = quotes;
+    if (filterStatus !== 'all') result = result.filter(q => q.status === filterStatus);
+    if (filterService !== 'all') result = result.filter(q => q.service_type === filterService);
+    if (searchQuery) result = result.filter(q => 
+      q.client_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      q.client_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      q.location?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    if (sortBy === 'recent') result.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+    if (sortBy === 'oldest') result.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+    if (sortBy === 'pending') result.sort((a, b) => (a.status === 'pending' ? -1 : 1));
+    return result;
+  }, [quotes, filterStatus, filterService, searchQuery, sortBy]);
+
+  const stats = {
+    total: quotes.length,
+    pending: quotes.filter(q => q.status === 'pending').length,
+    reviewing: quotes.filter(q => q.status === 'reviewing').length,
+    accepted: quotes.filter(q => q.status === 'accepted').length,
+    refused: quotes.filter(q => q.status === 'refused').length,
+    completed: quotes.filter(q => q.status === 'completed').length,
+  };
+
+  const serviceTypes = [...new Set(quotes.map(q => q.service_type))].sort();
 
   return (
     <div>
@@ -180,58 +224,128 @@ export default function AdminQuotes() {
 
       {tab === 'quotes' && (
         <>
-          <div className="flex items-center justify-between mb-8">
+          {/* Header & Stats */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="font-grotesk font-bold text-lg">Gestion des devis</h2>
+              <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-mono text-xs font-semibold">{filtered.length}</span>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-6">
+              <div className="p-4 rounded-xl bg-card border border-border">
+                <p className="font-mono text-[10px] text-muted-foreground mb-1">TOTAL</p>
+                <p className="font-grotesk font-bold text-xl">{stats.total}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-card border border-amber-400/30 bg-amber-400/5">
+                <p className="font-mono text-[10px] text-amber-400 mb-1">EN ATTENTE</p>
+                <p className="font-grotesk font-bold text-xl text-amber-400">{stats.pending}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-card border border-blue-400/30 bg-blue-400/5">
+                <p className="font-mono text-[10px] text-blue-400 mb-1">EN COURS</p>
+                <p className="font-grotesk font-bold text-xl text-blue-400">{stats.reviewing}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-card border border-green-400/30 bg-green-400/5">
+                <p className="font-mono text-[10px] text-green-400 mb-1">ACCEPTÉS</p>
+                <p className="font-grotesk font-bold text-xl text-green-400">{stats.accepted}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-card border border-red-400/30 bg-red-400/5">
+                <p className="font-mono text-[10px] text-red-400 mb-1">REFUSÉS</p>
+                <p className="font-grotesk font-bold text-xl text-red-400">{stats.refused}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-card border border-primary/30 bg-primary/5">
+                <p className="font-mono text-[10px] text-primary mb-1">TERMINÉS</p>
+                <p className="font-grotesk font-bold text-xl text-primary">{stats.completed}</p>
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Chercher par client, email ou lieu..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="bg-card border-border pl-10"
+                />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="bg-card border-border">
+                    <SelectValue placeholder="Statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="pending">En attente</SelectItem>
+                    <SelectItem value="reviewing">En cours</SelectItem>
+                    <SelectItem value="accepted">Acceptés</SelectItem>
+                    <SelectItem value="refused">Refusés</SelectItem>
+                    <SelectItem value="completed">Terminés</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={filterService} onValueChange={setFilterService}>
+                  <SelectTrigger className="bg-card border-border">
+                    <SelectValue placeholder="Service" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les services</SelectItem>
+                    {serviceTypes.map(st => (
+                      <SelectItem key={st} value={st}>{SERVICE_PRICES[st]?.label || st}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="bg-card border-border">
+                    <SelectValue placeholder="Tri" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="recent">Plus récents</SelectItem>
+                    <SelectItem value="oldest">Plus anciens</SelectItem>
+                    <SelectItem value="pending">En attente d'abord</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
 
-      <div className="flex gap-2 flex-wrap mb-6">
-        {['all', 'pending', 'reviewing', 'accepted', 'refused', 'completed'].map(s => (
-          <button key={s} onClick={() => setFilter(s)}
-            className={`px-3 py-1.5 rounded-lg font-mono text-xs border transition-colors ${
-              filter === s ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:text-foreground'
-            }`}>
-            {s === 'all' ? 'Tous' : s} {s !== 'all' && `(${quotes.filter(q => q.status === s).length})`}
-          </button>
-        ))}
-      </div>
-
-          {isLoading ? <div className="flex justify-center py-10"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div> : (
+          {/* List */}
+          {isLoading ? (
+            <div className="flex justify-center py-16">
+              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-16 space-y-3">
+              <FileText className="w-12 h-12 text-muted-foreground/30 mx-auto" />
+              <p className="font-inter text-sm text-muted-foreground">Aucun devis trouvé</p>
+            </div>
+          ) : (
             <div className="space-y-2">
-              {filtered.map(q => (
-            <motion.div key={q.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-border/60 transition-colors">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <StatusBadge status={q.status} />
-                  <span className="font-mono text-[10px] text-muted-foreground">#{q.id?.slice(-6)}</span>
-                </div>
-                <p className="font-inter font-medium text-sm">{q.client_name}</p>
-                <p className="font-mono text-xs text-muted-foreground">{q.client_email}</p>
-                <p className="font-inter text-xs text-primary mt-1">
-                  {SERVICE_PRICES[q.service_type]?.label || q.service_type} 
-                  {q.date_souhaitee && ` • ${format(new Date(q.date_souhaitee), 'd MMM', { locale: fr })}`}
-                  {q.prix_estime && ` • ~${formatPrice(q.prix_estime)}`}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => { setSelected(q); setAdminNotes(q.admin_notes || ''); setPrixFinal(q.prix_final?.toString() || ''); }}>
-                  <Eye className="w-4 h-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => downloadQuotePDF(q.id)} disabled={pdfLoading === q.id} className="gap-1 text-primary">
-                  {pdfLoading === q.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} PDF
-                </Button>
-                {(q.status === 'pending' || q.status === 'reviewing') && (
-                  <>
-                    <Button size="sm" onClick={() => { setSelected(q); setAdminNotes(''); setPrixFinal(''); }} className="bg-green-400/10 text-green-400 border border-green-400/20 hover:bg-green-400/20">
-                      <Check className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleAction(q, 'refused')} className="text-destructive hover:bg-destructive/10">
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </>
-                )}
-              </div>
-            </motion.div>
-              ))}
+              {filtered.map(q => {
+                const daysSince = differenceInDays(new Date(), new Date(q.created_date));
+                const isUrgent = daysSince > 7 && q.status === 'pending';
+                const s = { pending: 'bg-amber-400/5 border-amber-400/30', reviewing: 'bg-blue-400/5 border-blue-400/30', accepted: 'bg-green-400/5 border-green-400/30', refused: 'bg-red-400/5 border-red-400/30', completed: 'bg-primary/5 border-primary/30' }[q.status];
+
+                return (
+                  <motion.button key={q.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => { setSelected(q); setAdminNotes(q.admin_notes || ''); setPrixFinal(q.prix_final?.toString() || ''); }}
+                    className={`w-full text-left flex items-start gap-4 p-4 rounded-xl border transition-all ${isUrgent ? 'bg-red-400/5 border-red-400/30 hover:border-red-400/50' : `${s} hover:border-primary/20`}`}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <StatusBadge status={q.status} />
+                        {isUrgent && <span className="text-[10px] font-bold bg-red-400/20 text-red-400 px-2 py-0.5 rounded-full">URGENT</span>}
+                        <span className="font-mono text-[10px] text-muted-foreground">#{q.id?.slice(-6)}</span>
+                        <span className="font-mono text-[10px] text-muted-foreground">({daysSince}j)</span>
+                      </div>
+                      <p className="font-inter font-semibold text-sm">{q.client_name}</p>
+                      <p className="font-mono text-xs text-muted-foreground mt-1">
+                        {q.client_email} • {SERVICE_PRICES[q.service_type]?.label || q.service_type}
+                      </p>
+                      {q.prix_final && <p className="font-mono text-xs text-primary mt-1 font-semibold">{q.prix_final}€</p>}
+                    </div>
+                    <Eye className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
+                  </motion.button>
+                );
+              })}
             </div>
           )}
         </>
@@ -286,16 +400,25 @@ export default function AdminQuotes() {
       )}
 
       <Dialog open={!!selected} onOpenChange={() => { setSelected(null); setSelectedCoords(null); }}>
-        <DialogContent className="bg-card border-border max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border max-w-3xl max-h-[90vh] overflow-y-auto">
           {selected && (
             <div className="space-y-6">
               {/* Header */}
-              <div className="flex items-start justify-between border-b border-border pb-4">
-                <div>
-                  <StatusBadge status={selected.status} />
-                  <h2 className="font-grotesk font-bold text-2xl mt-2">Devis #{selected?.id?.slice(-6)}</h2>
-                  <p className="text-xs text-muted-foreground mt-1">{format(new Date(selected.created_date), 'd MMMM yyyy', { locale: fr })}</p>
+              <div className="border-b border-border pb-4">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div>
+                    <StatusBadge status={selected.status} />
+                    <h2 className="font-grotesk font-bold text-2xl mt-2">Devis #{selected?.id?.slice(-6)}</h2>
+                  </div>
+                  <span className="font-mono text-[11px] text-muted-foreground px-2 py-1 rounded-lg bg-secondary">
+                    {format(new Date(selected.created_date), 'd MMM yyyy', { locale: fr })}
+                  </span>
                 </div>
+              </div>
+
+              {/* Timeline */}
+              <div className="bg-secondary/40 rounded-xl p-5">
+                <QuoteTracking quote={selected} />
               </div>
 
               {/* Client Info */}
@@ -413,24 +536,29 @@ export default function AdminQuotes() {
               </div>
 
               {/* Actions */}
-              <div className="space-y-3 border-t border-border pt-4">
-                {(selected.status === 'pending' || selected.status === 'reviewing') && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button onClick={() => handleAction(selected, 'accepted')} disabled={updateQ.isPending} className="bg-green-400/10 text-green-400 border border-green-400/30 hover:bg-green-400/20">
-                      <Check className="w-4 h-4 mr-2" /> Accepter
-                    </Button>
-                    <Button onClick={() => handleAction(selected, 'refused')} disabled={updateQ.isPending} variant="ghost" className="text-destructive border border-destructive/30 hover:bg-destructive/10">
-                      <X className="w-4 h-4 mr-2" /> Refuser
-                    </Button>
-                  </div>
-                )}
+              <div className="space-y-2 border-t border-border pt-4">
+                <div className="grid grid-cols-2 gap-2">
+                  {(selected.status === 'pending' || selected.status === 'reviewing') && (
+                    <>
+                      <Button onClick={() => handleAction(selected, 'accepted')} disabled={updateQ.isPending} className="bg-green-400/10 text-green-400 border border-green-400/30 hover:bg-green-400/20 text-xs gap-1.5 font-medium">
+                        <Check className="w-3 h-3" /> Accepter
+                      </Button>
+                      <Button onClick={() => handleAction(selected, 'refused')} disabled={updateQ.isPending} className="bg-red-400/10 text-red-400 border border-red-400/30 hover:bg-red-400/20 text-xs gap-1.5 font-medium">
+                        <X className="w-3 h-3" /> Refuser
+                      </Button>
+                    </>
+                  )}
+                </div>
                 {selected.status === 'accepted' && (
-                  <Button onClick={() => handleAction(selected, 'completed')} className="w-full bg-primary text-primary-foreground">
-                    Marquer comme terminé
+                  <Button onClick={() => handleAction(selected, 'completed')} className="w-full bg-primary text-primary-foreground text-xs gap-1.5 font-medium">
+                    <Check className="w-3 h-3" /> Marquer comme terminé
                   </Button>
                 )}
-                <Button onClick={() => downloadQuotePDF(selected.id)} disabled={pdfLoading === selected.id} variant="outline" className="w-full gap-2 text-primary">
-                  {pdfLoading === selected.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} Télécharger le devis PDF
+                <Button onClick={() => downloadQuotePDF(selected.id)} disabled={pdfLoading === selected.id} variant="outline" className="w-full gap-2 text-primary text-xs font-medium">
+                  {pdfLoading === selected.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />} Télécharger PDF
+                </Button>
+                <Button onClick={() => deleteQ.mutate(selected.id)} disabled={deleteQ.isPending} className="w-full bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 text-xs gap-1.5 font-medium">
+                  <Trash2 className="w-3 h-3" /> Supprimer
                 </Button>
               </div>
             </div>

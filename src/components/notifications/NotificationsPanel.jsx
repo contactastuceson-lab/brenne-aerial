@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, X, Check, CheckCheck, Trash2 } from 'lucide-react';
+import { Bell, X, Check, CheckCheck, Trash2, ExternalLink } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -19,6 +20,7 @@ const TYPE_COLORS = {
 };
 
 export default function NotificationsPanel({ user, open, onClose }) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: rawNotifs = [] } = useQuery({
@@ -136,8 +138,14 @@ export default function NotificationsPanel({ user, open, onClose }) {
                   {notifs.map(n => (
                     <div
                       key={n.id}
-                      onClick={() => !n.is_read && markRead.mutate(n.id)}
-                      className={`px-4 py-3 cursor-pointer transition-colors hover:bg-secondary/30 ${!n.is_read ? 'bg-primary/3' : ''}`}
+                      onClick={() => {
+                        if (!n.is_read) markRead.mutate(n.id);
+                        if (n.action_url) {
+                          navigate(n.action_url);
+                          onClose();
+                        }
+                      }}
+                      className={`px-4 py-3 cursor-pointer transition-all hover:bg-secondary/40 ${!n.is_read ? 'bg-primary/5' : ''} ${n.action_url ? 'group' : ''}`}
                     >
                       <div className="flex items-start gap-3">
                         <div className={`mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${!n.is_read ? 'bg-primary' : 'bg-transparent'}`} />
@@ -145,14 +153,15 @@ export default function NotificationsPanel({ user, open, onClose }) {
                           <p className={`font-inter text-sm ${!n.is_read ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
                             {n.title}
                           </p>
-                          {n.content && (
-                            <p className="font-inter text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.content}</p>
+                          {n.message && (
+                            <p className="font-inter text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
                           )}
                           <p className="font-mono text-[10px] text-muted-foreground/60 mt-1">
                             {n.created_date ? format(new Date(n.created_date), "d MMM 'à' HH:mm", { locale: fr }) : ''}
                           </p>
                         </div>
                         {n.is_read && <Check className="w-3 h-3 text-muted-foreground/40 flex-shrink-0 mt-1" />}
+                        {n.action_url && <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/60 group-hover:text-primary flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />}
                       </div>
                     </div>
                   ))}

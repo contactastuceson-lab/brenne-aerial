@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
+import ExternalLinkModal from '@/components/forum/ExternalLinkModal.jsx';
 
 export default function DiscussionDetailPage() {
   const { id } = useParams();
@@ -78,6 +79,7 @@ export default function DiscussionDetailPage() {
 
   return (
     <div className="min-h-screen py-8 px-4">
+      <ExternalLinkModal />
       <div className="max-w-4xl mx-auto space-y-6">
         <Button
           variant="ghost"

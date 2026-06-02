@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Search, Filter, Megaphone, X } from 'lucide-react';
+import ExternalLinkModal from '@/components/forum/ExternalLinkModal.jsx';
 
 const CATEGORIES = [
   { value: 'all', label: 'Toutes les catégories' },
@@ -85,6 +86,7 @@ export default function ForumPage() {
 
   return (
     <div className="min-h-screen py-8 px-4">
+      <ExternalLinkModal />
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Hero */}
         <div className="rounded-2xl bg-gradient-to-br from-blue-600 via-cyan-500 to-purple-600 p-8 md:p-12">

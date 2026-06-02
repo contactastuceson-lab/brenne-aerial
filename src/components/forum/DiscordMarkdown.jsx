@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown';
+import { openExternalLink } from './ExternalLinkModal.jsx';
 
 const components = {
   // Paragraphe
@@ -71,13 +72,12 @@ const components = {
     <li className="text-[15px] text-slate-200 leading-relaxed">{children}</li>
   ),
 
-  // Liens
+  // Liens — confirmation avant redirection
   a: ({ href, children }) => (
     <a
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+      onClick={(e) => { e.preventDefault(); if (href) openExternalLink(href); }}
+      className="text-blue-400 hover:text-blue-300 hover:underline transition-colors cursor-pointer"
     >
       {children}
     </a>

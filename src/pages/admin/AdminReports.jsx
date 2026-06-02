@@ -212,8 +212,8 @@ export default function AdminReports() {
                 }`}
                 onClick={() => { setSelected(r); setAdminNotes(r.admin_notes || ''); }}
               >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${STATUS_COLORS[r.status].split(' ')[0]}`}>
-                  <StatusIcon className={`w-4 h-4 ${STATUS_COLORS[r.status].split(' ')[2]}`} />
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${(STATUS_COLORS[r.status] || 'bg-muted').split(' ')[0]}`}>
+                  <StatusIcon className={`w-4 h-4 ${(STATUS_COLORS[r.status] || 'text-muted-foreground').split(' ')[2]}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-2">

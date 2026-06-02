@@ -46,11 +46,19 @@ export default function AdminQuotes() {
     queryFn: () => base44.entities.Service.list('order'),
   });
 
+  const logAction = async (action, entityId, changes) => {
+    try {
+      await base44.functions.invoke('logAuditAction', { action, entity_type: 'Quote', entity_id: entityId, changes });
+    } catch (e) {
+      console.error('Audit log error:', e);
+    }
+  };
+
   const updateQ = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Quote.update(id, data),
     onSuccess: (_, { id, data }) => { 
       qc.invalidateQueries({ queryKey: ['adm-quotes-list'] });
-      base44.entities.AuditLog.create({ user_email: user?.email, user_name: user?.full_name, action: 'update', entity_type: 'Quote', entity_id: id, changes: data, status: 'success' }).catch(() => {});
+      logAction('update', id, data);
       setSelected(null);
       toast.success('✓ Devis mis à jour'); 
     },
@@ -61,7 +69,7 @@ export default function AdminQuotes() {
     mutationFn: (id) => base44.entities.Quote.delete(id),
     onSuccess: (_, id) => {
       qc.invalidateQueries({ queryKey: ['adm-quotes-list'] });
-      base44.entities.AuditLog.create({ user_email: user?.email, user_name: user?.full_name, action: 'delete', entity_type: 'Quote', entity_id: id, status: 'success' }).catch(() => {});
+      logAction('delete', id, {});
       setSelected(null);
       toast.success('✓ Devis supprimé');
     },

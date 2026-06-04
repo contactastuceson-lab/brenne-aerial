@@ -84,6 +84,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
       const isOfficial = conv.messages.some(m => m.is_official);
       return {
         ...conv,
+        name: profile?.display_name || profile?.full_name || conv.name,
         avatar: isOfficial ? null : profile?.avatar_url,
         cover_url: profile?.cover_url,
         bio: profile?.bio,

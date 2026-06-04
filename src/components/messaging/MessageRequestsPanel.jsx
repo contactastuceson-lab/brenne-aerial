@@ -26,6 +26,20 @@ export default function MessageRequestsPanel({ user, onSelectConv }) {
     refetchInterval: 5000,
   });
 
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['public-users-conv'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getPublicUsers', {});
+      return Array.isArray(res.data) ? res.data : [];
+    },
+    enabled: !!user.email,
+  });
+
+  const getDisplayName = (email, fallback) => {
+    const profile = allUsers.find(u => u.email === email);
+    return profile?.display_name || profile?.full_name || fallback;
+  };
+
   const accept = useMutation({
     mutationFn: async (req) => {
       await base44.entities.ChatMessage.update(req.id, { request_status: 'accepted' });
@@ -79,11 +93,11 @@ export default function MessageRequestsPanel({ user, onSelectConv }) {
           <div className="flex items-start gap-3 mb-2">
             <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
               <span className="font-grotesk font-bold text-sm text-primary">
-                {req.sender_name?.[0]?.toUpperCase() || '?'}
+                {getDisplayName(req.sender_email, req.sender_name)?.[0]?.toUpperCase() || '?'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-inter font-medium text-sm">{req.sender_name}</p>
+              <p className="font-inter font-medium text-sm">{getDisplayName(req.sender_email, req.sender_name)}</p>
               <p className="font-mono text-[9px] text-muted-foreground">
                 {req.created_date ? format(new Date(req.created_date), 'd MMM · HH:mm', { locale: fr }) : ''}
               </p>
@@ -102,7 +116,7 @@ export default function MessageRequestsPanel({ user, onSelectConv }) {
                 accept.mutate(req);
                 onSelectConv({
                   email: req.sender_email,
-                  name: req.sender_name,
+                  name: getDisplayName(req.sender_email, req.sender_name),
                   convId: req.conversation_id,
                 });
               }}

@@ -1,11 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   MessageCircle, Search, Lock, Eye, Trash2, Clock,
-  CheckCircle, XCircle, ChevronLeft, Copy, MessageSquare
+  CheckCircle, XCircle, ChevronLeft, Copy, MessageSquare, ShieldCheck, Send
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -23,6 +24,8 @@ export default function AdminConversations() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedConv, setSelectedConv] = useState(null);
+  const [adminMsg, setAdminMsg] = useState('');
+  const bottomRef = useRef(null);
   const queryClient = useQueryClient();
 
   const { data: allMessages = [], isLoading } = useQuery({
@@ -44,6 +47,33 @@ export default function AdminConversations() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-all-messages'] });
       toast.success('Message supprimé');
+    },
+  });
+
+  // Send admin/official message into a conversation
+  const sendAdminMessage = useMutation({
+    mutationFn: async ({ convId, participantList, participantNames }) => {
+      // We need a sender_email and recipient_email — use the two participants
+      const [emailA, emailB] = participantList;
+      // Send the message to BOTH participants so they both see it
+      await base44.entities.ChatMessage.create({
+        conversation_id: convId,
+        sender_email: 'admin@brenneaerial.fr',
+        sender_name: 'Administrateur',
+        sender_avatar: '',
+        recipient_email: emailA,
+        recipient_name: participantNames[emailA] || emailA,
+        content: adminMsg.trim(),
+        is_request: false,
+        request_status: 'accepted',
+        is_read: false,
+        is_official: true,
+      });
+    },
+    onSuccess: () => {
+      setAdminMsg('');
+      queryClient.invalidateQueries({ queryKey: ['admin-all-messages'] });
+      toast.success('Message officiel envoyé');
     },
   });
 
@@ -197,20 +227,31 @@ export default function AdminConversations() {
             <span className="font-grotesk font-semibold text-sm">Messages</span>
             <span className="font-mono text-xs text-muted-foreground">{convMessages.length} messages</span>
           </div>
-          <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
+          <div className="p-4 space-y-3 max-h-[50vh] overflow-y-auto">
             {convMessages.map(msg => {
+              const isOfficial = msg.is_official;
               const isFirst = msg.sender_email === personA;
               return (
-                <div key={msg.id} className={`flex group ${isFirst ? 'justify-start' : 'justify-end'}`}>
-                  <div className={`max-w-[75%] flex flex-col gap-0.5 ${isFirst ? 'items-start' : 'items-end'}`}>
-                    <p className="font-mono text-[9px] text-muted-foreground px-1">
-                      {selectedConv.participantNames[msg.sender_email] || msg.sender_email}
+                <div key={msg.id} className={`flex group ${isOfficial ? 'justify-center' : isFirst ? 'justify-start' : 'justify-end'}`}>
+                  <div className={`flex flex-col gap-0.5 ${isOfficial ? 'items-center w-full max-w-[90%]' : 'max-w-[75%]'} ${!isOfficial && (isFirst ? 'items-start' : 'items-end')}`}>
+                    <p className="font-mono text-[9px] text-muted-foreground px-1 flex items-center gap-1">
+                      {isOfficial && <ShieldCheck className="w-2.5 h-2.5 text-primary" />}
+                      {isOfficial ? 'Administrateur · Message officiel' : (selectedConv.participantNames[msg.sender_email] || msg.sender_email)}
                     </p>
-                    <div className={`relative px-3 py-2 rounded-xl font-inter text-sm ${
-                      isFirst
-                        ? 'bg-secondary border border-border rounded-tl-sm'
-                        : 'bg-primary/20 border border-primary/30 rounded-tr-sm'
-                    }`}>
+                    <div className={`relative px-3 py-2 rounded-xl font-inter text-sm w-full ${
+                      isOfficial
+                        ? 'rounded-lg text-center'
+                        : isFirst
+                          ? 'bg-secondary border border-border rounded-tl-sm'
+                          : 'bg-primary/20 border border-primary/30 rounded-tr-sm'
+                    }`}
+                      style={isOfficial ? {
+                        background: 'linear-gradient(135deg, hsl(205 90% 12%), hsl(205 80% 9%))',
+                        border: '1px solid rgba(56,170,220,0.35)',
+                        color: 'hsl(210 20% 94%)',
+                        boxShadow: '0 2px 12px rgba(56,170,220,0.1)',
+                      } : {}}
+                    >
                       {msg.is_request && (
                         <span className="font-mono text-[9px] text-yellow-400/80 flex items-center gap-1 mb-1">
                           <Lock className="w-2.5 h-2.5" />
@@ -237,6 +278,34 @@ export default function AdminConversations() {
             {convMessages.length === 0 && (
               <p className="text-center font-inter text-sm text-muted-foreground py-8">Aucun message</p>
             )}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Admin message input */}
+          <div className="border-t border-border p-4"
+            style={{ background: 'linear-gradient(180deg, hsl(205 90% 5%) 0%, hsl(214 50% 5%) 100%)', borderTop: '1px solid rgba(56,170,220,0.2)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+              <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-primary/80">Message officiel · visible par les deux participants</span>
+            </div>
+            <div className="flex gap-2">
+              <Textarea
+                value={adminMsg}
+                onChange={e => setAdminMsg(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (adminMsg.trim()) sendAdminMessage.mutate(selectedConv); } }}
+                placeholder="Écrire un message en tant qu'Administrateur..."
+                className="bg-secondary/50 border-primary/20 font-inter text-sm resize-none min-h-[60px]"
+                style={{ borderColor: 'rgba(56,170,220,0.25)' }}
+              />
+              <Button
+                onClick={() => sendAdminMessage.mutate(selectedConv)}
+                disabled={!adminMsg.trim() || sendAdminMessage.isPending}
+                className="self-end flex-shrink-0 px-4 gap-1.5"
+              >
+                <Send className="w-4 h-4" />
+                Envoyer
+              </Button>
+            </div>
           </div>
         </div>
       </div>

@@ -38,6 +38,7 @@ export default function MessageThread({ user, conv, onBack }) {
 
   const [showUnblockConfirm, setShowUnblockConfirm] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showBlockedAdminModal, setShowBlockedAdminModal] = useState(false);
   const convId = conv.convId || getConversationId(user.email, conv.email);
 
   useEffect(() => {
@@ -76,9 +77,11 @@ export default function MessageThread({ user, conv, onBack }) {
     return () => document.removeEventListener('mousedown', handler);
   }, [msgMenu]);
 
-  // Official / protected team members cannot be blocked
-  const PROTECTED_BADGES = ['Officiel'];
-  const isProtectedTeamMember = conv.role === 'admin' || conv.badges?.some(b => PROTECTED_BADGES.includes(b));
+  // Admins cannot be blocked
+  const isConvAdmin = conv.role === 'admin' || conv.role === 'owner' || conv.role === 'pdg_adjoint';
+  const isProtectedTeamMember = isConvAdmin || conv.badges?.some(b => b === 'Officiel');
+  // Current user is admin
+  const isCurrentUserAdmin = user.role === 'admin' || user.role === 'owner' || user.role === 'pdg_adjoint';
 
   // Block status
   const { data: myBlocks = [] } = useQuery({
@@ -258,6 +261,8 @@ export default function MessageThread({ user, conv, onBack }) {
 
   const handleSend = () => {
     if (!text.trim()) return;
+    // Admins bypass the request system — send directly
+    if (isCurrentUserAdmin) { sendMessage.mutate(); return; }
     if (!hasAnyRequest && !isOpen) sendRequest.mutate();
     else if (isOpen) sendMessage.mutate();
   };
@@ -394,15 +399,30 @@ export default function MessageThread({ user, conv, onBack }) {
                     <Trash2 className="w-4 h-4" />
                     Supprimer la conversation
                   </button>
+                  {/* Admin can cancel a pending conversation request */}
+                  {isCurrentUserAdmin && hasAnyRequest && !isOpen && (
+                    <button
+                      onClick={() => {
+                        declineRequest.mutate();
+                        setShowOptions(false);
+                      }}
+                      disabled={declineRequest.isPending}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-amber-400 hover:bg-amber-400/10 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                      Annuler la demande en attente
+                    </button>
+                  )}
                   {!isBlocked ? (
                     <button
                       onClick={() => {
-                        if (isProtectedTeamMember) {
-                          toast.error(`Impossible de bloquer un membre de l'équipe officielle (Admin, PDG, Collaborateur…)`);
+                        if (isConvAdmin) {
+                          setShowBlockedAdminModal(true);
                           setShowOptions(false);
                           return;
                         }
                         blockUser.mutate();
+                        setShowOptions(false);
                       }}
                       disabled={blockUser.isPending}
                       className="flex items-center gap-3 w-full px-4 py-2.5 font-inter text-sm text-destructive hover:bg-destructive/10 transition-colors"
@@ -572,28 +592,60 @@ export default function MessageThread({ user, conv, onBack }) {
             </Button>
           </div>
         ) : !isOpen && !hasAnyRequest ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-muted-foreground font-inter text-xs bg-secondary/50 rounded-lg px-3 py-2">
-              <Lock className="w-3 h-3 text-primary/60 flex-shrink-0" />
-              <span>Premier message = demande de contact. La personne devra l'accepter.</span>
-            </div>
+          isCurrentUserAdmin ? (
+            // Admins bypass the request system
             <div className="flex gap-2">
               <Input
                 value={text}
                 onChange={e => setText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSend()}
-                placeholder="Votre message de présentation..."
+                placeholder="Votre message..."
                 className="bg-secondary border-border font-inter text-sm"
               />
-              <Button onClick={handleSend} disabled={!text.trim() || sendRequest.isPending} className="bg-primary text-primary-foreground flex-shrink-0 px-4">
+              <Button onClick={handleSend} disabled={!text.trim() || sendMessage.isPending} className="bg-primary text-primary-foreground flex-shrink-0 px-4">
                 <Send className="w-4 h-4" />
               </Button>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-muted-foreground font-inter text-xs bg-secondary/50 rounded-lg px-3 py-2">
+                <Lock className="w-3 h-3 text-primary/60 flex-shrink-0" />
+                <span>Premier message = demande de contact. La personne devra l'accepter.</span>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={text}
+                  onChange={e => setText(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSend()}
+                  placeholder="Votre message de présentation..."
+                  className="bg-secondary border-border font-inter text-sm"
+                />
+                <Button onClick={handleSend} disabled={!text.trim() || sendRequest.isPending} className="bg-primary text-primary-foreground flex-shrink-0 px-4">
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )
         ) : myPendingRequest && !isOpen ? (
-          <div className="text-center py-2 font-inter text-xs text-muted-foreground flex items-center justify-center gap-2">
-            <Clock className="w-3 h-3 text-amber-400" /> En attente d'acceptation...
-          </div>
+          isCurrentUserAdmin ? (
+            // Admins can still write even if a request is pending
+            <div className="flex gap-2">
+              <Input
+                value={text}
+                onChange={e => setText(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSend()}
+                placeholder="Votre message..."
+                className="bg-secondary border-border font-inter text-sm"
+              />
+              <Button onClick={handleSend} disabled={!text.trim() || sendMessage.isPending} className="bg-primary text-primary-foreground flex-shrink-0 px-4">
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center py-2 font-inter text-xs text-muted-foreground flex items-center justify-center gap-2">
+              <Clock className="w-3 h-3 text-amber-400" /> En attente d'acceptation...
+            </div>
+          )
         ) : isOpen ? (
           <div className="flex gap-2">
             <Input
@@ -709,6 +761,39 @@ export default function MessageThread({ user, conv, onBack }) {
           onClose={() => setShowProfile(false)}
         />
       )}
+
+      {/* ── Popup: impossible de bloquer un admin ── */}
+      <AnimatePresence>
+        {showBlockedAdminModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+            >
+              <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
+                <ShieldCheck className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-grotesk font-bold text-base text-center mb-2">Action impossible</h3>
+              <p className="font-inter text-sm text-muted-foreground text-center mb-6">
+                Vous ne pouvez pas bloquer <span className="font-semibold text-foreground">{conv.name}</span> car cette personne est membre de l'équipe administrative de la plateforme.
+              </p>
+              <Button
+                className="w-full bg-primary text-primary-foreground"
+                onClick={() => setShowBlockedAdminModal(false)}
+              >
+                Compris
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {reportMsg && (
         <ReportModal

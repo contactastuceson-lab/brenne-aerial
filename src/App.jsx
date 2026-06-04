@@ -158,6 +158,8 @@ const AuthenticatedApp = () => {
         <Route path="/forum" element={<ForumPage />} />
         <Route path="/forum/:id" element={<DiscussionDetailPage />} />
         {/* Profile catch-all route for /@username - must be last in public routes */}
+        <Route path="/login" element={<Navigate to="/" replace />} />
+        <Route path="/register" element={<Navigate to="/" replace />} />
         <Route path="/:pathUsername" element={<PublicProfilePage />} />
       </Route>
 

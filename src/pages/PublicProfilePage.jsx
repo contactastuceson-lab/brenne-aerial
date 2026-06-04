@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProfileNotFound from '@/components/profile/ProfileNotFound';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
@@ -209,14 +210,7 @@ export default function PublicProfilePage() {
   }
 
   if (notFound || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center pt-20">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Profil non trouvé</h1>
-          <p className="text-muted-foreground">L'utilisateur {username?.toLowerCase()} n'existe pas</p>
-        </div>
-      </div>
-    );
+    return <ProfileNotFound username={username} />;
   }
 
   const isSupreme = user?.verifications?.includes('supreme');

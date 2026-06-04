@@ -24,18 +24,47 @@ Deno.serve(async (req) => {
     // Gérer les événements de paiement
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-
-      // Récupérer les métadonnées du paiement
       const metadata = session.metadata || {};
+      const paymentType = metadata.payment_type; // 'donation' ou 'certification'
+
+      // ── Certification payment ──
+      if (paymentType === 'certification') {
+        const userEmail = metadata.userEmail || session.customer_email;
+        if (userEmail) {
+          const requests = await base44.asServiceRole.entities.CertificationRequest.filter(
+            { user_email: userEmail },
+            '-created_date',
+            1
+          );
+          if (requests.length > 0 && requests[0].payment_status !== 'completed') {
+            await base44.asServiceRole.entities.CertificationRequest.update(requests[0].id, {
+              payment_status: 'completed',
+              stripe_session_id: session.id,
+            });
+            // Send confirmation email
+            try {
+              await base44.asServiceRole.integrations.Core.SendEmail({
+                to: userEmail,
+                subject: '✓ Paiement reçu - Certification Brenne Aerial',
+                body: `<p>Bonjour ${metadata.userName || ''},</p><p>Votre paiement pour la certification Brenne Aerial a bien été reçu. Notre équipe examinera votre dossier sous 5 jours ouvrables.</p><p>Cordialement,<br>L'équipe Brenne Aerial</p>`,
+              });
+            } catch (e) {
+              console.error('Email error:', e.message);
+            }
+          }
+        }
+        return Response.json({ success: true });
+      }
+
+      // ── Donation payment ──
       const donorEmail = metadata.donor_email || session.customer_email;
       const donorName = metadata.donor_name || 'Anonyme';
-      const amount = session.amount_total / 100; // Convertir en euros
+      const amount = session.amount_total / 100;
 
       if (!donorEmail) {
         return Response.json({ error: 'Missing donor email' }, { status: 400 });
       }
 
-      // Créer l'enregistrement Donation
       const existing = await base44.asServiceRole.entities.Donation.filter({
         stripe_session_id: session.id,
       });

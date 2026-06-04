@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
       cancel_url: `${Deno.env.get('APP_URL')}/profile?certification=cancelled`,
       customer_email: userEmail,
       metadata: {
+        payment_type: 'certification',
         userName: userName,
         userEmail: userEmail,
       },

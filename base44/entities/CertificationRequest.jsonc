@@ -39,6 +39,10 @@
       "default": "pending",
       "description": "Statut du paiement"
     },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "ID de la session Stripe"
+    },
     "admin_notes": {
       "type": "string",
       "description": "Notes de l'admin"

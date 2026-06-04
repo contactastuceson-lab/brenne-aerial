@@ -81,11 +81,11 @@ export default function AdminBadges() {
     toast.success(adding ? `${vt?.label} activé` : `${vt?.label} retiré`);
     if (adding) {
       base44.functions.invoke('sendBadgeAssignedEmail', {
-        userEmail: user.email,
-        userName: user.full_name,
-        badgeKey: key,
-        type: 'verification',
-      }).catch(() => {});
+          userEmail: user.email,
+          userName: user.display_name || user.full_name,
+          badgeKey: key,
+          type: 'verification',
+        }).catch(() => {});
     }
   };
 
@@ -98,7 +98,7 @@ export default function AdminBadges() {
     if (adding) {
       base44.functions.invoke('sendBadgeAssignedEmail', {
         userEmail: user.email,
-        userName: user.full_name,
+        userName: user.display_name || user.full_name,
         badgeLabel: badge,
         type: 'badge',
       }).catch(() => {});
@@ -106,7 +106,7 @@ export default function AdminBadges() {
   };
 
   const filtered = users
-    .filter(u => !search || u.full_name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()))
+    .filter(u => !search || (u.display_name || u.full_name)?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()))
     .filter(u => selectedBadge === 'all' || (selectedBadge === 'verified' ? u.verified_status === 'yes' : u.badges?.includes(selectedBadge)));
 
   return (
@@ -176,14 +176,14 @@ export default function AdminBadges() {
                   className="w-full text-left flex items-start gap-3"
                 >
                   {/* Avatar */}
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {u.avatar_url ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" /> : <span className="font-grotesk font-bold text-primary text-sm">{u.full_name?.[0] || 'U'}</span>}
-                  </div>
+                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                     {u.avatar_url ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" /> : <span className="font-grotesk font-bold text-primary text-sm">{(u.display_name || u.full_name)?.[0] || 'U'}</span>}
+                   </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-inter text-sm font-medium truncate">{u.full_name || '—'}</p>
+                      <p className="font-inter text-sm font-medium truncate">{u.display_name || u.full_name || '—'}</p>
                       {u.verified_status === 'yes' && <CheckCircle className="w-3 h-3 text-accent flex-shrink-0" />}
                     </div>
                     <p className="font-mono text-xs text-muted-foreground truncate">{u.email}</p>

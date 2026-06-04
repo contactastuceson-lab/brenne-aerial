@@ -163,9 +163,9 @@ export default function AdminCertifications() {
                 onClick={() => { setSelectedRequest(r); setAdminNotes(r.admin_notes || ''); }}>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex-1 min-w-0">
-                    <p className="font-grotesk font-bold text-xs lg:text-sm text-foreground">{r.user_name}</p>
-                    <p className="font-mono text-[10px] text-muted-foreground truncate">{r.user_email}</p>
-                  </div>
+                     <p className="font-grotesk font-bold text-xs lg:text-sm text-foreground">{r.display_name || r.user_name}</p>
+                     <p className="font-mono text-[10px] text-muted-foreground truncate">{r.user_email}</p>
+                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] lg:text-xs font-semibold border ${
                       r.status === 'pending' ? 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30' :
@@ -214,13 +214,13 @@ export default function AdminCertifications() {
             {/* Header */}
             <div className="flex items-center justify-between p-4 lg:p-5 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-                  <Award className="w-4 h-4 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="font-grotesk font-bold text-xs lg:text-base">Certification</h2>
-                  <p className="font-mono text-[10px] text-muted-foreground truncate">{selectedRequest.user_name}</p>
-                </div>
+               <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                 <Award className="w-4 h-4 text-primary" />
+               </div>
+               <div className="min-w-0">
+                 <h2 className="font-grotesk font-bold text-xs lg:text-base">Certification</h2>
+                 <p className="font-mono text-[10px] text-muted-foreground truncate">{selectedRequest.display_name || selectedRequest.user_name}</p>
+               </div>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] lg:text-xs font-semibold border ${
@@ -243,9 +243,9 @@ export default function AdminCertifications() {
               {/* Info grid */}
               <div className="grid grid-cols-2 gap-2 lg:gap-3">
                 <div className="bg-secondary/50 rounded-xl p-3 border border-border">
-                  <p className="font-mono text-[10px] text-muted-foreground mb-1">Utilisateur</p>
-                  <p className="font-grotesk font-semibold text-xs lg:text-sm">{selectedRequest.user_name}</p>
-                </div>
+                    <p className="font-mono text-[10px] text-muted-foreground mb-1">Utilisateur</p>
+                    <p className="font-grotesk font-semibold text-xs lg:text-sm">{selectedRequest.display_name || selectedRequest.user_name}</p>
+                  </div>
                 <div className="bg-secondary/50 rounded-xl p-3 border border-border">
                   <p className="font-mono text-[10px] text-muted-foreground mb-1">Paiement</p>
                   <span className={`inline-flex items-center gap-1 text-[10px] lg:text-xs font-semibold ${

@@ -172,7 +172,7 @@ export default function AdminUsers() {
 
   const exportCSV = () => {
     const rows = [['Nom', 'Email', 'Rôle', 'Statut', 'Badges', 'Téléphone', 'Localisation']];
-    filtered.forEach(u => rows.push([u.full_name || '', u.email || '', u.role || 'user', u.account_status || 'active', (u.badges || []).join(', '), u.phone || '', u.location || '']));
+    filtered.forEach(u => rows.push([u.display_name || u.full_name || '', u.email || '', u.role || 'user', u.account_status || 'active', (u.badges || []).join(', '), u.phone || '', u.location || '']));
     const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
     const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
     a.download = 'utilisateurs.csv'; a.click();
@@ -195,7 +195,7 @@ export default function AdminUsers() {
     .filter(u => filterStatus === 'all' || (u.account_status || 'active') === filterStatus)
     .filter(u => filterRole === 'all' || (u.role || 'user') === filterRole)
     .filter(u => filterBadge === 'all' || (u.badges || []).includes(filterBadge))
-    .filter(u => !search || u.full_name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()));
+    .filter(u => !search || (u.display_name || u.full_name)?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()));
 
   const reportCountForUser = (email) => reports.filter(r => r.target_email === email).length;
   const hasDeletionRequest = (email) => deletionRequests.some(r => r.user_email === email);
@@ -303,7 +303,7 @@ export default function AdminUsers() {
                   <div className="w-12 h-12 lg:w-10 lg:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {u.avatar_url
                       ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />
-                      : <span className="font-grotesk font-bold text-primary text-lg lg:text-base">{u.full_name?.[0] || 'U'}</span>
+                      : <span className="font-grotesk font-bold text-primary text-lg lg:text-base">{(u.display_name || u.full_name)?.[0] || 'U'}</span>
                     }
                   </div>
 
@@ -414,8 +414,8 @@ export default function AdminUsers() {
               </div>
             )}
             <p className="font-inter text-sm text-muted-foreground">
-              Supprimer définitivement <strong className="text-foreground">{deleteConfirm.full_name}</strong> ({deleteConfirm.email}) ? Cette action est irréversible.
-            </p>
+               Supprimer définitivement <strong className="text-foreground">{deleteConfirm.display_name || deleteConfirm.full_name}</strong> ({deleteConfirm.email}) ? Cette action est irréversible.
+             </p>
             {!hasDeletionRequest(deleteConfirm.email) && (
               <div>
                 <label className="font-inter text-xs text-muted-foreground mb-1 block">Raison de la suppression <span className="text-destructive">*</span></label>
@@ -433,7 +433,7 @@ export default function AdminUsers() {
                   className="border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10 text-xs gap-1.5 w-full"
                   onClick={() => {
                     const req = deletionRequests.find(r => r.user_email === deleteConfirm.email);
-                    if (req) refuseDeletion.mutate({ requestId: req.id, userEmail: deleteConfirm.email, userName: deleteConfirm.full_name });
+                    if (req) refuseDeletion.mutate({ requestId: req.id, userEmail: deleteConfirm.email, userName: deleteConfirm.display_name || deleteConfirm.full_name });
                   }}
                   disabled={refuseDeletion.isPending}>
                   {refuseDeletion.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : '❌'} Refuser la demande (et notifier l'utilisateur)
@@ -444,7 +444,7 @@ export default function AdminUsers() {
                   className="border-primary/40 text-primary hover:bg-primary/10 text-xs gap-1.5 w-full"
                   onClick={() => sendDeletionEmail.mutate({
                     userEmail: deleteConfirm.email,
-                    userName: deleteConfirm.full_name,
+                    userName: deleteConfirm.display_name || deleteConfirm.full_name,
                     reason: deleteReason,
                     hadRequest: hasDeletionRequest(deleteConfirm.email),
                   })}
@@ -460,11 +460,11 @@ export default function AdminUsers() {
               <div className="flex gap-2 justify-end">
                 <Button size="sm" variant="outline" className="border-border text-xs" onClick={() => setDeleteConfirm(null)}>Annuler</Button>
                 <Button size="sm" className="bg-destructive text-white hover:bg-destructive/90 text-xs gap-1.5"
-                  onClick={() => deleteUser.mutate({ userId: deleteConfirm.id, userEmail: deleteConfirm.email, userName: deleteConfirm.full_name, reason: deleteReason })}
-                  disabled={deleteUser.isPending || !emailSent}>
-                  {deleteUser.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
-                  Étape 2 — Supprimer définitivement
-                </Button>
+                  onClick={() => deleteUser.mutate({ userId: deleteConfirm.id, userEmail: deleteConfirm.email, userName: deleteConfirm.display_name || deleteConfirm.full_name, reason: deleteReason })}
+                   disabled={deleteUser.isPending || !emailSent}>
+                   {deleteUser.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                   Étape 2 — Supprimer définitivement
+                  </Button>
               </div>
             </div>
           </div>

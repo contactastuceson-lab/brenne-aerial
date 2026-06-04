@@ -131,7 +131,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
           <button
             key={conv.convId}
             onClick={() => onSelectConv(conv)}
-            className={`w-full text-left px-3 py-3 rounded-xl transition-all relative ${
+            className={`w-full text-left px-3 py-3.5 rounded-xl transition-all relative ${
               isSelected
                 ? 'bg-primary/15 border border-primary/30'
                 : hasUnread
@@ -142,59 +142,71 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
             <div className="flex items-center gap-3">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <div className={`w-11 h-11 rounded-full flex items-center justify-center overflow-hidden ${conv.isOfficial ? 'bg-primary/10 border-2 border-primary/40' : 'bg-secondary border border-border'}`}>
+                <div className={`w-13 h-13 rounded-full flex items-center justify-center overflow-hidden ${conv.isOfficial ? 'bg-primary/10 border-2 border-primary/40' : 'bg-secondary border-2 border-border'}`}
+                  style={{ width: 52, height: 52 }}>
                   {conv.isOfficial ? (
-                    <ShieldCheck className="w-5 h-5 text-primary" />
+                    <ShieldCheck className="w-6 h-6 text-primary" />
                   ) : conv.avatar ? (
                     <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="font-grotesk font-bold text-base text-primary">
+                    <span className="font-grotesk font-bold text-xl text-primary">
                       {conv.name?.[0]?.toUpperCase() || '?'}
                     </span>
                   )}
                 </div>
+                {/* Online dot */}
                 {!conv.isOfficial && conv.isOnline && (
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                  <span className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                 )}
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-0.5">
-                  <div className="flex items-center gap-1 min-w-0 flex-1">
-                    <span className={`font-inter text-sm truncate ${hasUnread ? 'font-semibold text-foreground' : 'font-medium text-foreground/90'}`}>
+                {/* Row 1 : name + time */}
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className={`font-grotesk text-sm truncate ${hasUnread ? 'font-bold text-foreground' : 'font-semibold text-foreground/90'}`}>
                       {conv.name}
                     </span>
                     <VerificationIcons verifications={conv.verifications} size="sm" />
-                    {conv.isOfficial ? (
-                      <span className="flex items-center gap-0.5 font-mono text-[9px] text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                    {conv.isOfficial && (
+                      <span className="flex items-center gap-0.5 font-mono text-[9px] text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-full flex-shrink-0 whitespace-nowrap">
                         <ShieldCheck className="w-2.5 h-2.5" /> Officiel
                       </span>
-                    ) : (
-                      <>
-                        {BadgeIcon && (
-                          <BadgeIcon className={`w-3 h-3 flex-shrink-0 ${badgeCfg.color}`} />
-                        )}
-                      </>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
-                    {conv.lastMsg?.created_date && (
-                      <span className={`font-mono text-[10px] ${hasUnread ? 'text-primary' : 'text-muted-foreground'}`}>
-                        {formatTime(conv.lastMsg.created_date)}
-                      </span>
-                    )}
-                  </div>
+                  <span className={`font-mono text-[10px] flex-shrink-0 ml-2 ${hasUnread ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                    {conv.lastMsg?.created_date ? formatTime(conv.lastMsg.created_date) : ''}
+                  </span>
                 </div>
+
+                {/* Row 2 : badges */}
+                {!conv.isOfficial && conv.badges?.length > 0 && (
+                  <div className="flex items-center gap-1 mb-1 flex-wrap">
+                    {conv.badges.slice(0, 3).map(badge => {
+                      const cfg = BADGE_ICONS[badge];
+                      if (!cfg) return null;
+                      const BIcon = cfg.icon;
+                      return (
+                        <span key={badge} className={`flex items-center gap-0.5 font-mono text-[9px] px-1.5 py-0.5 rounded-full border border-current/20 bg-current/5 ${cfg.color}`}>
+                          <BIcon className="w-2.5 h-2.5" />
+                          {badge}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Row 3 : last message + unread */}
                 <div className="flex items-center justify-between gap-2">
-                  <p className={`font-inter text-xs truncate flex-1 ${hasUnread ? 'text-foreground/80' : 'text-muted-foreground'}`}>
+                  <p className={`font-inter text-xs truncate flex-1 ${hasUnread ? 'text-foreground/80 font-medium' : 'text-muted-foreground'}`}>
                     {conv.lastMsg?.sender_email === user.email && (
                       <span className="text-muted-foreground/60">Vous : </span>
                     )}
                     {conv.lastMsg?.content}
                   </p>
                   {hasUnread && (
-                    <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground font-mono text-[10px] flex items-center justify-center flex-shrink-0 font-bold">
+                    <span className="min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground font-mono text-[10px] flex items-center justify-center flex-shrink-0 font-bold">
                       {conv.unread > 9 ? '9+' : conv.unread}
                     </span>
                   )}

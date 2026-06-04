@@ -53,10 +53,10 @@ export default function MessagesPage() {
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
-      <div className="flex flex-1 overflow-hidden max-w-6xl mx-auto w-full px-4 py-4 gap-4">
+      <div className="flex flex-1 overflow-hidden w-full px-4 py-4 gap-4 max-w-7xl mx-auto">
 
         {/* Left panel */}
-        <div className={`${selectedConv ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 flex-shrink-0`}>
+        <div className={`${selectedConv ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-96 flex-shrink-0`}>
           {/* Header */}
           <div className="mb-4">
             <div className="flex items-center gap-3 mb-4">

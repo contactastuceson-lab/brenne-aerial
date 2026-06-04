@@ -119,7 +119,7 @@ export default function Register() {
 
         {/* Logo */}
         <div className="relative z-10 flex items-center gap-4">
-          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3282a4fc9_5722.png" alt="Brenne Aerial Logo" className="w-28 h-28 object-contain" />
+          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3282a4fc9_5722.png" alt="Brenne Aerial Logo" className="w-28 h-28 object-contain rounded-2xl" />
           <div>
             <h1 className="font-grotesk font-bold text-2xl text-foreground tracking-tight">Brenne Aerial</h1>
             <p className="font-mono text-[10px] text-primary/60 tracking-widest uppercase mt-1">Premium Drone Services</p>
@@ -179,7 +179,7 @@ export default function Register() {
 
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-3 mb-8">
-          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3282a4fc9_5722.png" alt="Brenne Aerial Logo" className="w-16 h-16 object-contain" />
+          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3282a4fc9_5722.png" alt="Brenne Aerial Logo" className="w-16 h-16 object-contain rounded-xl" />
           <div>
             <h1 className="font-grotesk font-bold text-lg text-foreground">Brenne Aerial</h1>
             <p className="font-mono text-[9px] text-primary/60">Premium Drone Services</p>

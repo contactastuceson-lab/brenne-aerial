@@ -338,7 +338,7 @@ export default function CertificationRequest({ onClose, user }) {
     setLoading(true);
     const request = await base44.entities.CertificationRequest.create({
       user_email: user.email,
-      user_name: user.full_name,
+      user_name: user.display_name || user.full_name,
       status: 'pending',
       responses: { ...formData, badge_requested: selectedLevel.key },
       submitted_at: new Date().toISOString(),
@@ -353,7 +353,7 @@ export default function CertificationRequest({ onClose, user }) {
     setLoading(true);
     const response = await base44.functions.invoke('createCertificationPayment', {
       userEmail: user.email,
-      userName: user.full_name,
+      userName: user.display_name || user.full_name,
       amount: selectedLevel.price,
     });
     if (response.data?.url) window.location.href = response.data.url;

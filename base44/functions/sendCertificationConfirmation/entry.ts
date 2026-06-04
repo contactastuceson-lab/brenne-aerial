@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
       <p style="margin: 10px 0 0 0; opacity: 0.9;">Brenne Aerial</p>
     </div>
     <div class="content">
-      <h2 style="margin-top: 0;">Bonjour ${certRequest.user_name},</h2>
+      <h2 style="margin-top: 0;">Bonjour ${certRequest.display_name || certRequest.user_name},</h2>
       
       <div class="status-badge">
         ✓ DEMANDE ENREGISTRÉE
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
         </ol>
       </div>
 
-      <p>Des questions ? Contactez-nous à <strong>contact@brenne-aerial.fr</strong></p>
+      <p>Des questions ? Contactez-nous à <strong><a href="mailto:contact@brenneaerial.fr" style="color:#38aadc;">contact@brenneaerial.fr</a></strong> ou via notre <a href="https://support.brenneaerial.org/support" style="color:#38aadc;">support en ligne</a>.</p>
 
       <p style="margin-top: 30px; margin-bottom: 0;">Cordialement,<br><strong>L'équipe Brenne Aerial</strong></p>
     </div>

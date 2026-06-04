@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
   if (!user) return Response.json({ error: 'Non authentifié' }, { status: 401 });
 
   const userEmail = user.email;
-  const userName = user.full_name || 'cher client';
+  const userName = user.display_name || user.full_name || 'cher client';
 
   if (!userEmail) return Response.json({ error: 'Pas d\'email' }, { status: 400 });
 

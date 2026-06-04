@@ -44,7 +44,7 @@ const SOCIAL_PROVIDERS = [
 const FEATURES = [
   { icon: Shield, text: 'Données chiffrées et sécurisées' },
   { icon: Zap, text: 'Accès instantané à votre espace' },
-  { icon: Users, text: '+1 200 pilotes professionnels' },
+  { icon: Users, text: 'Pilotes certifiés et vérifiés' },
 ];
 
 const TESTIMONIALS = [

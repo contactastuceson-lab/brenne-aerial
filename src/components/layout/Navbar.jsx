@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Compass, MessageCircle, Bell, User, LogOut, LayoutDashboard, Menu, X, ChevronDown } from 'lucide-react';
+import { Bell, User, LogOut, LayoutDashboard, Menu, X, ChevronDown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
@@ -29,14 +29,33 @@ const TOOLS = [
 
 export default function Navbar() {
   const location = useLocation();
-  const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [notifsOpen, setNotifsOpen] = useState(false);
+  const toolsRef = useRef(null);
 
+  const { data: user = null } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 60000,
+    retry: false,
+  });
+
+  // Close dropdowns on route change
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
-  }, []);
+    setToolsOpen(false);
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Close tools dropdown on outside click
+  useEffect(() => {
+    if (!toolsOpen) return;
+    const handler = (e) => {
+      if (toolsRef.current && !toolsRef.current.contains(e.target)) setToolsOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [toolsOpen]);
 
   const { data: notifs = [] } = useQuery({
     queryKey: ['unread-notifs', user?.email],
@@ -77,7 +96,7 @@ export default function Navbar() {
             ))}
 
             {/* Tools Dropdown */}
-            <div className="relative">
+            <div className="relative" ref={toolsRef}>
               <button
                 onClick={() => setToolsOpen(!toolsOpen)}
                 className={`px-3 py-2 rounded-lg text-sm font-inter flex items-center gap-1.5 transition-colors ${
@@ -200,11 +219,13 @@ export default function Navbar() {
         </div>
 
         {/* Mobile menu */}
+        <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.15 }}
             className="md:hidden py-4 space-y-2 border-t border-border/60"
           >
             {NAV_LINKS.map(link => (
@@ -273,6 +294,7 @@ export default function Navbar() {
             )}
           </motion.div>
         )}
+        </AnimatePresence>
       </div>
     </nav>
   );

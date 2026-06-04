@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Compass, MessageCircle, MoreHorizontal, X, Bell, User, LogOut, LayoutDashboard, FolderOpen, Warehouse, Building2, Users, Shield, Building, ZoomIn, ArrowLeftRight, Calculator, Phone, Camera, BookOpen, MessageSquare, Scale, Lock, Heart, Zap } from 'lucide-react';
+import { Home, Compass, MessageCircle, MoreHorizontal, X, Bell, User, LogOut, LayoutDashboard, FolderOpen, Warehouse, Building2, Users, Shield, ZoomIn, Calculator, Phone, Camera, BookOpen, MessageSquare, Scale, Lock, Heart, Zap } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
@@ -35,12 +35,14 @@ const MORE_ITEMS = [
 
 export default function BottomTabBar() {
   const location = useLocation();
-  const [user, setUser] = useState(null);
   const [showMore, setShowMore] = useState(false);
 
-  useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
-  }, []);
+  const { data: user = null } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 60000,
+    retry: false,
+  });
 
   const { data: notifs = [] } = useQuery({
     queryKey: ['unread-notifs', user?.email],

@@ -78,6 +78,47 @@ export default function PublicProfilePage() {
   const [followingCount, setFollowingCount] = useState(0);
   const [badgeCounts, setBadgeCounts] = useState({});
 
+  // ── SEO meta tags dynamiques ──
+  useEffect(() => {
+    if (!user) return;
+    const displayName = user.display_name || user.full_name || user.username;
+    const handle = user.username ? `@${user.username}` : '';
+    const followerCount = followers.length;
+    const bio = user.bio ? user.bio.slice(0, 120) : '';
+    const badges = user.verifications?.length
+      ? user.verifications.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')
+      : '';
+
+    const title = `${displayName} (${handle}) · Brenne Aerial`;
+    const desc = [
+      `${displayName} ${handle} sur Brenne Aerial.`,
+      followerCount ? `${followerCount} abonné${followerCount > 1 ? 's' : ''}.` : '',
+      badges ? `${badges}.` : '',
+      bio,
+    ].filter(Boolean).join(' ').slice(0, 200);
+
+    const prevTitle = document.title;
+    document.title = title;
+
+    const setMeta = (sel, attr, val) => {
+      let el = document.querySelector(sel);
+      if (!el) { el = document.createElement('meta'); document.head.appendChild(el); }
+      el.setAttribute(attr, val);
+    };
+
+    setMeta('meta[name="description"]', 'content', desc);
+    setMeta('meta[property="og:title"]', 'content', title);
+    setMeta('meta[property="og:description"]', 'content', desc);
+    setMeta('meta[property="og:type"]', 'content', 'profile');
+    if (user.avatar_url) setMeta('meta[property="og:image"]', 'content', user.avatar_url);
+    setMeta('meta[name="twitter:card"]', 'content', 'summary');
+    setMeta('meta[name="twitter:title"]', 'content', title);
+    setMeta('meta[name="twitter:description"]', 'content', desc);
+    if (user.avatar_url) setMeta('meta[name="twitter:image"]', 'content', user.avatar_url);
+
+    return () => { document.title = prevTitle; };
+  }, [user, followers]);
+
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -178,8 +219,8 @@ export default function PublicProfilePage() {
     );
   }
 
-  const isSupreme = user.verifications?.includes('supreme');
-  const roleCfg = ROLE_CONFIG[user.role];
+  const isSupreme = user?.verifications?.includes('supreme');
+  const roleCfg = ROLE_CONFIG[user?.role];
 
   const statusColors = {
     active: 'text-green-400 bg-green-400/10 border-green-400/30',
@@ -239,7 +280,7 @@ export default function PublicProfilePage() {
     navigate(`/messages?to=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.display_name || user.full_name)}`);
   };
 
-  const memberSince = user.created_date
+  const memberSince = user?.created_date
     ? formatDistanceToNow(new Date(user.created_date), { addSuffix: true, locale: fr })
     : null;
 

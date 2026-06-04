@@ -119,8 +119,9 @@ export default function Footer() {
               <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
               Statut des services
             </Link>
-            <Link to="/legal/privacy" className="font-inter text-xs text-muted-foreground hover:text-primary transition-colors">Politique de confidentialité</Link>
+            <Link to="/legal/privacy" className="font-inter text-xs text-muted-foreground hover:text-primary transition-colors">Confidentialité</Link>
             <Link to="/legal/terms" className="font-inter text-xs text-muted-foreground hover:text-primary transition-colors">CGU</Link>
+            <Link to="/legal/cookies" className="font-inter text-xs text-muted-foreground hover:text-primary transition-colors">Cookies</Link>
           </div>
         </div>
       </div>

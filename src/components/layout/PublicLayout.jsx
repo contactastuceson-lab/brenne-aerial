@@ -23,7 +23,8 @@ export default function PublicLayout() {
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const hideFooter = true; // replaced by BottomTabBar
+  const noFooterPaths = ['/messages', '/discover', '/forum'];
+  const hideFooter = noFooterPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/'));
   const hiddenPaths = ['/messages', '/planning', '/forum'];
   const hideFloatingButton = hiddenPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/'));
 
@@ -136,6 +137,8 @@ export default function PublicLayout() {
         </>
       )}
       
+      {!hideFooter && <Footer />}
+
       {/* Mobile: BottomTabBar */}
       <div className="md:hidden">
         <BottomTabBar />

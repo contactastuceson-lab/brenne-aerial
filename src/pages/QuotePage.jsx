@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Check, Upload, Loader2, Calculator, Video, Building2, HardHat, Camera, Briefcase, Wifi, Sparkles, Home, LogIn } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Upload, Loader2, Calculator, Video, Building2, HardHat, Camera, Briefcase, Wifi, Sparkles, Home, LogIn, FileText, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,6 +51,8 @@ export default function QuotePage() {
   const [quotesEnabled, setQuotesEnabled] = useState(true);
   const [servicePrices, setServicePrices] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const [form, setForm] = useState({
     service_type: '', description: '', date_souhaitee: '', horaire: '',
@@ -135,6 +138,7 @@ export default function QuotePage() {
     if (step === 0) return !!form.service_type;
     if (step === 1) return !!form.description && !!form.duree_estimee;
     if (step === 2) return !!form.client_name && !!form.client_email;
+    if (step === 3) return termsAccepted;
     return true;
   };
 
@@ -386,6 +390,28 @@ export default function QuotePage() {
                 {uploadedFiles.length > 0 && (
                   <p className="font-mono text-xs text-muted-foreground">{uploadedFiles.length} fichier(s) joint(s)</p>
                 )}
+
+                {/* CGU */}
+                <div className={`rounded-xl border p-4 transition-all ${termsAccepted ? 'border-primary/40 bg-primary/5' : 'border-border bg-card'}`}>
+                  <label className="flex items-start gap-3 cursor-pointer select-none">
+                    <div
+                      onClick={() => setTermsAccepted(v => !v)}
+                      className={`mt-0.5 w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${termsAccepted ? 'bg-primary border-primary' : 'border-border bg-background'}`}
+                    >
+                      {termsAccepted && <Check className="w-3 h-3 text-primary-foreground" />}
+                    </div>
+                    <span className="font-inter text-sm text-foreground/80 leading-relaxed">
+                      J'accepte les{' '}
+                      <Link to="/legal/terms" target="_blank" className="text-primary underline hover:opacity-80 inline-flex items-center gap-0.5">
+                        <FileText className="w-3 h-3" /> Conditions d'utilisation
+                      </Link>{' '}
+                      et la{' '}
+                      <Link to="/legal/privacy" target="_blank" className="text-primary underline hover:opacity-80 inline-flex items-center gap-0.5">
+                        <Shield className="w-3 h-3" /> Politique de confidentialité
+                      </Link>
+                    </span>
+                  </label>
+                </div>
               </div>
             )}
           </motion.div>

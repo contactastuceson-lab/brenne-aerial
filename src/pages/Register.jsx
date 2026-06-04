@@ -118,20 +118,12 @@ export default function Register() {
         <div className="absolute top-0 right-0 w-[250px] h-[250px] rounded-full bg-accent/5 blur-[80px] pointer-events-none" />
 
         {/* Logo */}
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center">
-              <svg viewBox="0 0 32 32" className="w-5 h-5" fill="none">
-                <circle cx="16" cy="16" r="4" fill="hsl(205 90% 58%)" />
-                <line x1="16" y1="12" x2="16" y2="4" stroke="hsl(205 90% 58%)" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="16" y1="20" x2="16" y2="28" stroke="hsl(205 90% 58%)" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="12" y1="16" x2="4" y2="16" stroke="hsl(205 90% 58%)" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="20" y1="16" x2="28" y2="16" stroke="hsl(205 90% 58%)" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </div>
-            <span className="font-grotesk font-bold text-lg text-foreground tracking-tight">Brenne Aerial</span>
+        <div className="relative z-10 flex items-center gap-4">
+          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3282a4fc9_5722.png" alt="Brenne Aerial Logo" className="w-28 h-28 object-contain" />
+          <div>
+            <h1 className="font-grotesk font-bold text-2xl text-foreground tracking-tight">Brenne Aerial</h1>
+            <p className="font-mono text-[10px] text-primary/60 tracking-widest uppercase mt-1">Premium Drone Services</p>
           </div>
-          <span className="font-mono text-[10px] text-primary/60 tracking-widest uppercase">Inscription gratuite</span>
         </div>
 
         {/* Hero */}
@@ -186,17 +178,12 @@ export default function Register() {
         <div className="absolute inset-0 grid-bg opacity-10 pointer-events-none" />
 
         {/* Mobile logo */}
-        <div className="lg:hidden flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <svg viewBox="0 0 32 32" className="w-4 h-4" fill="none">
-              <circle cx="16" cy="16" r="4" fill="hsl(205 90% 58%)" />
-              <line x1="16" y1="12" x2="16" y2="4" stroke="hsl(205 90% 58%)" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="16" y1="20" x2="16" y2="28" stroke="hsl(205 90% 58%)" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="12" y1="16" x2="4" y2="16" stroke="hsl(205 90% 58%)" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="20" y1="16" x2="28" y2="16" stroke="hsl(205 90% 58%)" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+        <div className="lg:hidden flex items-center gap-3 mb-8">
+          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3282a4fc9_5722.png" alt="Brenne Aerial Logo" className="w-16 h-16 object-contain" />
+          <div>
+            <h1 className="font-grotesk font-bold text-lg text-foreground">Brenne Aerial</h1>
+            <p className="font-mono text-[9px] text-primary/60">Premium Drone Services</p>
           </div>
-          <span className="font-grotesk font-bold text-foreground">Brenne Aerial</span>
         </div>
 
         <div className="relative z-10 w-full max-w-md mx-auto">

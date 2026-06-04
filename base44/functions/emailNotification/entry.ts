@@ -303,6 +303,16 @@ Deno.serve(async (req) => {
       return Response.json({ skipped: 'new_messages_disabled' });
     }
 
+    // Si le destinataire est actif récemment (dans les 3 min), il est probablement
+    // en train de lire la conversation en temps réel → pas besoin d'email
+    if (!isOfficial && recipientUser?.last_seen) {
+      const lastSeen = new Date(recipientUser.last_seen);
+      const minutesSinceActive = (Date.now() - lastSeen.getTime()) / 1000 / 60;
+      if (minutesSinceActive < 3) {
+        return Response.json({ skipped: 'recipient_is_online' });
+      }
+    }
+
     const recipientIsSupreme = isSupreme(recipientUser);
 
     let subject, body;

@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
-import { Camera, ChevronRight, ChevronLeft, Check, Plane, MapPin, Phone, User, Sparkles } from 'lucide-react';
+import { Camera, ChevronRight, ChevronLeft, Check, Plane, MapPin, Phone, User, Sparkles, FileText, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const PROJECT_TYPES = ['Événement (mariage, concert...)', 'Inspection (toiture, bâtiment)', 'Suivi de chantier', 'Immobilier / promotion', 'Communication entreprise', 'Photographie aérienne', 'Autre'];
 const SECTORS = ['Particulier', 'Artisan / TPE', 'PME / Entreprise', 'Collectivité / Mairie', 'Association', 'Promoteur immobilier', 'Autre'];
@@ -34,6 +35,7 @@ export default function OnboardingModal({ user, onComplete }) {
     how_found: '',
   });
   const [usernameError, setUsernameError] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const set = (key, val) => setForm(p => ({ ...p, [key]: val }));
   const toggleProjectType = (i) => set('project_types', form.project_types.includes(i) ? form.project_types.filter(x => x !== i) : [...form.project_types, i]);
@@ -95,7 +97,7 @@ export default function OnboardingModal({ user, onComplete }) {
   };
 
   const canNext = () => {
-    if (step === 0) return true;
+    if (step === 0) return termsAccepted;
     if (step === 1) return true; // avatar + bio optional
     if (step === 2) return true; // phone optional
     if (step === 3) return true;
@@ -139,15 +141,40 @@ export default function OnboardingModal({ user, onComplete }) {
               <h2 className="font-grotesk font-bold text-2xl mb-1">{STEPS[step].title}</h2>
               <p className="font-inter text-sm text-muted-foreground mb-6">{STEPS[step].subtitle}</p>
 
-              {/* STEP 0 — Welcome */}
+              {/* STEP 0 — Welcome + CGU */}
               {step === 0 && (
-                <div className="text-center py-4 space-y-4">
+                <div className="text-center py-2 space-y-5">
                   <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto">
                     <Plane className="w-10 h-10 text-primary" />
                   </div>
                   <p className="font-inter text-sm text-muted-foreground max-w-xs mx-auto">
                     Bienvenue sur <strong className="text-foreground">Brenne Aerial</strong> ! Prenez 1 minute pour compléter votre profil et rejoindre la communauté.
                   </p>
+                  {/* CGU acceptance */}
+                  <div className={`text-left rounded-xl border p-4 transition-all ${termsAccepted ? 'border-primary/40 bg-primary/5' : 'border-border bg-secondary/40'}`}>
+                    <label className="flex items-start gap-3 cursor-pointer select-none">
+                      <div
+                        onClick={() => setTermsAccepted(v => !v)}
+                        className={`mt-0.5 w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${termsAccepted ? 'bg-primary border-primary' : 'border-border bg-background'}`}
+                      >
+                        {termsAccepted && <Check className="w-3 h-3 text-primary-foreground" />}
+                      </div>
+                      <span className="font-inter text-sm text-foreground/80 leading-relaxed">
+                        J'accepte les{' '}
+                        <Link to="/legal/terms" target="_blank" className="text-primary underline hover:opacity-80 inline-flex items-center gap-0.5">
+                          <FileText className="w-3 h-3" /> Conditions d'utilisation
+                        </Link>{' '}
+                        et la{' '}
+                        <Link to="/legal/privacy" target="_blank" className="text-primary underline hover:opacity-80 inline-flex items-center gap-0.5">
+                          <Shield className="w-3 h-3" /> Politique de confidentialité
+                        </Link>{' '}
+                        de Brenne Aerial.
+                      </span>
+                    </label>
+                  </div>
+                  {!termsAccepted && (
+                    <p className="font-inter text-xs text-muted-foreground">Vous devez accepter les conditions pour continuer.</p>
+                  )}
                 </div>
               )}
 

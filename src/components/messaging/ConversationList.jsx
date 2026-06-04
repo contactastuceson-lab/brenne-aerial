@@ -55,8 +55,11 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
   }, [user.email, refetchMessages]);
 
   const { data: allUsers = [] } = useQuery({
-    queryKey: ['all-users-conv'],
-    queryFn: () => base44.entities.User.list(),
+    queryKey: ['public-users-conv'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getPublicUsers', {});
+      return Array.isArray(res.data) ? res.data : [];
+    },
     enabled: !!user.email,
   });
 

@@ -55,8 +55,8 @@ export default function CookieBanner() {
             <p className="font-inter text-xs text-muted-foreground leading-relaxed mb-3">
               On utilise des cookies pour améliorer votre expérience. Consultez notre{' '}
               <Link to="/legal/privacy" target="_blank" className="text-primary underline hover:opacity-80">
-                politique de confidentialité
-              </Link>.
+                politique de confidentialité</Link>{' '}et notre{' '}
+              <Link to="/legal/cookies" target="_blank" className="text-primary underline hover:opacity-80">politique des cookies</Link>.
             </p>
 
             {showDetails && (

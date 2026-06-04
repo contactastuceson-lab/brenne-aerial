@@ -29,6 +29,7 @@ import DiscoverPage from "@/pages/DiscoverPage";
 import MessagesPage from "@/pages/MessagesPage";
 import PrivacyPage from "@/pages/legal/PrivacyPage";
 import TermsPage from "@/pages/legal/TermsPage";
+import CookiePage from "@/pages/legal/CookiePage";
 
 // Admin pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -142,6 +143,7 @@ const AuthenticatedApp = () => {
         <Route path="/account-deletion" element={<AccountDeletionPage />} />
         <Route path="/legal/privacy" element={<PrivacyPage />} />
         <Route path="/legal/terms" element={<TermsPage />} />
+        <Route path="/legal/cookies" element={<CookiePage />} />
         <Route path="/garage" element={<GaragePage />} />
         <Route path="/calculateur" element={<QuoteCalculatorPage />} />
         <Route path="/reglementation" element={<ReglementationPage />} />

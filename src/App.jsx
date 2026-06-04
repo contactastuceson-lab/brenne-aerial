@@ -5,6 +5,8 @@ import { queryClientInstance } from "@/lib/query-client";
 import { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import PageNotFound from "./lib/PageNotFound";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -121,6 +123,10 @@ const AuthenticatedApp = () => {
       <PreferencesApplier user={user} />
       
       <Routes>
+      {/* Auth pages (outside PublicLayout) */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
       {/* Public */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
@@ -158,8 +164,6 @@ const AuthenticatedApp = () => {
         <Route path="/forum" element={<ForumPage />} />
         <Route path="/forum/:id" element={<DiscussionDetailPage />} />
         {/* Profile catch-all route for /@username - must be last in public routes */}
-        <Route path="/login" element={<Navigate to="/" replace />} />
-        <Route path="/register" element={<Navigate to="/" replace />} />
         <Route path="/:pathUsername" element={<PublicProfilePage />} />
       </Route>
 

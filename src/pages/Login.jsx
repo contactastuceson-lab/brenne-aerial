@@ -48,7 +48,7 @@ const FEATURES = [
 ];
 
 const TESTIMONIALS = [
-  { name: 'Marc D.', role: 'Pilote certifié', text: 'Brenne Aerial a transformé ma façon de gérer mes missions. Interface top !' },
+  { name: 'Enor Lefoulon Meyer', role: 'Fondateur Brenne Aerial', text: 'Une plateforme pensée par les pilotes, pour les pilotes. Efficace, intuitive, indispensable.' },
   { name: 'Sophie L.', role: 'Inspectrice toiture', text: 'Devis en quelques clics, planning clair. Indispensable.' },
 ];
 

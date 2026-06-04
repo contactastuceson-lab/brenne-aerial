@@ -10,6 +10,7 @@ import AnnouncementBanner from '@/components/shared/AnnouncementBanner';
 import AnnouncementPopup from '@/components/shared/AnnouncementPopup';
 import DonationFloatingButton from '@/components/DonationFloatingButton';
 import UpdatesFloatingButton from '@/components/shared/UpdatesFloatingButton';
+import CookieBanner from '@/components/shared/CookieBanner';
 
 import MaintenancePage from '@/pages/MaintenancePage';
 import SiteOfflinePage from '@/pages/SiteOfflinePage';
@@ -139,6 +140,8 @@ export default function PublicLayout() {
       <div className="md:hidden">
         <BottomTabBar />
       </div>
+
+      <CookieBanner />
     </div>
   );
 }

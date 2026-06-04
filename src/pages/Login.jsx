@@ -155,7 +155,7 @@ export default function Login() {
 
         {/* Bottom stats */}
         <div className="relative z-10 grid grid-cols-3 gap-4">
-          {[['1 200+', 'Pilotes inscrits'], ['98 %', 'Satisfaction client'], ['24 h', 'Support réactif']].map(([val, label]) => (
+          {[['2026', 'Fondé cette année'], ['100 %', 'Pilotes certifiés'], ['< 24 h', 'Réponse devis']].map(([val, label]) => (
             <div key={label} className="text-center">
               <p className="font-grotesk font-bold text-xl text-primary">{val}</p>
               <p className="font-inter text-xs text-muted-foreground mt-0.5">{label}</p>

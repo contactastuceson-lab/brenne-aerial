@@ -28,6 +28,7 @@ export default function MessageThread({ user, conv, onBack }) {
   const [reportMsg, setReportMsg] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
   const [msgMenu, setMsgMenu] = useState(null); // { id, x, y }
+  const [isOtherOnline, setIsOtherOnline] = useState(conv.isOnline || false);
   const bottomRef = useRef(null);
   const scrollAreaRef = useRef(null);
   const optionsRef = useRef(null);
@@ -43,6 +44,25 @@ export default function MessageThread({ user, conv, onBack }) {
     isInitialLoad.current = true;
     prevCountRef.current = 0;
   }, [convId]);
+
+  // Poll other user's online status every 10s
+  useEffect(() => {
+    if (!conv.email) return;
+    const checkOnline = async () => {
+      const res = await base44.functions.invoke('getPublicUsers', {});
+      const users = Array.isArray(res.data) ? res.data : [];
+      const other = users.find(u => u.email === conv.email);
+      if (other?.last_seen) {
+        const diff = (Date.now() - new Date(other.last_seen).getTime()) / 1000;
+        setIsOtherOnline(diff < 20);
+      } else {
+        setIsOtherOnline(false);
+      }
+    };
+    checkOnline();
+    const iv = setInterval(checkOnline, 10000);
+    return () => clearInterval(iv);
+  }, [conv.email]);
 
   // Close menus on outside click
   useEffect(() => {
@@ -299,12 +319,17 @@ export default function MessageThread({ user, conv, onBack }) {
             <ArrowLeft className="w-4 h-4" />
           </button>
 
-          <div className="w-10 h-10 rounded-full bg-secondary border border-border hover:ring-2 hover:ring-primary/40 cursor-pointer transition-all flex items-center justify-center overflow-hidden flex-shrink-0"
-            onClick={() => conv.username ? navigate(`/@${conv.username}`) : setShowProfile(true)}>
-            {conv.avatar ? (
-              <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span className="font-grotesk font-bold text-sm text-primary">{conv.name?.[0]?.toUpperCase() || '?'}</span>
+          <div className="relative flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-secondary border border-border hover:ring-2 hover:ring-primary/40 cursor-pointer transition-all flex items-center justify-center overflow-hidden"
+              onClick={() => conv.username ? navigate(`/@${conv.username}`) : setShowProfile(true)}>
+              {conv.avatar ? (
+                <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-grotesk font-bold text-sm text-primary">{conv.name?.[0]?.toUpperCase() || '?'}</span>
+              )}
+            </div>
+            {isOtherOnline && (
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
             )}
           </div>
 
@@ -314,11 +339,15 @@ export default function MessageThread({ user, conv, onBack }) {
               <VerificationIcons verifications={conv.verifications} />
               {conv.badges?.slice(0, 2).map(b => <BadgeChip key={b} badge={b} size="sm" />)}
             </div>
-            {!isOpen && hasAnyRequest && myPendingRequest && (
-              <p className="font-mono text-[10px] text-amber-400/80 flex items-center gap-1 mt-0.5">
-                <Clock className="w-2.5 h-2.5" /> En attente de réponse
-              </p>
-            )}
+            <p className="font-mono text-[10px] mt-0.5">
+              {isOtherOnline ? (
+                <span className="text-green-400">● En ligne</span>
+              ) : !isOpen && hasAnyRequest && myPendingRequest ? (
+                <span className="text-amber-400/80 flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> En attente de réponse</span>
+              ) : (
+                <span className="text-muted-foreground/50">Hors ligne</span>
+              )}
+            </p>
           </div>
 
           {/* Options button */}

@@ -5,8 +5,8 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const { reportId, reporterName, targetName, targetType, reason } = await req.json();
 
-    // Get all admin users
-    const admins = await base44.entities.User.list();
+    // Get all admin users (service role to bypass User entity restrictions)
+    const admins = await base44.asServiceRole.entities.User.list();
     const adminEmails = admins
       .filter(u => u.role === 'admin')
       .map(u => u.email);

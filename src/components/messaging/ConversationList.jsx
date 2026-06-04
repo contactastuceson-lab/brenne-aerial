@@ -80,7 +80,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
     return Object.values(map).map(conv => {
       const profile = allUsers.find(u => u.email === conv.email);
       const lastSeen = profile?.last_seen ? new Date(profile.last_seen) : null;
-      const isOnline = lastSeen && (Date.now() - lastSeen.getTime()) < 2 * 60 * 1000;
+      const isOnline = lastSeen && (Date.now() - lastSeen.getTime()) < 20 * 1000;
       const isOfficial = conv.messages.some(m => m.is_official);
       return {
         ...conv,

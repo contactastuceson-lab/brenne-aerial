@@ -54,13 +54,26 @@ export default function PublicLayout() {
     init();
   }, []);
 
-  // Heartbeat: update last_seen every 30s
+  // Heartbeat: update last_seen every 10s + immediate on visibility change
   useEffect(() => {
     if (!user) return;
     const ping = () => base44.auth.updateMe({ last_seen: new Date().toISOString() }).catch(() => {});
+    const pingOffline = () => base44.auth.updateMe({ last_seen: new Date(Date.now() - 10 * 60 * 1000).toISOString() }).catch(() => {});
+    
     ping();
-    const iv = setInterval(ping, 30000);
-    return () => clearInterval(iv);
+    const iv = setInterval(ping, 10000);
+
+    // Instant online/offline on tab visibility change
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') ping();
+      else pingOffline();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      clearInterval(iv);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [user?.email]);
 
   if (loading) {

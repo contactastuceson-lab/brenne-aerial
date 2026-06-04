@@ -53,7 +53,17 @@
     "is_official": {
       "type": "boolean",
       "default": false,
-      "description": "Message officiel envoy\u00e9 par l'\u00e9quipe Brenne Aerial \u2014 r\u00e9ponse impossible"
+      "description": "Message officiel envoy\u00e9 par l'\u00e9quipe Brenne Aerial"
+    },
+    "is_warning": {
+      "type": "boolean",
+      "default": false,
+      "description": "Message d'avertissement admin (style orange)"
+    },
+    "is_admin_note": {
+      "type": "boolean",
+      "default": false,
+      "description": "Note interne admin (non visible par les utilisateurs)"
     }
   },
   "required": [

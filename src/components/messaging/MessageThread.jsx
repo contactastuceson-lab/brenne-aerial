@@ -83,6 +83,20 @@ export default function MessageThread({ user, conv, onBack }) {
   // Current user is admin
   const isCurrentUserAdmin = user.role === 'admin' || user.role === 'owner' || user.role === 'pdg_adjoint';
 
+  // Admin conversation controls
+  const { data: convControls = [] } = useQuery({
+    queryKey: ['conv-controls', convId],
+    queryFn: () => base44.entities.ConversationControl.filter({ conversation_id: convId }),
+    enabled: !!convId,
+    staleTime: 10000,
+  });
+  const control = convControls[0] || null;
+  const isLockedForMe = control && (control.locked_for_all || control.locked_for_email === user.email);
+  const isBlockedByAdmin = control && (
+    (control.email_a === user.email && control.blocked_a_to_b) ||
+    (control.email_b === user.email && control.blocked_b_to_a)
+  );
+
   // Block status
   const { data: myBlocks = [] } = useQuery({
     queryKey: ['my-blocks', user.email],
@@ -261,6 +275,7 @@ export default function MessageThread({ user, conv, onBack }) {
 
   const handleSend = () => {
     if (!text.trim()) return;
+    if (isLockedForMe || isBlockedByAdmin) return;
     // Admins bypass the request system — send directly
     if (isCurrentUserAdmin) { sendMessage.mutate(); return; }
     if (!hasAnyRequest && !isOpen) sendRequest.mutate();
@@ -484,42 +499,65 @@ export default function MessageThread({ user, conv, onBack }) {
           {visibleMessages.map((msg, i) => {
             const isMine = msg.sender_email === user.email;
             const isOfficial = msg.is_official;
+            const isWarning = msg.is_warning;
+            const isAdminNote = msg.is_admin_note;
+            // Notes internes non visibles par les utilisateurs (sauf admins)
+            if (isAdminNote && !isCurrentUserAdmin) return null;
             return (
               <motion.div
                 key={msg.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex group ${isOfficial ? 'justify-center' : isMine ? 'justify-end' : 'justify-start'}`}
+                className={`flex group ${(isOfficial || isWarning || isAdminNote) ? 'justify-center' : isMine ? 'justify-end' : 'justify-start'}`}
                 onContextMenu={(e) => handleMsgContextMenu(e, msg)}
               >
-                <div className={`max-w-[78%] flex flex-col gap-0.5 ${isOfficial ? 'items-center w-full max-w-full' : isMine ? 'items-end' : 'items-start'}`}>
-                  {isOfficial && (
+                <div className={`max-w-[78%] flex flex-col gap-0.5 ${(isOfficial || isWarning || isAdminNote) ? 'items-center w-full max-w-full' : isMine ? 'items-end' : 'items-start'}`}>
+                  {isAdminNote && (
+                    <span className="font-mono text-[9px] text-muted-foreground/50 flex items-center gap-1 mb-0.5">
+                      📎 Note interne (admin uniquement)
+                    </span>
+                  )}
+                  {isWarning && (
+                    <span className="font-mono text-[9px] text-orange-400/80 flex items-center gap-1 mb-0.5">
+                      ⚠️ Avertissement de l'équipe Brenne Aerial
+                    </span>
+                  )}
+                  {isOfficial && !isWarning && !isAdminNote && (
                     <span className="font-mono text-[9px] text-primary/70 flex items-center gap-1 mb-0.5">
                       <ShieldCheck className="w-2.5 h-2.5" /> Équipe Brenne Aerial · Message officiel
                     </span>
                   )}
-                  {!isOfficial && msg.is_request && (
+                  {!isOfficial && !isWarning && !isAdminNote && msg.is_request && (
                     <span className="font-mono text-[9px] text-amber-400/70 flex items-center gap-1 mb-0.5">
                       <Lock className="w-2.5 h-2.5" />
                       {msg.request_status === 'pending' ? 'Demande de contact' : 'Demande acceptée'}
                     </span>
                   )}
                   <div
-                    className={`px-4 py-2.5 rounded-2xl font-inter text-sm leading-relaxed select-text ${
-                      isOfficial
-                        ? 'w-full text-center'
-                        : isMine
-                          ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                          : 'bg-secondary text-foreground border border-border rounded-tl-sm'
-                    } ${!isOfficial && msg.is_request && msg.request_status === 'pending' ? 'opacity-75' : ''}`}
-                    style={msg.is_official ? {
-                      background: 'linear-gradient(135deg, hsl(205 90% 12%), hsl(205 80% 9%))',
-                      border: '1px solid rgba(56,170,220,0.25)',
-                      color: 'hsl(210 20% 94%)',
-                      boxShadow: '0 2px 12px rgba(56,170,220,0.08)',
-                    } : {}}
+                  className={`px-4 py-2.5 rounded-2xl font-inter text-sm leading-relaxed select-text ${
+                    (isOfficial || isWarning || isAdminNote)
+                      ? 'w-full text-center'
+                      : isMine
+                        ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                        : 'bg-secondary text-foreground border border-border rounded-tl-sm'
+                  } ${!isOfficial && !isWarning && !isAdminNote && msg.is_request && msg.request_status === 'pending' ? 'opacity-75' : ''}`}
+                  style={isWarning ? {
+                    background: 'linear-gradient(135deg, hsl(38 90% 10%), hsl(38 80% 7%))',
+                    border: '1px solid rgba(251,146,60,0.3)',
+                    color: 'hsl(210 20% 94%)',
+                    boxShadow: '0 2px 12px rgba(251,146,60,0.08)',
+                  } : isAdminNote ? {
+                    background: 'transparent',
+                    border: '1px dashed rgba(255,255,255,0.1)',
+                    color: 'hsl(215 15% 50%)',
+                  } : isOfficial ? {
+                    background: 'linear-gradient(135deg, hsl(205 90% 12%), hsl(205 80% 9%))',
+                    border: '1px solid rgba(56,170,220,0.25)',
+                    color: 'hsl(210 20% 94%)',
+                    boxShadow: '0 2px 12px rgba(56,170,220,0.08)',
+                  } : {}}
                   >
-                    {msg.is_official ? (
+                    {(isOfficial || isWarning) ? (
                       <ReactMarkdown className="prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_strong]:text-white [&_em]:text-white/90 [&_code]:bg-primary/30 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_a]:text-primary [&_ul]:list-disc [&_ul]:list-inside [&_ol]:list-decimal [&_ol]:list-inside [&_blockquote]:border-l-primary/40 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-white/70 [&_pre]:bg-background/50 [&_pre]:border [&_pre]:border-border [&_pre]:p-2 [&_pre]:rounded [&_pre]:my-2">
                         {msg.content}
                       </ReactMarkdown>
@@ -567,6 +605,20 @@ export default function MessageThread({ user, conv, onBack }) {
       {/* ── Input ── */}
       <div className={`px-4 py-3 flex-shrink-0 ${isOfficialConversation ? '' : 'border-t border-border bg-card'}`}
         style={isOfficialConversation ? { borderTop: '1px solid rgba(56,170,220,0.15)', background: 'linear-gradient(180deg, hsl(214 50% 5%) 0%, hsl(205 90% 6%) 100%)' } : {}}>
+        {/* Admin lock / block banners */}
+        {isLockedForMe && !isOfficialConversation && (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-400/10 border border-orange-400/20">
+            <Lock className="w-4 h-4 text-orange-400 flex-shrink-0" />
+            <span className="font-inter text-xs text-orange-300">Cette conversation a été <strong>verrouillée par un administrateur</strong>. Vous ne pouvez plus écrire.</span>
+          </div>
+        )}
+        {isBlockedByAdmin && !isLockedForMe && !isOfficialConversation && (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-400/10 border border-red-400/20">
+            <ShieldAlert className="w-4 h-4 text-red-400 flex-shrink-0" />
+            <span className="font-inter text-xs text-red-300">Un administrateur a <strong>restreint votre accès</strong> à cette conversation.</span>
+          </div>
+        )}
+
         {isOfficialConversation ? (
           <div className="flex flex-col items-center gap-3 py-2">
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl w-full"
@@ -582,7 +634,7 @@ export default function MessageThread({ user, conv, onBack }) {
               <div className="w-1 h-1 rounded-full bg-primary/40" />
             </div>
           </div>
-        ) : isBlocked ? (
+        ) : (isLockedForMe || isBlockedByAdmin) ? null : isBlocked ? (
           <div className="flex items-center justify-between gap-3 bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
             <div className="flex items-center gap-2 min-w-0">
               <ShieldAlert className="w-4 h-4 text-destructive flex-shrink-0" />

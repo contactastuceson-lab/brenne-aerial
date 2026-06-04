@@ -1,0 +1,48 @@
+{
+  "name": "ConversationControl",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "ID de la conversation"
+    },
+    "locked_for_all": {
+      "type": "boolean",
+      "default": false,
+      "description": "Conversation verrouill\u00e9e pour les 2 participants"
+    },
+    "locked_for_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur pour qui la conversation est verrouill\u00e9e (un seul c\u00f4t\u00e9)"
+    },
+    "blocked_a_to_b": {
+      "type": "boolean",
+      "default": false,
+      "description": "A ne peut plus \u00e9crire \u00e0 B"
+    },
+    "blocked_b_to_a": {
+      "type": "boolean",
+      "default": false,
+      "description": "B ne peut plus \u00e9crire \u00e0 A"
+    },
+    "email_a": {
+      "type": "string",
+      "description": "Email participant A"
+    },
+    "email_b": {
+      "type": "string",
+      "description": "Email participant B"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Notes internes admin sur cette conversation"
+    },
+    "moderation_reason": {
+      "type": "string",
+      "description": "Raison de la mod\u00e9ration"
+    }
+  },
+  "required": [
+    "conversation_id"
+  ]
+}

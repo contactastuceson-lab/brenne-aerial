@@ -90,7 +90,7 @@ export default function HomePage() {
 
 
         {/* Content */}
-        <div className="relative max-w-7xl mx-auto px-5 lg:px-10 w-full pt-24 pb-16">
+        <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-10 w-full pt-24 pb-16">
           <div className="max-w-3xl">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <div className="inline-flex items-center gap-2 font-mono text-xs text-primary border border-primary/30 bg-primary/5 px-3 py-1.5 rounded-full mb-6">
@@ -101,7 +101,7 @@ export default function HomePage() {
 
             <motion.h1
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
-              className="font-grotesk font-bold text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[1.05] tracking-tight mb-6"
+              className="font-grotesk font-bold text-4xl sm:text-5xl lg:text-7xl xl:text-8xl leading-[1.05] tracking-tight mb-6"
             >
               {heroTitle1}
               <br />

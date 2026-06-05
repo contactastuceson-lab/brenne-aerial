@@ -12,10 +12,10 @@ Deno.serve(async (req) => {
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
-    // Fetch all subscriptions
+    // Fetch all subscriptions (max 4 expand levels — cannot go deeper than data.items.data.price)
     const subscriptions = await stripe.subscriptions.list({
       limit: 100,
-      expand: ['data.customer', 'data.items.data.price.product'],
+      expand: ['data.customer', 'data.items.data.price'],
     });
 
     // Fetch recent invoices
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       created: sub.created,
       items: sub.items.data.map(item => ({
         id: item.id,
-        product_name: item.price.product?.name || 'Abonnement',
+        product_name: item.price.nickname || item.price.id || 'Abonnement',
         amount: item.price.unit_amount,
         currency: item.price.currency,
         interval: item.price.recurring?.interval,

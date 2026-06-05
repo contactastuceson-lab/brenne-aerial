@@ -80,12 +80,12 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-0.5">
             {NAV_LINKS.map(link => (
               <Link
                 key={link.to}
                 to={link.to}
-                className={`px-3 py-2 rounded-lg text-sm font-inter transition-colors ${
+                className={`px-2.5 py-2 rounded-lg text-[13px] font-inter transition-colors ${
                   isActive(link.to)
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground'
@@ -99,7 +99,7 @@ export default function Navbar() {
             <div className="relative" ref={toolsRef}>
               <button
                 onClick={() => setToolsOpen(!toolsOpen)}
-                className={`px-3 py-2 rounded-lg text-sm font-inter flex items-center gap-1.5 transition-colors ${
+                className={`px-2.5 py-2 rounded-lg text-[13px] font-inter flex items-center gap-1 transition-colors ${
                   toolsOpen
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground'
@@ -155,7 +155,7 @@ export default function Navbar() {
                 </button>
                 <NotificationsPanel user={user} open={notifsOpen} onClose={() => setNotifsOpen(false)} />
 
-                {/* Profile dropdown menu */}
+                {/* Profile */}
                 <div className="hidden lg:flex items-center gap-2">
                   <Link
                     to="/profile"
@@ -165,7 +165,7 @@ export default function Navbar() {
                       ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
                       : <User className="w-4 h-4 text-primary" />}
                   </Link>
-                  <div className="hidden md:block">
+                  <div className="hidden xl:block">
                     <p className="text-sm font-inter font-medium">{user.display_name || user.full_name}</p>
                     <p className="text-xs text-muted-foreground">{user.role}</p>
                   </div>

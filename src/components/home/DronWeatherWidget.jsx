@@ -39,7 +39,7 @@ export default function DroneWeatherWidget() {
     setLoading(true);
     setError(false);
     try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,precipitation_probability,visibility,weather_code&wind_speed_unit=kmh&timezone=Europe%2FParis`;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,precipitation_probability,visibility,weather_code&wind_speed_unit=kmh&timezone=Europe%2FParis&_t=${Date.now()}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('API error');
       const json = await res.json();

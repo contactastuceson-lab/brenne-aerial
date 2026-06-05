@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 
 const navSections = [
@@ -30,6 +30,7 @@ const navSections = [
       { key: 'forum', icon: MessageCircle, path: '/admin/forum', label: 'Forum' },
       { key: 'reports', icon: AlertCircle, path: '/admin/reports', label: 'Signalements' },
       { key: 'donations', icon: Gift, path: '/admin/donations', label: 'Donations' },
+      { key: 'billing', icon: CreditCard, path: '/admin/billing', label: 'Facturation' },
     ]
   },
   {

@@ -7,7 +7,7 @@ import {
   Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail,
   Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, Map,
   FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap,
-  SlidersHorizontal, Activity, Radar, CreditCard, Ban
+  SlidersHorizontal, Activity, Radar, CreditCard, Ban, TrendingUp
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
@@ -26,6 +26,7 @@ const NAV_GROUPS = [
     minLevel: 60,
     items: [
       { path: '/admin', icon: BarChart3, label: 'Dashboard', minLevel: 60 },
+      { path: '/admin/stats', icon: TrendingUp, label: 'Statistiques', minLevel: 60 },
     ]
   },
   {

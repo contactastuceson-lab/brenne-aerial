@@ -4,12 +4,13 @@ import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { format, addDays, startOfToday, startOfWeek, addWeeks, isSameDay, isPast, isToday } from 'date-fns';
+import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import {
-  ChevronLeft, ChevronRight, Calendar, Clock, Check,
+  Calendar, Clock, Check,
   Loader2, MapPin, Zap, Info, X, ArrowRight, Wifi
 } from 'lucide-react';
+import CalendarViewSwitcher from '@/components/planning/CalendarViewSwitcher';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,13 +31,9 @@ const SERVICE_LABELS = {
 export default function PlanningPage() {
   const { enabled, isLoading: checkingEnabled } = usePageEnabled('page_planning_enabled');
   const queryClient = useQueryClient();
-  const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(null);
   const [booking, setBooking] = useState(null);
   const [bookForm, setBookForm] = useState({ client_name: '', client_email: '', notes: '' });
-
-  const weekStart = startOfWeek(addWeeks(startOfToday(), weekOffset), { weekStartsOn: 1 });
-  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['public-appointments'],
@@ -88,6 +85,7 @@ export default function PlanningPage() {
   if (!enabled) return <FeatureDisabled title="Planning indisponible" message="Le planning et la réservation en ligne sont temporairement désactivés." />;
 
   const available = appointments.filter(a => a.status === 'confirmed' && !a.client_email && !a.client_name);
+  const totalAvailable = available.length;
 
   const getSlotsForDay = (day) => {
     const ds = format(day, 'yyyy-MM-dd');
@@ -95,8 +93,6 @@ export default function PlanningPage() {
   };
 
   const selectedSlots = selectedDay ? getSlotsForDay(selectedDay) : [];
-
-  const totalSlotsThisWeek = days.reduce((acc, d) => acc + getSlotsForDay(d).length, 0);
 
   return (
     <div className="pt-16 min-h-screen bg-background">
@@ -112,9 +108,9 @@ export default function PlanningPage() {
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-mono text-xs tracking-widest uppercase">
                 <Wifi className="w-3 h-3" /> Disponibilités en direct
               </span>
-              {totalSlotsThisWeek > 0 && (
+              {totalAvailable > 0 && (
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 font-mono text-xs">
-                  {totalSlotsThisWeek} créneau{totalSlotsThisWeek > 1 ? 'x' : ''} cette semaine
+                  {totalAvailable} créneau{totalAvailable > 1 ? 'x' : ''} disponible{totalAvailable > 1 ? 's' : ''}
                 </span>
               )}
             </div>
@@ -133,110 +129,18 @@ export default function PlanningPage() {
       <section className="px-5 lg:px-10 pb-12">
         <div className="max-w-7xl mx-auto">
 
-          {/* Week Nav */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex items-center justify-between mb-6 bg-card border border-border rounded-2xl px-5 py-3"
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { setWeekOffset(w => w - 1); setSelectedDay(null); }}
-              disabled={weekOffset <= 0}
-              className="gap-1.5"
-            >
-              <ChevronLeft className="w-4 h-4" /> Préc.
-            </Button>
-
-            <div className="text-center">
-              <p className="font-grotesk font-semibold text-sm">
-                {format(weekStart, 'd MMM', { locale: fr })} — {format(days[6], 'd MMM yyyy', { locale: fr })}
-              </p>
-              {weekOffset === 0 && (
-                <p className="font-mono text-xs text-primary mt-0.5">Cette semaine</p>
-              )}
-            </div>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { setWeekOffset(w => w + 1); setSelectedDay(null); }}
-              className="gap-1.5"
-            >
-              Suiv. <ChevronRight className="w-4 h-4" />
-            </Button>
-          </motion.div>
-
           {isLoading ? (
             <div className="flex justify-center py-24">
               <Loader2 className="w-7 h-7 animate-spin text-primary" />
             </div>
           ) : (
-            <div className="grid grid-cols-7 gap-2 lg:gap-3">
-              {days.map((day, idx) => {
-                const slots = getSlotsForDay(day);
-                const today = isToday(day);
-                const past = isPast(day) && !today;
-                const selected = selectedDay && isSameDay(day, selectedDay);
-                const blockStatus = !past ? getBlockedStatus(day) : null; // 'blocked' | 'unknown' | null
-                const isBlocked = blockStatus === 'blocked';
-                const isUnknown = blockStatus === 'unknown';
-                const hasSlots = slots.length > 0 && !past && !isBlocked && !isUnknown;
-                const isClickable = !past && !isBlocked && !isUnknown;
-
-                return (
-                  <motion.button
-                    key={day.toISOString()}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.04 }}
-                    onClick={() => isClickable && setSelectedDay(selected ? null : day)}
-                    disabled={!isClickable}
-                    className={[
-                      'relative flex flex-col items-center rounded-2xl border transition-all duration-200 py-4 px-1 lg:px-3 text-center',
-                      !isClickable ? 'cursor-not-allowed' : 'cursor-pointer',
-                      past ? 'opacity-30 border-border bg-card' :
-                      isBlocked ? 'border-red-500/40 bg-red-500/10 opacity-80' :
-                      isUnknown ? 'border-gray-500/30 bg-gray-500/5 opacity-70' :
-                      selected ? 'border-primary bg-primary/10 sky-glow scale-105' :
-                      today ? 'border-primary/40 bg-primary/5 hover:bg-primary/10' :
-                      hasSlots ? 'border-green-500/30 bg-green-500/5 hover:bg-green-500/10 hover:border-green-500/50' :
-                      'border-border bg-card hover:bg-secondary/40',
-                    ].join(' ')}
-                  >
-                    {today && (
-                      <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-mono text-[9px] font-bold uppercase">
-                        Auj.
-                      </span>
-                    )}
-
-                    <p className={`font-grotesk text-[10px] lg:text-xs uppercase tracking-wide mb-1 ${selected || today ? 'text-primary' : 'text-muted-foreground'}`}>
-                      {format(day, 'EEE', { locale: fr })}
-                    </p>
-                    <p className={`font-grotesk font-bold text-xl lg:text-2xl ${selected || today ? 'text-primary' : 'text-foreground'}`}>
-                      {format(day, 'd')}
-                    </p>
-
-                    <div className="mt-3">
-                      {isBlocked ? (
-                        <span className="font-mono text-[10px] text-red-400 font-bold">Indispo</span>
-                      ) : isUnknown ? (
-                        <span className="font-mono text-[10px] text-gray-400">?</span>
-                      ) : hasSlots ? (
-                        <span className="flex items-center justify-center gap-1 px-2 py-0.5 rounded-full bg-green-500/20 border border-green-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                          <span className="font-mono text-[10px] text-green-500 font-bold">{slots.length}</span>
-                        </span>
-                      ) : !past ? (
-                        <span className="font-mono text-[10px] text-muted-foreground">—</span>
-                      ) : null}
-                    </div>
-                  </motion.button>
-                );
-              })}
-            </div>
+            <CalendarViewSwitcher
+              appointments={appointments}
+              blockedDays={blockedDays}
+              isAdmin={false}
+              onDaySelect={(day) => setSelectedDay(prev => prev && format(prev,'yyyy-MM-dd') === format(day,'yyyy-MM-dd') ? null : day)}
+              selectedDay={selectedDay}
+            />
           )}
 
           {/* Selected Day Slots Panel */}
@@ -318,31 +222,6 @@ export default function PlanningPage() {
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Legend */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-wrap items-center gap-5 mt-6 justify-center"
-          >
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-green-500/70" />
-              <span className="font-inter text-xs text-muted-foreground">Créneaux disponibles</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-red-500/70" />
-              <span className="font-inter text-xs text-muted-foreground">Indisponible (bloqué)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-gray-500/70" />
-              <span className="font-inter text-xs text-muted-foreground">Incertain</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-border" />
-              <span className="font-inter text-xs text-muted-foreground">Pas de créneau</span>
-            </div>
-          </motion.div>
 
           {/* Info banner */}
           <motion.div

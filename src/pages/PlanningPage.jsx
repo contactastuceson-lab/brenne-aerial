@@ -193,18 +193,6 @@ export default function PlanningPage() {
                           <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                         </div>
 
-                        {slot.service_type && (
-                          <span className="inline-block px-2 py-0.5 rounded-md bg-secondary text-xs font-inter text-muted-foreground">
-                            {SERVICE_LABELS[slot.service_type] || slot.service_type}
-                          </span>
-                        )}
-
-                        {slot.location && (
-                          <p className="font-inter text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                            <MapPin className="w-3 h-3" /> {slot.location}
-                          </p>
-                        )}
-
                         <p className="font-inter text-xs text-primary mt-3 group-hover:underline font-semibold">
                           Réserver ce créneau →
                         </p>
@@ -271,14 +259,6 @@ export default function PlanningPage() {
                     </p>
                   </div>
                 </div>
-
-                {booking.service_type && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground font-inter">
-                    <span className="px-2 py-0.5 rounded-md bg-secondary border border-border">
-                      {SERVICE_LABELS[booking.service_type] || booking.service_type}
-                    </span>
-                  </div>
-                )}
 
                 {/* Form */}
                 <div className="space-y-3 pt-1">

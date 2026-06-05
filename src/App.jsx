@@ -12,6 +12,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 import PreferencesApplier from "@/components/settings/PreferencesApplier";
+import SplashScreen from "@/components/SplashScreen";
 
 // Layout
 import PublicLayout from "@/components/layout/PublicLayout";
@@ -103,16 +104,7 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="relative">
-          <div className="w-10 h-10 border-2 border-muted border-t-primary rounded-full animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-4 h-4 border border-primary/40 rounded-full" />
-          </div>
-        </div>
-      </div>
-    );
+    return <SplashScreen />;
   }
 
   if (authError?.type === "user_not_registered") return <UserNotRegisteredError />;

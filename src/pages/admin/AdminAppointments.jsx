@@ -79,26 +79,6 @@ export default function AdminAppointments() {
     queryFn: () => base44.entities.Appointment.list('-date', 200),
   });
 
-  const { data: blockedDays = [] } = useQuery({
-    queryKey: ['adm-blocked-days'],
-    queryFn: () => base44.entities.BlockedDay.list('date', 365),
-  });
-
-  const blockDayMutation = useMutation({
-    mutationFn: ({ date, status }) => base44.entities.BlockedDay.create({ date, status, reason: '' }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-blocked-days'] }); toast.success('Jour bloqué'); },
-  });
-
-  const unblockDayMutation = useMutation({
-    mutationFn: (id) => base44.entities.BlockedDay.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-blocked-days'] }); toast.success('Jour débloqué'); },
-  });
-
-  const getBlockForDay = (day) => {
-    const ds = format(day, 'yyyy-MM-dd');
-    return blockedDays.find(b => b.date === ds) || null;
-  };
-
   const createMutation = useMutation({
     mutationFn: () => base44.entities.Appointment.create({ ...form, status: 'confirmed' }),
     onSuccess: () => {
@@ -231,81 +211,49 @@ export default function AdminAppointments() {
               const selected = selectedDay && isSameDay(day, selectedDay);
               const available = slots.filter(s => s.status === 'confirmed' && !s.client_email);
               const booked = slots.filter(s => s.status === 'scheduled');
-              const block = getBlockForDay(day);
-              const isBlocked = !!block;
 
               return (
-                <div key={day.toISOString()} className="relative group">
-                  <motion.button
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.03 }}
-                    onClick={() => setSelectedDay(selected ? null : day)}
-                    className={[
-                      'relative w-full flex flex-col items-center rounded-xl border transition-all duration-200 py-3 px-1 text-center cursor-pointer',
-                      isBlocked ? 'border-red-500/50 bg-red-500/10' :
-                      selected ? 'border-primary bg-primary/10 scale-105 sky-glow' :
-                        today ? 'border-primary/40 bg-primary/5 hover:bg-primary/10' :
-                          slots.length > 0 ? 'border-green-500/30 bg-green-500/5 hover:bg-green-500/10' :
-                            'border-border bg-card hover:bg-secondary/40',
-                    ].join(' ')}
-                  >
-                    {today && !isBlocked && (
-                      <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-mono text-[8px] uppercase font-bold">
-                        Auj
+                <motion.button
+                  key={day.toISOString()}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.03 }}
+                  onClick={() => setSelectedDay(selected ? null : day)}
+                  className={[
+                    'relative flex flex-col items-center rounded-xl border transition-all duration-200 py-3 px-1 text-center cursor-pointer',
+                    selected ? 'border-primary bg-primary/10 scale-105 sky-glow' :
+                      today ? 'border-primary/40 bg-primary/5 hover:bg-primary/10' :
+                        slots.length > 0 ? 'border-green-500/30 bg-green-500/5 hover:bg-green-500/10' :
+                          'border-border bg-card hover:bg-secondary/40',
+                  ].join(' ')}
+                >
+                  {today && (
+                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-mono text-[8px] uppercase font-bold">
+                      Auj
+                    </span>
+                  )}
+                  <p className={`font-mono text-[10px] uppercase mb-1 ${selected || today ? 'text-primary' : 'text-muted-foreground'}`}>
+                    {format(day, 'EEE', { locale: fr })}
+                  </p>
+                  <p className={`font-grotesk font-bold text-lg ${selected || today ? 'text-primary' : ''}`}>
+                    {format(day, 'd')}
+                  </p>
+                  <div className="mt-2 space-y-1">
+                    {available.length > 0 && (
+                      <span className="flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-full bg-green-500/20 border border-green-500/30">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        <span className="font-mono text-[9px] text-green-500 font-bold">{available.length}</span>
                       </span>
                     )}
-                    <p className={`font-mono text-[10px] uppercase mb-1 ${isBlocked ? 'text-red-400' : selected || today ? 'text-primary' : 'text-muted-foreground'}`}>
-                      {format(day, 'EEE', { locale: fr })}
-                    </p>
-                    <p className={`font-grotesk font-bold text-lg ${isBlocked ? 'text-red-400' : selected || today ? 'text-primary' : ''}`}>
-                      {format(day, 'd')}
-                    </p>
-                    <div className="mt-2 space-y-1">
-                      {isBlocked ? (
-                        <span className="font-mono text-[9px] text-red-400 font-bold">Bloqué</span>
-                      ) : (
-                        <>
-                          {available.length > 0 && (
-                            <span className="flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-full bg-green-500/20 border border-green-500/30">
-                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                              <span className="font-mono text-[9px] text-green-500 font-bold">{available.length}</span>
-                            </span>
-                          )}
-                          {booked.length > 0 && (
-                            <span className="flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/20 border border-primary/30">
-                              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                              <span className="font-mono text-[9px] text-primary font-bold">{booked.length}</span>
-                            </span>
-                          )}
-                          {slots.length === 0 && <span className="font-mono text-[10px] text-muted-foreground">—</span>}
-                        </>
-                      )}
-                    </div>
-                  </motion.button>
-                  {/* Block/Unblock button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const ds = format(day, 'yyyy-MM-dd');
-                      if (isBlocked) {
-                        unblockDayMutation.mutate(block.id);
-                      } else {
-                        blockDayMutation.mutate({ date: ds, status: 'blocked' });
-                      }
-                    }}
-                    className={[
-                      'absolute -top-2 -right-2 w-5 h-5 rounded-full border flex items-center justify-center transition-all z-10',
-                      'opacity-0 group-hover:opacity-100',
-                      isBlocked
-                        ? 'bg-red-500 border-red-400 text-white hover:bg-red-600'
-                        : 'bg-card border-border text-muted-foreground hover:bg-destructive/20 hover:border-destructive/50 hover:text-destructive',
-                    ].join(' ')}
-                    title={isBlocked ? 'Débloquer ce jour' : 'Bloquer ce jour'}
-                  >
-                    {isBlocked ? <X className="w-2.5 h-2.5" /> : <Ban className="w-2.5 h-2.5" />}
-                  </button>
-                </div>
+                    {booked.length > 0 && (
+                      <span className="flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/20 border border-primary/30">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        <span className="font-mono text-[9px] text-primary font-bold">{booked.length}</span>
+                      </span>
+                    )}
+                    {slots.length === 0 && <span className="font-mono text-[10px] text-muted-foreground">—</span>}
+                  </div>
+                </motion.button>
               );
             })}
           </div>
@@ -413,7 +361,6 @@ export default function AdminAppointments() {
           <div className="flex flex-wrap items-center gap-5">
             <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-green-500" /><span className="font-inter text-xs text-muted-foreground">Disponibles</span></div>
             <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-primary" /><span className="font-inter text-xs text-muted-foreground">Réservés</span></div>
-            <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-red-500" /><span className="font-inter text-xs text-muted-foreground">Bloqué (rouge côté clients)</span></div>
             <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-border" /><span className="font-inter text-xs text-muted-foreground">Aucun créneau</span></div>
           </div>
         </div>

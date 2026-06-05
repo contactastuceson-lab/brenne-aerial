@@ -93,11 +93,11 @@ export default function Footer() {
 
               {/* Contact infos */}
               <div className="space-y-2.5 mb-6">
-                <a href="mailto:contact@brenne-aerial.fr" className="flex items-center gap-3 group">
+                <a href="mailto:contact@brenneaerial.fr" className="flex items-center gap-3 group">
                   <div className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center flex-shrink-0 group-hover:border-primary/40 group-hover:bg-primary/10 transition-colors">
                     <Mail className="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
-                  <span className="font-mono text-xs text-muted-foreground group-hover:text-primary transition-colors">contact@brenne-aerial.fr</span>
+                  <span className="font-mono text-xs text-muted-foreground group-hover:text-primary transition-colors">contact@brenneaerial.fr</span>
                 </a>
                 <a href="tel:+33600000000" className="flex items-center gap-3 group">
                   <div className="w-7 h-7 rounded-lg bg-secondary border border-border flex items-center justify-center flex-shrink-0 group-hover:border-primary/40 group-hover:bg-primary/10 transition-colors">

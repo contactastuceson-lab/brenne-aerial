@@ -40,7 +40,8 @@ export default function PlanningPage() {
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['public-appointments'],
-    queryFn: () => base44.entities.Appointment.list('-date', 100),
+    queryFn: () => base44.entities.Appointment.list('date', 200),
+    staleTime: 0,
   });
 
   const bookMutation = useMutation({
@@ -74,7 +75,7 @@ export default function PlanningPage() {
   if (checkingEnabled) return null;
   if (!enabled) return <FeatureDisabled title="Planning indisponible" message="Le planning et la réservation en ligne sont temporairement désactivés." />;
 
-  const available = appointments.filter(a => a.status === 'confirmed' && !a.client_email);
+  const available = appointments.filter(a => a.status === 'confirmed' && !a.client_email && !a.client_name);
 
   const getSlotsForDay = (day) => {
     const ds = format(day, 'yyyy-MM-dd');

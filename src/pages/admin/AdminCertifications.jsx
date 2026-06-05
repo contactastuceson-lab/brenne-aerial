@@ -349,6 +349,18 @@ export default function AdminCertifications() {
                   </Button>
                 </div>
               )}
+              {/* Refund button — show if rejected and payment completed */}
+              {selectedRequest.status === 'rejected' && selectedRequest.payment_status === 'completed' && selectedRequest.stripe_session_id && (
+                <Button
+                  onClick={() => { if (confirm('Rembourser ce paiement Stripe et envoyer un email à l\'utilisateur ?')) refundMutation.mutate(selectedRequest.id); }}
+                  disabled={refundMutation.isPending}
+                  className="w-full gap-2 text-xs lg:text-sm h-8 lg:h-9 bg-blue-500/10 text-blue-400 border border-blue-400/30 hover:bg-blue-500/20"
+                  variant="outline"
+                >
+                  <RefreshCw className="w-3 h-3 lg:w-4 lg:h-4" />
+                  {refundMutation.isPending ? 'Remboursement...' : 'Rembourser le paiement'}
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={() => sendEmailMutation.mutate(selectedRequest)}

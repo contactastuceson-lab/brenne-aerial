@@ -1,7 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import Stripe from 'npm:stripe@15.0.0';
-
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
 Deno.serve(async (req) => {
   try {
@@ -12,9 +10,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { userEmail, userName, amount } = await req.json();
+    const { userEmail, userName, amount, badgeLevel } = await req.json();
 
-    // Create Stripe checkout session
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
+
+    // Create Stripe subscription checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -22,15 +22,18 @@ Deno.serve(async (req) => {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: 'Certification Brenne Aerial',
-              description: 'Demande de certification professionnelle',
+              name: `Badge ${badgeLevel || 'Certification'} — Brenne Aerial`,
+              description: `Abonnement mensuel — Badge de certification professionnelle`,
             },
             unit_amount: amount, // Amount in cents
+            recurring: {
+              interval: 'month',
+            },
           },
           quantity: 1,
         },
       ],
-      mode: 'payment',
+      mode: 'subscription',
       success_url: `${Deno.env.get('APP_URL')}/certification-success`,
       cancel_url: `${Deno.env.get('APP_URL')}/profile?certification=cancelled`,
       customer_email: userEmail,
@@ -38,6 +41,7 @@ Deno.serve(async (req) => {
         payment_type: 'certification',
         userName: userName,
         userEmail: userEmail,
+        badgeLevel: badgeLevel || '',
       },
     });
 

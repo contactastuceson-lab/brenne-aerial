@@ -355,6 +355,7 @@ export default function CertificationRequest({ onClose, user }) {
       userEmail: user.email,
       userName: user.display_name || user.full_name,
       amount: selectedLevel.price,
+      badgeLevel: selectedLevel.label,
     });
     if (response.data?.url) window.location.href = response.data.url;
     else setStage('success');
@@ -436,7 +437,7 @@ export default function CertificationRequest({ onClose, user }) {
                                </span>
                                {level.price !== 0 && (
                                  <span className="font-mono text-[8px] bg-secondary border border-border px-1 py-0.5 rounded-full text-muted-foreground whitespace-nowrap">
-                                   {typeof level.price === 'number' ? `${(level.price / 100).toFixed(0)}€` : level.price}
+                                   {typeof level.price === 'number' ? `${(level.price / 100).toFixed(0)}€/mois` : level.price}
                                  </span>
                                )}
                              </div>
@@ -480,9 +481,13 @@ export default function CertificationRequest({ onClose, user }) {
                 <div>
                   <h3 className="font-grotesk font-bold text-lg mb-1">Finaliser la demande</h3>
                   <p className="font-inter text-sm text-muted-foreground">Badge <span className={`font-semibold ${selectedLevel.color}`}>{selectedLevel.label}</span></p>
-                  <p className="font-grotesk font-bold text-3xl text-primary mt-2">{(selectedLevel.price / 100).toFixed(0)}€</p>
-                </div>
-                <p className="font-inter text-xs text-muted-foreground max-w-xs mx-auto">Après paiement, votre dossier complet sera examiné par notre équipe sous 5 jours ouvrables.</p>
+                  <div className="flex items-baseline gap-1 justify-center mt-2">
+                    <p className="font-grotesk font-bold text-3xl text-primary">{(selectedLevel.price / 100).toFixed(0)}€</p>
+                    <span className="font-inter text-sm text-muted-foreground">/mois</span>
+                  </div>
+                  <p className="font-mono text-xs text-muted-foreground mt-1">Abonnement mensuel — résiliable à tout moment</p>
+                  </div>
+                  <p className="font-inter text-xs text-muted-foreground max-w-xs mx-auto">Après paiement, votre dossier complet sera examiné par notre équipe sous 5 jours ouvrables.</p>
               </motion.div>
             )}
 
@@ -527,7 +532,7 @@ export default function CertificationRequest({ onClose, user }) {
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {stage === 'payment'
-                ? `Payer ${(selectedLevel.price / 100).toFixed(0)}€`
+                ? `S'abonner — ${(selectedLevel.price / 100).toFixed(0)}€/mois`
                 : isLastStep
                   ? selectedLevel.price > 0 ? 'Continuer → Paiement' : 'Soumettre le dossier'
                   : `Étape suivante`

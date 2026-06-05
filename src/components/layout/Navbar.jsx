@@ -15,7 +15,7 @@ const NAV_LINKS = [
   { to: '/planning',  label: 'Planning' },
   { to: '/blog',      label: 'Blog' },
   { to: '/forum',     label: 'Forum' },
-  { to: '/espace-client', label: 'Espace Client' },
+  { to: '/espace-client', label: 'Espace Client', hideOnTablet: true },
 ];
 
 const TOOLS = [
@@ -79,13 +79,13 @@ export default function Navbar() {
             <div className="text-xl font-grotesk font-bold gradient-text">Brenne Aerial</div>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <div className="hidden lg:flex items-center gap-0.5">
+          {/* Desktop/Tablet Nav Links */}
+          <div className="hidden md:flex items-center gap-0.5">
             {NAV_LINKS.map(link => (
               <Link
                 key={link.to}
                 to={link.to}
-                className={`px-2.5 py-2 rounded-lg text-[13px] font-inter transition-colors ${
+                className={`px-2 py-1.5 rounded-lg text-[12px] xl:text-[13px] font-inter transition-colors ${link.hideOnTablet ? 'hidden xl:block' : ''} ${
                   isActive(link.to)
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground'
@@ -99,7 +99,7 @@ export default function Navbar() {
             <div className="relative" ref={toolsRef}>
               <button
                 onClick={() => setToolsOpen(!toolsOpen)}
-                className={`px-2.5 py-2 rounded-lg text-[13px] font-inter flex items-center gap-1 transition-colors ${
+                className={`px-2 py-1.5 rounded-lg text-[12px] xl:text-[13px] font-inter flex items-center gap-1 transition-colors ${
                   toolsOpen
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground'
@@ -156,7 +156,7 @@ export default function Navbar() {
                 <NotificationsPanel user={user} open={notifsOpen} onClose={() => setNotifsOpen(false)} />
 
                 {/* Profile */}
-                <div className="hidden lg:flex items-center gap-2">
+                <div className="hidden md:flex items-center gap-2">
                   <Link
                     to="/profile"
                     className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden hover:bg-primary/20 transition-colors"
@@ -175,7 +175,7 @@ export default function Navbar() {
                 {hasAdminAccess(user) && (
                   <Link
                     to="/admin"
-                    className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-inter bg-secondary hover:bg-secondary/80 transition-colors"
+                    className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-inter bg-secondary hover:bg-secondary/80 transition-colors"
                   >
                     <LayoutDashboard className="w-4 h-4" />
                     Admin
@@ -195,13 +195,13 @@ export default function Navbar() {
               <>
                 <button
                   onClick={() => base44.auth.redirectToLogin()}
-                  className="hidden lg:inline-flex px-4 py-2 rounded-lg text-sm font-inter text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                  className="hidden md:inline-flex px-3 py-1.5 rounded-lg text-xs font-inter text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
                 >
                   Connexion
                 </button>
                 <Link
                   to="/quote"
-                  className="hidden lg:inline-flex px-4 py-2 rounded-lg text-sm font-inter text-foreground bg-secondary hover:bg-secondary/80 transition-colors"
+                  className="hidden md:inline-flex px-3 py-1.5 rounded-lg text-xs font-inter text-foreground bg-secondary hover:bg-secondary/80 transition-colors"
                 >
                   Devis gratuit
                 </Link>
@@ -211,7 +211,7 @@ export default function Navbar() {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -226,7 +226,7 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="lg:hidden py-4 space-y-2 border-t border-border/60"
+            className="md:hidden py-4 space-y-2 border-t border-border/60"
           >
             {NAV_LINKS.map(link => (
               <Link

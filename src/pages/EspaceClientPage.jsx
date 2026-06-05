@@ -6,7 +6,8 @@ import {
   FolderOpen, Download, FileVideo, FileImage, FileText, File,
   Lock, LogIn, ChevronDown, ChevronUp, Award,
   CheckCircle, Clock, XCircle, AlertCircle, Plus, ArrowRight,
-  Rocket, MapPin, Calendar, Shield, Zap, User, Settings, Flag
+  Rocket, MapPin, Calendar, Shield, Zap, User, Settings, Flag,
+  CreditCard, ExternalLink, RefreshCcw, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -43,6 +44,7 @@ const NAV = [
   { id: 'files',    label: 'Mes fichiers',     icon: FolderOpen },
   { id: 'quotes',   label: 'Mes devis',         icon: FileText },
   { id: 'certs',    label: 'Certifications',    icon: Shield },
+  { id: 'billing',  label: 'Facturation',        icon: CreditCard },
   { id: 'badges',   label: 'Badges',            icon: Award },
   { id: 'reports',  label: 'Mes signalements',  icon: Flag },
 ];
@@ -198,7 +200,26 @@ export default function EspaceClientPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [expandedQuote, setExpandedQuote] = useState(null);
+  const [billingLoading, setBillingLoading] = useState(false);
   const activeTab = searchParams.get('tab') || 'overview';
+
+  const openBillingPortal = async () => {
+    setBillingLoading(true);
+    try {
+      const res = await base44.functions.invoke('createBillingPortal', {
+        returnUrl: window.location.origin + '/espace-client?tab=billing',
+      });
+      if (res.data?.url) {
+        window.open(res.data.url, '_blank');
+      } else {
+        alert(res.data?.error || 'Impossible d\'accéder au portail de facturation.');
+      }
+    } catch (e) {
+      alert('Erreur : ' + e.message);
+    } finally {
+      setBillingLoading(false);
+    }
+  };
 
   const setTab = (t) => setSearchParams({ tab: t }, { replace: true });
 
@@ -521,6 +542,79 @@ export default function EspaceClientPage() {
                       <CertificationTracking request={myCertifications[0]} />
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* BILLING */}
+              {activeTab === 'billing' && (
+                <div className="space-y-4">
+                  <h2 className="font-grotesk font-bold text-lg">Facturation & Abonnements</h2>
+
+                  {/* Certifications actives */}
+                  <div className="space-y-2">
+                    {myCertifications.filter(c => c.payment_status === 'completed').map(cert => (
+                      <div key={cert.id} className="p-5 rounded-2xl bg-card border border-border flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                          <Shield className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-grotesk font-bold text-sm">
+                            Abonnement Certification — {cert.responses?.badge_requested || 'Badge'}
+                          </p>
+                          <p className="font-mono text-xs text-muted-foreground mt-0.5">
+                            Statut : {cert.status === 'approved' ? '✓ Approuvé' : cert.status === 'pending' ? '⏳ En attente' : '✕ Refusé'}
+                            {' · '}
+                            Paiement : {cert.payment_status === 'completed' ? '✓ Actif' : cert.payment_status === 'refunded' ? '↩ Remboursé' : cert.payment_status}
+                          </p>
+                          {cert.stripe_subscription_id && (
+                            <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
+                              Sub: {cert.stripe_subscription_id}
+                            </p>
+                          )}
+                        </div>
+                        <span className={`text-xs font-inter px-2 py-0.5 rounded-full border ${
+                          cert.status === 'approved' ? 'bg-green-400/10 text-green-400 border-green-400/20' :
+                          cert.status === 'rejected' ? 'bg-red-400/10 text-red-400 border-red-400/20' :
+                          'bg-amber-400/10 text-amber-400 border-amber-400/20'
+                        }`}>
+                          {cert.status === 'approved' ? 'Actif' : cert.status === 'rejected' ? 'Annulé' : 'En cours'}
+                        </span>
+                      </div>
+                    ))}
+
+                    {myCertifications.filter(c => c.payment_status === 'completed').length === 0 && (
+                      <div className="p-6 rounded-2xl bg-card border border-border text-center">
+                        <CreditCard className="w-8 h-8 text-muted-foreground/40 mx-auto mb-3" />
+                        <p className="font-grotesk font-bold text-sm">Aucun abonnement actif</p>
+                        <p className="font-inter text-xs text-muted-foreground mt-1">Vous n'avez pas encore d'abonnement de certification.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Portail Stripe */}
+                  <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-400/5 to-primary/5 border border-blue-400/20">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-blue-400/10 border border-blue-400/20 flex items-center justify-center flex-shrink-0">
+                        <CreditCard className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-grotesk font-bold text-sm">Portail de facturation Stripe</p>
+                        <p className="font-inter text-xs text-muted-foreground mt-1 leading-relaxed">
+                          Gérez vos abonnements, consultez vos factures, mettez à jour votre moyen de paiement ou annulez un abonnement depuis le portail sécurisé Stripe.
+                        </p>
+                        <Button
+                          onClick={openBillingPortal}
+                          disabled={billingLoading}
+                          className="mt-3 gap-2 bg-blue-500 hover:bg-blue-600 text-white text-xs h-8"
+                        >
+                          {billingLoading
+                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Chargement...</>
+                            : <><ExternalLink className="w-3.5 h-3.5" /> Gérer mes abonnements</>
+                          }
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 

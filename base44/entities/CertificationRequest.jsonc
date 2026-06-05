@@ -34,7 +34,8 @@
       "enum": [
         "pending",
         "completed",
-        "failed"
+        "failed",
+        "refunded"
       ],
       "default": "pending",
       "description": "Statut du paiement"
@@ -42,6 +43,14 @@
     "stripe_session_id": {
       "type": "string",
       "description": "ID de la session Stripe"
+    },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "ID de l'abonnement Stripe"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "ID du client Stripe"
     },
     "admin_notes": {
       "type": "string",

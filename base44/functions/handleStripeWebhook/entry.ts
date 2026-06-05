@@ -40,6 +40,8 @@ Deno.serve(async (req) => {
             await base44.asServiceRole.entities.CertificationRequest.update(requests[0].id, {
               payment_status: 'completed',
               stripe_session_id: session.id,
+              stripe_subscription_id: session.subscription || '',
+              stripe_customer_id: session.customer || '',
             });
             // Send confirmation email
             try {

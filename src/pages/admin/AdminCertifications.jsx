@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { CheckCircle, XCircle, Clock, Eye, Mail, AlertCircle, Award } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Eye, Mail, AlertCircle, Award, CreditCard, RefreshCw, ExternalLink, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
@@ -77,6 +77,17 @@ export default function AdminCertifications() {
       setSelectedRequest(null);
       setAdminNotes('');
     },
+  });
+
+  const refundMutation = useMutation({
+    mutationFn: (id) => base44.functions.invoke('refundCertification', { certificationRequestId: id }),
+    onSuccess: (data) => {
+      if (data?.data?.error) { toast.error(data.data.error); return; }
+      queryClient.invalidateQueries({ queryKey: ['certification-requests'] });
+      toast.success('Remboursement effectué et email envoyé');
+      setSelectedRequest(null);
+    },
+    onError: () => toast.error('Erreur lors du remboursement'),
   });
 
   const sendEmailMutation = useMutation({
@@ -245,18 +256,39 @@ export default function AdminCertifications() {
                 <div className="bg-secondary/50 rounded-xl p-3 border border-border">
                     <p className="font-mono text-[10px] text-muted-foreground mb-1">Utilisateur</p>
                     <p className="font-grotesk font-semibold text-xs lg:text-sm">{selectedRequest.display_name || selectedRequest.user_name}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground truncate">{selectedRequest.user_email}</p>
                   </div>
                 <div className="bg-secondary/50 rounded-xl p-3 border border-border">
                   <p className="font-mono text-[10px] text-muted-foreground mb-1">Paiement</p>
                   <span className={`inline-flex items-center gap-1 text-[10px] lg:text-xs font-semibold ${
                     selectedRequest.payment_status === 'completed' ? 'text-green-400' :
+                    selectedRequest.payment_status === 'refunded' ? 'text-blue-400' :
                     selectedRequest.payment_status === 'failed' ? 'text-red-400' : 'text-yellow-400'
                   }`}>
                     {selectedRequest.payment_status === 'completed' ? '✓ Payé' :
+                     selectedRequest.payment_status === 'refunded' ? '↩ Remboursé' :
                      selectedRequest.payment_status === 'failed' ? '✕ Échoué' : '⏳ En attente'}
                   </span>
                 </div>
               </div>
+
+              {/* Stripe info */}
+              {selectedRequest.stripe_session_id && (
+                <div className="bg-secondary/50 rounded-xl p-3 border border-border space-y-2">
+                  <p className="font-mono text-[10px] text-muted-foreground flex items-center gap-1"><CreditCard className="w-3 h-3" /> Stripe</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono text-[10px] text-foreground truncate flex-1">{selectedRequest.stripe_session_id}</p>
+                    <button onClick={() => { navigator.clipboard.writeText(selectedRequest.stripe_session_id); toast.success('Copié'); }}
+                      className="p-1 rounded hover:bg-primary/10 transition-colors flex-shrink-0">
+                      <Copy className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                    <a href={`https://dashboard.stripe.com/payments/${selectedRequest.stripe_session_id}`} target="_blank" rel="noopener noreferrer"
+                      className="p-1 rounded hover:bg-primary/10 transition-colors flex-shrink-0">
+                      <ExternalLink className="w-3 h-3 text-primary" />
+                    </a>
+                  </div>
+                </div>
+              )}
 
               <div className="bg-secondary/50 rounded-xl p-3 border border-border">
                 <p className="font-mono text-[10px] text-muted-foreground mb-1">Soumis</p>

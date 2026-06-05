@@ -1,13 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-const SERVICE_LABELS = {
-  video_evenement: 'Vidéo événement',
-  inspection_toiture: 'Inspection toiture',
-  suivi_chantier: 'Suivi chantier',
-  captation_particulier: 'Captation particulier',
-  captation_entreprise: 'Captation entreprise',
-  retour_temps_reel: 'Retour temps réel',
-  autre: 'Autre prestation',
+const CONTACT_LABELS = {
+  telephone: 'Téléphone',
+  email: 'Email',
+  presentiel: 'Présentiel',
 };
 
 Deno.serve(async (req) => {
@@ -27,24 +23,24 @@ Deno.serve(async (req) => {
     // Build start/end ISO datetimes
     const startDateTime = `${appt.date}T${appt.time_start || '09:00'}:00`;
     const endDateTime = `${appt.date}T${appt.time_end || appt.time_start || '10:00'}:00`;
-    const serviceLabel = SERVICE_LABELS[appt.service_type] || appt.service_type || 'Prestation drone';
+    const contactLabel = CONTACT_LABELS[appt.contact_type] || appt.contact_type || '';
 
     const eventBody = {
-      subject: `🚁 ${serviceLabel}${appt.client_name ? ` — ${appt.client_name}` : ''}`,
+      subject: `🚁 Prestation drone${appt.client_name ? ` — ${appt.client_name}` : ''}`,
       body: {
         contentType: 'HTML',
         content: `
           <p><strong>Client :</strong> ${appt.client_name || 'N/A'}</p>
           <p><strong>Email :</strong> ${appt.client_email || 'N/A'}</p>
-          <p><strong>Prestation :</strong> ${serviceLabel}</p>
-          ${appt.location ? `<p><strong>Lieu :</strong> ${appt.location}</p>` : ''}
+          ${contactLabel ? `<p><strong>Mode de contact :</strong> ${contactLabel}</p>` : ''}
+          ${appt.meeting_address ? `<p><strong>Adresse du rendez-vous :</strong> ${appt.meeting_address}</p>` : ''}
           ${appt.notes ? `<p><strong>Notes :</strong> ${appt.notes}</p>` : ''}
           <p><em>Synchronisé depuis Brenne Aerial</em></p>
         `,
       },
       start: { dateTime: startDateTime, timeZone: 'Europe/Paris' },
       end: { dateTime: endDateTime, timeZone: 'Europe/Paris' },
-      location: appt.location ? { displayName: appt.location } : undefined,
+      location: appt.meeting_address ? { displayName: appt.meeting_address } : undefined,
     };
 
     const res = await fetch('https://graph.microsoft.com/v1.0/me/events', {

@@ -206,9 +206,7 @@ export default function EspaceClientPage() {
   const openBillingPortal = async () => {
     setBillingLoading(true);
     try {
-      const res = await base44.functions.invoke('createBillingPortal', {
-        returnUrl: window.location.origin + '/espace-client?tab=billing',
-      });
+      const res = await base44.functions.invoke('getStripePortalUrl', {});
       if (res.data?.url) {
         window.open(res.data.url, '_blank');
       } else {

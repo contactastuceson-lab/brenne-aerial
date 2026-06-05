@@ -4,8 +4,12 @@ import { base44 } from '@/api/base44Client';
 import {
   Plus, Trash2, Loader2, Check, X, ChevronLeft, ChevronRight,
   Calendar, Clock, MapPin, User, Mail, Zap, Filter, List, LayoutGrid,
-  CalendarDays, CheckCircle2, AlertCircle, Ban
+  CalendarDays, CheckCircle2, AlertCircle, Ban, Pencil, MoreVertical,
+  RefreshCw
 } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -61,11 +65,11 @@ export default function AdminAppointments() {
   const qc = useQueryClient();
   const [form, setForm] = useState(EMPTY_FORM);
   const [showForm, setShowForm] = useState(false);
+  const [editingAppt, setEditingAppt] = useState(null); // appt being edited in dialog
   const [view, setView] = useState('calendar'); // 'calendar' | 'list'
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
-  const [editAppt, setEditAppt] = useState(null);
 
   const weekStart = startOfWeek(addWeeks(new Date(), weekOffset), { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -97,6 +101,19 @@ export default function AdminAppointments() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['adm-appts-list'] }); toast.success('Supprimé'); },
     onError: () => toast.error('Erreur lors de la suppression'),
   });
+
+  const openEdit = (appt) => {
+    setForm({
+      date: appt.date || '',
+      time_start: appt.time_start || '',
+      time_end: appt.time_end || '',
+      service_type: appt.service_type || '',
+      location: appt.location || '',
+      notes: appt.notes || '',
+    });
+    setEditingAppt(appt);
+    setShowForm(true);
+  };
 
   const sorted = [...appts].sort((a, b) =>
     new Date(a.date + 'T' + (a.time_start || '00:00')) - new Date(b.date + 'T' + (b.time_start || '00:00'))
@@ -314,24 +331,22 @@ export default function AdminAppointments() {
                           )}
 
                           <div className="flex items-center gap-1 mt-3 pt-3 border-t border-border/40">
-                            {slot.status === 'scheduled' && (
-                              <Button size="sm" variant="ghost" onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'confirmed' } })} className="h-6 text-xs px-2 text-green-400 hover:bg-green-400/10 gap-1">
-                                <Check className="w-3 h-3" /> Libérer
-                              </Button>
-                            )}
-                            {slot.status === 'confirmed' && (
-                              <Button size="sm" variant="ghost" onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'completed' } })} className="h-6 text-xs px-2 text-accent hover:bg-accent/10 gap-1">
-                                <CheckCircle2 className="w-3 h-3" /> Terminer
-                              </Button>
-                            )}
-                            {['scheduled', 'confirmed'].includes(slot.status) && (
-                              <Button size="sm" variant="ghost" onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'cancelled' } })} className="h-6 text-xs px-2 text-destructive hover:bg-destructive/10 gap-1">
-                                <X className="w-3 h-3" /> Annuler
-                              </Button>
-                            )}
-                            <Button size="sm" variant="ghost" onClick={() => deleteMutation.mutate(slot.id)} className="h-6 text-xs px-2 text-destructive hover:bg-destructive/10 ml-auto">
-                              <Trash2 className="w-3 h-3" />
+                            <Button size="sm" variant="ghost" onClick={() => openEdit(slot)} className="h-6 text-xs px-2 text-muted-foreground hover:text-foreground gap-1">
+                              <Pencil className="w-3 h-3" /> Modifier
                             </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button size="sm" variant="ghost" className="h-6 px-2 ml-auto"><MoreVertical className="w-3 h-3" /></Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-44">
+                                {slot.status !== 'confirmed' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'confirmed', client_name: null, client_email: null } })} className="text-green-400 gap-2"><RefreshCw className="w-3 h-3" /> Remettre dispo</DropdownMenuItem>}
+                                {slot.status !== 'scheduled' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'scheduled' } })} className="text-primary gap-2"><Calendar className="w-3 h-3" /> Marquer réservé</DropdownMenuItem>}
+                                {slot.status !== 'completed' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'completed' } })} className="text-accent gap-2"><CheckCircle2 className="w-3 h-3" /> Marquer terminé</DropdownMenuItem>}
+                                {slot.status !== 'cancelled' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'cancelled' } })} className="text-destructive gap-2"><X className="w-3 h-3" /> Annuler</DropdownMenuItem>}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => deleteMutation.mutate(slot.id)} className="text-destructive gap-2"><Trash2 className="w-3 h-3" /> Supprimer</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </div>
                       );
@@ -424,24 +439,22 @@ export default function AdminAppointments() {
                     )}
 
                     <div className="flex items-center gap-1.5 ml-auto">
-                      {a.status === 'scheduled' && (
-                        <Button size="sm" variant="ghost" onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'confirmed' } })} className="h-7 text-xs px-2 text-green-400 hover:bg-green-400/10 gap-1">
-                          <Check className="w-3 h-3" /> Libérer
-                        </Button>
-                      )}
-                      {a.status === 'confirmed' && (
-                        <Button size="sm" variant="ghost" onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'completed' } })} className="h-7 text-xs px-2 text-accent hover:bg-accent/10 gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Terminer
-                        </Button>
-                      )}
-                      {['scheduled', 'confirmed'].includes(a.status) && (
-                        <Button size="sm" variant="ghost" onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'cancelled' } })} className="h-7 text-xs px-2 text-destructive hover:bg-destructive/10 gap-1">
-                          <X className="w-3 h-3" /> Annuler
-                        </Button>
-                      )}
-                      <Button size="sm" variant="ghost" onClick={() => deleteMutation.mutate(a.id)} className="h-7 text-xs px-2 text-destructive hover:bg-destructive/10">
-                        <Trash2 className="w-3 h-3" />
+                      <Button size="sm" variant="ghost" onClick={() => openEdit(a)} className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground gap-1">
+                        <Pencil className="w-3 h-3" /> Modifier
                       </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="ghost" className="h-7 px-2"><MoreVertical className="w-3 h-3" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44">
+                          {a.status !== 'confirmed' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'confirmed', client_name: null, client_email: null } })} className="text-green-400 gap-2"><RefreshCw className="w-3 h-3" /> Remettre dispo</DropdownMenuItem>}
+                          {a.status !== 'scheduled' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'scheduled' } })} className="text-primary gap-2"><Calendar className="w-3 h-3" /> Marquer réservé</DropdownMenuItem>}
+                          {a.status !== 'completed' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'completed' } })} className="text-accent gap-2"><CheckCircle2 className="w-3 h-3" /> Marquer terminé</DropdownMenuItem>}
+                          {a.status !== 'cancelled' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'cancelled' } })} className="text-destructive gap-2"><X className="w-3 h-3" /> Annuler</DropdownMenuItem>}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => deleteMutation.mutate(a.id)} className="text-destructive gap-2"><Trash2 className="w-3 h-3" /> Supprimer</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </motion.div>
                 );
@@ -451,12 +464,12 @@ export default function AdminAppointments() {
         </div>
       )}
 
-      {/* Add Slot Dialog */}
-      <Dialog open={showForm} onOpenChange={(o) => { setShowForm(o); if (!o) setForm(EMPTY_FORM); }}>
+      {/* Add / Edit Slot Dialog */}
+      <Dialog open={showForm} onOpenChange={(o) => { setShowForm(o); if (!o) { setForm(EMPTY_FORM); setEditingAppt(null); } }}>
         <DialogContent className="bg-card border-border max-w-md">
           <DialogHeader>
             <DialogTitle className="font-grotesk font-bold flex items-center gap-2">
-              <Zap className="w-4 h-4 text-primary" /> Nouveau créneau
+              {editingAppt ? <><Pencil className="w-4 h-4 text-primary" /> Modifier le créneau</> : <><Zap className="w-4 h-4 text-primary" /> Nouveau créneau</>}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 pt-2">
@@ -498,12 +511,20 @@ export default function AdminAppointments() {
               <Input placeholder="Notes (optionnel)" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} className="bg-secondary border-border" />
             </div>
             <Button
-              onClick={() => createMutation.mutate()}
-              disabled={!form.date || !form.time_start || createMutation.isPending}
+              onClick={() => {
+                if (editingAppt) {
+                  updateMutation.mutate({ id: editingAppt.id, data: form }, {
+                    onSuccess: () => { setShowForm(false); setForm(EMPTY_FORM); setEditingAppt(null); }
+                  });
+                } else {
+                  createMutation.mutate();
+                }
+              }}
+              disabled={!form.date || !form.time_start || createMutation.isPending || updateMutation.isPending}
               className="w-full bg-primary text-primary-foreground font-grotesk font-semibold h-10 gap-2"
             >
-              {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              Créer le créneau
+              {(createMutation.isPending || updateMutation.isPending) ? <Loader2 className="w-4 h-4 animate-spin" /> : editingAppt ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {editingAppt ? 'Enregistrer les modifications' : 'Créer le créneau'}
             </Button>
           </div>
         </DialogContent>

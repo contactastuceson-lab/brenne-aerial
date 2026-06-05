@@ -104,7 +104,7 @@ export default function SchedulerChat() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all sky-glow font-inter text-sm font-semibold"
+          className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all sky-glow font-inter text-sm font-semibold"
         >
           <Bot className="w-4 h-4" />
           Planifier avec l'IA
@@ -113,7 +113,7 @@ export default function SchedulerChat() {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 w-[360px] max-h-[600px] flex flex-col rounded-2xl border border-primary/30 bg-card shadow-2xl sky-glow overflow-hidden">
+        <div className="fixed bottom-20 md:bottom-6 right-2 md:right-6 z-50 w-[calc(100vw-16px)] md:w-[360px] max-h-[70vh] md:max-h-[600px] flex flex-col rounded-2xl border border-primary/30 bg-card shadow-2xl sky-glow overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-primary/10 border-b border-primary/20">
             <div className="flex items-center gap-2">

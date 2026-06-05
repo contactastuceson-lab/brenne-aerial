@@ -23,7 +23,7 @@ export default function PublicLayout() {
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const noFooterPaths = ['/messages', '/discover', '/forum'];
+  const noFooterPaths = ['/messages', '/discover', '/forum', '/planning'];
   const hideFooter = noFooterPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/'));
   const hiddenPaths = ['/messages', '/planning', '/forum'];
   const hideFloatingButton = hiddenPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/'));

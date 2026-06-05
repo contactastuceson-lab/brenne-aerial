@@ -107,68 +107,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* PDG-Adjoint section */}
-      <section className="py-16 px-5 lg:px-10 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="order-2 lg:order-1">
-            <p className="font-mono text-xs text-primary mb-4 tracking-widest uppercase">— PDG-Adjoint</p>
-            <h2 className="font-grotesk font-bold text-4xl mb-6">
-              Stratégie &<br /><span className="gradient-text">développement.</span>
-            </h2>
-            <div className="space-y-4 font-inter text-muted-foreground leading-relaxed">
-              <p>
-                Borys Sentenac occupe le poste de PDG-Adjoint au sein de Brenne Aerial, 
-                aux côtés du fondateur Enor Lefoulon Meyer.
-              </p>
-              <p>
-                Ses responsabilités couvrent la stratégie opérationnelle, le développement commercial 
-                et la coordination des équipes pour garantir l'excellence de chaque mission.
-              </p>
-              <p>
-                Ensemble, ils portent la vision ambitieuse de Brenne Aerial vers de nouveaux horizons, 
-                avec une exigence constante pour la qualité et l'innovation.
-              </p>
-            </div>
-            <div className="mt-8 p-4 rounded-xl bg-primary/5 border border-primary/20">
-              <div className="flex items-start gap-3">
-                <Shield className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-grotesk font-semibold text-sm">Direction bicéphale</p>
-                  <p className="font-inter text-xs text-muted-foreground mt-1">
-                    Un binôme complémentaire au service d'une vision commune : faire de Brenne Aerial 
-                    la référence nationale en matière de drone professionnel.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
 
-          <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="order-1 lg:order-2">
-            <div className="relative">
-              <div className="absolute -inset-6 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl" />
-              {/* Placeholder avatar */}
-              <div className="relative w-full rounded-2xl bg-card border border-border flex items-center justify-center"
-                style={{ aspectRatio: '4/5' }}>
-                <div className="text-center">
-                  <div className="w-24 h-24 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center mx-auto mb-4">
-                    <span className="font-grotesk font-bold text-4xl text-primary">B</span>
-                  </div>
-                  <p className="font-inter text-sm text-muted-foreground">Photo à venir</p>
-                </div>
-              </div>
-              {/* Badge overlay */}
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 glass border border-primary/20 rounded-2xl px-6 py-4 text-center sky-glow min-w-[220px]">
-                <div className="flex justify-center mb-2">
-                  <Crown className="w-5 h-5 text-primary" />
-                </div>
-                <p className="font-grotesk font-bold text-sm">Borys Sentenac</p>
-                <p className="font-mono text-xs text-muted-foreground mb-2">PDG-Adjoint</p>
-                <BadgeChip badge="Officiel" size="sm" />
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Values */}
       <section className="py-24 px-5 lg:px-10 bg-card border-y border-border">

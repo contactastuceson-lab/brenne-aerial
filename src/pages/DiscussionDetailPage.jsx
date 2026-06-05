@@ -115,7 +115,7 @@ export default function DiscussionDetailPage() {
                 size="sm" 
               />
             </div>
-            <span className="text-xs">{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
+            <span className="text-xs">{formatDistanceToNow(new Date(discussion.created_date.endsWith('Z') ? discussion.created_date : discussion.created_date + 'Z'), { locale: fr, addSuffix: true })}</span>
             <div className="flex items-center gap-1 text-xs">
               <Eye size={12} />
               {discussion.views_count || 0} vues
@@ -169,7 +169,7 @@ export default function DiscussionDetailPage() {
                         />
                       </div>
                       <p className="text-xs text-slate-400">
-                        {formatDistanceToNow(new Date(reply.created_date), { locale: fr, addSuffix: true })}
+                        {formatDistanceToNow(new Date(reply.created_date.endsWith('Z') ? reply.created_date : reply.created_date + 'Z'), { locale: fr, addSuffix: true })}
                       </p>
                     </div>
                     {reply.is_solution && (

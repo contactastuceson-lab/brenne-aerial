@@ -14,10 +14,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    const { appointment_id } = await req.json();
+    const body = await req.json();
+    // Supporte appel direct (appointment_id) ET déclenchement via automation entity
+    const appointment_id = body.appointment_id || body.event?.entity_id;
     if (!appointment_id) return Response.json({ error: 'Missing appointment_id' }, { status: 400 });
 
-    const appt = await base44.asServiceRole.entities.Appointment.get(appointment_id);
+    const appt = body.data || await base44.asServiceRole.entities.Appointment.get(appointment_id);
     if (!appt) return Response.json({ error: 'Appointment not found' }, { status: 404 });
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('outlook');

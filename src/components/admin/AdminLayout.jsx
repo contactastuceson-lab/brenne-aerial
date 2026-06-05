@@ -7,7 +7,7 @@ import {
   Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail,
   Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, Map,
   FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap,
-  SlidersHorizontal, Activity, Radar, CreditCard
+  SlidersHorizontal, Activity, Radar, CreditCard, Ban
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
@@ -34,6 +34,7 @@ const NAV_GROUPS = [
     items: [
       { path: '/admin/quotes', icon: FileText, label: 'Devis', minLevel: 60 },
       { path: '/admin/appointments', icon: Calendar, label: 'Planning', minLevel: 60 },
+      { path: '/admin/blocked-days', icon: Ban, label: 'Jours bloqués', minLevel: 60 },
       { path: '/admin/client-files', icon: FolderOpen, label: 'Fichiers Clients', minLevel: 60 },
     ]
   },

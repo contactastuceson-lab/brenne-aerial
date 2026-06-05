@@ -44,6 +44,18 @@ export default function PlanningPage() {
     staleTime: 0,
   });
 
+  const { data: blockedDays = [] } = useQuery({
+    queryKey: ['blocked-days-public'],
+    queryFn: () => base44.entities.BlockedDay.list('date', 365),
+    staleTime: 0,
+  });
+
+  const getBlockedStatus = (day) => {
+    const ds = format(day, 'yyyy-MM-dd');
+    const found = blockedDays.find(b => b.date === ds);
+    return found ? found.status : null; // 'blocked' | 'unknown' | null
+  };
+
   const bookMutation = useMutation({
     mutationFn: async (appt) => {
       await base44.entities.Appointment.update(appt.id, {
@@ -168,7 +180,11 @@ export default function PlanningPage() {
                 const today = isToday(day);
                 const past = isPast(day) && !today;
                 const selected = selectedDay && isSameDay(day, selectedDay);
-                const hasSlots = slots.length > 0 && !past;
+                const blockStatus = !past ? getBlockedStatus(day) : null; // 'blocked' | 'unknown' | null
+                const isBlocked = blockStatus === 'blocked';
+                const isUnknown = blockStatus === 'unknown';
+                const hasSlots = slots.length > 0 && !past && !isBlocked && !isUnknown;
+                const isClickable = !past && !isBlocked && !isUnknown;
 
                 return (
                   <motion.button
@@ -176,18 +192,18 @@ export default function PlanningPage() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.04 }}
-                    onClick={() => !past && setSelectedDay(selected ? null : day)}
-                    disabled={past}
+                    onClick={() => isClickable && setSelectedDay(selected ? null : day)}
+                    disabled={!isClickable}
                     className={[
                       'relative flex flex-col items-center rounded-2xl border transition-all duration-200 py-4 px-1 lg:px-3 text-center',
-                      past ? 'opacity-30 cursor-not-allowed border-border bg-card' : 'cursor-pointer',
-                      selected
-                        ? 'border-primary bg-primary/10 sky-glow scale-105'
-                        : today
-                          ? 'border-primary/40 bg-primary/5 hover:bg-primary/10'
-                          : hasSlots
-                            ? 'border-green-500/30 bg-green-500/5 hover:bg-green-500/10 hover:border-green-500/50'
-                            : 'border-border bg-card hover:bg-secondary/40',
+                      !isClickable ? 'cursor-not-allowed' : 'cursor-pointer',
+                      past ? 'opacity-30 border-border bg-card' :
+                      isBlocked ? 'border-red-500/40 bg-red-500/10 opacity-80' :
+                      isUnknown ? 'border-gray-500/30 bg-gray-500/5 opacity-70' :
+                      selected ? 'border-primary bg-primary/10 sky-glow scale-105' :
+                      today ? 'border-primary/40 bg-primary/5 hover:bg-primary/10' :
+                      hasSlots ? 'border-green-500/30 bg-green-500/5 hover:bg-green-500/10 hover:border-green-500/50' :
+                      'border-border bg-card hover:bg-secondary/40',
                     ].join(' ')}
                   >
                     {today && (
@@ -204,7 +220,11 @@ export default function PlanningPage() {
                     </p>
 
                     <div className="mt-3">
-                      {hasSlots ? (
+                      {isBlocked ? (
+                        <span className="font-mono text-[10px] text-red-400 font-bold">Indispo</span>
+                      ) : isUnknown ? (
+                        <span className="font-mono text-[10px] text-gray-400">?</span>
+                      ) : hasSlots ? (
                         <span className="flex items-center justify-center gap-1 px-2 py-0.5 rounded-full bg-green-500/20 border border-green-500/30">
                           <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                           <span className="font-mono text-[10px] text-green-500 font-bold">{slots.length}</span>
@@ -311,12 +331,16 @@ export default function PlanningPage() {
               <span className="font-inter text-xs text-muted-foreground">Créneaux disponibles</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-primary/60" />
-              <span className="font-inter text-xs text-muted-foreground">Jour sélectionné</span>
+              <span className="w-3 h-3 rounded-full bg-red-500/70" />
+              <span className="font-inter text-xs text-muted-foreground">Indisponible (bloqué)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-gray-500/70" />
+              <span className="font-inter text-xs text-muted-foreground">Incertain</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-border" />
-              <span className="font-inter text-xs text-muted-foreground">Indisponible</span>
+              <span className="font-inter text-xs text-muted-foreground">Pas de créneau</span>
             </div>
           </motion.div>
 

@@ -1,0 +1,32 @@
+{
+  "name": "BlockedDay",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date bloqu\u00e9e (yyyy-MM-dd)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "blocked",
+        "unknown"
+      ],
+      "default": "blocked",
+      "description": "blocked = rouge (indisponible), unknown = gris (incertain)"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Raison du blocage (optionnel)"
+    },
+    "blocked_by_quote_id": {
+      "type": "string",
+      "description": "ID du devis ayant provoqu\u00e9 le blocage automatique"
+    }
+  },
+  "required": [
+    "date",
+    "status"
+  ]
+}

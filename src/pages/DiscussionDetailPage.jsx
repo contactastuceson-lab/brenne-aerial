@@ -107,7 +107,7 @@ export default function DiscussionDetailPage() {
                   {discussion.author_name?.[0]?.toUpperCase() || '?'}
                 </div>
               )}
-              <span className={`truncate max-w-[140px] ${discussion.author_is_supreme ? 'text-amber-300' : ''}`}>
+              <span className={`truncate max-w-[140px] ${discussion.author_is_supreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
                 {discussion.author_display_name || discussion.author_name}
               </span>
               <VerificationIcons 

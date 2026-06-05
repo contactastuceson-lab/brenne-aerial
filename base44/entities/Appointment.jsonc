@@ -30,22 +30,37 @@
     "location": {
       "type": "string"
     },
+    "contact_type": {
+      "type": "string",
+      "enum": [
+        "telephone",
+        "email",
+        "presentiel"
+      ],
+      "description": "Type de contact souhait\u00e9 par le client"
+    },
+    "meeting_address": {
+      "type": "string",
+      "description": "Adresse du lieu de rendez-vous (si pr\u00e9sentiel)"
+    },
     "status": {
       "type": "string",
       "enum": [
-        "scheduled",
         "confirmed",
+        "pending",
+        "scheduled",
         "completed",
         "cancelled"
       ],
-      "default": "scheduled"
+      "default": "confirmed",
+      "description": "confirmed = cr\u00e9neau dispo publi\u00e9, pending = demande en attente d'approbation admin, scheduled = accept\u00e9, completed = termin\u00e9, cancelled = annul\u00e9/refus\u00e9"
     },
     "notes": {
       "type": "string"
     },
     "google_event_id": {
       "type": "string",
-      "description": "ID \u00e9v\u00e9nement Google Calendar"
+      "description": "ID \u00e9v\u00e9nement Outlook Calendar"
     }
   },
   "required": [

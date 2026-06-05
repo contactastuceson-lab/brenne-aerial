@@ -8,8 +8,10 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import {
   Calendar, Clock, Check,
-  Loader2, MapPin, Zap, Info, X, ArrowRight, Wifi
+  Loader2, MapPin, Zap, Info, X, ArrowRight, Wifi, Phone, Mail, Users
 } from 'lucide-react';
+import AddressAutocomplete from '@/components/quote/AddressAutocomplete';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import CalendarViewSwitcher from '@/components/planning/CalendarViewSwitcher';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +35,7 @@ export default function PlanningPage() {
   const queryClient = useQueryClient();
   const [selectedDay, setSelectedDay] = useState(null);
   const [booking, setBooking] = useState(null);
-  const [bookForm, setBookForm] = useState({ client_name: '', client_email: '', notes: '' });
+  const [bookForm, setBookForm] = useState({ client_name: '', client_email: '', contact_type: '', meeting_address: '', notes: '' });
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['public-appointments'],
@@ -56,28 +58,19 @@ export default function PlanningPage() {
   const bookMutation = useMutation({
     mutationFn: async (appt) => {
       await base44.entities.Appointment.update(appt.id, {
-        status: 'scheduled',
+        status: 'pending',
         client_name: bookForm.client_name,
         client_email: bookForm.client_email,
+        contact_type: bookForm.contact_type,
+        meeting_address: bookForm.contact_type === 'presentiel' ? bookForm.meeting_address : null,
         notes: bookForm.notes,
-      });
-      await base44.functions.invoke('sendQuoteEmail', {
-        type: 'appointment_confirmed',
-        clientName: bookForm.client_name,
-        clientEmail: bookForm.client_email,
-        date: format(new Date(appt.date), 'EEEE d MMMM yyyy', { locale: fr }),
-        timeStart: appt.time_start,
-        timeEnd: appt.time_end || null,
-        serviceType: appt.service_type || null,
-        location: appt.location || null,
-        notes: bookForm.notes || null,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-appointments'] });
       setBooking(null);
-      setBookForm({ client_name: '', client_email: '', notes: '' });
-      toast.success('Créneau réservé ! Confirmation envoyée par email.');
+      setBookForm({ client_name: '', client_email: '', contact_type: '', meeting_address: '', notes: '' });
+      toast.success('Demande envoyée ! Vous recevrez une confirmation par email.');
     },
   });
 
@@ -302,6 +295,45 @@ export default function PlanningPage() {
                     onChange={e => setBookForm(p => ({ ...p, client_email: e.target.value }))}
                     className="bg-secondary border-border font-inter"
                   />
+
+                  {/* Type de contact */}
+                  <div>
+                    <p className="font-inter text-xs text-muted-foreground mb-2">Comment souhaitez-vous qu'on vous contacte ? *</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { value: 'telephone', label: 'Téléphone', icon: Phone },
+                        { value: 'email', label: 'Email', icon: Mail },
+                        { value: 'presentiel', label: 'Présentiel', icon: Users },
+                      ].map(({ value, label, icon: Icon }) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setBookForm(p => ({ ...p, contact_type: value }))}
+                          className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-xs font-inter transition-all ${
+                            bookForm.contact_type === value
+                              ? 'border-primary bg-primary/10 text-primary'
+                              : 'border-border bg-secondary text-muted-foreground hover:border-primary/40'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Adresse si présentiel */}
+                  {bookForm.contact_type === 'presentiel' && (
+                    <div>
+                      <p className="font-inter text-xs text-muted-foreground mb-1.5">Adresse du rendez-vous *</p>
+                      <AddressAutocomplete
+                        value={bookForm.meeting_address}
+                        onChange={v => setBookForm(p => ({ ...p, meeting_address: v }))}
+                        placeholder="Rechercher une adresse…"
+                      />
+                    </div>
+                  )}
+
                   <Textarea
                     placeholder="Notes ou précisions (optionnel)"
                     value={bookForm.notes}
@@ -312,17 +344,23 @@ export default function PlanningPage() {
 
                 <Button
                   onClick={() => bookMutation.mutate(booking)}
-                  disabled={!bookForm.client_name || !bookForm.client_email || bookMutation.isPending}
+                  disabled={
+                    !bookForm.client_name ||
+                    !bookForm.client_email ||
+                    !bookForm.contact_type ||
+                    (bookForm.contact_type === 'presentiel' && !bookForm.meeting_address) ||
+                    bookMutation.isPending
+                  }
                   className="w-full bg-primary text-primary-foreground font-grotesk font-semibold sky-glow h-11"
                 >
                   {bookMutation.isPending
-                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Réservation en cours…</>
-                    : <><Check className="w-4 h-4 mr-2" /> Confirmer la réservation</>
+                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Envoi en cours…</>
+                    : <><Check className="w-4 h-4 mr-2" /> Envoyer ma demande</>
                   }
                 </Button>
 
                 <p className="font-inter text-xs text-center text-muted-foreground">
-                  Un email de confirmation sera envoyé à l'adresse renseignée.
+                  Votre demande sera examinée et vous recevrez une réponse par email.
                 </p>
               </div>
             </>

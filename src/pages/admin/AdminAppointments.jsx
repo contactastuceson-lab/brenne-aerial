@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import {
   Plus, Trash2, Loader2, Check, X,
   Calendar, Clock, MapPin, User, Mail, Zap, Filter, List, LayoutGrid,
-  CalendarDays, CheckCircle2, Ban, Pencil, MoreVertical, RefreshCw
+  CalendarDays, CheckCircle2, Ban, Pencil, MoreVertical, RefreshCw, Phone, Users
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
@@ -33,9 +33,10 @@ const SERVICE_LABELS = Object.fromEntries(SERVICE_OPTIONS.map(s => [s.value, s.l
 
 const STATUS_CONFIG = {
   confirmed: { label: 'Disponible', color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/30', icon: CheckCircle2 },
-  scheduled: { label: 'Réservé', color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/30', icon: Calendar },
+  pending: { label: 'En attente', color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/40', icon: Clock },
+  scheduled: { label: 'Accepté', color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/30', icon: Calendar },
   completed: { label: 'Terminé', color: 'text-muted-foreground', bg: 'bg-secondary', border: 'border-border', icon: Check },
-  cancelled: { label: 'Annulé', color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/30', icon: Ban },
+  cancelled: { label: 'Refusé/Annulé', color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/30', icon: Ban },
 };
 
 const EMPTY_FORM = { date: '', time_start: '', time_end: '', service_type: '', location: '', notes: '' };
@@ -114,9 +115,12 @@ export default function AdminAppointments() {
   const selectedDaySlots = selectedDay ? getSlotsForDay(selectedDay) : [];
   const getBlockForDay = (day) => { const ds = format(day, 'yyyy-MM-dd'); return blockedDays.find(b => b.date === ds) || null; };
 
+  const pendingAppts = appts.filter(a => a.status === 'pending');
+
   const stats = {
     total: appts.length,
     available: appts.filter(a => a.status === 'confirmed' && !a.client_email).length,
+    pending: pendingAppts.length,
     booked: appts.filter(a => a.status === 'scheduled').length,
     completed: appts.filter(a => a.status === 'completed').length,
   };
@@ -148,12 +152,66 @@ export default function AdminAppointments() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <StatCard label="Total" value={stats.total} color="bg-secondary text-foreground" icon={CalendarDays} />
         <StatCard label="Disponibles" value={stats.available} color="bg-green-400/10 text-green-400" icon={CheckCircle2} />
-        <StatCard label="Réservés" value={stats.booked} color="bg-primary/10 text-primary" icon={Calendar} />
+        <StatCard label="En attente" value={stats.pending} color="bg-yellow-400/10 text-yellow-400" icon={Clock} />
+        <StatCard label="Acceptés" value={stats.booked} color="bg-primary/10 text-primary" icon={Calendar} />
         <StatCard label="Terminés" value={stats.completed} color="bg-secondary text-muted-foreground" icon={Check} />
       </div>
+
+      {/* Pending appointments alert */}
+      {pendingAppts.length > 0 && (
+        <div className="rounded-2xl border border-yellow-400/30 bg-yellow-400/5 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="w-4 h-4 text-yellow-400" />
+            <h2 className="font-grotesk font-bold text-sm text-yellow-400">{pendingAppts.length} demande{pendingAppts.length > 1 ? 's' : ''} en attente de validation</h2>
+          </div>
+          <div className="space-y-3">
+            {pendingAppts.map(appt => (
+              <div key={appt.id} className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-card border border-yellow-400/20">
+                <div className="flex items-center gap-2 min-w-[160px]">
+                  <Clock className="w-4 h-4 text-yellow-400" />
+                  <div>
+                    <p className="font-grotesk font-semibold text-sm">{appt.date}</p>
+                    <p className="font-mono text-xs text-yellow-400">{appt.time_start}{appt.time_end ? ` → ${appt.time_end}` : ''}</p>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-[200px]">
+                  <p className="font-inter text-sm font-medium flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-muted-foreground" /> {appt.client_name}</p>
+                  <p className="font-inter text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5"><Mail className="w-3 h-3" /> {appt.client_email}</p>
+                  {appt.contact_type && (
+                    <p className="font-inter text-xs text-muted-foreground mt-0.5">
+                      Contact : <span className="text-foreground capitalize">{appt.contact_type}</span>
+                      {appt.contact_type === 'presentiel' && appt.meeting_address && ` — ${appt.meeting_address}`}
+                    </p>
+                  )}
+                  {appt.notes && <p className="font-inter text-xs text-muted-foreground mt-0.5 italic">"{appt.notes}"</p>}
+                </div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <Button
+                    size="sm"
+                    onClick={() => updateMutation.mutate({ id: appt.id, data: { status: 'scheduled' } })}
+                    className="bg-green-500 hover:bg-green-600 text-white gap-1.5 h-8 text-xs"
+                    disabled={updateMutation.isPending}
+                  >
+                    <Check className="w-3 h-3" /> Accepter
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => updateMutation.mutate({ id: appt.id, data: { status: 'cancelled' } })}
+                    className="border-destructive/40 text-destructive hover:bg-destructive/10 gap-1.5 h-8 text-xs"
+                    disabled={updateMutation.isPending}
+                  >
+                    <X className="w-3 h-3" /> Refuser
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
@@ -240,11 +298,12 @@ export default function AdminAppointments() {
                               <DropdownMenuTrigger asChild>
                                 <Button size="sm" variant="ghost" className="h-6 px-2 ml-auto"><MoreVertical className="w-3 h-3" /></Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-44">
-                                {slot.status !== 'confirmed' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'confirmed', client_name: null, client_email: null } })} className="text-green-400 gap-2"><RefreshCw className="w-3 h-3" /> Remettre dispo</DropdownMenuItem>}
-                                {slot.status !== 'scheduled' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'scheduled' } })} className="text-primary gap-2"><Calendar className="w-3 h-3" /> Marquer réservé</DropdownMenuItem>}
+                              <DropdownMenuContent align="end" className="w-48">
+                                {slot.status === 'pending' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'scheduled' } })} className="text-green-400 gap-2"><Check className="w-3 h-3" /> Accepter la demande</DropdownMenuItem>}
+                                {slot.status !== 'confirmed' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'confirmed', client_name: null, client_email: null, contact_type: null, meeting_address: null } })} className="text-green-400 gap-2"><RefreshCw className="w-3 h-3" /> Remettre dispo</DropdownMenuItem>}
+                                {slot.status !== 'scheduled' && slot.status !== 'pending' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'scheduled' } })} className="text-primary gap-2"><Calendar className="w-3 h-3" /> Marquer accepté</DropdownMenuItem>}
                                 {slot.status !== 'completed' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'completed' } })} className="text-accent gap-2"><CheckCircle2 className="w-3 h-3" /> Marquer terminé</DropdownMenuItem>}
-                                {slot.status !== 'cancelled' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'cancelled' } })} className="text-destructive gap-2"><X className="w-3 h-3" /> Annuler</DropdownMenuItem>}
+                                {slot.status !== 'cancelled' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: slot.id, data: { status: 'cancelled' } })} className="text-destructive gap-2"><X className="w-3 h-3" /> Refuser/Annuler</DropdownMenuItem>}
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => deleteMutation.mutate(slot.id)} className="text-destructive gap-2"><Trash2 className="w-3 h-3" /> Supprimer</DropdownMenuItem>
                               </DropdownMenuContent>
@@ -314,13 +373,14 @@ export default function AdminAppointments() {
                         <DropdownMenuTrigger asChild>
                           <Button size="sm" variant="ghost" className="h-7 px-2"><MoreVertical className="w-3 h-3" /></Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-44">
-                          {a.status !== 'confirmed' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'confirmed', client_name: null, client_email: null } })} className="text-green-400 gap-2"><RefreshCw className="w-3 h-3" /> Remettre dispo</DropdownMenuItem>}
-                          {a.status !== 'scheduled' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'scheduled' } })} className="text-primary gap-2"><Calendar className="w-3 h-3" /> Marquer réservé</DropdownMenuItem>}
-                          {a.status !== 'completed' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'completed' } })} className="text-accent gap-2"><CheckCircle2 className="w-3 h-3" /> Marquer terminé</DropdownMenuItem>}
-                          {a.status !== 'cancelled' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'cancelled' } })} className="text-destructive gap-2"><X className="w-3 h-3" /> Annuler</DropdownMenuItem>}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => deleteMutation.mutate(a.id)} className="text-destructive gap-2"><Trash2 className="w-3 h-3" /> Supprimer</DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="w-48">
+                         {a.status === 'pending' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'scheduled' } })} className="text-green-400 gap-2"><Check className="w-3 h-3" /> Accepter la demande</DropdownMenuItem>}
+                         {a.status !== 'confirmed' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'confirmed', client_name: null, client_email: null, contact_type: null, meeting_address: null } })} className="text-green-400 gap-2"><RefreshCw className="w-3 h-3" /> Remettre dispo</DropdownMenuItem>}
+                         {a.status !== 'scheduled' && a.status !== 'pending' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'scheduled' } })} className="text-primary gap-2"><Calendar className="w-3 h-3" /> Marquer accepté</DropdownMenuItem>}
+                         {a.status !== 'completed' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'completed' } })} className="text-accent gap-2"><CheckCircle2 className="w-3 h-3" /> Marquer terminé</DropdownMenuItem>}
+                         {a.status !== 'cancelled' && <DropdownMenuItem onClick={() => updateMutation.mutate({ id: a.id, data: { status: 'cancelled' } })} className="text-destructive gap-2"><X className="w-3 h-3" /> Refuser/Annuler</DropdownMenuItem>}
+                         <DropdownMenuSeparator />
+                         <DropdownMenuItem onClick={() => deleteMutation.mutate(a.id)} className="text-destructive gap-2"><Trash2 className="w-3 h-3" /> Supprimer</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>

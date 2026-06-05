@@ -47,6 +47,7 @@ Deno.serve(async (req) => {
             try {
               await base44.asServiceRole.integrations.Core.SendEmail({
                 to: userEmail,
+                from: 'billing@brenneaerial.fr',
                 subject: '✓ Paiement reçu - Certification Brenne Aerial',
                 body: `<p>Bonjour ${metadata.userName || ''},</p><p>Votre paiement pour la certification Brenne Aerial a bien été reçu. Notre équipe examinera votre dossier sous 5 jours ouvrables.</p><p>Cordialement,<br>L'équipe Brenne Aerial</p>`,
               });

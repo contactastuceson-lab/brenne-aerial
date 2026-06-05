@@ -65,11 +65,12 @@ Deno.serve(async (req) => {
     try {
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: certRequest.user_email,
+        from: 'billing@brenneaerial.fr',
         subject: '💸 Remboursement effectué - Certification Brenne Aerial',
         body: `<p>Bonjour ${certRequest.user_name || ''},</p>
 <p>Suite au refus de votre demande de certification, votre paiement a été remboursé intégralement.</p>
 <p>Le remboursement apparaîtra sur votre relevé bancaire sous 5 à 10 jours ouvrables.</p>
-<p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+<p>Si vous avez des questions, n'hésitez pas à nous contacter à <a href="mailto:billing@brenneaerial.fr">billing@brenneaerial.fr</a>.</p>
 <p>Cordialement,<br>L'équipe Brenne Aerial</p>`,
       });
     } catch (e) {

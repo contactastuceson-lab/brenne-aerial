@@ -296,11 +296,19 @@ export default function CertificationRequest({ onClose, user }) {
   const [loading, setLoading] = useState(false);
   const [certEnabled, setCertEnabled] = useState(true);
   const [badgeCounts, setBadgeCounts] = useState({});
+  const [pendingRequest, setPendingRequest] = useState(null);
 
   useEffect(() => {
     base44.entities.AppSettings.filter({ key: 'certifications_enabled' }).then(s => {
       if (s.length > 0) setCertEnabled(s[0].value === 'true');
     }).catch(() => {});
+
+    // Vérifier si une demande est déjà en cours
+    if (user?.email) {
+      base44.entities.CertificationRequest.filter({ user_email: user.email, status: 'pending' }).then(requests => {
+        if (requests.length > 0) setPendingRequest(requests[0]);
+      }).catch(() => {});
+    }
 
     // Count profiles per verification level
     base44.entities.User.list().then(users => {
@@ -409,8 +417,27 @@ export default function CertificationRequest({ onClose, user }) {
               </motion.div>
             )}
 
+            {/* PENDING REQUEST BLOCK */}
+            {certEnabled && stage === 'choose' && pendingRequest && (
+              <motion.div key="pending" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center space-y-4 py-8">
+                <div className="w-16 h-16 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center mx-auto">
+                  <AlertCircle className="w-8 h-8 text-amber-400" />
+                </div>
+                <div>
+                  <p className="font-grotesk font-bold text-lg">Demande déjà en cours</p>
+                  <p className="font-inter text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
+                    Vous avez déjà une demande de certification en attente d'examen. Notre équipe vous répondra sous 5 jours ouvrables.
+                  </p>
+                  <p className="font-mono text-xs text-muted-foreground mt-3">
+                    Badge demandé : <span className="text-primary">{pendingRequest.responses?.badge_requested || '—'}</span>
+                  </p>
+                </div>
+                <Button onClick={onClose} className="w-full">Fermer</Button>
+              </motion.div>
+            )}
+
             {/* CHOOSE LEVEL */}
-            {certEnabled && stage === 'choose' && (
+            {certEnabled && stage === 'choose' && !pendingRequest && (
               <motion.div key="choose" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
                 <p className="font-inter text-sm text-muted-foreground mb-4">Sélectionnez le niveau correspondant à votre profil. Chaque niveau comporte plusieurs étapes de validation.</p>
                 {BADGE_LEVELS.map(level => {

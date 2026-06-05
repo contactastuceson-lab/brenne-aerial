@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Check, Upload, Loader2, Calculator, Video, Building2, HardHat, Camera, Briefcase, Wifi, Sparkles, Home, LogIn, FileText, Shield } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Upload, Loader2, Calculator, Video, Building2, HardHat, Camera, Briefcase, Wifi, Sparkles, Home, LogIn, FileText, Shield, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,6 +51,7 @@ export default function QuotePage() {
   const [quotesEnabled, setQuotesEnabled] = useState(true);
   const [servicePrices, setServicePrices] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pendingQuote, setPendingQuote] = useState(null);
 
   const [termsAccepted, setTermsAccepted] = useState(false);
 
@@ -71,11 +72,13 @@ export default function QuotePage() {
         const prices = await getServicePrices();
         setServicePrices(prices);
 
-        // Si connecté, pré-remplir le formulaire
+        // Si connecté, pré-remplir le formulaire et vérifier un devis en cours
         const authed = await base44.auth.isAuthenticated();
         if (authed) {
           const user = await base44.auth.me();
           setForm(p => ({ ...p, client_name: user.full_name, client_email: user.email, client_phone: user.phone || '' }));
+          const existingQuotes = await base44.entities.Quote.filter({ client_email: user.email, status: 'pending' }).catch(() => []);
+          if (existingQuotes.length > 0) setPendingQuote(existingQuotes[0]);
         }
       } finally {
         setLoading(false);
@@ -152,6 +155,33 @@ export default function QuotePage() {
 
   if (!quotesEnabled) {
     return <FeatureDisabled title="Devis désactivés" message="Les demandes de devis sont temporairement désactivées. Revenez bientôt ou contactez-nous directement." />;
+  }
+
+  if (pendingQuote) {
+    return (
+      <div className="pt-16 min-h-screen flex items-center justify-center px-5">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center max-w-md">
+          <div className="w-20 h-20 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-10 h-10 text-amber-400" />
+          </div>
+          <h2 className="font-grotesk font-bold text-3xl mb-3">Devis déjà en cours</h2>
+          <p className="font-inter text-muted-foreground mb-2">
+            Vous avez déjà un devis en attente de traitement. Notre équipe reviendra vers vous sous 48h.
+          </p>
+          <p className="font-mono text-xs text-muted-foreground mt-2">
+            Service : <span className="text-primary">{SERVICE_OPTIONS.find(s => s.key === pendingQuote.service_type)?.label || pendingQuote.service_type}</span>
+          </p>
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+            <Button onClick={() => navigate('/espace-client')} className="gap-2 bg-primary text-primary-foreground font-grotesk">
+              <LogIn className="w-4 h-4" /> Espace client
+            </Button>
+            <Button onClick={() => navigate('/')} variant="outline" className="gap-2 border-border font-grotesk">
+              <Home className="w-4 h-4" /> Accueil
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
   }
 
   if (sent) {

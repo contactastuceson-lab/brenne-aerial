@@ -128,12 +128,12 @@ export default function PublicLayout() {
       <AnnouncementBanner user={user} />
       
       {/* Desktop: Navbar */}
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <Navbar />
       </div>
       
-      {/* Mobile: AppHeader */}
-      <div className="md:hidden">
+      {/* Mobile/Tablet: AppHeader */}
+      <div className="lg:hidden">
         <AppHeader />
       </div>
       
@@ -152,8 +152,8 @@ export default function PublicLayout() {
       
       {!hideFooter && <Footer />}
 
-      {/* Mobile: BottomTabBar */}
-      <div className="md:hidden">
+      {/* Mobile/Tablet: BottomTabBar */}
+      <div className="lg:hidden">
         <BottomTabBar />
       </div>
 

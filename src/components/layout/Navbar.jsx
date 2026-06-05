@@ -80,7 +80,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map(link => (
               <Link
                 key={link.to}
@@ -156,7 +156,7 @@ export default function Navbar() {
                 <NotificationsPanel user={user} open={notifsOpen} onClose={() => setNotifsOpen(false)} />
 
                 {/* Profile dropdown menu */}
-                <div className="hidden sm:flex items-center gap-2">
+                <div className="hidden lg:flex items-center gap-2">
                   <Link
                     to="/profile"
                     className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden hover:bg-primary/20 transition-colors"
@@ -175,7 +175,7 @@ export default function Navbar() {
                 {hasAdminAccess(user) && (
                   <Link
                     to="/admin"
-                    className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-inter bg-secondary hover:bg-secondary/80 transition-colors"
+                    className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-inter bg-secondary hover:bg-secondary/80 transition-colors"
                   >
                     <LayoutDashboard className="w-4 h-4" />
                     Admin
@@ -195,13 +195,13 @@ export default function Navbar() {
               <>
                 <button
                   onClick={() => base44.auth.redirectToLogin()}
-                  className="hidden sm:inline-flex px-4 py-2 rounded-lg text-sm font-inter text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                  className="hidden lg:inline-flex px-4 py-2 rounded-lg text-sm font-inter text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
                 >
                   Connexion
                 </button>
                 <Link
                   to="/quote"
-                  className="hidden sm:inline-flex px-4 py-2 rounded-lg text-sm font-inter text-foreground bg-secondary hover:bg-secondary/80 transition-colors"
+                  className="hidden lg:inline-flex px-4 py-2 rounded-lg text-sm font-inter text-foreground bg-secondary hover:bg-secondary/80 transition-colors"
                 >
                   Devis gratuit
                 </Link>
@@ -211,7 +211,7 @@ export default function Navbar() {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -226,7 +226,7 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="md:hidden py-4 space-y-2 border-t border-border/60"
+            className="lg:hidden py-4 space-y-2 border-t border-border/60"
           >
             {NAV_LINKS.map(link => (
               <Link

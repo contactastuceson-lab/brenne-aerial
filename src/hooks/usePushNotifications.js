@@ -4,7 +4,7 @@ import { messaging, getToken, onMessage } from '@/lib/firebase';
 
 // This VAPID key must match the Web Push certificate in Firebase Console:
 // Project Settings → Cloud Messaging → Web Push certificates → Key pair
-const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY || '';
+const VAPID_KEY = 'BChyCdgbq1OWnEXlqjxkldpt9GyJjASfBedE6TZmg2Ke2TOXYylprgxzhtKnEiZEhf6Wxd8ExVj1eXc2uDlIP-g';
 
 function getBrowserName() {
   const ua = navigator.userAgent;

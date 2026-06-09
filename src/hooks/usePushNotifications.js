@@ -50,33 +50,41 @@ export function usePushNotifications() {
   const subscribe = async () => {
     setIsLoading(true);
     try {
+      console.log('[Push] Registering service worker...');
       const reg = await navigator.serviceWorker.register('/sw.js');
+      console.log('[Push] SW registered, waiting ready...');
       await navigator.serviceWorker.ready;
+      console.log('[Push] SW ready, requesting permission...');
 
       const perm = await Notification.requestPermission();
       setPermission(perm);
+      console.log('[Push] Permission:', perm);
       if (perm !== 'granted') {
         setIsLoading(false);
         return false;
       }
 
+      console.log('[Push] Subscribing to push manager...');
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
+      console.log('[Push] Subscribed:', sub.endpoint);
 
       const deviceName = `${navigator.platform || 'Appareil'} — ${getBrowserName()}`;
-      await base44.functions.invoke('savePushSubscription', {
+      console.log('[Push] Saving to backend...');
+      const res = await base44.functions.invoke('savePushSubscription', {
         subscription: sub.toJSON(),
         action: 'subscribe',
         device_name: deviceName,
       });
+      console.log('[Push] Backend response:', res.data);
 
       setIsSubscribed(true);
       setIsLoading(false);
       return true;
     } catch (err) {
-      console.error('Push subscribe error:', err);
+      console.error('[Push] subscribe error:', err);
       setIsLoading(false);
       return false;
     }

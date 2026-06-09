@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Mail, MessageSquare, Loader2, Smartphone, BellOff } from 'lucide-react';
+import { Bell, Mail, MessageSquare, Loader2, Smartphone, BellOff, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useMutation } from '@tanstack/react-query';
@@ -114,6 +114,24 @@ export default function NotificationSettings({ user }) {
     },
   ];
 
+  const [testLoading, setTestLoading] = useState(false);
+
+  const handleTestPush = async () => {
+    setTestLoading(true);
+    try {
+      await base44.functions.invoke('sendWebPush', {
+        user_email: user.email,
+        title: '🔔 Test notification',
+        body: 'Les notifications push fonctionnent correctement !',
+        url: 'https://brenneaerial.fr',
+      });
+      toast.success('Notification de test envoyée !');
+    } catch (err) {
+      toast.error('Erreur lors de l\'envoi du test');
+    }
+    setTestLoading(false);
+  };
+
   const handlePushToggle = async () => {
     if (isSubscribed) {
       await unsubscribe();
@@ -157,15 +175,30 @@ export default function NotificationSettings({ user }) {
                 </p>
               </div>
             </div>
-            <Button
-              size="sm"
-              variant={isSubscribed ? 'outline' : 'default'}
-              onClick={handlePushToggle}
-              disabled={pushLoading || permission === 'denied'}
-              className="font-inter text-xs"
-            >
-              {pushLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : isSubscribed ? 'Désactiver' : 'Activer'}
-            </Button>
+            <div className="flex items-center gap-2">
+              {isSubscribed && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleTestPush}
+                  disabled={testLoading}
+                  className="font-inter text-xs gap-1.5"
+                  title="Envoyer une notification de test"
+                >
+                  {testLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <FlaskConical className="w-3 h-3" />}
+                  Test
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant={isSubscribed ? 'outline' : 'default'}
+                onClick={handlePushToggle}
+                disabled={pushLoading || permission === 'denied'}
+                className="font-inter text-xs"
+              >
+                {pushLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : isSubscribed ? 'Désactiver' : 'Activer'}
+              </Button>
+            </div>
           </div>
         </motion.div>
       )}

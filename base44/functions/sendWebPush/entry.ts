@@ -1,48 +1,76 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import webpush from 'npm:web-push@3.6.7';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { user_email, title, body, url } = await req.json();
 
-    if (!user_email) return Response.json({ error: 'user_email required' }, { status: 400 });
+    if (!user_email || !title) {
+      return Response.json({ error: 'user_email and title are required' }, { status: 400 });
+    }
 
-    webpush.setVapidDetails(
-      'mailto:support@brenneaerial.fr',
-      Deno.env.get('VAPID_PUBLIC_KEY'),
-      Deno.env.get('VAPID_PRIVATE_KEY')
-    );
+    const fcmServerKey = Deno.env.get('FCM_SERVER_KEY');
+    if (!fcmServerKey) {
+      return Response.json({ error: 'FCM_SERVER_KEY not configured' }, { status: 500 });
+    }
 
     const subscriptions = await base44.asServiceRole.entities.PushSubscription.filter({ user_email });
 
-    if (subscriptions.length === 0) {
-      return Response.json({ sent: 0, message: 'No subscriptions found' });
+    if (!subscriptions.length) {
+      return Response.json({ success: true, sent: 0, message: 'No subscriptions found' });
     }
 
-    const payload = JSON.stringify({
-      title: title || 'Brenne Aerial',
-      body: body || '',
-      url: url || 'https://brenneaerial.fr',
-    });
+    let sent = 0;
+    const toDelete = [];
 
-    const results = await Promise.allSettled(
-      subscriptions.map(sub =>
-        webpush.sendNotification(JSON.parse(sub.subscription_json), payload)
-      )
-    );
+    await Promise.all(subscriptions.map(async (sub) => {
+      try {
+        const endpoint = sub.subscription_json
+          ? JSON.parse(sub.subscription_json).endpoint
+          : null;
 
-    // Clean up expired subscriptions (410 Gone)
-    await Promise.allSettled(
-      results.map(async (result, i) => {
-        if (result.status === 'rejected' && result.reason?.statusCode === 410) {
-          await base44.asServiceRole.entities.PushSubscription.delete(subscriptions[i].id);
+        if (!endpoint) return;
+
+        const res = await fetch('https://fcm.googleapis.com/fcm/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': `key=${fcmServerKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: endpoint,
+            notification: {
+              title,
+              body: body || '',
+              icon: '/icon-192.png',
+              click_action: url || 'https://brenneaerial.fr',
+            },
+            webpush: {
+              fcm_options: { link: url || 'https://brenneaerial.fr' },
+            },
+          }),
+        });
+
+        const data = await res.json();
+        console.log('[sendWebPush] FCM response:', JSON.stringify(data));
+
+        if (data.failure === 1) {
+          const result = data.results?.[0];
+          if (result?.error === 'NotRegistered' || result?.error === 'InvalidRegistration') {
+            toDelete.push(sub.id);
+          }
+        } else {
+          sent++;
         }
-      })
-    );
+      } catch (err) {
+        console.error('[sendWebPush] Error sending to subscription:', err.message);
+      }
+    }));
 
-    const sent = results.filter(r => r.status === 'fulfilled').length;
-    return Response.json({ sent, total: subscriptions.length });
+    // Clean up invalid subscriptions
+    await Promise.all(toDelete.map(id => base44.asServiceRole.entities.PushSubscription.delete(id)));
+
+    return Response.json({ success: true, sent, deleted: toDelete.length });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

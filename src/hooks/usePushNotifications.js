@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { messaging, getToken, onMessage } from '@/lib/firebase';
 
-const VAPID_PUBLIC_KEY = 'BLi1I-uHAqIFmwF3u6eR50tTwm9q4v3-iMLtCeHzCEcd2i5g2ZZtc4ZArsib7XHOhogyc16QPcLi5opFS548Gqo';
-
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
-}
+const VAPID_KEY = 'BLi1I-uHAqIFmwF3u6eR50tTwm9q4v3-iMLtCeHzCEcd2i5g2ZZtc4ZArsib7XHOhogyc16QPcLi5opFS548Gqo';
 
 function getBrowserName() {
   const ua = navigator.userAgent;
@@ -26,11 +20,8 @@ export function usePushNotifications() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const hasSW = 'serviceWorker' in navigator;
-    const hasPush = 'PushManager' in window;
-    const hasNotif = 'Notification' in window;
-    const supported = hasSW && hasPush && hasNotif;
-    console.log('[Push] Support check — SW:', hasSW, '| PushManager:', hasPush, '| Notification:', hasNotif, '| supported:', supported);
+    const supported = 'Notification' in window && 'serviceWorker' in navigator;
+    console.log('[FCM] Support check — Notification:', 'Notification' in window, '| SW:', 'serviceWorker' in navigator);
     setIsSupported(supported);
     if (supported) {
       setPermission(Notification.permission);
@@ -40,52 +31,54 @@ export function usePushNotifications() {
 
   const checkSubscription = async () => {
     try {
-      const reg = await navigator.serviceWorker.getRegistration('/sw.js');
-      if (reg) {
-        const sub = await reg.pushManager.getSubscription();
-        setIsSubscribed(!!sub);
-      }
+      const user = await base44.auth.me();
+      if (!user) return;
+      const subs = await base44.entities.PushSubscription.filter({ user_email: user.email });
+      setIsSubscribed(subs.length > 0);
     } catch (_) {}
   };
 
   const subscribe = async () => {
     setIsLoading(true);
     try {
-      console.log('[Push] Registering service worker...');
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      console.log('[Push] SW registered, waiting ready...');
-      await navigator.serviceWorker.ready;
-      console.log('[Push] SW ready, requesting permission...');
-
+      console.log('[FCM] Requesting permission...');
       const perm = await Notification.requestPermission();
       setPermission(perm);
-      console.log('[Push] Permission:', perm);
+      console.log('[FCM] Permission:', perm);
       if (perm !== 'granted') {
         setIsLoading(false);
         return false;
       }
 
-      console.log('[Push] Subscribing to push manager...');
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-      });
-      console.log('[Push] Subscribed:', sub.endpoint);
+      console.log('[FCM] Registering service worker...');
+      await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      await navigator.serviceWorker.ready;
+      console.log('[FCM] SW ready, getting FCM token...');
+
+      const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+      console.log('[FCM] Token obtained:', token?.substring(0, 20) + '...');
 
       const deviceName = `${navigator.platform || 'Appareil'} — ${getBrowserName()}`;
-      console.log('[Push] Saving to backend...');
-      const res = await base44.functions.invoke('savePushSubscription', {
-        subscription: sub.toJSON(),
+      await base44.functions.invoke('savePushSubscription', {
+        subscription: { endpoint: token, type: 'fcm' },
         action: 'subscribe',
         device_name: deviceName,
       });
-      console.log('[Push] Backend response:', res.data);
+
+      // Listen to foreground messages
+      onMessage(messaging, (payload) => {
+        console.log('[FCM] Foreground message:', payload);
+        const { title, body } = payload.notification || {};
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(title || 'Brenne Aerial', { body, icon: '/icon-192.png' });
+        }
+      });
 
       setIsSubscribed(true);
       setIsLoading(false);
       return true;
     } catch (err) {
-      console.error('[Push] subscribe error:', err);
+      console.error('[FCM] subscribe error:', err);
       setIsLoading(false);
       return false;
     }
@@ -94,20 +87,16 @@ export function usePushNotifications() {
   const unsubscribe = async () => {
     setIsLoading(true);
     try {
-      const reg = await navigator.serviceWorker.getRegistration('/sw.js');
-      if (reg) {
-        const sub = await reg.pushManager.getSubscription();
-        if (sub) {
-          await base44.functions.invoke('savePushSubscription', {
-            subscription: sub.toJSON(),
-            action: 'unsubscribe',
-          });
-          await sub.unsubscribe();
+      const user = await base44.auth.me();
+      if (user) {
+        const subs = await base44.entities.PushSubscription.filter({ user_email: user.email });
+        for (const sub of subs) {
+          await base44.entities.PushSubscription.delete(sub.id);
         }
       }
       setIsSubscribed(false);
     } catch (err) {
-      console.error('Push unsubscribe error:', err);
+      console.error('[FCM] unsubscribe error:', err);
     }
     setIsLoading(false);
   };

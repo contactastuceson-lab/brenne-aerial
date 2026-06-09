@@ -6,16 +6,14 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { subscription, action, device_name } = await req.json();
+    const { fcm_token, action, device_name } = await req.json();
 
-    if (!subscription?.endpoint) {
-      return Response.json({ error: 'Invalid subscription' }, { status: 400 });
+    if (!fcm_token) {
+      return Response.json({ error: 'Invalid token' }, { status: 400 });
     }
 
     const existing = await base44.asServiceRole.entities.PushSubscription.filter({ user_email: user.email });
-    const match = existing.find(s => {
-      try { return JSON.parse(s.subscription_json).endpoint === subscription.endpoint; } catch { return false; }
-    });
+    const match = existing.find(s => s.subscription_json === fcm_token);
 
     if (action === 'unsubscribe') {
       if (match) await base44.asServiceRole.entities.PushSubscription.delete(match.id);
@@ -25,7 +23,7 @@ Deno.serve(async (req) => {
     if (!match) {
       await base44.asServiceRole.entities.PushSubscription.create({
         user_email: user.email,
-        subscription_json: JSON.stringify(subscription),
+        subscription_json: fcm_token,
         device_name: device_name || 'Navigateur',
       });
     }

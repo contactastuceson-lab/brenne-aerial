@@ -9,27 +9,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'user_email and title are required' }, { status: 400 });
     }
 
-    const fcmServerKey = Deno.env.get('FCM_SERVER_KEY');
-    if (!fcmServerKey) {
-      return Response.json({ error: 'FCM_SERVER_KEY not configured' }, { status: 500 });
-    }
-
     const subscriptions = await base44.asServiceRole.entities.PushSubscription.filter({ user_email });
 
-    if (!subscriptions.length) {
+    if (subscriptions.length === 0) {
       return Response.json({ success: true, sent: 0, message: 'No subscriptions found' });
     }
+
+    const fcmServerKey = Deno.env.get('FCM_SERVER_KEY');
+    const notificationUrl = url || 'https://brenneaerial.fr';
 
     let sent = 0;
     const toDelete = [];
 
     await Promise.all(subscriptions.map(async (sub) => {
       try {
-        const endpoint = sub.subscription_json
-          ? JSON.parse(sub.subscription_json).endpoint
-          : null;
-
-        if (!endpoint) return;
+        // subscription_json stores the raw FCM token string directly
+        const token = sub.subscription_json;
+        if (!token) return;
 
         const res = await fetch('https://fcm.googleapis.com/fcm/send', {
           method: 'POST',
@@ -38,39 +34,33 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            to: endpoint,
+            to: token,
             notification: {
               title,
               body: body || '',
-              icon: '/icon-192.png',
-              click_action: url || 'https://brenneaerial.fr',
+              icon: '/icons/icon-192.png',
+              click_action: notificationUrl,
             },
-            webpush: {
-              fcm_options: { link: url || 'https://brenneaerial.fr' },
-            },
+            data: { url: notificationUrl },
           }),
         });
 
-        const data = await res.json();
-        console.log('[sendWebPush] FCM response:', JSON.stringify(data));
+        const result = await res.json();
+        console.log('[sendWebPush] FCM result:', JSON.stringify(result));
 
-        if (data.failure === 1) {
-          const result = data.results?.[0];
-          if (result?.error === 'NotRegistered' || result?.error === 'InvalidRegistration') {
-            toDelete.push(sub.id);
-          }
-        } else {
+        if (result.failure === 1 && result.results?.[0]?.error === 'NotRegistered') {
+          toDelete.push(sub.id);
+        } else if (result.success === 1) {
           sent++;
         }
       } catch (err) {
-        console.error('[sendWebPush] Error sending to subscription:', err.message);
+        console.error('[sendWebPush] Error:', err.message);
       }
     }));
 
-    // Clean up invalid subscriptions
     await Promise.all(toDelete.map(id => base44.asServiceRole.entities.PushSubscription.delete(id)));
 
-    return Response.json({ success: true, sent, deleted: toDelete.length });
+    return Response.json({ success: true, sent, total: subscriptions.length });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

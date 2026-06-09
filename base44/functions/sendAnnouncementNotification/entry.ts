@@ -49,6 +49,12 @@ Deno.serve(async (req) => {
       )
     );
 
+    // Also send web push to all subscribers
+    const title = `📢 ${announcement.title || 'Nouvelle annonce'}`;
+    const body = announcement.content.slice(0, 120) + (announcement.content.length > 120 ? '…' : '');
+    const url = announcement.link_url || 'https://brenneaerial.fr';
+    await base44.asServiceRole.functions.invoke('sendBroadcastPush', { title, body, url }).catch(() => {});
+
     return Response.json({ success: true, sentTo: users.length });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

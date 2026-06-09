@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Megaphone, Plus, Trash2, Edit, Info, AlertTriangle, CheckCircle, AlertCircle, Save, X, Download, Bell, Loader2 } from 'lucide-react';
+import { Megaphone, Plus, Trash2, Edit, Info, AlertTriangle, CheckCircle, AlertCircle, Save, X, Download, Bell, Loader2, Send, Smartphone, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -99,6 +99,9 @@ export default function AdminAnnouncements() {
     },
   });
 
+  const [pushForm, setPushForm] = useState({ title: '', body: '', url: '' });
+  const [showPushForm, setShowPushForm] = useState(false);
+
   const notifyMutation = useMutation({
     mutationFn: (id) => base44.functions.invoke('sendAnnouncementNotification', { announcementId: id }),
     onSuccess: (res) => {
@@ -106,6 +109,22 @@ export default function AdminAnnouncements() {
     },
     onError: (err) => {
       toast.error('Erreur lors de l\'envoi: ' + err.message);
+    },
+  });
+
+  const broadcastPushMutation = useMutation({
+    mutationFn: () => base44.functions.invoke('sendBroadcastPush', {
+      title: pushForm.title,
+      body: pushForm.body,
+      url: pushForm.url || undefined,
+    }),
+    onSuccess: (res) => {
+      toast.success(`✅ Push envoyé à ${res.data.sent} appareil(s)`);
+      setPushForm({ title: '', body: '', url: '' });
+      setShowPushForm(false);
+    },
+    onError: (err) => {
+      toast.error('Erreur: ' + err.message);
     },
   });
 
@@ -152,11 +171,75 @@ export default function AdminAnnouncements() {
           <Button size="sm" variant="outline" onClick={exportCSV} className="border-border text-xs gap-1.5">
             <Download className="w-3.5 h-3.5" /> CSV
           </Button>
+          <Button size="sm" variant="outline" onClick={() => setShowPushForm(v => !v)} className="border-primary/40 text-primary hover:bg-primary/10 text-xs gap-1.5">
+            <Smartphone className="w-3.5 h-3.5" /> Push direct
+          </Button>
           <Button onClick={openNew} className="bg-primary text-primary-foreground gap-2">
             <Plus className="w-4 h-4" /> Nouvelle annonce
           </Button>
         </div>
       </div>
+
+      {/* Push direct panel */}
+      {showPushForm && (
+        <div className="bg-card border border-primary/40 rounded-2xl p-5 mb-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-grotesk font-semibold text-sm">Notification push directe</h2>
+                <p className="font-inter text-xs text-muted-foreground">Envoyée à tous les appareils abonnés</p>
+              </div>
+            </div>
+            <button onClick={() => setShowPushForm(false)} className="text-muted-foreground hover:text-foreground">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="font-inter text-xs text-muted-foreground mb-1 block">Titre *</label>
+              <Input
+                value={pushForm.title}
+                onChange={e => setPushForm(p => ({ ...p, title: e.target.value }))}
+                placeholder="Ex: 🚁 Nouvelle prestation disponible"
+                className="bg-secondary border-border"
+              />
+            </div>
+            <div>
+              <label className="font-inter text-xs text-muted-foreground mb-1 block">Lien (optionnel)</label>
+              <Input
+                value={pushForm.url}
+                onChange={e => setPushForm(p => ({ ...p, url: e.target.value }))}
+                placeholder="https://brenneaerial.fr/..."
+                className="bg-secondary border-border"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="font-inter text-xs text-muted-foreground mb-1 block">Message *</label>
+            <Input
+              value={pushForm.body}
+              onChange={e => setPushForm(p => ({ ...p, body: e.target.value }))}
+              placeholder="Texte court de la notification…"
+              className="bg-secondary border-border"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
+            <Button variant="outline" size="sm" onClick={() => setShowPushForm(false)} className="border-border text-xs">Annuler</Button>
+            <Button
+              size="sm"
+              onClick={() => broadcastPushMutation.mutate()}
+              disabled={!pushForm.title || !pushForm.body || broadcastPushMutation.isPending}
+              className="bg-primary text-primary-foreground text-xs gap-1.5"
+            >
+              {broadcastPushMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+              Envoyer le push
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2 mb-4">

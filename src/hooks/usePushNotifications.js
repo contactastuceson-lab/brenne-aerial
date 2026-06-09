@@ -26,10 +26,11 @@ export function usePushNotifications() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const supported =
-      'serviceWorker' in navigator &&
-      'PushManager' in window &&
-      'Notification' in window;
+    const hasSW = 'serviceWorker' in navigator;
+    const hasPush = 'PushManager' in window;
+    const hasNotif = 'Notification' in window;
+    const supported = hasSW && hasPush && hasNotif;
+    console.log('[Push] Support check — SW:', hasSW, '| PushManager:', hasPush, '| Notification:', hasNotif, '| supported:', supported);
     setIsSupported(supported);
     if (supported) {
       setPermission(Notification.permission);

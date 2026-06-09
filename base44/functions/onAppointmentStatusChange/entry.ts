@@ -45,14 +45,18 @@ Deno.serve(async (req) => {
     const dateStr = `${dateLabel}${timeStart ? ' à ' + timeStart : ''}`;
 
     if (newStatus === 'scheduled') {
-      // RDV accepté par l'admin → envoyer email de confirmation
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: clientEmail,
         subject: '✅ Votre rendez-vous est confirmé — Brenne Aerial',
         body: getHtmlAccepted(clientName, dateStr, timeEnd, contactType, meetingAddress, location),
       });
+      await base44.asServiceRole.functions.invoke('sendWebPush', {
+        user_email: clientEmail,
+        title: '✅ Rendez-vous confirmé !',
+        body: `Votre rendez-vous du ${dateStr} est confirmé.`,
+        url: 'https://brenneaerial.fr/dashboard',
+      }).catch(() => {});
 
-      // Synchro Outlook uniquement à l'acceptation
       try {
         const appointment_id = payload.event?.entity_id;
         if (appointment_id) {
@@ -63,12 +67,17 @@ Deno.serve(async (req) => {
       }
 
     } else if (newStatus === 'cancelled') {
-      // RDV refusé ou annulé
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: clientEmail,
         subject: '❌ Votre demande de rendez-vous a été refusée — Brenne Aerial',
         body: getHtmlRefused(clientName, dateStr, serviceLabel, location),
       });
+      await base44.asServiceRole.functions.invoke('sendWebPush', {
+        user_email: clientEmail,
+        title: '❌ Rendez-vous non retenu',
+        body: `Votre demande du ${dateStr} n'a pas pu être acceptée.`,
+        url: 'https://brenneaerial.fr/planning',
+      }).catch(() => {});
 
     } else if (newStatus === 'completed') {
       await base44.asServiceRole.integrations.Core.SendEmail({
@@ -76,6 +85,12 @@ Deno.serve(async (req) => {
         subject: '✅ Merci pour votre confiance — Brenne Aerial',
         body: getHtmlCompleted(clientName, dateStr, serviceLabel),
       });
+      await base44.asServiceRole.functions.invoke('sendWebPush', {
+        user_email: clientEmail,
+        title: '🚁 Prestation terminée !',
+        body: `Merci pour votre confiance. Votre avis nous intéresse !`,
+        url: 'https://brenneaerial.fr/dashboard',
+      }).catch(() => {});
     }
 
     return Response.json({ success: true, newStatus });

@@ -159,6 +159,14 @@ Deno.serve(async (req) => {
       body,
     });
 
+    // Web push notification
+    await base44.asServiceRole.functions.invoke('sendWebPush', {
+      user_email: recipientEmail,
+      title: isOfficial ? '📢 Message officiel de Brenne Aerial' : `💬 ${senderName} vous a écrit`,
+      body: preview.slice(0, 100),
+      url: `${APP_URL}/messages`,
+    }).catch(() => {});
+
     return Response.json({ success: true });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

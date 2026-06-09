@@ -1,0 +1,22 @@
+{
+  "name": "PushSubscription",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
+    "subscription_json": {
+      "type": "string",
+      "description": "JSON de l'abonnement push (endpoint + keys)"
+    },
+    "device_name": {
+      "type": "string",
+      "description": "Nom du navigateur/appareil"
+    }
+  },
+  "required": [
+    "user_email",
+    "subscription_json"
+  ]
+}

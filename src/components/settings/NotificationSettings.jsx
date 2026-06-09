@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Mail, MessageSquare, Loader2 } from 'lucide-react';
+import { Bell, Mail, MessageSquare, Loader2, Smartphone, BellOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const getDefaultPrefs = () => ({
   email_notifications: true,
@@ -19,6 +20,7 @@ const getDefaultPrefs = () => ({
 });
 
 export default function NotificationSettings({ user }) {
+  const { isSupported, permission, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   const [localPrefs, setLocalPrefs] = useState(() => ({
     ...getDefaultPrefs(),
     ...(user?.notification_prefs || {}),
@@ -112,12 +114,62 @@ export default function NotificationSettings({ user }) {
     },
   ];
 
+  const handlePushToggle = async () => {
+    if (isSubscribed) {
+      await unsubscribe();
+      toast.success('Notifications push désactivées');
+    } else {
+      const ok = await subscribe();
+      if (ok) toast.success('Notifications push activées ! 🔔');
+      else if (permission === 'denied') toast.error('Autorisations bloquées — modifiez les paramètres de votre navigateur');
+      else toast.error('Impossible d\'activer les notifications');
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
+
+      {/* Push Notifications block */}
+      {isSupported && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl p-6"
+          style={{ background: 'hsl(var(--card))', border: `1px solid ${isSubscribed ? 'hsl(var(--primary) / 0.4)' : 'hsl(var(--border))'}` }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSubscribed ? 'bg-primary/20 border border-primary/30' : 'bg-secondary border border-border'}`}>
+                {isSubscribed ? <Smartphone className="w-5 h-5 text-primary" /> : <BellOff className="w-5 h-5 text-muted-foreground" />}
+              </div>
+              <div>
+                <p className="font-grotesk font-semibold text-sm">Notifications push</p>
+                <p className="font-inter text-xs text-muted-foreground mt-0.5">
+                  {permission === 'denied'
+                    ? '⚠️ Bloquées dans les paramètres du navigateur'
+                    : isSubscribed
+                    ? '✓ Activées sur cet appareil'
+                    : 'Recevez des alertes directement sur votre écran'}
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant={isSubscribed ? 'outline' : 'default'}
+              onClick={handlePushToggle}
+              disabled={pushLoading || permission === 'denied'}
+              className="font-inter text-xs"
+            >
+              {pushLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : isSubscribed ? 'Désactiver' : 'Activer'}
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
       {notificationOptions.map((section, sectionIdx) => {
         const Icon = section.icon;
         return (

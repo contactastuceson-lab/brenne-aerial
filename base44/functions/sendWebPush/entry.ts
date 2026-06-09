@@ -21,11 +21,14 @@ Deno.serve(async (req) => {
     let sent = 0;
     const toDelete = [];
 
-    await Promise.all(subscriptions.map(async (sub) => {
+    for (const sub of subscriptions) {
       try {
-        // subscription_json stores the raw FCM token string directly
-        const token = sub.subscription_json;
-        if (!token) return;
+        let token = sub.subscription_json;
+        if (!token) continue;
+        try {
+          const parsed = JSON.parse(token);
+          if (parsed.endpoint) token = parsed.endpoint;
+        } catch (_) { /* already a raw string */ }
 
         const res = await fetch('https://fcm.googleapis.com/fcm/send', {
           method: 'POST',
@@ -45,18 +48,20 @@ Deno.serve(async (req) => {
           }),
         });
 
-        const result = await res.json();
-        console.log('[sendWebPush] FCM result:', JSON.stringify(result));
+        const resultText = await res.text();
+        let result;
+        try { result = JSON.parse(resultText); } catch (_) { result = {}; }
 
-        if (result.failure === 1 && result.results?.[0]?.error === 'NotRegistered') {
+        // 404 or NotRegistered = expired token, clean it up
+        if (res.status === 404 || (result.failure === 1 && result.results?.[0]?.error === 'NotRegistered')) {
           toDelete.push(sub.id);
         } else if (result.success === 1) {
           sent++;
         }
       } catch (err) {
-        console.error('[sendWebPush] Error:', err.message);
+        // ignore individual send errors
       }
-    }));
+    }
 
     await Promise.all(toDelete.map(id => base44.asServiceRole.entities.PushSubscription.delete(id)));
 

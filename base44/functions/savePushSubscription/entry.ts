@@ -6,14 +6,24 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { fcm_token, action, device_name } = await req.json();
+    const body = await req.json();
+    const { action, device_name } = body;
 
-    if (!fcm_token) {
+    // Support both formats: { fcm_token } or { subscription: { endpoint, type } }
+    const fcmToken = body.fcm_token || body.subscription?.endpoint;
+
+    if (!fcmToken) {
       return Response.json({ error: 'Invalid token' }, { status: 400 });
     }
 
     const existing = await base44.asServiceRole.entities.PushSubscription.filter({ user_email: user.email });
-    const match = existing.find(s => s.subscription_json === fcm_token);
+    const match = existing.find(s => {
+      // Match against raw token or JSON-stored token
+      if (s.subscription_json === fcmToken) return true;
+      try {
+        return JSON.parse(s.subscription_json).endpoint === fcmToken;
+      } catch (_) { return false; }
+    });
 
     if (action === 'unsubscribe') {
       if (match) await base44.asServiceRole.entities.PushSubscription.delete(match.id);
@@ -23,7 +33,7 @@ Deno.serve(async (req) => {
     if (!match) {
       await base44.asServiceRole.entities.PushSubscription.create({
         user_email: user.email,
-        subscription_json: fcm_token,
+        subscription_json: fcmToken, // store raw token
         device_name: device_name || 'Navigateur',
       });
     }

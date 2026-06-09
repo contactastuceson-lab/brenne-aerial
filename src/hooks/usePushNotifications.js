@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { messaging, getToken, onMessage } from '@/lib/firebase';
 
-const VAPID_KEY = 'BLi1I-uHAqIFmwF3u6eR50tTwm9q4v3-iMLtCeHzCEcd2i5g2ZZtc4ZArsib7XHOhogyc16QPcLi5opFS548Gqo';
+// This VAPID key must match the Web Push certificate in Firebase Console:
+// Project Settings → Cloud Messaging → Web Push certificates → Key pair
+const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY || '';
 
 function getBrowserName() {
   const ua = navigator.userAgent;

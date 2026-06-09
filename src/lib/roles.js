@@ -7,7 +7,7 @@
  */
 
 export const PDG_EMAILS = ['contact.astuceson@gmail.com'];
-export const PDG_ADJOINT_EMAILS = ['sentenacborys@gmail.com'];
+export const PDG_ADJOINT_EMAILS = [];
 
 export const ROLE_CONFIG = {
   owner: {

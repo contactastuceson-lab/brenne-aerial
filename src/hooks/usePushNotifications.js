@@ -51,11 +51,28 @@ export function usePushNotifications() {
       }
 
       console.log('[FCM] Registering service worker...');
-      await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-      await navigator.serviceWorker.ready;
-      console.log('[FCM] SW ready, getting FCM token...');
+      const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
 
-      const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+      // Wait until the SW is fully activated (not just installed/waiting)
+      await new Promise((resolve) => {
+        const sw = swReg.installing || swReg.waiting || swReg.active;
+        if (swReg.active && swReg.active.state === 'activated') {
+          resolve();
+          return;
+        }
+        const onStateChange = () => {
+          if (sw.state === 'activated') {
+            sw.removeEventListener('statechange', onStateChange);
+            resolve();
+          }
+        };
+        if (sw) sw.addEventListener('statechange', onStateChange);
+        else resolve();
+      });
+
+      console.log('[FCM] SW activated, getting FCM token...');
+
+      const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
       console.log('[FCM] Token obtained:', token?.substring(0, 20) + '...');
 
       const deviceName = `${navigator.platform || 'Appareil'} — ${getBrowserName()}`;

@@ -1,5 +1,4 @@
 import { initializeApp } from 'firebase/app';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBeK6XlNs9eVEB5kVwh_Khyr9qyemUpaLw",
@@ -13,11 +12,15 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-let messaging = null;
-try {
-  messaging = getMessaging(app);
-} catch (_) {
-  // Browser doesn't support Firebase Messaging (Safari, old browsers, etc.)
-}
+export { app };
 
-export { messaging, getToken, onMessage };
+// Lazy loader — call this only when you need messaging (avoids unsupported-browser crash at module init)
+export async function getFirebaseMessaging() {
+  try {
+    const { getMessaging, getToken, onMessage } = await import('firebase/messaging');
+    const messaging = getMessaging(app);
+    return { messaging, getToken, onMessage };
+  } catch (_) {
+    return null;
+  }
+}

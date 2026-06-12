@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { messaging, getToken, onMessage } from '@/lib/firebase';
+import { getFirebaseMessaging } from '@/lib/firebase';
 
-// This VAPID key must match the Web Push certificate in Firebase Console:
-// Project Settings → Cloud Messaging → Web Push certificates → Key pair
 const VAPID_KEY = 'BChyCdgbq1OWnEXlqjxkldpt9GyJjASfBedE6TZmg2Ke2TOXYylprgxzhtKnEiZEhf6Wxd8ExVj1eXc2uDlIP-g';
 
 function getBrowserName() {
@@ -22,12 +20,12 @@ export function usePushNotifications() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const supported = 'Notification' in window && 'serviceWorker' in navigator && messaging !== null;
-    console.log('[FCM] Support check — Notification:', 'Notification' in window, '| SW:', 'serviceWorker' in navigator, '| messaging:', messaging !== null);
-    setIsSupported(supported);
+    const supported = 'Notification' in window && 'serviceWorker' in navigator;
     if (supported) {
       setPermission(Notification.permission);
       checkSubscription();
+      // Check if Firebase Messaging is actually supported in this browser
+      getFirebaseMessaging().then(m => setIsSupported(!!m));
     }
   }, []);
 
@@ -43,39 +41,27 @@ export function usePushNotifications() {
   const subscribe = async () => {
     setIsLoading(true);
     try {
-      console.log('[FCM] Requesting permission...');
       const perm = await Notification.requestPermission();
       setPermission(perm);
-      console.log('[FCM] Permission:', perm);
-      if (perm !== 'granted') {
-        setIsLoading(false);
-        return false;
-      }
+      if (perm !== 'granted') { setIsLoading(false); return false; }
 
-      console.log('[FCM] Registering service worker...');
+      const fcm = await getFirebaseMessaging();
+      if (!fcm) { setIsLoading(false); return false; }
+      const { messaging, getToken, onMessage } = fcm;
+
       const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
 
-      // Wait until the SW is fully activated (not just installed/waiting)
       await new Promise((resolve) => {
+        if (swReg.active && swReg.active.state === 'activated') { resolve(); return; }
         const sw = swReg.installing || swReg.waiting || swReg.active;
-        if (swReg.active && swReg.active.state === 'activated') {
-          resolve();
-          return;
-        }
         const onStateChange = () => {
-          if (sw.state === 'activated') {
-            sw.removeEventListener('statechange', onStateChange);
-            resolve();
-          }
+          if (sw.state === 'activated') { sw.removeEventListener('statechange', onStateChange); resolve(); }
         };
         if (sw) sw.addEventListener('statechange', onStateChange);
         else resolve();
       });
 
-      console.log('[FCM] SW activated, getting FCM token...');
-
       const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
-      console.log('[FCM] Token obtained:', token?.substring(0, 20) + '...');
 
       const deviceName = `${navigator.platform || 'Appareil'} — ${getBrowserName()}`;
       await base44.functions.invoke('savePushSubscription', {
@@ -84,11 +70,9 @@ export function usePushNotifications() {
         device_name: deviceName,
       });
 
-      // Listen to foreground messages
       onMessage(messaging, (payload) => {
-        console.log('[FCM] Foreground message:', payload);
         const { title, body } = payload.notification || {};
-        if ('Notification' in window && Notification.permission === 'granted') {
+        if (Notification.permission === 'granted') {
           new Notification(title || 'Brenne Aerial', { body, icon: '/icon-192.png' });
         }
       });
@@ -109,9 +93,7 @@ export function usePushNotifications() {
       const user = await base44.auth.me();
       if (user) {
         const subs = await base44.entities.PushSubscription.filter({ user_email: user.email });
-        for (const sub of subs) {
-          await base44.entities.PushSubscription.delete(sub.id);
-        }
+        for (const sub of subs) await base44.entities.PushSubscription.delete(sub.id);
       }
       setIsSubscribed(false);
     } catch (err) {

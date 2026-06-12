@@ -22,8 +22,8 @@ export function usePushNotifications() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const supported = 'Notification' in window && 'serviceWorker' in navigator;
-    console.log('[FCM] Support check — Notification:', 'Notification' in window, '| SW:', 'serviceWorker' in navigator);
+    const supported = 'Notification' in window && 'serviceWorker' in navigator && messaging !== null;
+    console.log('[FCM] Support check — Notification:', 'Notification' in window, '| SW:', 'serviceWorker' in navigator, '| messaging:', messaging !== null);
     setIsSupported(supported);
     if (supported) {
       setPermission(Notification.permission);

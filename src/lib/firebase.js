@@ -12,6 +12,12 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
+
+let messaging = null;
+try {
+  messaging = getMessaging(app);
+} catch (_) {
+  // Browser doesn't support Firebase Messaging (Safari, old browsers, etc.)
+}
 
 export { messaging, getToken, onMessage };

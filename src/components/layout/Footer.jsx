@@ -197,7 +197,7 @@ export default function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
               <p className="font-mono text-xs text-muted-foreground">
-                © {year} Brenne Aerial · Enor Lefoulon Meyer
+                © {year} Brenne Aerial · <Link to="/enor" className="hover:text-primary transition-colors">Enor Lefoulon Meyer</Link>
               </p>
               <span className="hidden sm:block w-px h-3.5 bg-border" />
               <div className="flex items-center gap-3">

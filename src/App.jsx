@@ -111,7 +111,17 @@ const AuthenticatedApp = () => {
   }
 
   if (authError?.type === "user_not_registered") return <UserNotRegisteredError />;
-  if (authError?.type === "auth_required") { navigateToLogin(); return null; }
+  if (authError?.type === "auth_required") {
+    // Allow public routes to render without auth (like TikTok/Instagram public profiles)
+    const publicPaths = ['/', '/about', '/services', '/portfolio', '/blog', '/contact', '/quote',
+      '/planning', '/discover', '/forum', '/partenaires', '/parrainage', '/garage', '/calculateur',
+      '/reglementation', '/comparateur', '/toiture-checkup', '/uptime', '/enor', '/legal',
+      '/status', '/donation'];
+    const currentPath = window.location.pathname;
+    const isPublicPath = publicPaths.some(p => currentPath === p || currentPath.startsWith(p + '/'))
+      || /^\/@?[a-zA-Z0-9_.-]+$/.test(currentPath); // public profile /@username or /username
+    if (!isPublicPath) { navigateToLogin(); return null; }
+  }
 
   return (
     <>

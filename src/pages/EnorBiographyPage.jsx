@@ -286,10 +286,8 @@ export default function EnorBiographyPage() {
                           viewport={{ once: true }} transition={{ delay: i * 0.07 }}
                           className="flex items-start gap-5"
                         >
-                          <div className={`w-12 h-12 rounded-xl ${item.color}/15 border border-current/20 flex items-center justify-center flex-shrink-0 relative z-10`}
-                            style={{ borderColor: `color-mix(in srgb, currentColor 20%, transparent)` }}
-                          >
-                            <Icon className="w-5 h-5" style={{ color: `hsl(var(--primary))` }} />
+                          <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 relative z-10">
+                            <Icon className="w-5 h-5 text-primary" />
                           </div>
                           <div className="flex-1 rounded-xl border border-border/40 bg-card/40 px-5 py-4 hover:border-primary/25 transition-colors">
                             <div className="flex items-center gap-3 mb-1">

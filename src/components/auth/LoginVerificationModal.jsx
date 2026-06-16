@@ -46,11 +46,13 @@ export default function LoginVerificationModal({ onVerified }) {
   const deviceName = getDeviceName();
 
   useEffect(() => {
-    checkIfNeeded();
+    // Verification disabled — always pass through
+    onVerified();
   }, []);
 
   const checkIfNeeded = async () => {
-    // Already verified on this device recently — skip entirely
+    onVerified();
+    return;
     const verifiedUntil = parseInt(localStorage.getItem(VERIFIED_UNTIL_KEY) || '0');
     if (Date.now() < verifiedUntil) {
       onVerified();

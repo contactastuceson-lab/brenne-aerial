@@ -25,6 +25,7 @@ const TOOLS = [
   { to: '/reglementation',   label: 'Réglementation' },
   { to: '/comparateur',      label: 'Comparateur résolution' },
   { to: '/espace-client',    label: 'Espace Client' },
+  { to: '/ecosysteme',       label: 'Écosystème' },
 ];
 
 export default function Navbar() {

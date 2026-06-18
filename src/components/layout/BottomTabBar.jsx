@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Compass, MessageCircle, MoreHorizontal, X, Bell, User, LogOut, LayoutDashboard, FolderOpen, Warehouse, Building2, Users, Shield, ZoomIn, Calculator, Phone, Camera, BookOpen, MessageSquare, Scale, Lock, Heart, Zap } from 'lucide-react';
+import { Home, Compass, MessageCircle, MoreHorizontal, X, Bell, User, LogOut, LayoutDashboard, FolderOpen, Warehouse, Building2, Users, Shield, ZoomIn, Calculator, Phone, Camera, BookOpen, MessageSquare, Scale, Lock, Heart, Zap, Layers } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
@@ -31,6 +31,7 @@ const MORE_ITEMS = [
   { to: '/toiture-checkup',  icon: Zap,           label: 'Inspection Toiture',     color: 'text-yellow-400' },
   { to: '/legal/privacy',    icon: Lock,          label: 'Confidentialité',        color: 'text-slate-400' },
   { to: '/legal/terms',      icon: Scale,         label: 'Conditions',             color: 'text-slate-400' },
+  { to: '/ecosysteme',       icon: Layers,        label: 'Écosystème',             color: 'text-primary' },
 ];
 
 export default function BottomTabBar() {

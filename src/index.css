@@ -2,11 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fallback fonts while Google Fonts loads */
+:root {
+  --font-grotesk: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+
 @layer base {
   :root {
-    --font-grotesk: 'Space Grotesk', sans-serif;
-    --font-inter: 'Inter', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
 
     /* Brenne Aerial — Dark Sky palette (default dark) */
     --background: 214 50% 4%;
@@ -189,19 +193,20 @@ main {
   will-change: opacity;
 }
 
-/* Pulse dot */
+/* Pulse dot — opacity only for GPU compositing, no transform */
 @keyframes pulse-ring {
-  0% { transform: scale(0.8); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
+  0% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .pulse-ring::before {
   content: '';
   position: absolute;
-  inset: -4px;
+  inset: -8px;
   border-radius: 50%;
   border: 2px solid hsl(205 90% 58%);
   animation: pulse-ring 2s ease-out infinite;
+  will-change: opacity;
 }
 
 /* Badge shimmer */

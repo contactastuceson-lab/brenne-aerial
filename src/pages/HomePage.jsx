@@ -41,14 +41,24 @@ const TRUST_POINTS = [
 
 function CountUp({ end, duration = 1500 }) {
   const [count, setCount] = useState(0);
-  const ref = useRef(false);
+  const [started, setStarted] = useState(false);
+  const containerRef = useRef(null);
   const isNumeric = /^\d+$/.test(end.replace(/[^0-9]/g, ''));
   const numericEnd = parseInt(end.replace(/[^0-9]/g, ''), 10) || 0;
   const suffix = end.replace(/[0-9]/g, '');
 
   useEffect(() => {
-    if (!isNumeric || ref.current) return;
-    ref.current = true;
+    if (!isNumeric || !containerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting && !started) setStarted(true); },
+      { threshold: 0.1 }
+    );
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [isNumeric, started]);
+
+  useEffect(() => {
+    if (!started || !isNumeric) return;
     let start = 0;
     const step = numericEnd / (duration / 16);
     const timer = setInterval(() => {
@@ -57,18 +67,16 @@ function CountUp({ end, duration = 1500 }) {
       else setCount(Math.floor(start));
     }, 16);
     return () => clearInterval(timer);
-  }, []);
+  }, [started, isNumeric, numericEnd, duration]);
 
-  return <>{isNumeric ? `${count}${suffix}` : end}</>;
+  return <span ref={containerRef}>{isNumeric ? `${count}${suffix}` : end}</span>;
 }
 
 export default function HomePage() {
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 80]);
-  const [activeService, setActiveService] = useState(null);
+
 
   const { data: settings = [] } = useQuery({
     queryKey: ['app-settings'],
@@ -127,39 +135,29 @@ export default function HomePage() {
       ══════════════════════════════════════ */}
       <section ref={heroRef} className="relative min-h-screen flex items-center overflow-hidden">
 
-        {/* Parallax background */}
-        <motion.div style={{ scale: heroScale }} className="absolute inset-0 origin-center">
+        {/* Background image — no parallax scale on mobile for perf */}
+        <div className="absolute inset-0">
           <img
             src={heroImage}
             alt="Drone aerial view"
             fetchpriority="high"
+            decoding="async"
             className="w-full h-full object-cover"
             style={{ opacity: 0.3 }}
           />
-        </motion.div>
+        </div>
 
         {/* Layered overlays */}
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background/70 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40" />
         <div className="absolute inset-0 grid-bg opacity-60" />
 
-        {/* Animated orbs */}
-        <motion.div
-          animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/8 rounded-full blur-3xl pointer-events-none"
-        />
-        <motion.div
-          animate={{ x: [0, -30, 0], y: [0, 40, 0] }}
-          transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-1/3 left-1/3 w-64 h-64 bg-accent/6 rounded-full blur-3xl pointer-events-none"
-        />
-
-        {/* Scan line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent scan-line pointer-events-none" />
+        {/* Static ambient orbs — no continuous animation for perf */}
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/8 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/3 left-1/3 w-64 h-64 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
 
         {/* CONTENT */}
-        <motion.div style={{ opacity: heroOpacity, y: heroY }} className="relative max-w-7xl mx-auto px-6 sm:px-10 w-full pt-28 pb-20">
+        <motion.div style={{ opacity: heroOpacity }} className="relative max-w-7xl mx-auto px-6 sm:px-10 w-full pt-28 pb-20">
           <div className="max-w-4xl">
 
             {/* Badge pill */}

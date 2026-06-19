@@ -27,6 +27,7 @@ const NAV_GROUPS = [
     items: [
       { path: '/admin', icon: BarChart3, label: 'Dashboard', minLevel: 60 },
       { path: '/admin/stats', icon: TrendingUp, label: 'Statistiques', minLevel: 60 },
+      { path: '/admin/analytics', icon: Activity, label: 'Analytique', minLevel: 60 },
     ]
   },
   {

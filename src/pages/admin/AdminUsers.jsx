@@ -35,6 +35,7 @@ const STATUS_COLORS = {
   suspended:  'text-yellow-400 bg-yellow-400/10 border-yellow-400/30',
   banned:     'text-red-400 bg-red-400/10 border-red-400/30',
   restricted: 'text-orange-400 bg-orange-400/10 border-orange-400/30',
+  closed:     'text-gray-400 bg-gray-400/10 border-gray-400/30',
 };
 
 const STATUS_LABELS = {
@@ -42,6 +43,7 @@ const STATUS_LABELS = {
   suspended: 'Suspendu',
   banned: 'Banni',
   restricted: 'Restreint',
+  closed: 'Fermé',
 };
 
 export default function AdminUsers() {
@@ -153,6 +155,7 @@ export default function AdminUsers() {
       account_status: u.account_status || 'active',
       suspension_reason: u.suspension_reason || '',
       suspension_until: u.suspension_until || '',
+      closed_by: u.closed_by || '',
     });
   };
 
@@ -236,6 +239,7 @@ export default function AdminUsers() {
             <SelectItem value="suspended">Suspendus</SelectItem>
             <SelectItem value="banned">Bannis</SelectItem>
             <SelectItem value="restricted">Restreints</SelectItem>
+            <SelectItem value="closed">Fermés</SelectItem>
           </SelectContent>
         </Select>
         <Select value={filterRole} onValueChange={setFilterRole}>

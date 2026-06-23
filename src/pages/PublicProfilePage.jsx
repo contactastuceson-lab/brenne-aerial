@@ -213,6 +213,7 @@ export default function PublicProfilePage() {
     return <ProfileNotFound username={username} />;
   }
 
+  const isClosed = user?.account_status === 'closed';
   const isSupreme = user?.verifications?.includes('supreme');
   const roleCfg = ROLE_CONFIG[user?.role];
 
@@ -277,6 +278,45 @@ export default function PublicProfilePage() {
   const memberSince = user?.created_date
     ? formatDistanceToNow(new Date(user.created_date), { addSuffix: true, locale: fr })
     : null;
+
+  if (isClosed) {
+    const closedByDirection = user.closed_by === 'direction';
+    return (
+      <div className="pt-16 min-h-screen pb-20 flex items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-sm w-full text-center space-y-6"
+        >
+          {/* Red closed banner */}
+          <div className="rounded-2xl overflow-hidden shadow-2xl">
+            <div className="bg-red-600 py-10 px-8 flex flex-col items-center gap-2">
+              <p className="font-grotesk font-black text-white text-3xl tracking-widest uppercase">Compte Fermé</p>
+              <p className="font-inter text-red-100 text-base tracking-wider italic">Closed</p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
+            <div className="w-12 h-12 rounded-full bg-gray-400/10 border border-gray-400/20 flex items-center justify-center mx-auto">
+              <span className="text-2xl">⛔</span>
+            </div>
+            <h2 className="font-grotesk font-bold text-xl">Ce compte a été fermé</h2>
+            <p className="font-inter text-sm text-muted-foreground leading-relaxed">
+              {closedByDirection
+                ? 'Ce compte a été fermé par la Direction de Brenne Aerial.'
+                : 'Ce compte a été fermé par un administrateur de Brenne Aerial.'}
+            </p>
+            {user.suspension_reason && (
+              <p className="font-mono text-xs text-muted-foreground/60 italic">"{user.suspension_reason}"</p>
+            )}
+            <div className="pt-2 border-t border-border">
+              <Link to="/" className="font-inter text-sm text-primary hover:underline">← Retour à l'accueil</Link>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-16 min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>

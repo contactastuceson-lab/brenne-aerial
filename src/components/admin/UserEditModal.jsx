@@ -15,6 +15,7 @@ const STATUS_OPTIONS = [
   { value: 'restricted', label: '⚠️ Restreint', color: 'text-orange-400' },
   { value: 'suspended', label: '🔶 Suspendu', color: 'text-yellow-400' },
   { value: 'banned', label: '🔴 Banni', color: 'text-red-400' },
+  { value: 'closed', label: '⛔ Compte fermé', color: 'text-gray-400' },
 ];
 
 const VERIFICATION_OPTIONS = [
@@ -33,6 +34,7 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
     verified_status: 'no',
     suspension_reason: '',
     suspension_until: '',
+    closed_by: '',
     bio: '',
     location: '',
     phone: '',
@@ -60,6 +62,7 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
         verified_status: user.verified_status || 'no',
         suspension_reason: user.suspension_reason || '',
         suspension_until: user.suspension_until || '',
+        closed_by: user.closed_by || '',
         bio: user.bio || '',
         location: user.location || '',
         phone: user.phone || '',
@@ -123,6 +126,18 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
   const handleSave = () => {
     if (!form.full_name.trim()) {
       toast.error('Le nom complet est requis');
+      return;
+    }
+    // Fermeture de compte : auto-set bio NPS + vérification closed_by
+    if (form.account_status === 'closed') {
+      if (!form.closed_by) {
+        toast.error('Veuillez préciser qui ferme ce compte (Direction ou Admin)');
+        return;
+      }
+      // Auto-injecte NPS dans la bio
+      const npsMark = '⛔ NPS — Ne Pas Supprimer';
+      const bioWithNps = form.bio?.includes('NPS') ? form.bio : `${npsMark}${form.bio ? '\n' + form.bio : ''}`;
+      onSave({ ...form, bio: bioWithNps });
       return;
     }
     onSave(form);
@@ -289,7 +304,7 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
               </Select>
             </div>
 
-            {form.account_status !== 'active' && (
+            {form.account_status !== 'active' && form.account_status !== 'closed' && (
               <>
                 <div>
                   <label className="font-inter text-xs text-muted-foreground mb-1 block">Raison</label>
@@ -300,6 +315,49 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
                   <Input type="date" value={form.suspension_until} onChange={e => setForm(p => ({ ...p, suspension_until: e.target.value }))} className="bg-card border-border" />
                 </div>
               </>
+            )}
+            {form.account_status === 'closed' && (
+              <div className="space-y-3">
+                {/* Red "COMPTE FERMÉ" banner */}
+                <div className="rounded-xl overflow-hidden border border-red-600/40">
+                  <div className="bg-red-600 flex flex-col items-center justify-center py-4 px-6">
+                    <p className="font-grotesk font-black text-white text-xl tracking-widest uppercase">Compte Fermé</p>
+                    <p className="font-inter text-red-100 text-xs tracking-wider mt-0.5 italic">Closed</p>
+                  </div>
+                </div>
+                <div className="bg-red-500/5 border border-red-500/20 rounded-lg px-3 py-2">
+                  <p className="font-mono text-[10px] text-red-400 uppercase tracking-wider font-bold">⛔ NPS — NE PAS SUPPRIMER</p>
+                  <p className="font-inter text-xs text-muted-foreground mt-1">Le compte reste en base pour bloquer le nom d'utilisateur. Il ne peut pas être réutilisé.</p>
+                </div>
+                <div>
+                  <label className="font-inter text-xs text-muted-foreground mb-1 block">
+                    Fermé par <span className="text-destructive">*</span>
+                  </label>
+                  <Select
+                    value={form.closed_by || ''}
+                    onValueChange={v => {
+                      // Seuls les hauts gradés (niveau >= 100) peuvent mettre "La Direction"
+                      if (v === 'direction' && myLevel < 100) return;
+                      setForm(p => ({ ...p, closed_by: v }));
+                    }}
+                  >
+                    <SelectTrigger className="bg-card border-border"><SelectValue placeholder="Sélectionner..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">🛡️ Un administrateur</SelectItem>
+                      {myLevel >= 100 && (
+                        <SelectItem value="direction">👑 La Direction de Brenne Aerial</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {myLevel < 100 && (
+                    <p className="font-mono text-[10px] text-muted-foreground mt-1">⚠️ Seuls les hauts gradés (PDG / PDG-Adjoint) peuvent fermer au nom de La Direction.</p>
+                  )}
+                </div>
+                <div>
+                  <label className="font-inter text-xs text-muted-foreground mb-1 block">Raison de la fermeture (optionnel)</label>
+                  <Input value={form.suspension_reason} onChange={e => setForm(p => ({ ...p, suspension_reason: e.target.value }))} placeholder="Ex: Compte inactif, demande volontaire..." className="bg-card border-border" />
+                </div>
+              </div>
             )}
           </div>
 

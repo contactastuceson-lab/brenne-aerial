@@ -315,7 +315,7 @@ export default function AdminUsers() {
                     {/* Name + Status badges */}
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <p className="font-grotesk font-bold text-sm lg:text-base">{u.display_name || u.full_name || '—'}</p>
-                      {u.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 text-[#f50a0a] bg-gray-950" />}
+                      {u.verified_status === 'yes' && <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 text-[#f50a0a] bg-gray-900" />}
                     </div>
 
                     {/* Status + Reports */}

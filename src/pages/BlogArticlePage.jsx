@@ -238,14 +238,18 @@ export default function BlogArticlePage() {
   useEffect(() => {
     if (!post) return;
     const seoData = getBlogSeoData(post);
+    const previewUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/api/functions/blogPreview?id=${encodeURIComponent(id)}`
+      : undefined;
+
     applySeoMeta({
       title: seoData.title,
       description: seoData.description,
       image: seoData.image,
       type: seoData.type,
-      url: typeof window !== 'undefined' ? window.location.href : undefined,
+      url: previewUrl || (typeof window !== 'undefined' ? window.location.href : undefined),
     });
-  }, [post]);
+  }, [post, id]);
 
   if (!post) {
     return (

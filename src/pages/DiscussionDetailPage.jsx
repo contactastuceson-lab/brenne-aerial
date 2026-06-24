@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
 import ExternalLinkModal from '@/components/forum/ExternalLinkModal.jsx';
+import { applySeoMeta, getForumSeoData } from '@/lib/seo';
 
 export default function DiscussionDetailPage() {
   const { id } = useParams();
@@ -47,6 +48,18 @@ export default function DiscussionDetailPage() {
   }, [id]);
 
   const [replyContent, setReplyContent] = useState('');
+
+  useEffect(() => {
+    if (!discussion) return;
+    const seoData = getForumSeoData(discussion);
+    applySeoMeta({
+      title: seoData.title,
+      description: seoData.description,
+      image: seoData.image,
+      type: seoData.type,
+      url: typeof window !== 'undefined' ? window.location.href : undefined,
+    });
+  }, [discussion]);
 
   const replyMutation = useMutation({
     mutationFn: async () => {

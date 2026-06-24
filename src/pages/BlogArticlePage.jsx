@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, Eye, User, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { applySeoMeta, getBlogSeoData } from '@/lib/seo';
 
 const DEMO_POSTS = [
   { id: 'b1', title: 'Comment choisir votre prestataire drone : 5 critères essentiels', excerpt: 'Certifications DGAC, équipement, expérience, assurance... voici tout ce que vous devez vérifier avant de signer.', category: 'conseil', cover_url: 'https://images.unsplash.com/photo-1579829366248-204fe8413f31?w=1400&q=85', author: 'Enor Lefoulon Meyer', views: 1247, created_date: '2024-11-15', content: `## Pourquoi bien choisir son prestataire drone ?
@@ -233,6 +234,18 @@ export default function BlogArticlePage() {
   const post = dbPost || DEMO_POSTS.find(p => p.id === id);
   const readingTime = useMemo(() => computeReadingTime(post?.content), [post?.content]);
   const cat = CAT_CONFIG[post?.category] || { label: post?.category, color: 'text-muted-foreground', bg: 'bg-muted', border: 'border-border' };
+
+  useEffect(() => {
+    if (!post) return;
+    const seoData = getBlogSeoData(post);
+    applySeoMeta({
+      title: seoData.title,
+      description: seoData.description,
+      image: seoData.image,
+      type: seoData.type,
+      url: typeof window !== 'undefined' ? window.location.href : undefined,
+    });
+  }, [post]);
 
   if (!post) {
     return (

@@ -16,5 +16,8 @@ export default defineConfig({
       visualEditAgent: true
     }),
     react(),
-  ]
+  ],
+  preview: {
+    allowedHosts: ['brenne-aerial.onrender.com']
+  }
 });

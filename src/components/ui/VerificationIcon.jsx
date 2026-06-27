@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { VERIFICATION_CONFIG } from './VerificationChip';
 import BadgePopup from './BadgePopup';
 import { base44 } from '@/api/base44Client';
-import { getVisibleAffiliation } from '@/lib/affiliationUtils';
+import { getVisibleAffiliation, getOrganizationBadge } from '@/lib/affiliationUtils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -48,7 +48,35 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
     return () => { active = false; };
   }, [user?.id, user?.email]);
 
+  const visibleAffiliations = useMemo(
+    () => affiliations.filter((affiliation) => affiliation?.status === 'accepted' && affiliation?.visibility === 'public'),
+    [affiliations]
+  );
   const visibleAffiliation = useMemo(() => getVisibleAffiliation(affiliations), [affiliations]);
+  const affiliationCount = visibleAffiliations.length;
+  const [organizationBadge, setOrganizationBadge] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    const loadOrganization = async () => {
+      if (!visibleAffiliation?.organizationId) {
+        setOrganizationBadge(null);
+        return;
+      }
+
+      try {
+        const org = await base44.entities.User.get(visibleAffiliation.organizationId);
+        if (!active) return;
+        setOrganizationBadge(getOrganizationBadge(org));
+      } catch (error) {
+        console.error('Failed to load organization details', error);
+        if (active) setOrganizationBadge(null);
+      }
+    };
+
+    loadOrganization();
+    return () => { active = false; };
+  }, [visibleAffiliation]);
 
   if (!verifications?.length && !visibleAffiliation && !loadingAffiliation) return null;
 
@@ -131,8 +159,11 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
       {visibleAffiliation && (
         <Sheet>
             <SheetTrigger asChild>
-            <button className="inline-flex items-center justify-center rounded-md p-0.5 bg-gradient-to-br from-primary/40 via-primary/30 to-primary/20 shadow-sm transition-transform hover:scale-[1.02]">
-              <div className="relative flex items-center justify-center rounded-md bg-background border border-border overflow-hidden" style={{ width: s, height: s }}>
+            <button
+              title={`Affilié officiellement à ${visibleAffiliation.organizationName}`}
+              className="inline-flex items-center justify-center rounded-md p-0.5 bg-gradient-to-br from-primary/40 via-primary/30 to-primary/20 shadow-sm transition duration-200 ease-out hover:scale-[1.08] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <div className="relative flex items-center justify-center rounded-md bg-background border border-border overflow-hidden transition duration-200 ease-out hover:scale-[1.05] hover:brightness-105" style={{ width: s, height: s }}>
                 {visibleAffiliation.organizationAvatarUrl ? (
                   <img src={visibleAffiliation.organizationAvatarUrl} alt={visibleAffiliation.organizationName || 'Organisation'} className="h-full w-full object-cover" />
                 ) : (
@@ -155,6 +186,11 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
                 <div className="min-w-0">
                   <p className="font-grotesk font-bold text-lg leading-tight">Affiliation organisationnelle</p>
                   <p className="font-inter text-sm text-muted-foreground mt-1">{visibleAffiliation.organizationName || 'Organisation officielle'}</p>
+                  {organizationBadge && (
+                    <span className="mt-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                      {organizationBadge === 'supreme' ? '👑 Suprême' : '🟣 Officiel'}
+                    </span>
+                  )}
                 </div>
               </div>
               <SheetClose asChild>
@@ -200,6 +236,7 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
             <div className="sticky bottom-0 bg-card border-t border-border p-4">
               <div className="grid grid-cols-1 gap-2">
                 <button
+                  title={`Affilié officiellement à ${visibleAffiliation.organizationName}`}
                   onClick={async (e) => {
                     e.stopPropagation();
                     try {

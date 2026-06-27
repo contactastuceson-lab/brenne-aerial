@@ -114,17 +114,17 @@ function Popup({ info, anchorEl, onClose }) {
     const startStyle = { transform: 'translateY(100%)', opacity: 0 };
     const endStyle = { transform: 'translateY(0)', opacity: 1, transition: 'transform 360ms cubic-bezier(.2,.9,.3,1), opacity 360ms ease' };
     return createPortal(
-      <div className="fixed inset-0 z-[9999] flex items-end justify-center" onClick={onClose}>
+      <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center px-4" onClick={onClose}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
         <div
           ref={popupRef}
           onClick={e => e.stopPropagation()}
           style={entered ? endStyle : startStyle}
-          className="relative w-full max-w-5xl h-[100vh] sm:h-[60vh] sm:max-h-[85vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl text-left mx-auto overflow-hidden"
+          className="relative w-full max-w-3xl h-[100vh] sm:h-[60vh] lg:h-[55vh] sm:max-h-[85vh] flex flex-col bg-card border border-border rounded-2xl shadow-2xl text-left mx-auto overflow-hidden"
         >
           {/* Header (fixed) */}
-          <div className="flex items-start justify-between gap-4 p-6">
+          <div className="flex items-start justify-between gap-4 p-4 sm:p-6">
             <div className="flex items-center gap-4">
               <div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center"
@@ -145,7 +145,7 @@ function Popup({ info, anchorEl, onClose }) {
           </div>
 
           {/* Body (scrollable) */}
-          <div className="px-6 pb-4 overflow-auto flex-1">
+          <div className="px-4 sm:px-6 pb-4 overflow-auto flex-1">
             <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-2xl border border-border bg-card p-4">
                 <p className="text-sm text-muted-foreground">À propos</p>
@@ -170,7 +170,7 @@ function Popup({ info, anchorEl, onClose }) {
           </div>
 
           {/* Footer (sticky, always visible) */}
-          <div className="sticky bottom-0 bg-card border-t border-border p-4">
+          <div className="sticky bottom-0 bg-card border-t border-border p-3">
             <div className="grid grid-cols-2 gap-2">
               <a href={info.helpLink || '#'} className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">Plus d'infos</a>
               <button onClick={() => { navigator.clipboard?.writeText(window.location.href); }} className="inline-flex w-full items-center justify-center gap-2 rounded-3xl border border-border px-4 py-3 text-sm">Copier le lien</button>

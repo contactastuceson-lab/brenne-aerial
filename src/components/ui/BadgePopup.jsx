@@ -57,39 +57,55 @@ function Popup({ info, anchorEl, onClose }) {
   const isVerificationModal = labelNorm.includes('verif') || labelNorm.includes('certif');
 
   if (isVerificationModal) {
-    const startStyle = { transform: 'translateY(60vh)', opacity: 0 };
-    const endStyle = { transform: 'translateY(0)', opacity: 1, transition: 'transform 320ms ease, opacity 320ms ease' };
+    const startStyle = { transform: 'translateY(100%)', opacity: 0 };
+    const endStyle = { transform: 'translateY(0)', opacity: 1, transition: 'transform 360ms cubic-bezier(.2,.9,.3,1), opacity 360ms ease' };
     return createPortal(
-      <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center" onClick={onClose}>
-        <div className="absolute inset-0 bg-black/40" />
+      <div className="fixed inset-0 z-[9999] flex items-end justify-center" onClick={onClose}>
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+
         <div
           ref={popupRef}
           onClick={e => e.stopPropagation()}
           style={entered ? endStyle : startStyle}
-          className="relative w-11/12 max-w-md bg-card border border-border rounded-2xl shadow-2xl p-4 text-left"
+          className="relative w-full max-w-5xl h-[60vh] bg-card border-t border-border rounded-t-3xl shadow-2xl p-6 text-left mx-auto"
         >
-          <button onClick={onClose} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground">
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                style={info.gradient ? { background: 'linear-gradient(135deg,#f59e0b,#fde68a,#b45309)', boxShadow: '0 10px 30px rgba(0,0,0,0.25)' } : { background: info.bg }}
+              >
+                <Icon className={`w-8 h-8 ${info.gradient ? 'text-yellow-900' : 'text-white'}`} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h3 className="font-grotesk font-extrabold text-2xl leading-tight" style={info.gradient ? { color: '#fde68a' } : { color: info.bg }}>{info.label}</h3>
+                <p className="mt-1 text-sm text-muted-foreground max-w-xl">{info.description}</p>
+              </div>
+            </div>
 
-          <div className="flex flex-col items-center mb-3">
-            <span
-              className="w-14 h-14 rounded-full flex items-center justify-center mb-2"
-              style={info.gradient
-                ? { background: 'linear-gradient(135deg, #f59e0b, #fde68a, #b45309)', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }
-                : { background: info.bg }
-              }
-            >
-              <Icon className={`w-7 h-7 ${info.gradient ? 'text-yellow-900' : 'text-white'}`} strokeWidth={2.5} />
-            </span>
-            <p className="font-grotesk font-bold text-base" style={info.gradient ? { color: '#fde68a' } : { color: info.bg }}>
-              {info.label}
-            </p>
+            <button onClick={onClose} className="rounded-full bg-background/80 border border-border p-2 text-muted-foreground hover:bg-muted">
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
-          <p className="font-inter text-sm text-muted-foreground leading-relaxed text-center">
-            {info.description}
-          </p>
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <p className="text-sm text-muted-foreground">Détails</p>
+              <p className="mt-2 text-base text-foreground leading-relaxed">{info.description}</p>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Actions</p>
+                <ul className="mt-2 space-y-2 text-sm">
+                  <li className="font-medium text-foreground">Voir la vérification complète</li>
+                  <li className="text-muted-foreground">Contacter l'équipe support</li>
+                </ul>
+              </div>
+              <div className="mt-4">
+                <a href="#" className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">Plus d'infos</a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>,
       document.body

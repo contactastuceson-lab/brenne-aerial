@@ -184,11 +184,11 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               </div>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="w-full max-w-2xl mx-auto h-auto max-h-[78vh] flex flex-col bg-card border border-border rounded-t-[1.75rem] shadow-2xl overflow-hidden">
+          <SheetContent side="bottom" className="inset-0 w-full h-screen max-h-screen flex flex-col bg-card border border-border rounded-none shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-3">
+            <div className="flex flex-col gap-4 px-6 pt-6 pb-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="flex items-center gap-4">
-                <div className="relative h-14 w-14 rounded-3xl bg-primary/10 border border-primary/20 overflow-hidden">
+                <div className="relative h-16 w-16 rounded-3xl bg-primary/10 border border-primary/20 overflow-hidden">
                   {visibleAffiliation.organizationAvatarUrl ? (
                     <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
                   ) : (
@@ -215,24 +215,23 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
 
             {/* Body (scrollable) */}
             <div className="flex-1 overflow-auto px-6 pb-4">
-              <div className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
-                <div>
+              <div className="grid gap-4 lg:grid-cols-[1.35fr_0.65fr]">
+                <div className="rounded-[1.75rem] border border-border bg-card p-6 shadow-sm">
                   <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary/80">Affiliation vérifiée</p>
                   <p className="mt-3 text-sm leading-6 text-foreground">
                     Compte affilié à l’organisation officielle {visibleAffiliation.organizationName || 'vérifiée'}. Ce statut confirme le lien entre ce profil et l’entité.
                   </p>
                 </div>
-
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-3xl border border-border bg-background p-4">
+                <div className="space-y-4">
+                  <div className="rounded-3xl border border-border bg-background p-5">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Rôle</p>
                     <p className="mt-2 font-semibold text-base text-foreground">{visibleAffiliation.role || 'Membre'}</p>
                   </div>
-                  <div className="rounded-3xl border border-border bg-background p-4">
+                  <div className="rounded-3xl border border-border bg-background p-5">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Visibilité</p>
                     <p className="mt-2 font-semibold text-base text-foreground">{visibleAffiliation.visibility === 'public' ? 'Publique' : 'Privée'}</p>
                   </div>
-                  <div className="rounded-3xl border border-border bg-background p-4">
+                  <div className="rounded-3xl border border-border bg-background p-5">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Affilié depuis</p>
                     <p className="mt-2 font-semibold text-base text-foreground">
                       {(() => {
@@ -251,8 +250,8 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               </div>
             </div>
 
-            {/* Footer (sticky) */}
-            <div className="sticky bottom-0 z-10 bg-card border-t border-border p-4">
+            {/* Footer */}
+            <div className="border-t border-border p-4 bg-card">
               <button
                 title={`Affilié officiellement à ${visibleAffiliation.organizationName}`}
                 onClick={(e) => {

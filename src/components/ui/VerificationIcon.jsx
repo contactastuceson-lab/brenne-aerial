@@ -102,7 +102,7 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
           <PopoverTrigger asChild>
             <button className="inline-flex items-center justify-center rounded-md border border-primary/20 bg-background/70 p-1 shadow-sm transition-opacity hover:opacity-80">
               {visibleAffiliation.organizationAvatarUrl ? (
-                <img src={visibleAffiliation.organizationAvatarUrl} alt={visibleAffiliation.organizationName || 'Organisation'} className="h-4 w-4 rounded-md object-cover" />
+                <img src={visibleAffiliation.organizationAvatarUrl} alt={visibleAffiliation.organizationName || 'Organisation'} className="h-4 w-4 rounded-none object-cover" />
               ) : (
                 <span className="text-[10px] font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
               )}
@@ -111,9 +111,9 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
           <PopoverContent className="w-72 p-0 overflow-hidden">
             <div className="p-4 border-b border-border bg-secondary/40">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 border border-primary/20 overflow-hidden">
+                <div className="flex h-10 w-10 items-center justify-center rounded-none bg-primary/10 border border-primary/20 overflow-hidden">
                   {visibleAffiliation.organizationAvatarUrl ? (
-                    <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
+                    <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full rounded-none object-cover" />
                   ) : (
                     <span className="text-sm font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
                   )}

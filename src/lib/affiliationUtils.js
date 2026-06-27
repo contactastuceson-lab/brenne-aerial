@@ -1,4 +1,4 @@
-export const AFFILIATION_ELIGIBLE_BADGES = ['official', 'supreme'];
+export const AFFILIATION_ELIGIBLE_BADGES = ['official', 'supreme', 'officiel', 'suprême'];
 
 export function isAffiliationEligibleOrganization(user = {}) {
   const verifications = Array.isArray(user?.verifications) ? user.verifications : [];
@@ -7,7 +7,7 @@ export function isAffiliationEligibleOrganization(user = {}) {
   const normalizedBadges = badges.map((value) => String(value || '').toLowerCase());
 
   return normalizedVerifications.some((value) => AFFILIATION_ELIGIBLE_BADGES.includes(value))
-    || normalizedBadges.some((value) => ['officiel', 'suprême', 'official', 'supreme'].includes(value));
+    || normalizedBadges.some((value) => AFFILIATION_ELIGIBLE_BADGES.includes(value));
 }
 
 export function canManageAffiliations(user = {}) {

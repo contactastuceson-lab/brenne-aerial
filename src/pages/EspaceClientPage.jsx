@@ -7,7 +7,7 @@ import {
   Lock, LogIn, ChevronDown, ChevronUp, Award,
   CheckCircle, Clock, XCircle, AlertCircle, Plus, ArrowRight,
   Rocket, MapPin, Calendar, Shield, Zap, User, Users, Settings, Flag,
-  CreditCard, ExternalLink, RefreshCcw, Loader2
+  CreditCard, ExternalLink, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -17,7 +17,7 @@ import CertificationTracking from '@/components/dashboard/CertificationTracking'
 import ReportTracking from '@/components/dashboard/ReportTracking';
 import QuoteTracking from '@/components/dashboard/QuoteTracking';
 import OrganizationAffiliationsTab from '@/components/client/OrganizationAffiliationsTab';
-import { isAffiliationEligibleOrganization } from '@/lib/affiliationUtils';
+import { canManageAffiliations as canManageUserAffiliations } from '@/lib/affiliationUtils';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -209,7 +209,7 @@ export default function EspaceClientPage() {
   const [expandedQuote, setExpandedQuote] = useState(null);
   const [billingLoading, setBillingLoading] = useState(false);
   const activeTab = searchParams.get('tab') || 'overview';
-  const canManageAffiliations = user?.role === 'owner' || user?.role === 'admin' || user?.role === 'administrator' || user?.role === 'administrateur';
+  const canManageAffiliations = canManageUserAffiliations(user);
 
   const openBillingPortal = async () => {
     setBillingLoading(true);

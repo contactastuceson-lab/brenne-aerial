@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Search, Plus, Users, CheckCircle2, XCircle, Sparkles, ShieldCheck, Eye, EyeOff, Loader2, UserPlus, Trash2, RefreshCw, History } from 'lucide-react';
+import { Search, CheckCircle2, Sparkles, ShieldCheck, Eye, EyeOff, Loader2, UserPlus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { canManageAffiliations, isAffiliationEligibleOrganization } from '@/lib/affiliationUtils';
+import { canManageAffiliations } from '@/lib/affiliationUtils';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { notifyAffiliationInvitation, notifyAffiliationStatus } from '@/lib/affiliationNotifications';

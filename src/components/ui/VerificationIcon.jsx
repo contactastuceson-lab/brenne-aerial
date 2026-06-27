@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTr
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const bgColorMap = {
   'text-sky-400':     '#0ea5e9',
@@ -20,6 +21,7 @@ const bgColorMap = {
 const TWITTER_SEAL = "M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91C3.38 9.33 2.5 10.57 2.5 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.26 3.91.8c.66 1.31 1.9 2.19 3.33 2.19s2.68-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z";
 
 export default function VerificationIcons({ verifications = [], size = 'sm', user = null }) {
+  const navigate = useNavigate();
   const [affiliations, setAffiliations] = useState([]);
   const [loadingAffiliation, setLoadingAffiliation] = useState(false);
 
@@ -220,9 +222,30 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
                       })()}
                     </p>
               </div>
-              <a href="#" className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90">
-                <ExternalLink className="w-4 h-4" /> Voir l’organisation
-              </a>
+              <div className="grid grid-cols-1 gap-2">
+                <SheetClose asChild>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const orgId = visibleAffiliation.organizationId;
+                        if (!orgId) return;
+                        const org = await base44.entities.User.get(orgId);
+                        const username = org?.username;
+                        if (username) navigate(`/@${username}`);
+                        else {
+                          // fallback to organization page by id
+                          navigate(`/profile?org=${orgId}`);
+                        }
+                      } catch (e) {
+                        console.error('Failed to open organization profile', e);
+                      }
+                    }}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                  >
+                    <ExternalLink className="w-4 h-4" /> Voir l’organisation
+                  </button>
+                </SheetClose>
+              </div>
             </div>
           </SheetContent>
         </Sheet>

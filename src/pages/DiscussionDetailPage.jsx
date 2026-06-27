@@ -125,7 +125,8 @@ export default function DiscussionDetailPage() {
               </span>
               <VerificationIcons 
                 verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
-                size="sm" 
+                size="sm"
+                user={{ id: discussion.author_id }}
               />
             </div>
             <span className="text-xs">{formatDistanceToNow(new Date(discussion.created_date.endsWith('Z') ? discussion.created_date : discussion.created_date + 'Z'), { locale: fr, addSuffix: true })}</span>
@@ -178,7 +179,8 @@ export default function DiscussionDetailPage() {
                         </p>
                         <VerificationIcons 
                           verifications={reply.author_is_supreme ? ['supreme', ...(reply.author_verifications || [])] : (reply.author_verifications || [])} 
-                          size="sm" 
+                          size="sm"
+                          user={{ id: reply.author_id }}
                         />
                       </div>
                       <p className="text-xs text-slate-400">

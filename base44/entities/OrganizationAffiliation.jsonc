@@ -1,0 +1,122 @@
+{
+  "name": "OrganizationAffiliation",
+  "type": "object",
+  "properties": {
+    "organizationId": {
+      "type": "string",
+      "description": "Identifiant de l'organisation qui gère l'affiliation"
+    },
+    "userId": {
+      "type": "string",
+      "description": "Identifiant de l'utilisateur affilié"
+    },
+    "role": {
+      "type": "string",
+      "default": "member",
+      "description": "Rôle de l'affilié au sein de l'organisation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "removed"
+      ],
+      "default": "pending",
+      "description": "Statut de l'affiliation"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ],
+      "default": "public",
+      "description": "Visibilité du logo d'affiliation"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de création de l'affiliation"
+    },
+    "acceptedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date d'acceptation"
+    },
+    "removedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de suppression"
+    },
+    "invitedBy": {
+      "type": "string",
+      "description": "Identifiant de l'utilisateur qui a créé l'invitation"
+    },
+    "message": {
+      "type": "string",
+      "description": "Message facultatif associé à l'invitation"
+    },
+    "organizationName": {
+      "type": "string",
+      "description": "Nom de l'organisation au moment de la création"
+    },
+    "organizationAvatarUrl": {
+      "type": "string",
+      "description": "Logo ou avatar de l'organisation au moment de la création"
+    }
+  },
+  "required": [
+    "organizationId",
+    "userId",
+    "role",
+    "status",
+    "visibility"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.organizationId": "{{user.id}}"
+        },
+        {
+          "data.userId": "{{user.id}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.organizationId": "{{user.id}}"
+        },
+        {
+          "data.userId": "{{user.id}}"
+        },
+        {
+          "data.status": "accepted"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.organizationId": "{{user.id}}"
+        },
+        {
+          "data.userId": "{{user.id}}"
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.organizationId": "{{user.id}}"
+        },
+        {
+          "data.userId": "{{user.id}}"
+        }
+      ]
+    }
+  }
+}

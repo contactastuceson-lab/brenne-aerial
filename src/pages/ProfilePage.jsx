@@ -254,7 +254,7 @@ export default function ProfilePage() {
                 {user.badges?.includes('Officiel') && (
                   <span className="text-lg md:text-2xl">👑</span>
                 )}
-                <VerificationIcons verifications={user.verifications} size="sm" />
+                <VerificationIcons verifications={user.verifications} size="sm" user={user} />
               </div>
               <p className="font-mono text-[10px] md:text-xs text-muted-foreground mt-0.5 truncate">{user.email}</p>
               {roleCfg && (

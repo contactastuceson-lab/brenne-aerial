@@ -396,7 +396,7 @@ export default function PublicProfilePage() {
             {user.username && (
               <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
             )}
-            <VerificationIcons verifications={user.verifications} size="md" />
+            <VerificationIcons verifications={user.verifications} size="md" user={user} />
           </div>
 
           {/* Role chip */}

@@ -74,7 +74,7 @@ export default function UserProfileModal({ profile, onClose }) {
                   className="font-grotesk font-bold text-lg leading-tight"
                   style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
                 >{profile.full_name}</h2>
-                <VerificationIcons verifications={profile.verifications} />
+                <VerificationIcons verifications={profile.verifications} user={profile} />
               </div>
               {profile.role && (
                 <span className="inline-block font-mono text-[9px] text-primary/80 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full capitalize">{profile.role}</span>

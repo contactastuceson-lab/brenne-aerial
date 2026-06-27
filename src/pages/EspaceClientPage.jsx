@@ -16,6 +16,7 @@ import BadgeChip from '@/components/ui/BadgeChip';
 import CertificationTracking from '@/components/dashboard/CertificationTracking';
 import ReportTracking from '@/components/dashboard/ReportTracking';
 import QuoteTracking from '@/components/dashboard/QuoteTracking';
+import OrganizationAffiliationsTab from '@/components/client/OrganizationAffiliationsTab';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -47,6 +48,11 @@ const NAV = [
   { id: 'billing',  label: 'Facturation',        icon: CreditCard },
   { id: 'badges',   label: 'Badges',            icon: Award },
   { id: 'reports',  label: 'Mes signalements',  icon: Flag },
+];
+
+const ORGANIZATION_NAV = [
+  { id: 'overview', label: 'Vue d’ensemble', icon: Zap },
+  { id: 'affiliations', label: 'Affiliations', icon: Users },
 ];
 
 const REPORT_STATUS = {
@@ -202,6 +208,7 @@ export default function EspaceClientPage() {
   const [expandedQuote, setExpandedQuote] = useState(null);
   const [billingLoading, setBillingLoading] = useState(false);
   const activeTab = searchParams.get('tab') || 'overview';
+  const canManageAffiliations = user?.role === 'owner' || user?.role === 'admin' || user?.role === 'administrator' || user?.role === 'administrateur';
 
   const openBillingPortal = async () => {
     setBillingLoading(true);
@@ -359,7 +366,7 @@ export default function EspaceClientPage() {
 
         {/* Sidebar nav — desktop */}
         <aside className="hidden lg:flex flex-col gap-1 w-52 flex-shrink-0">
-          {NAV.map(n => (
+          {(canManageAffiliations ? ORGANIZATION_NAV : NAV).map(n => (
             <button key={n.id} onClick={() => setTab(n.id)}
               className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-inter transition-all text-left ${
                 activeTab === n.id
@@ -389,7 +396,7 @@ export default function EspaceClientPage() {
 
         {/* Mobile nav */}
         <div className="lg:hidden flex gap-1 overflow-x-auto pb-1 -mx-1 px-1">
-          {NAV.map(n => (
+          {(canManageAffiliations ? ORGANIZATION_NAV : NAV).map(n => (
             <button key={n.id} onClick={() => setTab(n.id)}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-inter whitespace-nowrap flex-shrink-0 transition-all ${
                 activeTab === n.id
@@ -614,6 +621,10 @@ export default function EspaceClientPage() {
                     </div>
                   </div>
                 </div>
+              )}
+
+              {activeTab === 'affiliations' && (
+                <OrganizationAffiliationsTab user={user} />
               )}
 
               {/* BADGES */}

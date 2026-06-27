@@ -356,7 +356,7 @@ export default function MessageThread({ user, conv, onBack }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <button onClick={() => conv.username ? navigate(`/@${conv.username}`) : setShowProfile(true)} className="font-grotesk font-semibold text-sm hover:text-primary transition-colors">{conv.name}</button>
-              <VerificationIcons verifications={conv.verifications} />
+              <VerificationIcons verifications={conv.verifications} user={conv} />
               {conv.badges?.slice(0, 2).map(b => <BadgeChip key={b} badge={b} size="sm" />)}
             </div>
             <p className="font-mono text-[10px] mt-0.5">

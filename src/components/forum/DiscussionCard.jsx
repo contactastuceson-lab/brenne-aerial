@@ -64,7 +64,8 @@ export default function DiscussionCard({ discussion }) {
             <span className="truncate max-w-[100px]">{discussion.author_display_name || discussion.author_name}</span>
             <VerificationIcons 
               verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
-              size="sm" 
+              size="sm"
+              user={{ id: discussion.author_id }}
             />
             <span className="hidden sm:inline text-slate-600 truncate">{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
           </div>

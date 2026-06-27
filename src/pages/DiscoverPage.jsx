@@ -414,7 +414,7 @@ export default function DiscoverPage() {
                       {isSupreme && (
                         <span style={{ fontSize: '11px' }}>👑</span>
                       )}
-                      <VerificationIcons verifications={profile.verifications} size="sm" />
+                      <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
                     </div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       {profile.username && (
@@ -587,7 +587,7 @@ export default function DiscoverPage() {
                          className="font-grotesk font-semibold text-sm truncate"
                          style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
                        >{profile.display_name || profile.full_name}</h3>
-                       <VerificationIcons verifications={profile.verifications} />
+                       <VerificationIcons verifications={profile.verifications} user={profile} />
                      </div>
                      {profile.username && (
                        <p className="font-mono text-xs text-muted-foreground mb-2">@{profile.username}</p>

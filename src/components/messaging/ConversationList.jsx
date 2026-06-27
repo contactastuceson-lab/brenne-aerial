@@ -172,7 +172,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
                     <span className={`font-grotesk text-sm truncate ${hasUnread ? 'font-bold text-foreground' : 'font-semibold text-foreground/90'}`}>
                       {conv.name}
                     </span>
-                    <VerificationIcons verifications={conv.verifications} size="sm" />
+                    <VerificationIcons verifications={conv.verifications} size="sm" user={conv} />
                     {conv.isOfficial && (
                       <span className="flex items-center gap-0.5 font-mono text-[9px] text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-full flex-shrink-0 whitespace-nowrap">
                         <ShieldCheck className="w-2.5 h-2.5" /> Officiel

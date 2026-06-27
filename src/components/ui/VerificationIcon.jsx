@@ -184,15 +184,15 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               </div>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="inset-0 w-full h-screen max-h-screen flex flex-col bg-card border border-border rounded-none shadow-2xl overflow-hidden">
+          <SheetContent side="bottom" className="inset-x-0 bottom-0 w-full h-[88vh] max-h-[88vh] flex flex-col bg-card border border-border rounded-t-[2rem] shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="flex flex-col gap-4 px-6 pt-6 pb-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="relative h-16 w-16 rounded-3xl bg-primary/10 border border-primary/20 overflow-hidden">
+            <div className="flex flex-col gap-3 px-6 pt-4 pb-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="relative h-14 w-14 rounded-3xl bg-primary/10 border border-primary/20 overflow-hidden">
                   {visibleAffiliation.organizationAvatarUrl ? (
                     <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <span className="text-xl font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
+                    <span className="text-lg font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
                   )}
                   {organizationBadge && (
                     <div className="absolute -bottom-1 -right-1 rounded-full border border-border bg-background p-0.5">
@@ -201,13 +201,13 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs uppercase tracking-[0.24em] text-primary/80">Affiliation organisationnelle</p>
-                  <h2 className="mt-2 text-xl font-semibold text-foreground sm:text-2xl truncate">{visibleAffiliation.organizationName || 'Organisation officielle'}</h2>
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-primary/80">Affiliation organisationnelle</p>
+                  <h2 className="mt-1 text-lg font-semibold text-foreground sm:text-xl truncate">{visibleAffiliation.organizationName || 'Organisation officielle'}</h2>
                   <p className="mt-1 text-sm text-muted-foreground">{visibleAffiliation.role ? `Rôle : ${visibleAffiliation.role}` : 'Membre affilié'}</p>
                 </div>
               </div>
               <SheetClose asChild>
-                <button className="inline-flex h-10 w-10 items-center justify-center rounded-3xl border border-border bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground">
+                <button className="inline-flex h-9 w-9 items-center justify-center rounded-3xl border border-border bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground">
                   ✕
                 </button>
               </SheetClose>

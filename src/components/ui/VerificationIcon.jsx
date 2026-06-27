@@ -155,13 +155,13 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
 
       {visibleAffiliation && (
         <Sheet>
-          <SheetTrigger asChild>
+            <SheetTrigger asChild>
             <button className="inline-flex items-center justify-center rounded-md p-0.5 bg-gradient-to-br from-primary/40 via-primary/30 to-primary/20 shadow-sm transition-transform hover:scale-[1.02]">
-              <div className="relative flex items-center justify-center rounded-md bg-background border border-border w-8 h-8 overflow-hidden">
+              <div className="relative flex items-center justify-center rounded-md bg-background border border-border overflow-hidden" style={{ width: s, height: s }}>
                 {visibleAffiliation.organizationAvatarUrl ? (
                   <img src={visibleAffiliation.organizationAvatarUrl} alt={visibleAffiliation.organizationName || 'Organisation'} className="h-full w-full object-cover" />
                 ) : (
-                  <span className="text-sm font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
+                  <span className="font-semibold text-primary" style={{ fontSize: iconSize }}>{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
                 )}
               </div>
             </button>

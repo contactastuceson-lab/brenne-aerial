@@ -52,9 +52,10 @@ function Popup({ info, anchorEl, onClose }) {
   }, [onClose, anchorEl]);
 
   const Icon = info.icon;
-  // Special modal variant for verification-like badges (Vérifié / Certifié): slide up from bottom to center
+  // Special modal variant for verification-like badges (Vérifié / Certifié / Pro / Suprême / Officiel): slide up from bottom to center
   const labelNorm = (info.label || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
-  const isVerificationModal = labelNorm.includes('verif') || labelNorm.includes('certif');
+  const verificationKeywords = ['verif', 'certif', 'pro', 'suprem', 'supr', 'offic', 'official'];
+  const isVerificationModal = verificationKeywords.some(k => labelNorm.includes(k));
 
   if (isVerificationModal) {
     const startStyle = { transform: 'translateY(100%)', opacity: 0 };

@@ -184,19 +184,14 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               </div>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="fixed inset-x-0 bottom-4 mx-auto w-[min(92%,280px)] max-w-[280px] h-auto max-h-[40vh] flex flex-col bg-card border border-border rounded-3xl shadow-2xl overflow-hidden p-0">
+          <SheetContent side="bottom" className="fixed inset-x-0 bottom-0 w-full h-[22vh] max-h-[24vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden p-0">
             {/* Header compact */}
-            <div className="flex items-center gap-2 px-2.5 py-2">
-              <div className="relative h-7 w-7 rounded-xl bg-primary/10 border border-primary/20 overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2">
+              <div className="h-7 w-7 rounded-xl bg-primary/10 border border-primary/20 overflow-hidden flex items-center justify-center">
                 {visibleAffiliation.organizationAvatarUrl ? (
                   <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
                 ) : (
                   <span className="text-[11px] font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
-                )}
-                {organizationBadge && (
-                  <div className="absolute -bottom-1 -right-1 rounded-full border border-border bg-background p-0.5">
-                    <VerificationChip type={organizationBadge} size="sm" iconOnly />
-                  </div>
                 )}
               </div>
               <div className="min-w-0">
@@ -212,21 +207,21 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
             </div>
 
             {/* Content compact */}
-            <div className="px-2.5 pb-2">
-              <div className="rounded-lg border border-border bg-card p-2">
+            <div className="px-3 pb-2 flex-1">
+              <div className="rounded-2xl border border-border bg-card p-2">
                 <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-primary/80">Affiliation vérifiée</p>
                 <p className="mt-1 text-[10px] leading-5 text-foreground">Compte affilié à {visibleAffiliation.organizationName || 'l’organisation vérifiée'}. Statut confirmé.</p>
               </div>
-              <div className="mt-2 flex gap-1">
-                <div className="flex-1 rounded-lg border border-border bg-background p-1 text-center">
+              <div className="mt-2 grid grid-cols-3 gap-1">
+                <div className="rounded-2xl border border-border bg-background p-2 text-center">
                   <p className="text-[8px] uppercase text-muted-foreground">Rôle</p>
                   <p className="mt-1 text-[10px] font-semibold text-foreground">{visibleAffiliation.role || 'Membre'}</p>
                 </div>
-                <div className="flex-1 rounded-lg border border-border bg-background p-1 text-center">
+                <div className="rounded-2xl border border-border bg-background p-2 text-center">
                   <p className="text-[8px] uppercase text-muted-foreground">Visibilité</p>
                   <p className="mt-1 text-[10px] font-semibold text-foreground">{visibleAffiliation.visibility === 'public' ? 'Publique' : 'Privée'}</p>
                 </div>
-                <div className="flex-1 rounded-lg border border-border bg-background p-1 text-center">
+                <div className="rounded-2xl border border-border bg-background p-2 text-center">
                   <p className="text-[8px] uppercase text-muted-foreground">Depuis</p>
                   <p className="mt-1 text-[10px] font-semibold text-foreground">{(() => {
                     const raw = visibleAffiliation.acceptedAt || visibleAffiliation.createdAt || visibleAffiliation.accepted_at || visibleAffiliation.created_at;

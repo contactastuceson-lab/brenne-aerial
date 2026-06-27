@@ -121,7 +121,7 @@ function Popup({ info, anchorEl, onClose }) {
           ref={popupRef}
           onClick={e => e.stopPropagation()}
           style={entered ? endStyle : startStyle}
-          className="relative w-full max-w-5xl h-[60vh] bg-card border-t border-border rounded-t-3xl shadow-2xl p-6 text-left mx-auto"
+          className="relative w-full max-w-5xl max-h-[85vh] overflow-y-auto bg-card border-t border-border rounded-t-3xl shadow-2xl p-6 text-left mx-auto"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -156,7 +156,7 @@ function Popup({ info, anchorEl, onClose }) {
                 </div>
               )}
             </div>
-            <div className="rounded-2xl border border-border bg-card p-4 flex flex-col justify-between">
+            <div className="rounded-2xl border border-border bg-card p-4 flex flex-col">
               <div>
                 <p className="text-sm text-muted-foreground">Actions</p>
                 <ul className="mt-2 space-y-2 text-sm">
@@ -164,9 +164,11 @@ function Popup({ info, anchorEl, onClose }) {
                   <li className="text-muted-foreground">Contacter l'équipe support</li>
                 </ul>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <a href={info.helpLink || '#'} className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">Plus d'infos</a>
-                <button onClick={() => { navigator.clipboard?.writeText(window.location.href); }} className="inline-flex w-full items-center justify-center gap-2 rounded-3xl border border-border px-4 py-3 text-sm">Copier le lien</button>
+              <div className="mt-4 sticky bottom-0 bg-card pt-4 -mx-4 px-4 pb-6">
+                <div className="grid grid-cols-2 gap-2">
+                  <a href={info.helpLink || '#'} className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">Plus d'infos</a>
+                  <button onClick={() => { navigator.clipboard?.writeText(window.location.href); }} className="inline-flex w-full items-center justify-center gap-2 rounded-3xl border border-border px-4 py-3 text-sm">Copier le lien</button>
+                </div>
               </div>
             </div>
           </div>

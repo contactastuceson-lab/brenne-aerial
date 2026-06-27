@@ -63,6 +63,58 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
         const isGold = cfg.gradient;
         const fill = bgColorMap[cfg.color] || '#0ea5e9';
 
+        // For the main "verified" badge, open a full-sheet modal that slides from bottom
+        if (key === 'verified') {
+          return (
+            <Sheet key={key}>
+              <SheetTrigger asChild>
+                <button
+                  className="inline-flex items-center justify-center flex-shrink-0 relative"
+                  style={{ width: s, height: s }}
+                >
+                  <svg viewBox="0 0 24 24" width={s} height={s} style={{ position: 'absolute', inset: 0 }}>
+                    <path fill={fill} d={TWITTER_SEAL} />
+                  </svg>
+                  <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon
+                      style={{ width: iconSize, height: iconSize, color: isGold ? '#451a03' : '#050d1a', strokeWidth: 3, flexShrink: 0 }}
+                    />
+                  </span>
+                </button>
+              </SheetTrigger>
+
+              <SheetContent side="bottom" className="min-h-screen md:min-h-[60vh] rounded-t-3xl border-t border-border p-4 overflow-auto">
+                <div className="mx-auto max-w-2xl">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full flex items-center justify-center"
+                           style={cfg.gradient ? { background: 'linear-gradient(135deg, #f59e0b, #fde68a, #b45309)' } : { background: fill }}>
+                        <Icon className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-grotesk font-bold text-xl">{cfg.label}</h3>
+                        <p className="text-sm text-muted-foreground">{cfg.description}</p>
+                      </div>
+                    </div>
+                    <SheetClose asChild>
+                      <button className="rounded-full border border-border bg-background/90 p-2 text-muted-foreground">✕</button>
+                    </SheetClose>
+                  </div>
+
+                  <div className="mt-6 bg-card border border-border rounded-2xl p-4">
+                    <p className="font-inter text-base text-muted-foreground leading-relaxed">
+                      {cfg.description}
+                    </p>
+                    <div className="mt-6">
+                      <a href="#" className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">Plus d'infos</a>
+                    </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          );
+        }
+
         return (
           <BadgePopup key={key} badgeKey={key}>
             <span

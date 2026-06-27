@@ -23,6 +23,7 @@ const BADGE_INFO = {
 function Popup({ info, anchorEl, onClose }) {
   const popupRef = useRef(null);
   const [pos, setPos] = useState({ top: 0, left: 0 });
+  const [entered, setEntered] = useState(false);
 
   useEffect(() => {
     if (!anchorEl) return;
@@ -32,6 +33,12 @@ function Popup({ info, anchorEl, onClose }) {
       left: rect.left + rect.width / 2,
     });
   }, [anchorEl]);
+
+  useEffect(() => {
+    // trigger entrance animation for modal variant
+    const t = setTimeout(() => setEntered(true), 20);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {
@@ -45,6 +52,46 @@ function Popup({ info, anchorEl, onClose }) {
   }, [onClose, anchorEl]);
 
   const Icon = info.icon;
+  // Special modal variant for the 'Vérifié' badge: slide up from bottom to center
+  if (info.label === 'Vérifié') {
+    const startStyle = { transform: 'translateY(60vh)', opacity: 0 };
+    const endStyle = { transform: 'translateY(0)', opacity: 1, transition: 'transform 320ms ease, opacity 320ms ease' };
+    return createPortal(
+      <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center" onClick={onClose}>
+        <div className="absolute inset-0 bg-black/40" />
+        <div
+          ref={popupRef}
+          onClick={e => e.stopPropagation()}
+          style={entered ? endStyle : startStyle}
+          className="relative w-11/12 max-w-md bg-card border border-border rounded-2xl shadow-2xl p-4 text-left"
+        >
+          <button onClick={onClose} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground">
+            <X className="w-4 h-4" />
+          </button>
+
+          <div className="flex flex-col items-center mb-3">
+            <span
+              className="w-14 h-14 rounded-full flex items-center justify-center mb-2"
+              style={info.gradient
+                ? { background: 'linear-gradient(135deg, #f59e0b, #fde68a, #b45309)', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }
+                : { background: info.bg }
+              }
+            >
+              <Icon className={`w-7 h-7 ${info.gradient ? 'text-yellow-900' : 'text-white'}`} strokeWidth={2.5} />
+            </span>
+            <p className="font-grotesk font-bold text-base" style={info.gradient ? { color: '#fde68a' } : { color: info.bg }}>
+              {info.label}
+            </p>
+          </div>
+
+          <p className="font-inter text-sm text-muted-foreground leading-relaxed text-center">
+            {info.description}
+          </p>
+        </div>
+      </div>,
+      document.body
+    );
+  }
 
   return createPortal(
     <div

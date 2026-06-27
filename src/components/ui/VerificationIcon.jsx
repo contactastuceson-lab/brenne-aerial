@@ -163,7 +163,6 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
                 ) : (
                   <span className="text-sm font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
                 )}
-                <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-sm bg-primary border border-white flex items-center justify-center text-[10px] text-primary-foreground shadow">🏷</span>
               </div>
             </button>
           </SheetTrigger>

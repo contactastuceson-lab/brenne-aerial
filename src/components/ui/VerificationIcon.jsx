@@ -156,14 +156,14 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
       {visibleAffiliation && (
         <Sheet>
           <SheetTrigger asChild>
-            <button className="inline-flex items-center justify-center rounded-full p-0.5 bg-gradient-to-br from-primary/40 via-primary/30 to-primary/20 shadow-sm transition-transform hover:scale-[1.02]">
-              <div className="relative flex items-center justify-center rounded-full bg-background border border-border w-8 h-8 overflow-hidden">
+            <button className="inline-flex items-center justify-center rounded-md p-0.5 bg-gradient-to-br from-primary/40 via-primary/30 to-primary/20 shadow-sm transition-transform hover:scale-[1.02]">
+              <div className="relative flex items-center justify-center rounded-md bg-background border border-border w-8 h-8 overflow-hidden">
                 {visibleAffiliation.organizationAvatarUrl ? (
                   <img src={visibleAffiliation.organizationAvatarUrl} alt={visibleAffiliation.organizationName || 'Organisation'} className="h-full w-full object-cover" />
                 ) : (
                   <span className="text-sm font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
                 )}
-                <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary border border-white flex items-center justify-center text-[10px] text-primary-foreground shadow">🏷</span>
+                <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-sm bg-primary border border-white flex items-center justify-center text-[10px] text-primary-foreground shadow">🏷</span>
               </div>
             </button>
           </SheetTrigger>

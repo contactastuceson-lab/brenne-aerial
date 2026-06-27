@@ -168,30 +168,29 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               </div>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="max-h-[60vh] min-h-[40vh] rounded-t-3xl border-t border-border p-0 overflow-hidden">
-            <div className="px-6 pt-6 pb-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-primary/10 border border-primary/20 overflow-hidden">
-                    {visibleAffiliation.organizationAvatarUrl ? (
-                      <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-lg font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-grotesk font-bold text-lg leading-tight">Affiliation organisationnelle</p>
-                    <p className="font-inter text-sm text-muted-foreground mt-1">{visibleAffiliation.organizationName || 'Organisation officielle'}</p>
-                  </div>
+          <SheetContent side="bottom" className="w-full max-w-3xl mx-auto h-[80vh] sm:h-[60vh] lg:h-[55vh] sm:max-h-[85vh] flex flex-col bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="px-6 pt-6 pb-2 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-primary/10 border border-primary/20 overflow-hidden">
+                  {visibleAffiliation.organizationAvatarUrl ? (
+                    <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-lg font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
+                  )}
                 </div>
-                <SheetClose asChild>
-                  <button className="rounded-full border border-border bg-background/90 p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground">
-                    ✕
-                  </button>
-                </SheetClose>
+                <div className="min-w-0">
+                  <p className="font-grotesk font-bold text-lg leading-tight">Affiliation organisationnelle</p>
+                  <p className="font-inter text-sm text-muted-foreground mt-1">{visibleAffiliation.organizationName || 'Organisation officielle'}</p>
+                </div>
               </div>
+              <SheetClose asChild>
+                <button className="rounded-full border border-border bg-background/90 p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground">✕</button>
+              </SheetClose>
             </div>
-            <div className="space-y-4 border-t border-border px-6 pb-6 pt-4 bg-background">
+
+            {/* Body (scrollable) */}
+            <div className="px-6 pb-4 overflow-auto flex-1 space-y-4 bg-background">
               <div className="rounded-3xl bg-primary/10 border border-primary/20 p-4">
                 <p className="font-grotesk font-semibold text-base">Ce compte est affilié à l’organisation</p>
                 <p className="font-inter text-sm text-foreground mt-2">{visibleAffiliation.organizationName || 'Brenne Aerial France'}</p>
@@ -209,19 +208,23 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               </div>
               <div className="rounded-3xl border border-border bg-card p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Affilié depuis</p>
-                    <p className="mt-2 font-grotesk font-semibold text-lg text-foreground">
-                      {(() => {
-                        const raw = visibleAffiliation.acceptedAt || visibleAffiliation.createdAt || visibleAffiliation.accepted_at || visibleAffiliation.created_at;
-                        if (!raw) return 'Date non disponible';
-                        try {
-                          const d = new Date(raw);
-                          return format(d, "d MMM yyyy 'à' HH:mm", { locale: fr });
-                        } catch (e) {
-                          return 'Date non disponible';
-                        }
-                      })()}
-                    </p>
+                <p className="mt-2 font-grotesk font-semibold text-lg text-foreground">
+                  {(() => {
+                    const raw = visibleAffiliation.acceptedAt || visibleAffiliation.createdAt || visibleAffiliation.accepted_at || visibleAffiliation.created_at;
+                    if (!raw) return 'Date non disponible';
+                    try {
+                      const d = new Date(raw);
+                      return format(d, "d MMM yyyy 'à' HH:mm", { locale: fr });
+                    } catch (e) {
+                      return 'Date non disponible';
+                    }
+                  })()}
+                </p>
               </div>
+            </div>
+
+            {/* Footer (sticky) */}
+            <div className="sticky bottom-0 bg-card border-t border-border p-4">
               <div className="grid grid-cols-1 gap-2">
                 <button
                   onClick={async (e) => {
@@ -231,10 +234,8 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
                       if (!orgId) return;
                       const org = await base44.entities.User.get(orgId);
                       const username = org?.username;
-                      if (username) navigate(`/@${username}`);
-                      else {
-                        navigate(`/profile?org=${orgId}`);
-                      }
+                      if (username) window.location.href = `/@${username}`;
+                      else window.location.href = `/profile?org=${orgId}`;
                     } catch (err) {
                       console.error('Failed to open organization profile', err);
                     }

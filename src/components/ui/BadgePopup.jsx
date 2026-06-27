@@ -3,21 +3,74 @@ import { createPortal } from 'react-dom';
 import { X, CheckCircle, BadgeCheck, Building2, Gem, Crown, Star, Shield, Plane, Users, Award, Zap, UserCheck, Heart } from 'lucide-react';
 
 const BADGE_INFO = {
-  verified:  { label: 'Vérifié', icon: CheckCircle, bg: '#0ea5e9', description: "Ce compte a été vérifié par l'équipe Brenne Aerial. L'identité de l'utilisateur a été confirmée." },
-  certified: { label: 'Certifié', icon: BadgeCheck, bg: '#f59e0b', description: "Utilisateur certifié ayant validé un processus de qualification professionnel auprès de Brenne Aerial." },
-  official:  { label: 'Officiel', icon: Building2, bg: '#a855f7', description: "Compte officiel d'une organisation ou entité partenaire de Brenne Aerial." },
-  pro:       { label: 'Pro', icon: Gem, bg: '#10b981', description: "Professionnel reconnu dans son domaine, bénéficiant d'accès et de fonctionnalités avancées." },
-  supreme:   { label: 'Suprême', icon: Crown, gradient: true, description: "Le badge le plus rare et le plus prestigieux. Réservé aux membres d'exception ayant contribué de manière extraordinaire à la communauté Brenne Aerial." },
-  Fondateur: { label: 'Fondateur', icon: Star, bg: '#eab308', description: "Membre fondateur de la communauté Brenne Aerial. A soutenu le projet dès ses débuts." },
-  Collaborateur: { label: 'Collaborateur', icon: UserCheck, bg: '#3b82f6', description: "Collaborateur actif de Brenne Aerial, contribuant régulièrement aux projets et à la communauté." },
-  VIP: { label: 'VIP', icon: Award, bg: '#a855f7', description: "Membre VIP bénéficiant d'un accès privilégié et de services exclusifs." },
-  Admin: { label: 'Admin', icon: Shield, bg: '#ef4444', description: "Administrateur de la plateforme Brenne Aerial, responsable de la gestion et de la modération." },
-  Pilote: { label: 'Pilote', icon: Plane, bg: '#0ea5e9', description: "Pilote de drone certifié, ayant prouvé ses compétences techniques et sa maîtrise du pilotage." },
-  Officiel: { label: 'Officiel', icon: CheckCircle, bg: '#06b6d4', description: "Compte officiel reconnu par Brenne Aerial." },
-  'Vérifié': { label: 'Vérifié', icon: CheckCircle, bg: '#22c55e', description: "Identité vérifiée par l'équipe Brenne Aerial." },
-  'Beta Testeur': { label: 'Beta Testeur', icon: Zap, bg: '#ec4899', description: "Membre ayant participé aux phases de test bêta de la plateforme. Merci pour votre précieux retour !" },
-  Partenaire: { label: 'Partenaire', icon: Award, bg: '#f97316', description: "Partenaire officiel de Brenne Aerial, collaborant dans le cadre d'un accord de partenariat." },
-  Donateur: { label: 'Donateur', icon: Heart, bg: '#ef4444', description: "Membre ayant soutenu financièrement le projet Brenne Aerial. Merci pour votre générosité !" },
+  verified:  {
+    label: 'Vérifié',
+    icon: CheckCircle,
+    bg: '#0ea5e9',
+    issuer: 'Équipe Brenne Aerial',
+    criteria: [
+      'Identité vérifiée via pièce d’identité',
+      "Adresse e-mail confirmée",
+      'Compte actif et respectueux des règles'
+    ],
+    short: "Identité confirmée par Brenne Aerial.",
+    description: "Ce compte a été vérifié après une vérification d'identité et des informations fournies. Ce badge aide les autres utilisateurs à reconnaître des comptes authentiques.",
+    helpLink: '#'
+  },
+  certified: {
+    label: 'Certifié',
+    icon: BadgeCheck,
+    bg: '#f59e0b',
+    issuer: 'Brenne Aerial - Certification Pro',
+    criteria: [
+      'Preuve de compétence professionnelle',
+      'Portfolio ou certificats validés',
+      'Contrôle qualité effectué'
+    ],
+    short: 'Qualification professionnelle validée.',
+    description: "Utilisateur certifié ayant suivi et réussi un processus de qualification professionnel validé par Brenne Aerial.",
+    helpLink: '#'
+  },
+  official:  {
+    label: 'Officiel',
+    icon: Building2,
+    bg: '#a855f7',
+    issuer: 'Brenne Aerial - Partenaires',
+    criteria: ['Organisation vérifiée', 'Compte géré par l’entité officielle'],
+    short: 'Compte officiel d’une organisation partenaire.',
+    description: "Ce compte représente une organisation ou une marque officiellement reconnue par Brenne Aerial.",
+    helpLink: '#'
+  },
+  pro: {
+    label: 'Pro',
+    icon: Gem,
+    bg: '#10b981',
+    issuer: 'Brenne Aerial - Pro',
+    criteria: ['Preuve d’activité professionnelle', 'Services fournis'],
+    short: 'Professionnel reconnu.',
+    description: "Professionnel reconnu dans son domaine, bénéficiant d'accès et de fonctionnalités avancées.",
+    helpLink: '#'
+  },
+  supreme: {
+    label: 'Suprême',
+    icon: Crown,
+    gradient: true,
+    issuer: 'Comité Brenne Aerial',
+    criteria: ['Attribution sur invitation', 'Contribution exceptionnelle'],
+    short: 'Badge prestigieux sur invitation.',
+    description: "Badge rare attribué aux membres ayant contribué de manière exceptionnelle à la communauté.",
+    helpLink: '#'
+  },
+  Fondateur: { label: 'Fondateur', icon: Star, bg: '#eab308', short: 'Membre fondateur.', description: 'Membre fondateur de la communauté Brenne Aerial.' },
+  Collaborateur: { label: 'Collaborateur', icon: UserCheck, bg: '#3b82f6', short: 'Contributeur actif.', description: 'Collaborateur actif de Brenne Aerial.' },
+  VIP: { label: 'VIP', icon: Award, bg: '#a855f7', short: 'Accès privilégié.', description: 'Membre VIP bénéficiant d’un accès privilégié.' },
+  Admin: { label: 'Admin', icon: Shield, bg: '#ef4444', short: 'Administrateur.', description: 'Administrateur de la plateforme.' },
+  Pilote: { label: 'Pilote', icon: Plane, bg: '#0ea5e9', short: 'Pilote certifié.', description: 'Pilote de drone certifié.' },
+  Officiel: { label: 'Officiel', icon: CheckCircle, bg: '#06b6d4', short: 'Compte officiel.', description: 'Compte officiel reconnu par Brenne Aerial.' },
+  'Vérifié': { label: 'Vérifié', icon: CheckCircle, bg: '#22c55e', short: 'Identité vérifiée.', description: 'Identité vérifiée par l’équipe Brenne Aerial.' },
+  'Beta Testeur': { label: 'Beta Testeur', icon: Zap, bg: '#ec4899', short: 'Testeur bêta.', description: 'Membre ayant participé aux phases de test bêta.' },
+  Partenaire: { label: 'Partenaire', icon: Award, bg: '#f97316', short: 'Partenaire officiel.', description: 'Partenaire officiel de Brenne Aerial.' },
+  Donateur: { label: 'Donateur', icon: Heart, bg: '#ef4444', short: 'Supporteur du projet.', description: 'Membre ayant soutenu financièrement le projet.' },
 };
 
 function Popup({ info, anchorEl, onClose }) {
@@ -80,7 +133,8 @@ function Popup({ info, anchorEl, onClose }) {
               </div>
               <div>
                 <h3 className="font-grotesk font-extrabold text-2xl leading-tight" style={info.gradient ? { color: '#fde68a' } : { color: info.bg }}>{info.label}</h3>
-                <p className="mt-1 text-sm text-muted-foreground max-w-xl">{info.description}</p>
+                <p className="mt-1 text-sm text-muted-foreground max-w-xl">{info.short || info.description}</p>
+                {info.issuer && <p className="text-xs text-muted-foreground mt-1">Émis par {info.issuer}</p>}
               </div>
             </div>
 
@@ -91,8 +145,16 @@ function Popup({ info, anchorEl, onClose }) {
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-2xl border border-border bg-card p-4">
-              <p className="text-sm text-muted-foreground">Détails</p>
+              <p className="text-sm text-muted-foreground">À propos</p>
               <p className="mt-2 text-base text-foreground leading-relaxed">{info.description}</p>
+              {info.criteria && (
+                <div className="mt-4">
+                  <p className="text-sm text-muted-foreground">Critères</p>
+                  <ul className="mt-2 list-disc list-inside text-sm">
+                    {info.criteria.map((c, i) => <li key={i} className="text-foreground">{c}</li>)}
+                  </ul>
+                </div>
+              )}
             </div>
             <div className="rounded-2xl border border-border bg-card p-4 flex flex-col justify-between">
               <div>
@@ -102,8 +164,9 @@ function Popup({ info, anchorEl, onClose }) {
                   <li className="text-muted-foreground">Contacter l'équipe support</li>
                 </ul>
               </div>
-              <div className="mt-4">
-                <a href="#" className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">Plus d'infos</a>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <a href={info.helpLink || '#'} className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">Plus d'infos</a>
+                <button onClick={() => { navigator.clipboard?.writeText(window.location.href); }} className="inline-flex w-full items-center justify-center gap-2 rounded-3xl border border-border px-4 py-3 text-sm">Copier le lien</button>
               </div>
             </div>
           </div>

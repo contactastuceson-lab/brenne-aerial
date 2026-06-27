@@ -184,67 +184,51 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               </div>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="fixed inset-x-0 bottom-0 w-full h-[22vh] max-h-[24vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden p-0">
-            {/* Header compact */}
-            <div className="flex items-center gap-2 px-3 py-2">
-              <div className="h-7 w-7 rounded-xl bg-primary/10 border border-primary/20 overflow-hidden flex items-center justify-center">
-                {visibleAffiliation.organizationAvatarUrl ? (
-                  <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-[11px] font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
+          <SheetContent side="bottom" className="fixed inset-x-0 bottom-0 w-full h-[18vh] max-h-[22vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden p-0">
+            {/* Official header */}
+            <div className="w-full bg-gradient-to-r from-primary/60 via-primary/40 to-amber-400/20 p-2">
+              <div className="max-w-6xl mx-auto flex items-center gap-3 px-3">
+                <div className="h-9 w-9 rounded-md bg-background/10 border border-background/20 overflow-hidden flex items-center justify-center shadow-sm">
+                  {visibleAffiliation.organizationAvatarUrl ? (
+                    <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-sm font-extrabold text-white">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-white/90 font-semibold">Affiliation officielle</p>
+                  <h2 className="mt-0.5 text-sm font-extrabold text-white truncate">{visibleAffiliation.organizationName || 'Organisation officielle'}</h2>
+                  <p className="mt-0.5 text-[11px] text-white/80">{visibleAffiliation.role ? `Rôle : ${visibleAffiliation.role}` : 'Membre affilié'}</p>
+                </div>
+                {organizationBadge && (
+                  <div className="ml-3">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 text-white text-xs font-semibold px-3 py-1">{organizationBadgeLabel}</span>
+                  </div>
                 )}
-              </div>
-              <div className="min-w-0">
-                <p className="text-[8px] uppercase tracking-[0.22em] text-primary/80">Affiliation</p>
-                <h2 className="mt-0.5 text-xs font-semibold text-foreground truncate">{visibleAffiliation.organizationName || 'Organisation officielle'}</h2>
-                <p className="mt-0.5 text-[10px] text-muted-foreground">{visibleAffiliation.role ? `Rôle : ${visibleAffiliation.role}` : 'Membre affilié'}</p>
-              </div>
-              <div className="ml-auto">
-                <SheetClose asChild>
-                  <button className="inline-flex h-6 w-6 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground">✕</button>
-                </SheetClose>
-              </div>
-            </div>
-
-            {/* Content compact */}
-            <div className="px-3 pb-2 flex-1">
-              <div className="rounded-2xl border border-border bg-card p-2">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-primary/80">Affiliation vérifiée</p>
-                <p className="mt-1 text-[10px] leading-5 text-foreground">Compte affilié à {visibleAffiliation.organizationName || 'l’organisation vérifiée'}. Statut confirmé.</p>
-              </div>
-              <div className="mt-2 grid grid-cols-3 gap-1">
-                <div className="rounded-2xl border border-border bg-background p-2 text-center">
-                  <p className="text-[8px] uppercase text-muted-foreground">Rôle</p>
-                  <p className="mt-1 text-[10px] font-semibold text-foreground">{visibleAffiliation.role || 'Membre'}</p>
-                </div>
-                <div className="rounded-2xl border border-border bg-background p-2 text-center">
-                  <p className="text-[8px] uppercase text-muted-foreground">Visibilité</p>
-                  <p className="mt-1 text-[10px] font-semibold text-foreground">{visibleAffiliation.visibility === 'public' ? 'Publique' : 'Privée'}</p>
-                </div>
-                <div className="rounded-2xl border border-border bg-background p-2 text-center">
-                  <p className="text-[8px] uppercase text-muted-foreground">Depuis</p>
-                  <p className="mt-1 text-[10px] font-semibold text-foreground">{(() => {
-                    const raw = visibleAffiliation.acceptedAt || visibleAffiliation.createdAt || visibleAffiliation.accepted_at || visibleAffiliation.created_at;
-                    if (!raw) return '—';
-                    try { const d = new Date(raw); return format(d, "d MMM yyyy", { locale: fr }); } catch (e) { return '—'; }
-                  })()}</p>
+                <div className="ml-auto">
+                  <SheetClose asChild>
+                    <button className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/90 transition hover:bg-white/20">✕</button>
+                  </SheetClose>
                 </div>
               </div>
             </div>
 
-            {/* Footer compact */}
-            <div className="border-t border-border p-2 bg-card">
-              <button
-                title={`Affilié officiellement à ${visibleAffiliation.organizationName}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const profilePath = organizationUsername ? `/${organizationUsername}` : `/profile?org=${visibleAffiliation.organizationId}`;
-                  window.location.href = profilePath;
-                }}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
-              >
-                <ExternalLink className="w-4 h-4" /> Voir l’organisation
-              </button>
+            {/* Content */}
+            <div className="px-4 pb-2 flex-1">
+              <div className="max-w-6xl mx-auto grid grid-cols-3 gap-4 items-center">
+                <div className="col-span-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Affiliation vérifiée</p>
+                  <p className="mt-1 text-sm leading-6 text-foreground">Compte affilié à {visibleAffiliation.organizationName || 'l’organisation vérifiée'}. Statut confirmé.</p>
+                </div>
+                <div className="col-span-1 flex justify-end">
+                  <a
+                    href={organizationUsername ? `/${organizationUsername}` : `/profile?org=${visibleAffiliation.organizationId}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-md hover:brightness-95"
+                  >
+                    <ExternalLink className="w-4 h-4" /> Voir l’organisation
+                  </a>
+                </div>
+              </div>
             </div>
           </SheetContent>
         </Sheet>

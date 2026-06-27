@@ -207,7 +207,18 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               </div>
               <div className="rounded-3xl border border-border bg-card p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Affilié depuis</p>
-                <p className="mt-2 font-grotesk font-semibold text-lg text-foreground">{visibleAffiliation.acceptedAt ? format(new Date(visibleAffiliation.acceptedAt), 'd MMM yyyy', { locale: fr }) : 'Date non disponible'}</p>
+                    <p className="mt-2 font-grotesk font-semibold text-lg text-foreground">
+                      {(() => {
+                        const raw = visibleAffiliation.acceptedAt || visibleAffiliation.createdAt || visibleAffiliation.accepted_at || visibleAffiliation.created_at;
+                        if (!raw) return 'Date non disponible';
+                        try {
+                          const d = new Date(raw);
+                          return format(d, "d MMM yyyy 'à' HH:mm", { locale: fr });
+                        } catch (e) {
+                          return 'Date non disponible';
+                        }
+                      })()}
+                    </p>
               </div>
               <a href="#" className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90">
                 <ExternalLink className="w-4 h-4" /> Voir l’organisation

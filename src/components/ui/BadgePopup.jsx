@@ -114,67 +114,52 @@ function Popup({ info, anchorEl, onClose }) {
     const startStyle = { transform: 'translateY(100%)', opacity: 0 };
     const endStyle = { transform: 'translateY(0)', opacity: 1, transition: 'transform 360ms cubic-bezier(.2,.9,.3,1), opacity 360ms ease' };
     return createPortal(
-      <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center px-4" onClick={onClose}>
+      <div className="fixed inset-0 z-[9999]" onClick={onClose}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
         <div
           ref={popupRef}
           onClick={e => e.stopPropagation()}
           style={entered ? endStyle : startStyle}
-          className="relative w-full max-w-3xl h-[100vh] sm:h-[60vh] lg:h-[55vh] sm:max-h-[85vh] flex flex-col bg-card border border-border rounded-2xl shadow-2xl text-left mx-auto overflow-hidden"
+          className="absolute inset-x-0 bottom-0 w-full h-[24vh] max-h-[28vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden"
         >
-          {/* Header (fixed) */}
-          <div className="flex items-start justify-between gap-4 p-4 sm:p-6">
-            <div className="flex items-center gap-4">
+          <div className="w-full bg-gradient-to-r from-primary/60 via-primary/40 to-amber-400/20 p-2">
+            <div className="mx-auto flex max-w-6xl items-center gap-3 px-3">
               <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center"
-                style={info.gradient ? { background: 'linear-gradient(135deg,#f59e0b,#fde68a,#b45309)', boxShadow: '0 10px 30px rgba(0,0,0,0.25)' } : { background: info.bg }}
+                className="flex h-9 w-9 items-center justify-center rounded-md border border-white/20 bg-background/10 shadow-sm"
+                style={info.gradient ? { background: 'linear-gradient(135deg,#f59e0b,#fde68a,#b45309)' } : { background: info.bg }}
               >
-                <Icon className={`w-8 h-8 ${info.gradient ? 'text-yellow-900' : 'text-white'}`} strokeWidth={2.5} />
+                <Icon className={`h-5 w-5 ${info.gradient ? 'text-yellow-900' : 'text-white'}`} strokeWidth={2.5} />
               </div>
-              <div>
-                <h3 className="font-grotesk font-extrabold text-2xl leading-tight" style={info.gradient ? { color: '#fde68a' } : { color: info.bg }}>{info.label}</h3>
-                <p className="mt-1 text-sm text-muted-foreground max-w-xl">{info.short || info.description}</p>
-                {info.issuer && <p className="text-xs text-muted-foreground mt-1">Émis par {info.issuer}</p>}
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/90">Vérification</p>
+                <h3 className="mt-0.5 truncate text-sm font-extrabold text-white">{info.label}</h3>
+                <p className="mt-0.5 text-[11px] text-white/80">{info.short || info.description}</p>
+              </div>
+              <div className="ml-auto">
+                <button onClick={onClose} className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/90 transition hover:bg-white/20">
+                  <X className="h-4 w-4" />
+                </button>
               </div>
             </div>
-
-            <button onClick={onClose} className="rounded-full bg-background/80 border border-border p-2 text-muted-foreground hover:bg-muted">
-              <X className="w-4 h-4" />
-            </button>
           </div>
 
-          {/* Body (scrollable) */}
-          <div className="px-4 sm:px-6 pb-4 overflow-auto flex-1">
-            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-2xl border border-border bg-card p-4">
-                <p className="text-sm text-muted-foreground">À propos</p>
-                <p className="mt-2 text-base text-foreground leading-relaxed">{info.description}</p>
-                {info.criteria && (
-                  <div className="mt-4">
-                    <p className="text-sm text-muted-foreground">Critères</p>
-                    <ul className="mt-2 list-disc list-inside text-sm">
-                      {info.criteria.map((c, i) => <li key={i} className="text-foreground">{c}</li>)}
-                    </ul>
-                  </div>
-                )}
-              </div>
-              <div className="rounded-2xl border border-border bg-card p-4">
-                <p className="text-sm text-muted-foreground">Actions</p>
-                <ul className="mt-2 space-y-2 text-sm">
-                  <li className="font-medium text-foreground">Voir la vérification complète</li>
-                  <li className="text-muted-foreground">Contacter l'équipe support</li>
+          <div className="flex-1 px-4 pb-2">
+            <div className="mx-auto flex max-w-6xl flex-col gap-2 pt-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Badge vérifié</p>
+              <p className="text-sm leading-6 text-foreground">{info.description}</p>
+              {info.criteria && (
+                <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                  {info.criteria.slice(0, 2).map((c, i) => <li key={i}>{c}</li>)}
                 </ul>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* Footer (sticky, always visible) */}
-          <div className="sticky bottom-0 bg-card border-t border-border p-3">
-            <div className="grid grid-cols-2 gap-2">
-              <a href={info.helpLink || '#'} className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">Plus d'infos</a>
-              <button onClick={() => { navigator.clipboard?.writeText(window.location.href); }} className="inline-flex w-full items-center justify-center gap-2 rounded-3xl border border-border px-4 py-3 text-sm">Copier le lien</button>
-            </div>
+          <div className="border-t border-border bg-card p-2">
+            <a href={info.helpLink || '#'} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90">
+              Plus d'infos
+            </a>
           </div>
         </div>
       </div>,

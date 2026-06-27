@@ -7,7 +7,7 @@ import {
   Lock, LogIn, ChevronDown, ChevronUp, Award,
   CheckCircle, Clock, XCircle, AlertCircle, Plus, ArrowRight,
   Rocket, MapPin, Calendar, Shield, Zap, User, Settings, Flag,
-  CreditCard, ExternalLink, RefreshCcw, Loader2
+  CreditCard, ExternalLink, RefreshCcw, Loader2, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';

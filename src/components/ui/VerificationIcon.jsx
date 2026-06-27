@@ -223,28 +223,26 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
                     </p>
               </div>
               <div className="grid grid-cols-1 gap-2">
-                <SheetClose asChild>
-                  <button
-                    onClick={async () => {
-                      try {
-                        const orgId = visibleAffiliation.organizationId;
-                        if (!orgId) return;
-                        const org = await base44.entities.User.get(orgId);
-                        const username = org?.username;
-                        if (username) navigate(`/@${username}`);
-                        else {
-                          // fallback to organization page by id
-                          navigate(`/profile?org=${orgId}`);
-                        }
-                      } catch (e) {
-                        console.error('Failed to open organization profile', e);
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    try {
+                      const orgId = visibleAffiliation.organizationId;
+                      if (!orgId) return;
+                      const org = await base44.entities.User.get(orgId);
+                      const username = org?.username;
+                      if (username) navigate(`/@${username}`);
+                      else {
+                        navigate(`/profile?org=${orgId}`);
                       }
-                    }}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-                  >
-                    <ExternalLink className="w-4 h-4" /> Voir l’organisation
-                  </button>
-                </SheetClose>
+                    } catch (err) {
+                      console.error('Failed to open organization profile', err);
+                    }
+                  }}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                >
+                  <ExternalLink className="w-4 h-4" /> Voir l’organisation
+                </button>
               </div>
             </div>
           </SheetContent>

@@ -26,5 +26,5 @@ export function getOrganizationBadge(user = {}) {
   if (normalizedVerifications.includes('official')) return 'official';
   if (badges.some((value) => String(value || '').toLowerCase() === 'suprême')) return 'supreme';
   if (badges.some((value) => String(value || '').toLowerCase() === 'officiel')) return 'official';
-  return 'official';
+  return null;
 }

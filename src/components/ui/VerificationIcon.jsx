@@ -184,28 +184,30 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               </div>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="w-full mx-auto h-[92vh] sm:h-[90vh] lg:h-[86vh] flex flex-col bg-card border border-border rounded-t-[2rem] shadow-2xl overflow-hidden">
+          <SheetContent side="bottom" className="w-full max-w-2xl mx-auto h-auto max-h-[78vh] flex flex-col bg-card border border-border rounded-t-[1.75rem] shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="grid gap-4 px-6 pt-6 pb-4 md:grid-cols-[1fr_auto] md:items-start">
+            <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-3">
               <div className="flex items-center gap-4">
-                <div className="relative flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 border border-primary/20 overflow-hidden shadow-sm">
+                <div className="relative h-14 w-14 rounded-3xl bg-primary/10 border border-primary/20 overflow-hidden">
                   {visibleAffiliation.organizationAvatarUrl ? (
                     <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <span className="text-xl font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
                   )}
+                  {organizationBadge && (
+                    <div className="absolute -bottom-1 -right-1 rounded-full border border-border bg-background p-0.5">
+                      <VerificationChip type={organizationBadge} size="sm" iconOnly />
+                    </div>
+                  )}
                 </div>
                 <div className="min-w-0">
-                  <p className="font-inter text-xs uppercase tracking-[0.28em] text-primary/80">Affiliation organisationnelle</p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <h2 className="text-2xl font-bold text-foreground sm:text-3xl">{visibleAffiliation.organizationName || 'Organisation officielle'}</h2>
-                    {organizationBadge && <VerificationChip type={organizationBadge} size="sm" iconOnly />}
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">{visibleAffiliation.role ? `Rôle : ${visibleAffiliation.role}` : 'Membre affilié'}</p>
+                  <p className="text-xs uppercase tracking-[0.24em] text-primary/80">Affiliation organisationnelle</p>
+                  <h2 className="mt-2 text-xl font-semibold text-foreground sm:text-2xl truncate">{visibleAffiliation.organizationName || 'Organisation officielle'}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{visibleAffiliation.role ? `Rôle : ${visibleAffiliation.role}` : 'Membre affilié'}</p>
                 </div>
               </div>
               <SheetClose asChild>
-                <button className="ml-auto inline-flex h-12 w-12 items-center justify-center rounded-3xl border border-border bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground">
+                <button className="inline-flex h-10 w-10 items-center justify-center rounded-3xl border border-border bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground">
                   ✕
                 </button>
               </SheetClose>
@@ -213,26 +215,26 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
 
             {/* Body (scrollable) */}
             <div className="flex-1 overflow-auto px-6 pb-4">
-              <section className="space-y-6 rounded-[2rem] border border-border bg-card p-6 shadow-sm">
+              <div className="rounded-[1.75rem] border border-border bg-card p-5 shadow-sm">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary/80">Affiliation vérifiée</p>
-                  <p className="mt-3 text-base leading-7 text-foreground">
-                    Ce compte fait partie de l’organisation officielle {visibleAffiliation.organizationName || 'vérifiée'}. Les visiteurs savent que cette présence est validée par la structure.
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary/80">Affiliation vérifiée</p>
+                  <p className="mt-3 text-sm leading-6 text-foreground">
+                    Compte affilié à l’organisation officielle {visibleAffiliation.organizationName || 'vérifiée'}. Ce statut confirme le lien entre ce profil et l’entité.
                   </p>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
                   <div className="rounded-3xl border border-border bg-background p-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Rôle</p>
-                    <p className="mt-2 font-semibold text-lg text-foreground">{visibleAffiliation.role || 'Membre'}</p>
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Rôle</p>
+                    <p className="mt-2 font-semibold text-base text-foreground">{visibleAffiliation.role || 'Membre'}</p>
                   </div>
                   <div className="rounded-3xl border border-border bg-background p-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Visibilité</p>
-                    <p className="mt-2 font-semibold text-lg text-foreground">{visibleAffiliation.visibility === 'public' ? 'Publique' : 'Privée'}</p>
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Visibilité</p>
+                    <p className="mt-2 font-semibold text-base text-foreground">{visibleAffiliation.visibility === 'public' ? 'Publique' : 'Privée'}</p>
                   </div>
                   <div className="rounded-3xl border border-border bg-background p-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Affilié depuis</p>
-                    <p className="mt-2 font-semibold text-lg text-foreground">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Affilié depuis</p>
+                    <p className="mt-2 font-semibold text-base text-foreground">
                       {(() => {
                         const raw = visibleAffiliation.acceptedAt || visibleAffiliation.createdAt || visibleAffiliation.accepted_at || visibleAffiliation.created_at;
                         if (!raw) return 'Date non disponible';
@@ -246,40 +248,22 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
                     </p>
                   </div>
                 </div>
-              </section>
-
-              <section className="rounded-[2rem] border border-border bg-[#faf9ff] p-6 shadow-sm">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Organisation</p>
-                    <p className="mt-3 text-sm font-semibold text-foreground">{visibleAffiliation.organizationName || 'Organisation officielle'}</p>
-                    {organizationUsername && <p className="text-sm text-muted-foreground">{organizationUsername}</p>}
-                  </div>
-                  {organizationBadge && <VerificationChip type={organizationBadge} size="sm" iconOnly />}
-                </div>
-              </section>
+              </div>
             </div>
 
             {/* Footer (sticky) */}
-            <div className="sticky bottom-0 z-10 bg-card border-t border-border p-4 backdrop-blur-xl">
-              <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                <button
-                  title={`Affilié officiellement à ${visibleAffiliation.organizationName}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const profilePath = organizationUsername ? `/${organizationUsername}` : `/profile?org=${visibleAffiliation.organizationId}`;
-                    window.location.href = profilePath;
-                  }}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-                >
-                  <ExternalLink className="w-4 h-4" /> Voir l’organisation
-                </button>
-                <SheetClose asChild>
-                  <button className="inline-flex w-full items-center justify-center rounded-3xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-muted">
-                    Fermer
-                  </button>
-                </SheetClose>
-              </div>
+            <div className="sticky bottom-0 z-10 bg-card border-t border-border p-4">
+              <button
+                title={`Affilié officiellement à ${visibleAffiliation.organizationName}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const profilePath = organizationUsername ? `/${organizationUsername}` : `/profile?org=${visibleAffiliation.organizationId}`;
+                  window.location.href = profilePath;
+                }}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+              >
+                <ExternalLink className="w-4 h-4" /> Voir l’organisation
+              </button>
             </div>
           </SheetContent>
         </Sheet>

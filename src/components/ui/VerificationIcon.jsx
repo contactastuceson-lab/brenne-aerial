@@ -218,7 +218,11 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               <div className="max-w-6xl mx-auto grid grid-cols-3 gap-4 items-center">
                 <div className="col-span-2">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Affiliation vérifiée</p>
-                  <p className="mt-1 text-sm leading-6 text-foreground">Compte affilié à {visibleAffiliation.organizationName || 'l’organisation vérifiée'}. Statut confirmé.</p>
+                  <p className="mt-1 text-sm leading-6 text-foreground">
+                    Ce compte est affilié à{' '}
+                    <span className="font-semibold text-primary">{visibleAffiliation.organizationName || 'l’organisation'}</span>
+                    . Cette affiliation est confirmée et visible publiquement.
+                  </p>
                 </div>
                 <div className="col-span-1 flex justify-end">
                   <a

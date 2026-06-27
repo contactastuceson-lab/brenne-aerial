@@ -26,11 +26,16 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
   useEffect(() => {
     let active = true;
     const load = async () => {
-      if (!user?.id) return;
+      if (!user) return;
       setLoadingAffiliation(true);
       try {
-        const rows = await base44.entities.OrganizationAffiliation.filter({ userId: user.id }, '-createdAt', 50);
-        if (active) setAffiliations(rows || []);
+        const [byId, byEmail] = await Promise.all([
+          user.id ? base44.entities.OrganizationAffiliation.filter({ userId: user.id }, '-createdAt', 50) : [],
+          user.email ? base44.entities.OrganizationAffiliation.filter({ userId: user.email }, '-createdAt', 50) : [],
+        ]);
+        const rows = [...(byId || []), ...(byEmail || [])];
+        const uniqueAffiliations = Array.from(new Map(rows.map((row) => [row.id, row])).values());
+        if (active) setAffiliations(uniqueAffiliations);
       } catch (error) {
         console.error(error);
       } finally {
@@ -39,7 +44,7 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
     };
     load();
     return () => { active = false; };
-  }, [user?.id]);
+  }, [user?.id, user?.email]);
 
   const visibleAffiliation = useMemo(() => getVisibleAffiliation(affiliations), [affiliations]);
 

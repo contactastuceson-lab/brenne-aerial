@@ -6,8 +6,8 @@ import {
   FolderOpen, Download, FileVideo, FileImage, FileText, File,
   Lock, LogIn, ChevronDown, ChevronUp, Award,
   CheckCircle, Clock, XCircle, AlertCircle, Plus, ArrowRight,
-  Rocket, MapPin, Calendar, Shield, Zap, User, Settings, Flag,
-  CreditCard, ExternalLink, RefreshCcw, Loader2, Users
+  Rocket, MapPin, Calendar, Shield, Zap, User, Users, Settings, Flag,
+  CreditCard, ExternalLink, RefreshCcw, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -51,7 +51,7 @@ const NAV = [
 ];
 
 const ORGANIZATION_NAV = [
-  { id: 'overview', label: 'Vue d’ensemble', icon: Zap },
+  ...NAV,
   { id: 'affiliations', label: 'Affiliations', icon: Users },
 ];
 

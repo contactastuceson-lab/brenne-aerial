@@ -26,6 +26,9 @@ export default function OrganizationAffiliationsTab({ user }) {
   const [inviteMessage, setInviteMessage] = useState('');
   const [autoAccept, setAutoAccept] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [publicUsers, setPublicUsers] = useState([]);
+  const [inviteQuery, setInviteQuery] = useState('');
+  const [inviteCandidate, setInviteCandidate] = useState(null);
 
   const canManage = canManageAffiliations(user);
 
@@ -45,6 +48,18 @@ export default function OrganizationAffiliationsTab({ user }) {
     load();
   }, [user?.id]);
 
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const response = await base44.functions.invoke('getPublicUsers', {});
+        setPublicUsers(response.data || response || []);
+      } catch (error) {
+        console.error('Unable to load public users for suggestions', error);
+      }
+    };
+    loadUsers();
+  }, []);
+
   const filteredAffiliations = useMemo(() => {
     const query = search.toLowerCase();
     return affiliations.filter((row) => {
@@ -56,13 +71,23 @@ export default function OrganizationAffiliationsTab({ user }) {
     });
   }, [affiliations, roleFilter, search, statusFilter, visibilityFilter]);
 
+  const suggestions = useMemo(() => {
+    const q = inviteQuery.trim().toLowerCase();
+    if (!q) return [];
+    return publicUsers.filter((u) => [u.display_name, u.full_name, u.username, u.email]
+      .filter(Boolean)
+      .some((field) => field.toLowerCase().includes(q)))
+      .slice(0, 6);
+  }, [publicUsers, inviteQuery]);
+
   const inviteUser = async () => {
-    if (!inviteEmail || !user?.id) return;
+    if ((!inviteEmail && !inviteCandidate) || !user?.id) return;
     setCreating(true);
     try {
+      const target = inviteCandidate || publicUsers.find((u) => u.email === inviteEmail || u.username === inviteEmail || u.id === inviteEmail);
       const payload = {
         organizationId: user.id,
-        userId: inviteEmail,
+        userId: target ? target.id : inviteEmail,
         role: inviteRole,
         status: autoAccept ? 'accepted' : 'pending',
         visibility: 'public',
@@ -73,9 +98,12 @@ export default function OrganizationAffiliationsTab({ user }) {
         organizationAvatarUrl: user.avatar_url || '',
       };
       const created = await base44.entities.OrganizationAffiliation.create(payload);
-      await notifyAffiliationInvitation({ targetEmail: inviteEmail, organizationName: payload.organizationName, invitationId: created.id });
+      const targetEmail = target?.email || inviteEmail;
+      await notifyAffiliationInvitation({ targetEmail, organizationName: payload.organizationName, invitationId: created.id });
       setAffiliations((prev) => [created, ...prev]);
       setInviteEmail('');
+      setInviteCandidate(null);
+      setInviteQuery('');
       setInviteMessage('');
       toast.success('Invitation envoyée');
     } catch (error) {
@@ -145,8 +173,46 @@ export default function OrganizationAffiliationsTab({ user }) {
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-[1.2fr_0.6fr_0.6fr_0.4fr]">
-          <Input placeholder="Email ou identifiant utilisateur" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
+        <div className="grid gap-3 md:grid-cols-[1.2fr_0.6fr_0.6fr_0.4fr] relative">
+          <div className="relative">
+            <Input
+              placeholder="Email ou identifiant utilisateur"
+              value={inviteCandidate ? `${inviteCandidate.display_name || inviteCandidate.full_name || inviteCandidate.username || inviteCandidate.email}` : inviteEmail}
+              onChange={(e) => {
+                setInviteEmail(e.target.value);
+                setInviteQuery(e.target.value);
+                setInviteCandidate(null);
+              }}
+            />
+            {suggestions.length > 0 && !inviteCandidate && (
+              <div className="absolute z-20 mt-1 max-h-60 w-full overflow-hidden overflow-y-auto rounded-2xl border border-border bg-card shadow-xl">
+                {suggestions.map((user) => (
+                  <button
+                    key={user.id}
+                    type="button"
+                    onClick={() => {
+                      setInviteCandidate(user);
+                      setInviteEmail(user.email);
+                      setInviteQuery('');
+                    }}
+                    className="w-full px-3 py-2 text-left hover:bg-primary/5 transition-colors flex items-center gap-3"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center text-xs font-semibold text-primary">
+                      {user.avatar_url ? (
+                        <img src={user.avatar_url} alt={user.display_name || user.full_name || user.username} className="h-full w-full object-cover" />
+                      ) : (
+                        <span>{(user.display_name || user.full_name || user.username || 'U')[0].toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{user.display_name || user.full_name || user.username}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{user.username ? `@${user.username}` : user.email}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} className="h-10 rounded-lg border border-border bg-background px-3 text-sm">
             {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{role}</option>)}
           </select>

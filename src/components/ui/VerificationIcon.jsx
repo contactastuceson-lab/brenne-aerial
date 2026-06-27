@@ -3,7 +3,7 @@ import { VERIFICATION_CONFIG } from './VerificationChip';
 import BadgePopup from './BadgePopup';
 import { base44 } from '@/api/base44Client';
 import { getVisibleAffiliation } from '@/lib/affiliationUtils';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { ExternalLink } from 'lucide-react';
@@ -98,8 +98,8 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
       })}
 
       {visibleAffiliation && (
-        <Popover>
-          <PopoverTrigger asChild>
+        <Sheet>
+          <SheetTrigger asChild>
             <button className="inline-flex items-center justify-center rounded-md border border-primary/20 bg-background/70 p-1 shadow-sm transition-opacity hover:opacity-80">
               {visibleAffiliation.organizationAvatarUrl ? (
                 <img src={visibleAffiliation.organizationAvatarUrl} alt={visibleAffiliation.organizationName || 'Organisation'} className="h-4 w-4 rounded-none object-cover" />
@@ -107,46 +107,56 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
                 <span className="text-[10px] font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
               )}
             </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-72 p-0 overflow-hidden">
-            <div className="p-4 border-b border-border bg-secondary/40">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-none bg-primary/10 border border-primary/20 overflow-hidden">
-                  {visibleAffiliation.organizationAvatarUrl ? (
-                    <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full rounded-none object-cover" />
-                  ) : (
-                    <span className="text-sm font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
-                  )}
+          </SheetTrigger>
+          <SheetContent side="bottom" className="max-h-[60vh] min-h-[40vh] rounded-t-3xl border-t border-border p-0 overflow-hidden">
+            <div className="px-6 pt-6 pb-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-primary/10 border border-primary/20 overflow-hidden">
+                    {visibleAffiliation.organizationAvatarUrl ? (
+                      <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-lg font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-grotesk font-bold text-lg leading-tight">Affiliation organisationnelle</p>
+                    <p className="font-inter text-sm text-muted-foreground mt-1">{visibleAffiliation.organizationName || 'Organisation officielle'}</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="font-grotesk font-semibold text-sm truncate">{visibleAffiliation.organizationName || 'Organisation'}</p>
-                  <p className="font-inter text-[11px] text-muted-foreground">Affilié à cette organisation</p>
-                </div>
+                <SheetClose asChild>
+                  <button className="rounded-full border border-border bg-background/90 p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground">
+                    ✕
+                  </button>
+                </SheetClose>
               </div>
             </div>
-            <div className="p-4 space-y-3 text-sm">
-              <div className="rounded-2xl bg-background/80 border border-border p-3">
-                <p className="font-grotesk font-semibold text-sm">Ce compte est affilié à l’organisation</p>
-                <p className="font-inter text-sm text-foreground mt-1">{visibleAffiliation.organizationName || 'Organisation'}</p>
+            <div className="space-y-4 border-t border-border px-6 pb-6 pt-4 bg-background">
+              <div className="rounded-3xl bg-primary/10 border border-primary/20 p-4">
+                <p className="font-grotesk font-semibold text-base">Ce compte est affilié à l’organisation</p>
+                <p className="font-inter text-sm text-foreground mt-2">{visibleAffiliation.organizationName || 'Brenne Aerial France'}</p>
+                <p className="font-inter text-sm text-muted-foreground mt-1">Organisation officielle{visibleAffiliation.role ? ` · ${visibleAffiliation.role}` : ''}</p>
               </div>
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>Rôle</span>
-                <span className="text-foreground">{visibleAffiliation.role || 'member'}</span>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-3xl border border-border bg-card p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Rôle</p>
+                  <p className="mt-2 font-grotesk font-semibold text-lg text-foreground">{visibleAffiliation.role || 'member'}</p>
+                </div>
+                <div className="rounded-3xl border border-border bg-card p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Visibilité</p>
+                  <p className="mt-2 font-grotesk font-semibold text-lg text-foreground">{visibleAffiliation.visibility === 'public' ? 'Publique' : 'Privée'}</p>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>Visibilité</span>
-                <span className="text-foreground">{visibleAffiliation.visibility === 'public' ? 'Publique' : 'Privée'}</span>
+              <div className="rounded-3xl border border-border bg-card p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Affilié depuis</p>
+                <p className="mt-2 font-grotesk font-semibold text-lg text-foreground">{visibleAffiliation.acceptedAt ? format(new Date(visibleAffiliation.acceptedAt), 'd MMM yyyy', { locale: fr }) : 'Date non disponible'}</p>
               </div>
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>Affilié depuis</span>
-                <span className="text-foreground">{visibleAffiliation.acceptedAt ? format(new Date(visibleAffiliation.acceptedAt), 'd MMM yyyy', { locale: fr }) : '—'}</span>
-              </div>
-              <button className="flex items-center gap-2 text-sm text-primary hover:underline">
-                <ExternalLink className="w-3.5 h-3.5" /> Voir l’organisation
-              </button>
+              <a href="#" className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90">
+                <ExternalLink className="w-4 h-4" /> Voir l’organisation
+              </a>
             </div>
-          </PopoverContent>
-        </Popover>
+          </SheetContent>
+        </Sheet>
       )}
     </div>
   );

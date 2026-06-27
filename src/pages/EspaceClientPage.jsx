@@ -17,6 +17,7 @@ import CertificationTracking from '@/components/dashboard/CertificationTracking'
 import ReportTracking from '@/components/dashboard/ReportTracking';
 import QuoteTracking from '@/components/dashboard/QuoteTracking';
 import OrganizationAffiliationsTab from '@/components/client/OrganizationAffiliationsTab';
+import { isAffiliationEligibleOrganization } from '@/lib/affiliationUtils';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Link, useSearchParams } from 'react-router-dom';

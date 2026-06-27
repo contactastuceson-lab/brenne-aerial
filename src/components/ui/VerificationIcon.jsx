@@ -100,9 +100,9 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
       {visibleAffiliation && (
         <Popover>
           <PopoverTrigger asChild>
-            <button className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-background/70 p-1 shadow-sm transition-opacity hover:opacity-80">
+            <button className="inline-flex items-center justify-center rounded-md border border-primary/20 bg-background/70 p-1 shadow-sm transition-opacity hover:opacity-80">
               {visibleAffiliation.organizationAvatarUrl ? (
-                <img src={visibleAffiliation.organizationAvatarUrl} alt={visibleAffiliation.organizationName || 'Organisation'} className="h-4 w-4 rounded-full object-cover" />
+                <img src={visibleAffiliation.organizationAvatarUrl} alt={visibleAffiliation.organizationName || 'Organisation'} className="h-4 w-4 rounded-md object-cover" />
               ) : (
                 <span className="text-[10px] font-semibold text-primary">{(visibleAffiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
               )}
@@ -111,7 +111,7 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
           <PopoverContent className="w-72 p-0 overflow-hidden">
             <div className="p-4 border-b border-border bg-secondary/40">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 border border-primary/20 overflow-hidden">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 border border-primary/20 overflow-hidden">
                   {visibleAffiliation.organizationAvatarUrl ? (
                     <img src={visibleAffiliation.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
                   ) : (
@@ -120,18 +120,22 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
                 </div>
                 <div className="min-w-0">
                   <p className="font-grotesk font-semibold text-sm truncate">{visibleAffiliation.organizationName || 'Organisation'}</p>
-                  <p className="font-inter text-[11px] text-muted-foreground">Rôle : {visibleAffiliation.role || 'member'}</p>
+                  <p className="font-inter text-[11px] text-muted-foreground">Affilié à cette organisation</p>
                 </div>
               </div>
             </div>
             <div className="p-4 space-y-3 text-sm">
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>Badge</span>
-                <span className="text-foreground">Officiel / Suprême</span>
+              <div className="rounded-2xl bg-background/80 border border-border p-3">
+                <p className="font-grotesk font-semibold text-sm">Ce compte est affilié à l’organisation</p>
+                <p className="font-inter text-sm text-foreground mt-1">{visibleAffiliation.organizationName || 'Organisation'}</p>
               </div>
               <div className="flex items-center justify-between text-muted-foreground">
                 <span>Rôle</span>
                 <span className="text-foreground">{visibleAffiliation.role || 'member'}</span>
+              </div>
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span>Visibilité</span>
+                <span className="text-foreground">{visibleAffiliation.visibility === 'public' ? 'Publique' : 'Privée'}</span>
               </div>
               <div className="flex items-center justify-between text-muted-foreground">
                 <span>Affilié depuis</span>

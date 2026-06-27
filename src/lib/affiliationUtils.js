@@ -11,9 +11,7 @@ export function isAffiliationEligibleOrganization(user = {}) {
 }
 
 export function canManageAffiliations(user = {}) {
-  if (!isAffiliationEligibleOrganization(user)) return false;
-  const role = String(user?.role || '').toLowerCase();
-  return !role || ['owner', 'admin', 'administrator', 'administrateur', 'super_admin'].includes(role);
+  return isAffiliationEligibleOrganization(user);
 }
 
 export function getVisibleAffiliation(affiliations = []) {

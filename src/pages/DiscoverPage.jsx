@@ -367,7 +367,7 @@ export default function DiscoverPage() {
             )}
           </div>
         ) : membersViewMode === 'list' ? (
-        <div className="space-y-2">
+        <div className="overflow-hidden rounded-3xl border border-border bg-secondary/40">
           <AnimatePresence>
             {filtered.map((profile, i) => {
               const isFollowing = followingEmails.has(profile.email);
@@ -382,7 +382,7 @@ export default function DiscoverPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ delay: i * 0.02 }}
-                  className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors cursor-pointer group"
+                  className="flex flex-col sm:flex-row items-start sm:items-center gap-3 px-4 py-4 border-b border-border last:border-b-0 transition-colors cursor-pointer group hover:bg-secondary/60"
                   onClick={() => navigate(`/@${profile.username}`)}
                 >
                   {/* Avatar */}
@@ -430,31 +430,32 @@ export default function DiscoverPage() {
                       )}
                     </div>
                     {profile.bio && (
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{profile.bio}</p>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{profile.bio}</p>
                     )}
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      <Users className="w-2.5 h-2.5 inline mr-1" />
+                    <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                      <Users className="w-2.5 h-2.5" />
                       {formatFollowers(getFollowersCount(profile.email))}
                     </p>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-wrap justify-end items-center gap-1 sm:flex-shrink-0 w-full sm:w-auto" onClick={e => e.stopPropagation()}>
+                  <div className="flex flex-wrap justify-end items-center gap-2 w-full sm:w-auto" onClick={e => e.stopPropagation()}>
                     {isFollowing ? (
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-xs font-inter gap-1 h-7 px-2"
+                        className="text-xs font-inter gap-1 h-8 px-3"
                         style={isSupreme ? { borderColor: 'rgba(217,119,6,0.4)', color: '#d97706' } : {}}
                         onClick={() => unfollowMutation.mutate(followRecord.id)}
                         disabled={unfollowMutation.isPending}
                       >
                         <UserCheck className="w-3 h-3" />
+                        Suivi
                       </Button>
                     ) : (
                       <Button
                         size="sm"
-                        className="text-xs font-inter gap-1 h-7 px-2"
+                        className="text-xs font-inter gap-1 h-8 px-3"
                         style={isSupreme
                           ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
                           : { background: 'rgba(56,170,220,0.1)', color: 'hsl(var(--primary))', border: '1px solid rgba(56,170,220,0.2)' }
@@ -463,24 +464,27 @@ export default function DiscoverPage() {
                         disabled={followMutation.isPending}
                       >
                         <UserPlus className="w-3 h-3" />
+                        Suivre
                       </Button>
                     )}
 
                     {alreadyRequested ? (
-                      <Button size="sm" variant="outline" className="text-xs border-border font-inter gap-1 h-7 px-2 opacity-60" disabled>
+                      <Button size="sm" variant="outline" className="text-xs border-border font-inter gap-1 h-8 px-3 opacity-70" disabled>
                         <MessageCircle className="w-3 h-3" />
+                        Envoyé
                       </Button>
                     ) : (
-                      <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`}>
+                      <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`} className="w-full sm:w-auto">
                         <Button
                           size="sm"
-                          className="text-xs font-inter gap-1 h-7 px-2"
+                          className="w-full sm:w-auto text-xs font-inter gap-1 h-8 px-3"
                           style={isSupreme
                             ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
                             : { background: 'rgba(56,200,180,0.1)', color: 'hsl(var(--accent))', border: '1px solid rgba(56,200,180,0.2)' }
                           }
                         >
                           <MessageCircle className="w-3 h-3" />
+                          Contacter
                         </Button>
                       </Link>
                     )}

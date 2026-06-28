@@ -184,7 +184,7 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               </div>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="fixed inset-x-0 bottom-0 w-full h-[18vh] max-h-[22vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden p-0">
+          <SheetContent side="bottom" hideClose className="fixed inset-x-0 bottom-0 w-full h-[18vh] max-h-[22vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden p-0">
             {/* Official header */}
             <div className="w-full bg-gradient-to-r from-primary/60 via-primary/40 to-amber-400/20 p-2">
               <div className="max-w-6xl mx-auto flex items-center gap-3 px-3">
@@ -199,16 +199,6 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
                   <p className="text-[10px] uppercase tracking-[0.22em] text-white/90 font-semibold">Affiliation officielle</p>
                   <h2 className="mt-0.5 text-sm font-extrabold text-white truncate">{visibleAffiliation.organizationName || 'Organisation officielle'}</h2>
                   <p className="mt-0.5 text-[11px] text-white/80">{visibleAffiliation.role ? `Rôle : ${visibleAffiliation.role}` : 'Membre affilié'}</p>
-                </div>
-                {organizationBadge && (
-                  <div className="ml-3">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 text-white text-xs font-semibold px-3 py-1">{organizationBadgeLabel}</span>
-                  </div>
-                )}
-                <div className="ml-auto">
-                  <SheetClose asChild>
-                    <button className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/90 transition hover:bg-white/20">✕</button>
-                  </SheetClose>
                 </div>
               </div>
             </div>

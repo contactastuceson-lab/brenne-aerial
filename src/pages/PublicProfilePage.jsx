@@ -1,14 +1,27 @@
 import { useState, useEffect } from 'react';
 import ProfileNotFound from '@/components/profile/ProfileNotFound';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, MessageSquare, Calendar, Hash } from 'lucide-react';
+import { Users, MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import { VERIFICATION_CONFIG } from '@/components/ui/VerificationChip';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { ROLE_CONFIG } from '@/lib/roles';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+
+const BADGE_CONFIG = {
+  'Fondateur': { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
+  'Collaborateur': { color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/30' },
+  'VIP': { color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
+  'Admin': { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/30' },
+  'Pilote': { color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/30' },
+  'Officiel': { color: 'text-accent', bg: 'bg-accent/10', border: 'border-accent/30' },
+  'Donateur': { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/30' },
+};
 
 function getAvatarGradient(name = '') {
   const GRADIENTS = [
@@ -51,6 +64,7 @@ function getCoverGradient(name = '') {
 
 export default function PublicProfilePage() {
   const { pathUsername } = useParams();
+  const navigate = useNavigate();
   
   // Extraire le username (enlever le @ s'il existe)
   const username = pathUsername?.startsWith('@') ? pathUsername.slice(1) : pathUsername;
@@ -58,11 +72,12 @@ export default function PublicProfilePage() {
   const [followers, setFollowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [_isFollowing, _setIsFollowing] = useState(false);
-  const [_followingLoading, _setFollowingLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followingLoading, setFollowingLoading] = useState(false);
   const [recentDiscussions, setRecentDiscussions] = useState([]);
   const [followingCount, setFollowingCount] = useState(0);
-  const [_badgeCounts, _setBadgeCounts] = useState({});
+  const [badgeCounts, setBadgeCounts] = useState({});
 
   // ── SEO meta tags dynamiques ──
   useEffect(() => {
@@ -108,6 +123,15 @@ export default function PublicProfilePage() {
   useEffect(() => {
     const loadUser = async () => {
       try {
+        // Chercher l'utilisateur actuel
+        let me = null;
+        try {
+          me = await base44.auth.me();
+          setCurrentUser(me);
+        } catch {
+          // Non authentifié
+        }
+
         // Chercher l'utilisateur par username
         const searchUsername = username.toLowerCase();
         const response = await base44.functions.invoke('getPublicUsers', {});
@@ -134,8 +158,11 @@ export default function PublicProfilePage() {
         setFollowingCount(followingList.length);
         setRecentDiscussions(discussions);
 
-        const isFollowingCheck = followersList.some(f => f.follower_email === foundUser.email);
-        setIsFollowing(isFollowingCheck);
+        // Vérifier si l'utilisateur actuel suit ce profil
+        if (me) {
+          const isFollowingCheck = followersList.some(f => f.follower_email === me.email);
+          setIsFollowing(isFollowingCheck);
+        }
 
         // Count profiles per verification level
         const counts = { verified: 0, pro: 0, certified: 0, official: 0, supreme: 0 };
@@ -197,6 +224,56 @@ export default function PublicProfilePage() {
     restricted: 'text-orange-400 bg-orange-400/10 border-orange-400/30',
   };
 
+  const handleFollow = async () => {
+    if (!currentUser) {
+      navigate('/profile');
+      return;
+    }
+    
+    setFollowingLoading(true);
+    try {
+      await base44.entities.Follow.create({
+        follower_email: currentUser.email,
+        follower_name: currentUser.full_name,
+        follower_avatar: currentUser.avatar_url,
+        following_email: user.email,
+        following_name: user.full_name,
+      });
+      setIsFollowing(true);
+      toast.success('Abonnement effectué !');
+    } catch (err) {
+      toast.error('Erreur lors de l\'abonnement');
+    } finally {
+      setFollowingLoading(false);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    setFollowingLoading(true);
+    try {
+      const follows = await base44.entities.Follow.filter({
+        follower_email: currentUser.email,
+        following_email: user.email,
+      });
+      if (follows.length > 0) {
+        await base44.entities.Follow.delete(follows[0].id);
+        setIsFollowing(false);
+        toast.success('Abonnement annulé');
+      }
+    } catch (err) {
+      toast.error('Erreur lors de la suppression');
+    } finally {
+      setFollowingLoading(false);
+    }
+  };
+
+  const handleMessage = () => {
+    if (!currentUser) {
+      navigate('/profile');
+      return;
+    }
+    navigate(`/messages?to=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.display_name || user.full_name)}`);
+  };
 
   const memberSince = user?.created_date
     ? formatDistanceToNow(new Date(user.created_date), { addSuffix: true, locale: fr })
@@ -241,198 +318,213 @@ export default function PublicProfilePage() {
     );
   }
 
-  const publicWebsites = [user.website, user.website_2, user.website_3, user.website_4].filter(Boolean);
-
-  const publicActions = [
-    {
-      label: 'Suivre ce profil',
-      icon: UserPlus,
-      description: 'Recevez ses actualités directement dans votre fil.',
-    },
-    {
-      label: 'Envoyer un message',
-      icon: MessageCircle,
-      description: 'Contactez-le pour une demande, une collaboration ou une question.',
-    },
-    ...publicWebsites[0] ? [{
-      label: 'Voir le site',
-      icon: Globe,
-      description: 'Accédez à son site web ou portfolio externe.',
-      href: publicWebsites[0],
-    }] : [],
-  ];
-
-  const followReasons = [
-    'Découvrir ses projets et réalisations.',
-    'Suivre son actualité et ses publications.',
-    'Voir ses badges de confiance et sa légitimité.',
-  ];
-
   return (
     <div className="pt-16 min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
-      <div className="max-w-7xl mx-auto px-5 grid gap-8 xl:grid-cols-[minmax(0,1.55fr)_minmax(0,0.95fr)]">
-        <div className="space-y-6">
-          <div className="rounded-3xl border border-border bg-secondary/30 p-5 shadow-sm">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.26em] text-muted-foreground">Profil public</p>
-                <h2 className="mt-2 text-2xl font-grotesk font-bold text-foreground">Un espace social et professionnel visible par tous</h2>
-                <p className="mt-3 text-sm text-muted-foreground max-w-2xl">
-                  Ce profil sert à découvrir qui vous êtes, vérifier votre légitimité et lancer une interaction : follow, message, visite de site ou discussion.
-                </p>
+      <div className="max-w-2xl mx-auto">
+
+        {/* Cover */}
+        <div
+          className="relative h-52 overflow-hidden"
+          style={isSupreme
+            ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
+            : user.cover_url
+            ? {}
+            : { background: getCoverGradient(user.full_name) }
+          }
+        >
+          {user.cover_url ? (
+            <img src={user.cover_url} alt="cover" className="w-full h-full object-cover" />
+          ) : (
+            <>
+              <div className="absolute inset-0 opacity-20" style={{
+                backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)',
+              }} />
+              <div className="absolute inset-0 grid-bg opacity-30" />
+              <div className="absolute inset-0 flex items-center justify-end pr-10 opacity-10">
+                <span className="font-grotesk font-black text-[10rem] text-white select-none leading-none">
+                  {user.full_name?.[0]?.toUpperCase() || '?'}
+                </span>
               </div>
-              <span className="inline-flex items-center justify-center rounded-full border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-                Réseau social
+            </>
+          )}
+          {/* Gradient bottom fade */}
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
+        </div>
+
+        {/* Avatar + header */}
+        <div className="relative px-5 -mt-12">
+          <div className="flex items-end justify-between gap-4 mb-4">
+            {/* Avatar */}
+            <div
+              className="w-24 h-24 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
+              style={isSupreme
+                ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
+                : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
+              }
+            >
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-grotesk font-bold text-4xl text-white drop-shadow-sm">
+                  {user.full_name?.[0]?.toUpperCase() || '?'}
+                </span>
+              )}
+            </div>
+
+            {/* Status badges top right */}
+            <div className="flex items-center gap-2 flex-wrap pb-1">
+              {user.verified_status === 'yes' && (
+                <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
+                  <CheckCircle className="w-3 h-3" /> Vérifié
+                </span>
+              )}
+              <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
+                {user.account_status === 'active' ? 'Actif' : 'Inactif'}
               </span>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-border bg-background shadow-sm overflow-hidden">
-            {/* Cover */}
-            <div
-              className="relative h-52 overflow-hidden"
-              style={isSupreme
-                ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
-                : user.cover_url
-                ? {}
-                : { background: getCoverGradient(user.full_name) }
-              }
-            >
-              {user.cover_url ? (
-                <img src={user.cover_url} alt="cover" className="w-full h-full object-cover" />
-              ) : (
-                <>
-                  <div className="absolute inset-0 opacity-20" style={{
-                    backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)',
-                  }} />
-                  <div className="absolute inset-0 grid-bg opacity-30" />
-                  <div className="absolute inset-0 flex items-center justify-end pr-10 opacity-10">
-                    <span className="font-grotesk font-black text-[10rem] text-white select-none leading-none">
-                      {user.full_name?.[0]?.toUpperCase() || '?'}
-                    </span>
-                  </div>
-                </>
-              )}
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
-            </div>
+          {/* Name + username */}
+          <h1
+            className="font-grotesk font-bold text-3xl mb-1"
+            style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+          >
+            {user.display_name || user.full_name}
+          </h1>
 
-            <div className="relative px-5 -mt-12 pb-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-4">
-                <div className="flex items-center gap-4">
-                  <div
-                    className="w-24 h-24 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
-                    style={isSupreme
-                      ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
-                      : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
-                    }
-                  >
-                    {user.avatar_url ? (
-                      <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="font-grotesk font-bold text-4xl text-white drop-shadow-sm">
-                        {user.full_name?.[0]?.toUpperCase() || '?'}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">{user.role ? roleCfg?.label || 'Membre' : 'Membre'}</p>
-                    <h1 className="mt-2 text-3xl font-grotesk font-bold text-foreground">{user.display_name || user.full_name}</h1>
-                    {user.username && (
-                      <div className="flex flex-wrap items-center gap-2 mt-2">
-                        <span className="font-mono text-sm text-muted-foreground whitespace-nowrap">@{user.username}</span>
-                        <VerificationIcons verifications={user.verifications} size="md" user={user} />
-                        <span className="flex flex-wrap items-center gap-2">
-                          {user.badges?.slice(0, 3).map(badge => (
-                            <BadgeChip key={badge} badge={badge} size="sm" />
-                          ))}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {user.verified_status === 'yes' && (
-                    <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
-                      <CheckCircle className="w-3 h-3" /> Vérifié
-                    </span>
-                  )}
-                  <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
-                    {user.account_status === 'active' ? 'Actif' : 'Inactif'}
+          <div className="flex items-center gap-2 mb-3">
+            {user.username && (
+              <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
+            )}
+            <VerificationIcons verifications={user.verifications} size="md" user={user} />
+          </div>
+
+          {/* Role chip */}
+          {user.role && roleCfg && (
+            <span className={`inline-flex items-center gap-1 mb-4 font-mono text-[10px] px-2.5 py-1 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
+              {roleCfg.emoji} {roleCfg.label}
+            </span>
+          )}
+
+          {/* Bio */}
+          {user.bio && (
+            <p className="font-inter text-sm text-foreground/80 leading-relaxed mb-4 whitespace-pre-line">
+              {user.bio}
+            </p>
+          )}
+
+          {/* Info row */}
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4">
+            {user.location && (
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <MapPin className="w-3.5 h-3.5" /> {user.location}
+              </div>
+            )}
+            {user.website && (
+              <div className="flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-primary" />
+                <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate max-w-[200px]">
+                  {user.website.replace(/^https?:\/\//, '')}
+                </a>
+              </div>
+            )}
+            {memberSince && (
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Calendar className="w-3.5 h-3.5" /> Membre {memberSince}
+              </div>
+            )}
+          </div>
+
+          {/* Verifications with counts */}
+          {user.verifications?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {user.verifications.map(v => {
+                const cfg = VERIFICATION_CONFIG[v];
+                if (!cfg) return null;
+                const count = badgeCounts[v] || 0;
+                return (
+                  <span key={v} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.border} ${cfg.bg}`}>
+                    <span className={cfg.color}>•</span>
+                    <span className={cfg.color}>{cfg.label}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-muted-foreground font-mono text-[10px]">{count} {count <= 1 ? 'profil' : 'profils'}</span>
                   </span>
-                </div>
-              </div>
+                );
+              })}
+            </div>
+          )}
 
-              {user.bio && (
-                <p className="font-inter text-sm text-foreground/80 leading-relaxed mb-4 whitespace-pre-line">
-                  {user.bio}
-                </p>
+          {/* Badges */}
+          {user.badges?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {user.badges.map(b => {
+                const cfg = BADGE_CONFIG[b];
+                if (!cfg) return <BadgeChip key={b} badge={b} />;
+                return (
+                  <span key={b} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+                    {b}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
+              <p className="font-grotesk font-bold text-xl text-foreground">{followers.length}</p>
+              <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonné{followers.length > 1 ? 's' : ''}</p>
+            </div>
+            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
+              <p className="font-grotesk font-bold text-xl text-foreground">{followingCount}</p>
+              <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonnements</p>
+            </div>
+            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
+              <p className="font-grotesk font-bold text-xl text-foreground">{recentDiscussions.length}</p>
+              <p className="font-inter text-xs text-muted-foreground mt-0.5">Discussion{recentDiscussions.length > 1 ? 's' : ''}</p>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          {currentUser && currentUser.email !== user.email && (
+            <div className="flex gap-2 mb-6">
+              <Button
+                onClick={handleMessage}
+                variant="outline"
+                className="flex-1 gap-2 h-10 text-sm font-medium rounded-xl"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Message
+              </Button>
+              {!isFollowing ? (
+                <Button
+                  onClick={handleFollow}
+                  disabled={followingLoading}
+                  className="flex-1 gap-2 h-10 text-sm font-medium bg-primary hover:bg-primary/90 rounded-xl"
+                >
+                  {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                  S'abonner
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleUnfollow}
+                  disabled={followingLoading}
+                  className="flex-1 h-10 text-sm font-medium bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30 rounded-xl gap-2"
+                >
+                  {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
+                  Se désabonner
+                </Button>
               )}
-
-              <div className="flex flex-wrap gap-3 mb-5">
-                {user.location && (
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <MapPin className="w-3.5 h-3.5" /> {user.location}
-                  </div>
-                )}
-                {publicWebsites.length > 0 && (
-                  <div className="space-y-2">
-                    {publicWebsites.map((site, _index) => (
-                      <div key={site} className="flex items-center gap-1.5">
-                        <Globe className="w-3.5 h-3.5 text-primary" />
-                        <a href={site} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate max-w-[200px]">
-                          {site.replace(/^https?:\/\//, '')}
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {memberSince && (
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Calendar className="w-3.5 h-3.5" /> Membre {memberSince}
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                <div className="rounded-3xl border border-border bg-secondary/20 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Ce profil permet</p>
-                  <p className="mt-2 text-sm text-foreground leading-relaxed">Voir qui est cette personne, vérifier sa crédibilité, suivre ses actualités et la contacter facilement.</p>
-                </div>
-                <div className="rounded-3xl border border-border bg-secondary/20 p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Utilité directe</p>
-                  <ul className="mt-2 space-y-2 text-sm text-foreground">
-                    <li className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-primary" /> Découvrir un profil professionnel</li>
-                    <li className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-primary" /> Évaluer sa notoriété et ses badges</li>
-                    <li className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-primary" /> Contacter ou suivre en un clic</li>
-                  </ul>
-                </div>
-              </div>
             </div>
-          </div>
+          )}
 
-          <div className="rounded-3xl border border-border bg-background shadow-sm p-5">
-            <h2 className="font-grotesk font-semibold text-base mb-4">Ce que vous pouvez faire ici</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {publicActions.map(action => (
-                <div key={action.label} className="rounded-3xl border border-border bg-secondary/30 p-4">
-                  <div className="flex items-center gap-3 mb-2 text-sm font-semibold text-foreground">
-                    <action.icon className="w-4 h-4 text-primary" />
-                    {action.label}
-                  </div>
-                  <p className="text-sm text-muted-foreground">{action.description}</p>
-                  {action.href && (
-                    <a href={action.href} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex text-sm font-semibold text-primary hover:underline">
-                      Voir le site
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
+          {/* Discussions récentes */}
           {recentDiscussions.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-border bg-background shadow-sm p-5">
-              <h2 className="font-grotesk font-semibold text-base mb-4 flex items-center gap-2"><MessageSquare className="w-4 h-4 text-primary" /> Discussions récentes</h2>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+              <h2 className="font-grotesk font-semibold text-base mb-3 flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-primary" />
+                Discussions récentes
+              </h2>
               <div className="space-y-2">
                 {recentDiscussions.map(d => (
                   <Link
@@ -441,7 +533,7 @@ export default function PublicProfilePage() {
                     className="block p-3 bg-secondary/40 hover:bg-secondary/70 border border-border rounded-xl transition-colors group"
                   >
                     <p className="font-inter text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">{d.title}</p>
-                    <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                    <div className="flex items-center gap-3 mt-1.5">
                       {d.category && (
                         <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
                           <Hash className="w-2.5 h-2.5" />{d.category}
@@ -461,57 +553,8 @@ export default function PublicProfilePage() {
               </div>
             </motion.div>
           )}
+
         </div>
-
-        <aside className="space-y-6">
-          <div className="sticky top-24 space-y-4">
-            <div className="rounded-3xl border border-border bg-secondary/30 p-5">
-              <h3 className="text-sm font-semibold text-foreground mb-3">Résumé rapide</h3>
-              <div className="grid gap-3">
-                <div className="rounded-3xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Audience</p>
-                  <p className="mt-2 text-2xl font-grotesk font-bold text-foreground">{followers.length}</p>
-                  <p className="text-xs text-muted-foreground">Abonné{followers.length > 1 ? 's' : ''}</p>
-                </div>
-                <div className="rounded-3xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Contacts</p>
-                  <p className="mt-2 text-2xl font-grotesk font-bold text-foreground">{followingCount}</p>
-                  <p className="text-xs text-muted-foreground">Abonnements</p>
-                </div>
-                <div className="rounded-3xl border border-border bg-background p-4">
-                  <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Échanges</p>
-                  <p className="mt-2 text-2xl font-grotesk font-bold text-foreground">{recentDiscussions.length}</p>
-                  <p className="text-xs text-muted-foreground">Discussions récentes</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-border bg-background p-5">
-              <h3 className="text-sm font-semibold text-foreground mb-3">Pourquoi suivre</h3>
-              <ul className="space-y-3 text-sm text-muted-foreground">
-                {followReasons.map(reason => (
-                  <li key={reason} className="flex items-start gap-2">
-                    <span className="mt-1 h-2.5 w-2.5 rounded-full bg-primary" />
-                    <span>{reason}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-3xl border border-border bg-secondary/30 p-5">
-              <h3 className="text-sm font-semibold text-foreground mb-3">Aide rapide</h3>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>Ce profil public sert à :</p>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>Voir son identité et son activité</li>
-                  <li>Suivre ses publications</li>
-                  <li>Entamer un contact direct</li>
-                  <li>Vérifier sa crédibilité et ses badges</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
     </div>
   );

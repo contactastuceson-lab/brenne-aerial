@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Camera, Save, Loader2, MapPin, Globe, Phone,
-  CheckCircle, Shield, Star, Zap, Award, UserCheck, Heart, Crown, Users,
+  CheckCircle, Shield, Star, Zap, Award, UserCheck, Heart, Crown, Sparkles, Users,
   User, Settings, Bell, Lock, ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import UsernameChanger from '@/components/profile/UsernameChanger';
 import AccountSettings from '@/components/settings/AccountSettings';
 import PreferencesSettings from '@/components/settings/PreferencesSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
-import { ROLE_CONFIG } from '@/lib/roles';
+import { ROLE_CONFIG, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 
 const BADGE_CONFIG = {
   'Fondateur':      { icon: Star,      color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -36,7 +36,6 @@ const BADGE_CONFIG = {
 
 const NAV_TABS = [
   { id: 'profil',        label: 'Mon profil',     icon: User },
-  { id: 'public',        label: 'Profil public',  icon: Globe },
   { id: 'compte',        label: 'Compte',         icon: Settings },
   { id: 'preferences',  label: 'Préférences',    icon: Bell },
   { id: 'notifications', label: 'Notifications',  icon: Bell },
@@ -70,9 +69,6 @@ export default function ProfilePage() {
         phone: u.phone || '',
         location: u.location || '',
         website: u.website || '',
-        website_2: u.website_2 || '',
-        website_3: u.website_3 || '',
-        website_4: u.website_4 || '',
       });
       unsubscribe = base44.entities.User.subscribe((event) => {
         if (event.type === 'update' && event.data?.email === u.email) {
@@ -84,9 +80,6 @@ export default function ProfilePage() {
             phone: event.data.phone || '',
             location: event.data.location || '',
             website: event.data.website || '',
-            website_2: event.data.website_2 || '',
-            website_3: event.data.website_3 || '',
-            website_4: event.data.website_4 || '',
           });
         }
       });
@@ -104,9 +97,6 @@ export default function ProfilePage() {
         phone: form.phone,
         location: form.location,
         website: form.website,
-        website_2: form.website_2,
-        website_3: form.website_3,
-        website_4: form.website_4,
       });
       return await base44.auth.me();
     },
@@ -372,11 +362,9 @@ export default function ProfilePage() {
                     setUser={setUser}
                     saveMutation={saveMutation}
                     isSupreme={isSupreme}
+                    showCertification={showCertification}
                     setShowCertification={setShowCertification}
                   />
-                )}
-                {activeTab === 'public' && (
-                  <ProfilePublicSection form={form} setForm={setForm} saveMutation={saveMutation} />
                 )}
                 {activeTab === 'compte' && <AccountSettings user={user} />}
                 {activeTab === 'preferences' && <PreferencesSettings user={user} />}
@@ -399,7 +387,7 @@ export default function ProfilePage() {
   );
 }
 
-function ProfileEditSection({ form, setForm, user, setUser, saveMutation, isSupreme, setShowCertification }) {
+function ProfileEditSection({ form, setForm, user, setUser, saveMutation, isSupreme, showCertification, setShowCertification }) {
   return (
     <div className="space-y-5">
       <div
@@ -463,7 +451,7 @@ function ProfileEditSection({ form, setForm, user, setUser, saveMutation, isSupr
 
         <div>
           <label className="font-inter text-xs text-muted-foreground mb-1.5 flex items-center gap-1.5">
-            <Globe className="w-3 h-3" /> Site web principal
+            <Globe className="w-3 h-3" /> Site web
           </label>
           <Input
             value={form.website}
@@ -471,42 +459,6 @@ function ProfileEditSection({ form, setForm, user, setUser, saveMutation, isSupr
             placeholder="https://mon-site.com"
             className="bg-secondary border-border font-inter"
           />
-        </div>
-
-        <div className="rounded-2xl border border-border bg-card p-4">
-          <div className="mb-3">
-            <h3 className="font-grotesk font-semibold text-sm">Liens publics supplémentaires</h3>
-            <p className="text-xs text-muted-foreground mt-1">Ces sites seront affichés sur votre profil public.</p>
-          </div>
-          <div className="grid gap-4">
-            <div>
-              <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Site web #2</label>
-              <Input
-                value={form.website_2}
-                onChange={e => setForm(p => ({ ...p, website_2: e.target.value }))}
-                placeholder="https://exemple.com"
-                className="bg-secondary border-border font-inter"
-              />
-            </div>
-            <div>
-              <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Site web #3</label>
-              <Input
-                value={form.website_3}
-                onChange={e => setForm(p => ({ ...p, website_3: e.target.value }))}
-                placeholder="https://exemple.com"
-                className="bg-secondary border-border font-inter"
-              />
-            </div>
-            <div>
-              <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Site web #4</label>
-              <Input
-                value={form.website_4}
-                onChange={e => setForm(p => ({ ...p, website_4: e.target.value }))}
-                placeholder="https://exemple.com"
-                className="bg-secondary border-border font-inter"
-              />
-            </div>
-          </div>
         </div>
 
         <ThemeSelector />
@@ -544,97 +496,6 @@ function ProfileEditSection({ form, setForm, user, setUser, saveMutation, isSupr
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function ProfilePublicSection({ form, setForm, saveMutation }) {
-  const websites = [
-    form.website,
-    form.website_2,
-    form.website_3,
-    form.website_4,
-  ].filter(Boolean);
-
-  return (
-    <div className="space-y-5">
-      <div className="rounded-2xl p-6 space-y-5 bg-card border border-border">
-        <h2 className="font-grotesk font-semibold text-base">Profil public</h2>
-        <p className="text-sm text-muted-foreground">
-          Renseignez les liens visibles sur votre profil public. Les quatre premiers liens peuvent inclure votre site,
-          portfolio, réseaux sociaux ou page de contact.
-        </p>
-
-        <div>
-          <label className="font-inter text-xs text-muted-foreground mb-1.5 flex items-center gap-1.5">
-            <Globe className="w-3 h-3" /> Site web principal public
-          </label>
-          <Input
-            value={form.website}
-            onChange={e => setForm(p => ({ ...p, website: e.target.value }))}
-            placeholder="https://mon-site.com"
-            className="bg-secondary border-border font-inter"
-          />
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Lien public #2</label>
-            <Input
-              value={form.website_2}
-              onChange={e => setForm(p => ({ ...p, website_2: e.target.value }))}
-              placeholder="https://linkedin.com/in/..."
-              className="bg-secondary border-border font-inter"
-            />
-          </div>
-          <div>
-            <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Lien public #3</label>
-            <Input
-              value={form.website_3}
-              onChange={e => setForm(p => ({ ...p, website_3: e.target.value }))}
-              placeholder="https://instagram.com/..."
-              className="bg-secondary border-border font-inter"
-            />
-          </div>
-          <div>
-            <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Lien public #4</label>
-            <Input
-              value={form.website_4}
-              onChange={e => setForm(p => ({ ...p, website_4: e.target.value }))}
-              placeholder="https://youtube.com/..."
-              className="bg-secondary border-border font-inter"
-            />
-          </div>
-        </div>
-
-        {websites.length > 0 && (
-          <div className="rounded-2xl border border-border bg-secondary/20 p-4">
-            <h3 className="font-semibold text-sm mb-3">Aperçu des liens publics</h3>
-            <div className="grid gap-3">
-              {websites.map((link, index) => (
-                <a
-                  key={index}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block rounded-2xl border border-border bg-background p-3 text-sm text-primary hover:bg-primary/5 transition"
-                >
-                  {link.replace(/^https?:\/\//, '')}
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <Button
-          onClick={() => saveMutation.mutate()}
-          disabled={saveMutation.isPending}
-          className="w-full gap-2 font-grotesk font-semibold"
-        >
-          {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Sauvegarder les liens publics
-        </Button>
-      </div>
     </div>
   );
 }

@@ -588,7 +588,7 @@ export default function PublicProfilePage() {
                         {(profile.verifications?.length > 0 || profile.badges?.length > 0) && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {profile.verifications?.map((v) => (
-                              <VerificationChip key={`verif-${v}`} type={v} size="sm" />
+                              <VerificationChip key={`verif-${v}`} type={v} size="sm" iconOnly />
                             ))}
                             {profile.badges?.map((b) => (
                               <BadgeChip key={`badge-${b}`} badge={b} size="sm" />

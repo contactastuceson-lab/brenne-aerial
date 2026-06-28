@@ -320,11 +320,11 @@ export default function PublicProfilePage() {
 
   return (
     <div className="pt-16 min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
-      <div className="max-w-2xl mx-auto">
+      <div className="w-full max-w-full mx-auto px-0">
 
         {/* Cover */}
         <div
-          className="relative h-52 overflow-hidden"
+          className="relative h-72 overflow-hidden"
           style={isSupreme
             ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
             : user.cover_url
@@ -352,11 +352,11 @@ export default function PublicProfilePage() {
         </div>
 
         {/* Avatar + header */}
-        <div className="relative px-5 -mt-12">
+        <div className="relative px-8 md:px-16 -mt-16">
           <div className="flex items-end justify-between gap-4 mb-4">
             {/* Avatar */}
             <div
-              className="w-24 h-24 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
+              className="w-28 h-28 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
               style={isSupreme
                 ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
                 : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }

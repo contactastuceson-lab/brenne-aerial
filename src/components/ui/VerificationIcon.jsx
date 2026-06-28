@@ -184,7 +184,11 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
               </div>
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" hideClose className="fixed inset-x-0 bottom-0 w-full h-[18vh] max-h-[22vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden p-0">
+          <SheetContent
+            side="bottom"
+            hideClose
+            className="fixed inset-x-0 bottom-0 w-full h-auto min-h-[22vh] max-h-[70vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden p-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+          >
             {/* Official header */}
             <div className="w-full bg-gradient-to-r from-primary/60 via-primary/40 to-amber-400/20 p-2">
               <div className="max-w-6xl mx-auto flex items-center gap-3 px-3">

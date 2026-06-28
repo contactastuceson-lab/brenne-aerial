@@ -415,6 +415,7 @@ export default function PublicProfilePage() {
                     {user.username && (
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         <span className="font-mono text-sm text-muted-foreground whitespace-nowrap">@{user.username}</span>
+                        <VerificationIcons verifications={user.verifications} size="md" user={user} />
                         <span className="flex flex-wrap items-center gap-2">
                           {user.badges?.slice(0, 3).map(badge => (
                             <BadgeChip key={badge} badge={badge} size="sm" />
@@ -425,7 +426,6 @@ export default function PublicProfilePage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <VerificationIcons verifications={user.verifications} size="md" user={user} />
                   {user.verified_status === 'yes' && (
                     <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
                       <CheckCircle className="w-3 h-3" /> Vérifié

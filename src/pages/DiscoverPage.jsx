@@ -407,13 +407,13 @@ export default function DiscoverPage() {
                     <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
                       {profile.username && <span className="truncate font-mono">@{profile.username}</span>}
                       {profile.username && profile.badges?.length > 0 && (
-                        <span className="flex flex-wrap items-center gap-1">
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap">
                           {profile.badges.slice(0, 2).map((badge) => {
                             const cfg = BADGE_CONFIG[badge];
                             const BadgeIcon = cfg?.icon;
                             return (
                               <BadgePopup key={badge} badgeKey={badge}>
-                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full border ${cfg?.border || 'border-border'} ${cfg?.bg || 'bg-secondary/20'} ${cfg?.color || 'text-muted-foreground'}`}>
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border ${cfg?.border || 'border-border'} ${cfg?.bg || 'bg-secondary/20'} ${cfg?.color || 'text-muted-foreground'}`}>
                                   {BadgeIcon ? <BadgeIcon className="w-3 h-3" /> : null}
                                   {badge}
                                 </span>

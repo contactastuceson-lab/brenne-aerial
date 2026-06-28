@@ -1,27 +1,14 @@
 import { useState, useEffect } from 'react';
 import ProfileNotFound from '@/components/profile/ProfileNotFound';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Users, MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, MessageSquare, Calendar, Hash } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
-import { VERIFICATION_CONFIG } from '@/components/ui/VerificationChip';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { ROLE_CONFIG } from '@/lib/roles';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-
-const BADGE_CONFIG = {
-  'Fondateur': { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
-  'Collaborateur': { color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/30' },
-  'VIP': { color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
-  'Admin': { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/30' },
-  'Pilote': { color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/30' },
-  'Officiel': { color: 'text-accent', bg: 'bg-accent/10', border: 'border-accent/30' },
-  'Donateur': { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/30' },
-};
 
 function getAvatarGradient(name = '') {
   const GRADIENTS = [
@@ -64,7 +51,6 @@ function getCoverGradient(name = '') {
 
 export default function PublicProfilePage() {
   const { pathUsername } = useParams();
-  const navigate = useNavigate();
   
   // Extraire le username (enlever le @ s'il existe)
   const username = pathUsername?.startsWith('@') ? pathUsername.slice(1) : pathUsername;
@@ -72,12 +58,11 @@ export default function PublicProfilePage() {
   const [followers, setFollowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followingLoading, setFollowingLoading] = useState(false);
+  const [_isFollowing, _setIsFollowing] = useState(false);
+  const [_followingLoading, _setFollowingLoading] = useState(false);
   const [recentDiscussions, setRecentDiscussions] = useState([]);
   const [followingCount, setFollowingCount] = useState(0);
-  const [badgeCounts, setBadgeCounts] = useState({});
+  const [_badgeCounts, _setBadgeCounts] = useState({});
 
   // ── SEO meta tags dynamiques ──
   useEffect(() => {
@@ -123,15 +108,6 @@ export default function PublicProfilePage() {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        // Chercher l'utilisateur actuel
-        let me = null;
-        try {
-          me = await base44.auth.me();
-          setCurrentUser(me);
-        } catch {
-          // Non authentifié
-        }
-
         // Chercher l'utilisateur par username
         const searchUsername = username.toLowerCase();
         const response = await base44.functions.invoke('getPublicUsers', {});
@@ -158,11 +134,8 @@ export default function PublicProfilePage() {
         setFollowingCount(followingList.length);
         setRecentDiscussions(discussions);
 
-        // Vérifier si l'utilisateur actuel suit ce profil
-        if (me) {
-          const isFollowingCheck = followersList.some(f => f.follower_email === me.email);
-          setIsFollowing(isFollowingCheck);
-        }
+        const isFollowingCheck = followersList.some(f => f.follower_email === foundUser.email);
+        setIsFollowing(isFollowingCheck);
 
         // Count profiles per verification level
         const counts = { verified: 0, pro: 0, certified: 0, official: 0, supreme: 0 };
@@ -224,56 +197,6 @@ export default function PublicProfilePage() {
     restricted: 'text-orange-400 bg-orange-400/10 border-orange-400/30',
   };
 
-  const handleFollow = async () => {
-    if (!currentUser) {
-      navigate('/profile');
-      return;
-    }
-    
-    setFollowingLoading(true);
-    try {
-      await base44.entities.Follow.create({
-        follower_email: currentUser.email,
-        follower_name: currentUser.full_name,
-        follower_avatar: currentUser.avatar_url,
-        following_email: user.email,
-        following_name: user.full_name,
-      });
-      setIsFollowing(true);
-      toast.success('Abonnement effectué !');
-    } catch (err) {
-      toast.error('Erreur lors de l\'abonnement');
-    } finally {
-      setFollowingLoading(false);
-    }
-  };
-
-  const handleUnfollow = async () => {
-    setFollowingLoading(true);
-    try {
-      const follows = await base44.entities.Follow.filter({
-        follower_email: currentUser.email,
-        following_email: user.email,
-      });
-      if (follows.length > 0) {
-        await base44.entities.Follow.delete(follows[0].id);
-        setIsFollowing(false);
-        toast.success('Abonnement annulé');
-      }
-    } catch (err) {
-      toast.error('Erreur lors de la suppression');
-    } finally {
-      setFollowingLoading(false);
-    }
-  };
-
-  const handleMessage = () => {
-    if (!currentUser) {
-      navigate('/profile');
-      return;
-    }
-    navigate(`/messages?to=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.display_name || user.full_name)}`);
-  };
 
   const memberSince = user?.created_date
     ? formatDistanceToNow(new Date(user.created_date), { addSuffix: true, locale: fr })
@@ -318,6 +241,8 @@ export default function PublicProfilePage() {
     );
   }
 
+  const publicWebsites = [user.website, user.website_2, user.website_3, user.website_4].filter(Boolean);
+
   const publicActions = [
     {
       label: 'Suivre ce profil',
@@ -329,12 +254,12 @@ export default function PublicProfilePage() {
       icon: MessageCircle,
       description: 'Contactez-le pour une demande, une collaboration ou une question.',
     },
-    {
+    ...publicWebsites[0] ? [{
       label: 'Voir le site',
       icon: Globe,
       description: 'Accédez à son site web ou portfolio externe.',
-      href: user.website,
-    },
+      href: publicWebsites[0],
+    }] : [],
   ];
 
   const followReasons = [
@@ -449,12 +374,16 @@ export default function PublicProfilePage() {
                     <MapPin className="w-3.5 h-3.5" /> {user.location}
                   </div>
                 )}
-                {user.website && (
-                  <div className="flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-primary" />
-                    <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate max-w-[200px]">
-                      {user.website.replace(/^https?:\/\//, '')}
-                    </a>
+                {publicWebsites.length > 0 && (
+                  <div className="space-y-2">
+                    {publicWebsites.map((site, _index) => (
+                      <div key={site} className="flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-primary" />
+                        <a href={site} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate max-w-[200px]">
+                          {site.replace(/^https?:\/\//, '')}
+                        </a>
+                      </div>
+                    ))}
                   </div>
                 )}
                 {memberSince && (

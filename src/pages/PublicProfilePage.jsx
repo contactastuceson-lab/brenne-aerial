@@ -412,7 +412,12 @@ export default function PublicProfilePage() {
                   <div>
                     <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">{user.role ? roleCfg?.label || 'Membre' : 'Membre'}</p>
                     <h1 className="mt-2 text-3xl font-grotesk font-bold text-foreground">{user.display_name || user.full_name}</h1>
-                    {user.username && <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {user.username && <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>}
+                      {user.badges?.length > 0 && user.badges.map(badge => (
+                        <BadgeChip key={badge} badge={badge} size="sm" />
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">

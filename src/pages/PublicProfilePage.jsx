@@ -370,16 +370,7 @@ export default function PublicProfilePage() {
                 )}
               </div>
 
-              <div className="ml-4 hidden md:flex flex-col gap-2">
-                {user.verified_status === 'yes' && (
-                  <span className="flex items-center gap-1 font-mono text-sm text-accent bg-accent/10 border border-accent/30 px-3 py-1 rounded-full">
-                    <CheckCircle className="w-4 h-4" /> Vérifié
-                  </span>
-                )}
-                <span className={`font-mono text-sm border px-3 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
-                  {user.account_status === 'active' ? 'Actif' : 'Inactif'}
-                </span>
-              </div>
+              {/* Badges removed as requested (Vérifié / Actif) */}
             </div>
 
             <div className="md:col-span-2">

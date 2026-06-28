@@ -584,12 +584,9 @@ export default function PublicProfilePage() {
                       <div className="min-w-0">
                         <p className="font-semibold text-sm text-foreground truncate">{profile.display_name || profile.full_name || profile.username}</p>
                         {profile.username && <p className="text-[11px] text-muted-foreground truncate">@{profile.username}</p>}
-                        {(profile.verifications?.length > 0 || profile.badges?.length > 0) && (
+                        {profile.verifications?.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
-                            {profile.badges?.map((b) => (
-                              <BadgeChip key={`badge-${b}`} badge={b} size="sm" />
-                            ))}
                           </div>
                         )}
                       </div>

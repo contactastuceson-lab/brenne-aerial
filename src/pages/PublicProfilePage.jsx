@@ -123,6 +123,12 @@ export default function PublicProfilePage() {
   }, [user, followers]);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, [username]);
+
+  useEffect(() => {
     const loadUser = async () => {
       try {
         // Chercher l'utilisateur actuel
@@ -561,6 +567,11 @@ export default function PublicProfilePage() {
                   <Link
                     key={affiliation.id}
                     to={profile.username ? `/@${profile.username}` : `/profile?user=${profile.id}`}
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.scrollTo({ top: 0, behavior: 'auto' });
+                      }
+                    }}
                     className="block rounded-3xl border border-border bg-secondary/60 p-4 transition hover:border-primary/50 hover:shadow-lg"
                   >
                     <div className="flex items-center gap-3 mb-3">

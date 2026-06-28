@@ -7,7 +7,6 @@ import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
-import VerificationChip from '@/components/ui/VerificationChip';
 import { VERIFICATION_CONFIG } from '@/components/ui/VerificationChip';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { ROLE_CONFIG } from '@/lib/roles';
@@ -587,9 +586,7 @@ export default function PublicProfilePage() {
                         {profile.username && <p className="text-[11px] text-muted-foreground truncate">@{profile.username}</p>}
                         {(profile.verifications?.length > 0 || profile.badges?.length > 0) && (
                           <div className="flex flex-wrap gap-1 mt-2">
-                            {profile.verifications?.map((v) => (
-                              <VerificationChip key={`verif-${v}`} type={v} size="sm" iconOnly />
-                            ))}
+                            <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
                             {profile.badges?.map((b) => (
                               <BadgeChip key={`badge-${b}`} badge={b} size="sm" />
                             ))}

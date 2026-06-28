@@ -136,11 +136,6 @@ function Popup({ info, anchorEl, onClose }) {
                 <h3 className="mt-0.5 truncate text-sm font-extrabold text-white">{info.label}</h3>
                 <p className="mt-0.5 text-[11px] text-white/80">{info.short || info.description}</p>
               </div>
-              <div className="ml-auto">
-                <button onClick={onClose} className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/90 transition hover:bg-white/20">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
             </div>
           </div>
 
@@ -176,11 +171,6 @@ function Popup({ info, anchorEl, onClose }) {
       <div className="w-56 bg-card border border-border rounded-2xl shadow-2xl p-4 text-left">
         {/* Arrow */}
         <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-card border-r border-b border-border rotate-45" />
-
-        {/* Close */}
-        <button onClick={onClose} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground">
-          <X className="w-3 h-3" />
-        </button>
 
         {/* Big icon */}
         <div className="flex flex-col items-center mb-3">

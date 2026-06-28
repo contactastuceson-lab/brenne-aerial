@@ -367,7 +367,7 @@ export default function DiscoverPage() {
             )}
           </div>
         ) : membersViewMode === 'list' ? (
-        <div className="overflow-hidden rounded-2xl border border-border bg-secondary/10">
+        <div className="divide-y divide-border rounded-2xl border border-border bg-background">
           <AnimatePresence>
             {filtered.map((profile, i) => {
               const isFollowing = followingEmails.has(profile.email);
@@ -382,16 +382,12 @@ export default function DiscoverPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ delay: i * 0.02 }}
-                  className="flex items-center gap-3 px-3 py-3 border-b border-border last:border-b-0 transition-colors cursor-pointer group hover:bg-secondary/20"
+                  className="flex items-center gap-3 px-3 py-2 transition-colors cursor-pointer group hover:bg-secondary/10"
                   onClick={() => navigate(`/@${profile.username}`)}
                 >
-                  {/* Avatar */}
                   <div
-                    className="w-11 h-11 flex-shrink-0 rounded-lg flex items-center justify-center overflow-hidden border-2"
-                    style={isSupreme
-                      ? { border: '2px solid #d97706', boxShadow: '0 0 8px rgba(245,158,11,0.35)', background: '#1a0e00' }
-                      : { borderColor: 'var(--border)', background: profile.avatar_url ? 'var(--secondary)' : getAvatarGradient(profile.full_name) }
-                    }
+                    className="w-10 h-10 flex-shrink-0 rounded-full overflow-hidden border border-border bg-secondary flex items-center justify-center"
+                    style={isSupreme ? { boxShadow: '0 0 10px rgba(245,158,11,0.15)' } : { background: profile.avatar_url ? 'var(--secondary)' : getAvatarGradient(profile.full_name) }}
                   >
                     {profile.avatar_url ? (
                       <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -402,85 +398,64 @@ export default function DiscoverPage() {
                     )}
                   </div>
 
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3
-                        className="font-grotesk font-semibold text-sm truncate"
-                        style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-                      >
-                        {profile.display_name || profile.full_name}
-                      </h3>
-                      {isSupreme && (
-                        <span style={{ fontSize: '11px' }}>👑</span>
-                      )}
+                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground truncate">
+                      <span className="truncate">{profile.display_name || profile.full_name}</span>
+                      {isSupreme && <span className="text-[11px]">👑</span>}
                     </div>
-                    <div className="flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground mt-1">
-                      {profile.username && (
-                        <p className="font-mono truncate">@{profile.username}</p>
-                      )}
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                      {profile.username && <span className="truncate font-mono">@{profile.username}</span>}
                       {profile.location && (
-                        <>
-                          <span>•</span>
-                          <p className="flex items-center gap-1 truncate">
-                            <MapPin className="w-3 h-3" /> {profile.location}
-                          </p>
-                        </>
+                        <span className="truncate flex items-center gap-1">
+                          <MapPin className="w-3 h-3" /> {profile.location}
+                        </span>
                       )}
-                    </div>
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1">
-                      <Users className="w-3 h-3" />
-                      <span>{formatFollowers(getFollowersCount(profile.email))}</span>
+                      <span className="truncate">• {formatFollowers(getFollowersCount(profile.email))}</span>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex flex-shrink-0 flex-wrap items-center gap-2" onClick={e => e.stopPropagation()}>
+                  <div className="flex flex-shrink-0 items-center gap-2" onClick={e => e.stopPropagation()}>
                     {isFollowing ? (
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-[11px] font-inter gap-1 h-8 px-3"
-                        style={isSupreme ? { borderColor: 'rgba(217,119,6,0.4)', color: '#d97706' } : {}}
+                        className="text-[11px] h-8 px-2 rounded-full"
+                        style={isSupreme ? { borderColor: 'rgba(217,119,6,0.35)', color: '#d97706' } : {}}
                         onClick={() => unfollowMutation.mutate(followRecord.id)}
                         disabled={unfollowMutation.isPending}
                       >
                         <UserCheck className="w-3 h-3" />
-                        Suivi
                       </Button>
                     ) : (
                       <Button
                         size="sm"
-                        className="text-[11px] font-inter gap-1 h-8 px-3"
+                        className="text-[11px] h-8 px-2 rounded-full"
                         style={isSupreme
-                          ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
-                          : { background: 'rgba(56,170,220,0.1)', color: 'hsl(var(--primary))', border: '1px solid rgba(56,170,220,0.2)' }
+                          ? { background: 'rgba(217,119,6,0.12)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.25)' }
+                          : { background: 'rgba(56,170,220,0.12)', color: 'hsl(var(--primary))', border: '1px solid rgba(56,170,220,0.2)' }
                         }
                         onClick={() => followMutation.mutate(profile)}
                         disabled={followMutation.isPending}
                       >
                         <UserPlus className="w-3 h-3" />
-                        Suivre
                       </Button>
                     )}
 
                     {alreadyRequested ? (
-                      <Button size="sm" variant="outline" className="text-[11px] border-border font-inter gap-1 h-8 px-3 opacity-70" disabled>
+                      <Button size="sm" variant="outline" className="text-[11px] h-8 px-2 rounded-full opacity-70" disabled>
                         <MessageCircle className="w-3 h-3" />
-                        Envoyé
                       </Button>
                     ) : (
-                      <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`} className="w-full sm:w-auto">
+                      <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`}>
                         <Button
                           size="sm"
-                          className="w-full sm:w-auto text-[11px] font-inter gap-1 h-8 px-3"
+                          className="text-[11px] h-8 px-2 rounded-full"
                           style={isSupreme
-                            ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
-                            : { background: 'rgba(56,200,180,0.1)', color: 'hsl(var(--accent))', border: '1px solid rgba(56,200,180,0.2)' }
+                            ? { background: 'rgba(217,119,6,0.12)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.25)' }
+                            : { background: 'rgba(56,200,180,0.12)', color: 'hsl(var(--accent))', border: '1px solid rgba(56,200,180,0.2)' }
                           }
                         >
                           <MessageCircle className="w-3 h-3" />
-                          Contacter
                         </Button>
                       </Link>
                     )}

@@ -382,7 +382,7 @@ export default function DiscoverPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ delay: i * 0.02 }}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors cursor-pointer group"
+                  className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors cursor-pointer group"
                   onClick={() => navigate(`/@${profile.username}`)}
                 >
                   {/* Avatar */}
@@ -404,7 +404,7 @@ export default function DiscoverPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       <h3
                         className="font-grotesk font-semibold text-sm truncate"
                         style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
@@ -416,14 +416,14 @@ export default function DiscoverPage() {
                       )}
                       <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
                       {profile.username && (
-                        <p className="font-mono">@{profile.username}</p>
+                        <p className="font-mono truncate">@{profile.username}</p>
                       )}
                       {profile.location && (
                         <>
                           <span>•</span>
-                          <p className="flex items-center gap-0.5">
+                          <p className="flex items-center gap-0.5 truncate">
                             <MapPin className="w-2.5 h-2.5" /> {profile.location}
                           </p>
                         </>
@@ -439,7 +439,7 @@ export default function DiscoverPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                  <div className="flex flex-wrap justify-end items-center gap-1 sm:flex-shrink-0 w-full sm:w-auto" onClick={e => e.stopPropagation()}>
                     {isFollowing ? (
                       <Button
                         size="sm"

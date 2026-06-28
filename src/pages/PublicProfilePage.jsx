@@ -351,67 +351,66 @@ export default function PublicProfilePage() {
           <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
         </div>
 
-        {/* Avatar + header */}
-        <div className="relative px-8 md:px-16 -mt-16">
-          <div className="flex items-end justify-between gap-4 mb-4">
-            {/* Avatar */}
-            <div
-              className="w-28 h-28 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
-              style={isSupreme
-                ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
-                : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
-              }
-            >
-              {user.avatar_url ? (
-                <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span className="font-grotesk font-bold text-4xl text-white drop-shadow-sm">
-                  {user.full_name?.[0]?.toUpperCase() || '?'}
+        {/* Avatar + header (modern) */}
+        <div className="relative px-6 md:px-12 -mt-20">
+          <div className="grid md:grid-cols-3 gap-6 items-end mb-6">
+            <div className="col-span-1 flex items-end">
+              <div
+                className="w-28 h-28 md:w-32 md:h-32 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
+                style={isSupreme
+                  ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
+                  : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
+              >
+                {user.avatar_url ? (
+                  <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-grotesk font-bold text-4xl text-white drop-shadow-sm">
+                    {user.full_name?.[0]?.toUpperCase() || '?'}
+                  </span>
+                )}
+              </div>
+
+              <div className="ml-4 hidden md:flex flex-col gap-2">
+                {user.verified_status === 'yes' && (
+                  <span className="flex items-center gap-1 font-mono text-sm text-accent bg-accent/10 border border-accent/30 px-3 py-1 rounded-full">
+                    <CheckCircle className="w-4 h-4" /> Vérifié
+                  </span>
+                )}
+                <span className={`font-mono text-sm border px-3 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
+                  {user.account_status === 'active' ? 'Actif' : 'Inactif'}
                 </span>
-              )}
+              </div>
             </div>
 
-            {/* Status badges top right */}
-            <div className="flex items-center gap-2 flex-wrap pb-1">
-              {user.verified_status === 'yes' && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
-                  <CheckCircle className="w-3 h-3" /> Vérifié
+            <div className="md:col-span-2">
+              <h1
+                className="font-grotesk font-bold text-3xl md:text-4xl mb-1"
+                style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+              >
+                {user.display_name || user.full_name}
+              </h1>
+
+              <div className="flex items-center gap-3 mb-3">
+                {user.username && (
+                  <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
+                )}
+                <VerificationIcons verifications={user.verifications} size="md" user={user} />
+              </div>
+
+              {user.role && roleCfg && (
+                <span className={`inline-flex items-center gap-1 mb-4 font-mono text-sm px-3 py-1 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
+                  {roleCfg.emoji} {roleCfg.label}
                 </span>
               )}
-              <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
-                {user.account_status === 'active' ? 'Actif' : 'Inactif'}
-              </span>
+
+              {/* Bio in glass card */}
+              {user.bio && (
+                <div className="bg-card/60 backdrop-blur-sm border border-border rounded-2xl p-4 mb-4">
+                  <p className="font-inter text-sm text-foreground/90 leading-relaxed whitespace-pre-line">{user.bio}</p>
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Name + username */}
-          <h1
-            className="font-grotesk font-bold text-3xl mb-1"
-            style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-          >
-            {user.display_name || user.full_name}
-          </h1>
-
-          <div className="flex items-center gap-2 mb-3">
-            {user.username && (
-              <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
-            )}
-            <VerificationIcons verifications={user.verifications} size="md" user={user} />
-          </div>
-
-          {/* Role chip */}
-          {user.role && roleCfg && (
-            <span className={`inline-flex items-center gap-1 mb-4 font-mono text-[10px] px-2.5 py-1 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
-              {roleCfg.emoji} {roleCfg.label}
-            </span>
-          )}
-
-          {/* Bio */}
-          {user.bio && (
-            <p className="font-inter text-sm text-foreground/80 leading-relaxed mb-4 whitespace-pre-line">
-              {user.bio}
-            </p>
-          )}
 
           {/* Info row */}
           <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4">
@@ -469,52 +468,54 @@ export default function PublicProfilePage() {
             </div>
           )}
 
-          {/* Stats row */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
-              <p className="font-grotesk font-bold text-xl text-foreground">{followers.length}</p>
-              <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonné{followers.length > 1 ? 's' : ''}</p>
+          {/* Stats row (modern) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div className="bg-secondary/40 border border-border rounded-2xl p-4 text-center hover:shadow-lg transition-shadow">
+              <p className="font-grotesk font-extrabold text-2xl md:text-3xl text-foreground">{followers.length}</p>
+              <p className="font-inter text-sm text-muted-foreground mt-1">Abonné{followers.length > 1 ? 's' : ''}</p>
             </div>
-            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
-              <p className="font-grotesk font-bold text-xl text-foreground">{followingCount}</p>
-              <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonnements</p>
+            <div className="bg-secondary/40 border border-border rounded-2xl p-4 text-center hover:shadow-lg transition-shadow">
+              <p className="font-grotesk font-extrabold text-2xl md:text-3xl text-foreground">{followingCount}</p>
+              <p className="font-inter text-sm text-muted-foreground mt-1">Abonnements</p>
             </div>
-            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
-              <p className="font-grotesk font-bold text-xl text-foreground">{recentDiscussions.length}</p>
-              <p className="font-inter text-xs text-muted-foreground mt-0.5">Discussion{recentDiscussions.length > 1 ? 's' : ''}</p>
+            <div className="bg-secondary/40 border border-border rounded-2xl p-4 text-center hover:shadow-lg transition-shadow">
+              <p className="font-grotesk font-extrabold text-2xl md:text-3xl text-foreground">{recentDiscussions.length}</p>
+              <p className="font-inter text-sm text-muted-foreground mt-1">Discussion{recentDiscussions.length > 1 ? 's' : ''}</p>
             </div>
           </div>
 
           {/* Action buttons */}
           {currentUser && currentUser.email !== user.email && (
-            <div className="flex gap-2 mb-6">
-              <Button
-                onClick={handleMessage}
-                variant="outline"
-                className="flex-1 gap-2 h-10 text-sm font-medium rounded-xl"
-              >
-                <MessageCircle className="w-4 h-4" />
-                Message
-              </Button>
-              {!isFollowing ? (
+            <div className="mb-6">
+              <div className="sticky top-4 z-20 bg-background/60 backdrop-blur-sm border border-border rounded-2xl p-3 flex gap-3 items-center">
                 <Button
-                  onClick={handleFollow}
-                  disabled={followingLoading}
-                  className="flex-1 gap-2 h-10 text-sm font-medium bg-primary hover:bg-primary/90 rounded-xl"
+                  onClick={handleMessage}
+                  variant="outline"
+                  className="flex-1 gap-2 h-10 text-sm font-medium rounded-lg"
                 >
-                  {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-                  S'abonner
+                  <MessageCircle className="w-4 h-4" />
+                  Message
                 </Button>
-              ) : (
-                <Button
-                  onClick={handleUnfollow}
-                  disabled={followingLoading}
-                  className="flex-1 h-10 text-sm font-medium bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30 rounded-xl gap-2"
-                >
-                  {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
-                  Se désabonner
-                </Button>
-              )}
+                {!isFollowing ? (
+                  <Button
+                    onClick={handleFollow}
+                    disabled={followingLoading}
+                    className="flex-1 gap-2 h-10 text-sm font-medium bg-primary hover:bg-primary/90 rounded-lg"
+                  >
+                    {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                    S'abonner
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleUnfollow}
+                    disabled={followingLoading}
+                    className="flex-1 h-10 text-sm font-medium bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30 rounded-lg gap-2"
+                  >
+                    {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
+                    Se désabonner
+                  </Button>
+                )}
+              </div>
             </div>
           )}
 

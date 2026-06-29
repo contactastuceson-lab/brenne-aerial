@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingModal from '@/components/shared/OnboardingModal';
-import EmailVerificationModal from '@/components/shared/EmailVerificationModal';
 import { Outlet, useLocation } from 'react-router-dom';
 import AppHeader from './AppHeader';
 import BottomTabBar from './BottomTabBar';
@@ -82,13 +81,7 @@ export default function PublicLayout() {
     );
   }
 
-  // Email verification — before onboarding
-  if (user && !user.email_verified) {
-    return <EmailVerificationModal user={user} onVerified={async () => {
-      const me = await apiClient.auth.getMe();
-      setUser(me);
-    }} />;
-  }
+
 
   // Show onboarding if user hasn't completed it
   if (user && !user.onboarding_completed) {

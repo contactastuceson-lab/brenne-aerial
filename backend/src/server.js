@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 // Import routes
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
+import { sendEmail } from './lib/sendgrid.js';
 
 dotenv.config({ path: '.env.local' });
 
@@ -64,6 +65,27 @@ app.get('/api', (req, res) => {
       ]
     }
   });
+});
+
+app.post('/api/test-email', async (req, res) => {
+  try {
+    const { to, subject = 'Test email', text = 'Bonjour !' } = req.body;
+
+    if (!to) {
+      return res.status(400).json({ error: 'to is required' });
+    }
+
+    await sendEmail({
+      to,
+      subject,
+      text,
+    });
+
+    res.json({ success: true, message: 'Email sent successfully' });
+  } catch (error) {
+    console.error('Email send failed:', error);
+    res.status(500).json({ error: error.message || 'Failed to send email' });
+  }
 });
 
 // 404 handler

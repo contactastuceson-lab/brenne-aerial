@@ -52,13 +52,22 @@ export default function UsernameChanger({ user, username, onUpdate }) {
 
     setLoading(true);
     try {
-      // Envoyer code de vérification
-      await base44.functions.invoke('sendVerificationCode', { email: user.email });
-      setCodeSent(true);
-      setMode('verify');
-      toast.success('Code envoyé à votre email');
+      const response = await fetch('/api/auth/send-verification-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email }),
+      });
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setCodeSent(true);
+        setMode('verify');
+        toast.success('Code envoyé à votre email');
+      } else {
+        toast.error(data.error || 'Erreur lors de l\'envoi du code');
+      }
     } catch (err) {
-      toast.error('Erreur lors de l\'envoi du code');
+      toast.error('Erreur de connexion au serveur');
     } finally {
       setLoading(false);
     }
@@ -72,13 +81,15 @@ export default function UsernameChanger({ user, username, onUpdate }) {
 
     setLoading(true);
     try {
-      // Vérifier le code
-      const verifyResult = await base44.functions.invoke('verifyEmailCode', {
-        code,
+      const response = await fetch('/api/auth/verify-email-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, code }),
       });
+      const data = await response.json();
 
-      if (!verifyResult.data?.success) {
-        toast.error(verifyResult.data?.error || 'Code invalide ou expiré');
+      if (!response.ok || !data.success) {
+        toast.error(data.error || 'Code invalide ou expiré');
         setLoading(false);
         return;
       }

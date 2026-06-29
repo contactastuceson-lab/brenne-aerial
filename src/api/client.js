@@ -29,8 +29,9 @@ axiosClient.interceptors.response.use(
   (error) => {
     const hasToken = Boolean(localStorage.getItem('jwt_token'));
     const isAuthRequest = error.config?.url?.includes('/auth/login') || error.config?.url?.includes('/auth/signup') || error.config?.url?.includes('/auth/verify-token');
+    const skipAuthRedirect = error.config?.headers?.['x-skip-auth-redirect'] === 'true' || error.config?.headers?.['X-Skip-Auth-Redirect'] === 'true';
 
-    if (error.response?.status === 401 && hasToken && !isAuthRequest) {
+    if (error.response?.status === 401 && hasToken && !isAuthRequest && !skipAuthRedirect) {
       // Token expired or invalid - clear it and redirect only for authenticated sessions
       localStorage.removeItem('jwt_token');
       if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
@@ -118,7 +119,11 @@ export const apiClient = {
      * @returns {Promise<object>}
      */
     getMe: async () => {
-      return axiosClient.get('/api/auth/me');
+      return axiosClient.get('/api/auth/me', {
+        headers: {
+          'x-skip-auth-redirect': 'true',
+        },
+      });
     },
 
     /**
@@ -147,7 +152,11 @@ export const apiClient = {
      * @returns {Promise<object>}
      */
     getMe: async () => {
-      return axiosClient.get('/api/users/me');
+      return axiosClient.get('/api/users/me', {
+        headers: {
+          'x-skip-auth-redirect': 'true',
+        },
+      });
     },
 
     /**

@@ -34,15 +34,18 @@ export default function AnnouncementPopup({ user }) {
   const [dismissed, setDismissed] = useState([]); // Session-only, resets on refresh
   const [current, setCurrent] = useState(null);
 
-  const { data: announcements = [] } = useQuery({
+  const { data: announcementsData = [] } = useQuery({
     queryKey: ['announcements-popup'],
-    queryFn: () => base44.entities.Announcement.filter({ is_active: true }),
+    // Temporarily disable Base44 calls on homepage: return empty announcements
+    queryFn: async () => [],
     refetchInterval: 60000,
   });
+  const announcements = Array.isArray(announcementsData) ? announcementsData : [];
 
   useEffect(() => {
     const now = new Date();
-    const popupAnn = announcements.find(a => {
+    const safeAnnouncements = Array.isArray(announcements) ? announcements : [];
+    const popupAnn = safeAnnouncements.find(a => {
       if (dismissed.includes(a.id)) return false;
       if (a.display_mode !== 'popup' && a.display_mode !== 'both') return false;
       if (a.expires_at && new Date(a.expires_at) < now) return false;

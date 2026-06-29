@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import { base44 } from '@/api/base44Client';
 
 export default function PublicLayout() {
   const [user, setUser] = useState(null);

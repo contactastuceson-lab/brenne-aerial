@@ -38,14 +38,17 @@ export default function AnnouncementBanner({ user }) {
     setDismissed(next);
   };
 
-  const { data: announcements = [] } = useQuery({
+  const { data: announcementsData = [] } = useQuery({
     queryKey: ['announcements-banner'],
-    queryFn: () => base44.entities.Announcement.filter({ is_active: true }),
+    // Temporarily disable Base44 calls on homepage: return empty announcements
+    queryFn: async () => [],
     refetchInterval: 60000,
   });
+  const announcements = Array.isArray(announcementsData) ? announcementsData : [];
 
   const now = new Date();
-  const visible = announcements.filter(a => {
+  const safeAnnouncements = Array.isArray(announcements) ? announcements : [];
+  const visible = safeAnnouncements.filter(a => {
     // Only filter by expiration and target - no persistent dismissals
     if (dismissed[a.id]) return false; // Only hide during this session
     if (a.display_mode === 'popup') return false; // popup handled separately

@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const viteMeta = /** @type {{ env?: { VITE_API_URL?: string } }} */ (import.meta);
-const rawApiUrl = (viteMeta.env?.VITE_API_URL || 'http://localhost:3000').replace(/\/+$/, '');
+const configuredApiUrl = (viteMeta.env?.VITE_API_URL || '').trim();
+const fallbackApiUrl = typeof window !== 'undefined' ? window.location.origin : '';
+const rawApiUrl = (configuredApiUrl || fallbackApiUrl).replace(/\/+$/, '');
 const API_URL = rawApiUrl.endsWith('/api') ? rawApiUrl.replace(/\/api$/, '') : rawApiUrl;
 
 // Create axios instance

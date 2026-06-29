@@ -383,7 +383,12 @@ export default function DiscoverPage() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ delay: i * 0.02 }}
                   className="flex items-center gap-3 px-3 py-2 transition-colors cursor-pointer group hover:bg-secondary/10"
-                  onClick={() => navigate(`/@${profile.username}`)}
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.scrollTo({ top: 0, behavior: 'auto' });
+                    }
+                    navigate(`/@${profile.username}`);
+                  }}
                 >
                   <div
                     className="w-10 h-10 flex-shrink-0 rounded-full overflow-hidden border border-border bg-secondary flex items-center justify-center"

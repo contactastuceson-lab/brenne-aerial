@@ -26,7 +26,10 @@ export default function PublicLayout() {
   const noFooterPaths = ['/messages', '/discover', '/forum', '/planning'];
   const hideFooter = noFooterPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/'));
   const hiddenPaths = ['/messages', '/planning', '/forum'];
-  const hideFloatingButton = hiddenPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/'));
+
+  // Detect public profile routes like `/username` or `/@username` and hide floating buttons there
+  const isPublicProfile = /^\/@?[a-zA-Z0-9_.-]+$/.test(location.pathname);
+  const hideFloatingButton = hiddenPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/')) || isPublicProfile;
 
   // Register device session when user logs in
   useRegisterDevice(user);

@@ -3,7 +3,7 @@ import ProfileNotFound from '@/components/profile/ProfileNotFound';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Users, MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash } from 'lucide-react';
+import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -78,6 +78,7 @@ export default function PublicProfilePage() {
   const [recentDiscussions, setRecentDiscussions] = useState([]);
   const [followingCount, setFollowingCount] = useState(0);
   const [badgeCounts, setBadgeCounts] = useState({});
+  const [affiliatedAccounts, setAffiliatedAccounts] = useState([]);
 
   // ── SEO meta tags dynamiques ──
   useEffect(() => {
@@ -119,6 +120,12 @@ export default function PublicProfilePage() {
 
     return () => { document.title = prevTitle; };
   }, [user, followers]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, [username]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -174,6 +181,33 @@ export default function PublicProfilePage() {
           if (u.verifications?.includes('supreme')) counts.supreme++;
         });
         setBadgeCounts(counts);
+
+        // Charger les affiliés publics pour cette organisation
+        try {
+          const affiliationRows = await base44.entities.OrganizationAffiliation.filter({
+            organizationId: foundUser.id,
+            status: 'accepted',
+            visibility: 'public',
+          }, '-createdAt', 100);
+
+          const affiliated = await Promise.all((affiliationRows || []).map(async (row) => {
+            let profile = allUsers.find((u) => u.id === row.userId || u.email === row.userId);
+            if (!profile && row.userId && row.userId.includes('@')) {
+              profile = allUsers.find((u) => u.email === row.userId);
+            }
+            if (!profile && row.userId && !row.userId.includes('@')) {
+              try {
+                profile = await base44.entities.User.get(row.userId);
+              } catch {
+                profile = null;
+              }
+            }
+            return profile ? { affiliation: row, profile } : null;
+          }));
+          setAffiliatedAccounts((affiliated || []).filter(Boolean));
+        } catch (error) {
+          console.error('Unable to load affiliated accounts', error);
+        }
 
         // Subscribe aux changements en temps réel
         const unsubscribe = base44.entities.Follow.subscribe((event) => {
@@ -241,7 +275,7 @@ export default function PublicProfilePage() {
       });
       setIsFollowing(true);
       toast.success('Abonnement effectué !');
-    } catch (err) {
+    } catch {
       toast.error('Erreur lors de l\'abonnement');
     } finally {
       setFollowingLoading(false);
@@ -260,7 +294,7 @@ export default function PublicProfilePage() {
         setIsFollowing(false);
         toast.success('Abonnement annulé');
       }
-    } catch (err) {
+    } catch {
       toast.error('Erreur lors de la suppression');
     } finally {
       setFollowingLoading(false);
@@ -320,11 +354,11 @@ export default function PublicProfilePage() {
 
   return (
     <div className="pt-16 min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
-      <div className="max-w-2xl mx-auto">
+      <div className="w-full max-w-full mx-auto px-0">
 
         {/* Cover */}
         <div
-          className="relative h-52 overflow-hidden"
+          className="relative h-72 overflow-hidden"
           style={isSupreme
             ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
             : user.cover_url
@@ -352,11 +386,11 @@ export default function PublicProfilePage() {
         </div>
 
         {/* Avatar + header */}
-        <div className="relative px-5 -mt-12">
+        <div className="relative px-8 md:px-16 -mt-16">
           <div className="flex items-end justify-between gap-4 mb-4">
             {/* Avatar */}
             <div
-              className="w-24 h-24 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
+              className="w-28 h-28 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
               style={isSupreme
                 ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
                 : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
@@ -516,6 +550,56 @@ export default function PublicProfilePage() {
                 </Button>
               )}
             </div>
+          )}
+
+          {affiliatedAccounts.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h2 className="font-grotesk font-semibold text-base">Affiliés officiels</h2>
+                  <p className="text-sm text-muted-foreground">Comptes affiliés publiquement à cette entreprise.</p>
+                </div>
+                <span className="text-sm text-muted-foreground">{affiliatedAccounts.length} affilié{affiliatedAccounts.length > 1 ? 's' : ''}</span>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {affiliatedAccounts.map(({ affiliation, profile }) => (
+                  <Link
+                    key={affiliation.id}
+                    to={profile.username ? `/@${profile.username}` : `/profile?user=${profile.id}`}
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.scrollTo({ top: 0, behavior: 'auto' });
+                      }
+                    }}
+                    className="block rounded-3xl border border-border bg-secondary/60 p-4 transition hover:border-primary/50 hover:shadow-lg"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-12 w-12 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center">
+                        {profile.avatar_url ? (
+                          <img src={profile.avatar_url} alt={profile.display_name || profile.full_name || profile.username} className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="font-semibold text-primary text-lg">{(profile.display_name || profile.full_name || profile.username || '?')[0]?.toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm text-foreground truncate">{profile.display_name || profile.full_name || profile.username}</p>
+                        {profile.username && <p className="text-[11px] text-muted-foreground truncate">@{profile.username}</p>}
+                        {profile.verifications?.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                      {affiliation.role && <span className="rounded-full border border-border px-2 py-1">{affiliation.role}</span>}
+                      <span className="rounded-full border border-border px-2 py-1 bg-primary/10 text-primary">Affiliation publique</span>
+                      {profile.location && <span className="rounded-full border border-border px-2 py-1">{profile.location}</span>}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
           )}
 
           {/* Discussions récentes */}

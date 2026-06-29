@@ -35,7 +35,14 @@ export default function PublicLayout() {
 
   useEffect(() => {
     const init = async () => {
-      // Fetch user
+      const jwtToken = localStorage.getItem('jwt_token');
+      if (!jwtToken) {
+        setSettings({});
+        setLoading(false);
+        return;
+      }
+
+      // Fetch user only when we have an existing JWT token
       try {
         const userData = await apiClient.auth.getMe();
         setUser(userData);

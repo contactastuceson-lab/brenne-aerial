@@ -39,7 +39,16 @@ const entityHandler = {
     const methods = ['list', 'filter', 'get', 'create', 'update', 'delete', 'subscribe'];
     const entityProxy = {};
     methods.forEach((method) => {
-      entityProxy[method] = unsupportedEntityMethod(entityName, method);
+      if (method === 'subscribe') {
+        // provide a safe no-op subscribe to avoid runtime errors while migrating
+        entityProxy[method] = (handler) => {
+          console.warn(`Base44 entity "${entityName}.subscribe" called — subscribe is disabled in the shim.`);
+          // return an unsubscribe function
+          return () => {};
+        };
+      } else {
+        entityProxy[method] = unsupportedEntityMethod(entityName, method);
+      }
     });
     return entityProxy;
   },

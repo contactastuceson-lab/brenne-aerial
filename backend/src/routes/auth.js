@@ -1,6 +1,6 @@
 import express from 'express';
 import { pool } from '../db/pool.js';
-import { generateJWT, verifyFirebaseToken, optionalAuth } from '../auth/middleware.js';
+import { generateJWT, verifyJWT, verifyFirebaseToken, optionalAuth } from '../auth/middleware.js';
 import { firebaseAuth } from '../auth/firebase.js';
 import { sendEmail } from '../lib/sendgrid.js';
 

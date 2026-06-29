@@ -68,7 +68,7 @@ export const apiClient = {
       );
 
       if (response.token) {
-        localStorage.setItem('jwt_token', response.token);
+          apiClient.setToken(response.token);
       }
 
       return response;
@@ -89,7 +89,7 @@ export const apiClient = {
       );
 
       if (response.token) {
-        localStorage.setItem('jwt_token', response.token);
+          apiClient.setToken(response.token);
       }
 
       return response;
@@ -108,7 +108,7 @@ export const apiClient = {
       );
 
       if (response.token) {
-        localStorage.setItem('jwt_token', response.token);
+          apiClient.setToken(response.token);
       }
 
       return response;
@@ -207,6 +207,7 @@ export const apiClient = {
    */
   clearAuth: () => {
     localStorage.removeItem('jwt_token');
+    try { window.dispatchEvent(new CustomEvent('auth-changed', { detail: { authed: false } })); } catch (e) {}
   },
 };
 

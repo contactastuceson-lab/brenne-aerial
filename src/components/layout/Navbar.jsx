@@ -42,6 +42,12 @@ export default function Navbar() {
     retry: false,
   });
 
+  const { refetch: refetchCurrentUser } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    enabled: false,
+  });
+
   // Close dropdowns on route change
   useEffect(() => {
     setToolsOpen(false);
@@ -57,6 +63,16 @@ export default function Navbar() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [toolsOpen]);
+
+  // Listen for auth changes (set/clear token) and refetch the current-user
+  useEffect(() => {
+    const handler = () => { refetchCurrentUser().catch(() => {}); };
+    window.addEventListener('auth-changed', handler);
+    // also listen to storage events (other tabs)
+    const storageHandler = (e) => { if (e.key === 'jwt_token') handler(); };
+    window.addEventListener('storage', storageHandler);
+    return () => { window.removeEventListener('auth-changed', handler); window.removeEventListener('storage', storageHandler); };
+  }, [refetchCurrentUser]);
 
   const { data: notifs = [] } = useQuery({
     queryKey: ['unread-notifs', user?.email],

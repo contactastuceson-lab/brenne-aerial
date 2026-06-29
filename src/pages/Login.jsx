@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { firebaseAuthService } from '@/lib/firebaseAuth';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, Loader2, Mail, Lock, ArrowRight, Shield, Zap, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -67,10 +67,10 @@ export default function Login() {
     if (!email || !password) { setError('Veuillez remplir tous les champs.'); return; }
     setLoading(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
+      await firebaseAuthService.loginWithEmail(email, password);
       window.location.href = '/';
-    } catch {
-      setError('Email ou mot de passe incorrect. Vérifiez vos identifiants.');
+    } catch (err) {
+      setError(err?.message || 'Email ou mot de passe incorrect. Vérifiez vos identifiants.');
     } finally {
       setLoading(false);
     }
@@ -79,8 +79,10 @@ export default function Login() {
   const handleSocial = async (provider) => {
     setSocialLoading(provider);
     try {
-      await base44.auth.loginWithProvider(provider, '/');
-    } catch {
+      await firebaseAuthService.loginWithProvider(provider);
+      window.location.href = '/';
+    } catch (err) {
+      setError(err?.message || `Erreur lors de la connexion avec ${provider}`);
       setSocialLoading(null);
     }
   };

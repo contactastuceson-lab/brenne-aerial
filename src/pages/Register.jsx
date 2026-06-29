@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { firebaseAuthService } from '@/lib/firebaseAuth';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, Loader2, Mail, Lock, KeyRound, ArrowRight, CheckCircle2, Rocket, Star, Award } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -48,17 +48,15 @@ const PERKS = [
 ];
 
 export default function Register() {
-  const [step, setStep] = useState('form'); // 'form' | 'otp'
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [otpCode, setOtpCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState(null);
   const [error, setError] = useState('');
-  const [resending, setResending] = useState(false);
 
   const pwStrength = password.length === 0 ? 0 : password.length < 6 ? 1 : password.length < 10 ? 2 : 3;
   const pwColors = ['bg-border', 'bg-destructive', 'bg-yellow-400', 'bg-green-400'];
@@ -67,13 +65,22 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
-    if (!email || !password || !confirmPassword) { setError('Veuillez remplir tous les champs.'); return; }
-    if (password !== confirmPassword) { setError('Les mots de passe ne correspondent pas.'); return; }
-    if (password.length < 6) { setError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+    if (!email || !username || !password || !confirmPassword) { 
+      setError('Veuillez remplir tous les champs.'); 
+      return; 
+    }
+    if (password !== confirmPassword) { 
+      setError('Les mots de passe ne correspondent pas.'); 
+      return; 
+    }
+    if (password.length < 6) { 
+      setError('Le mot de passe doit contenir au moins 6 caractères.'); 
+      return; 
+    }
     setLoading(true);
     try {
-      await base44.auth.register({ email, password });
-      setStep('otp');
+      await firebaseAuthService.signup(email, password, username, username);
+      window.location.href = '/';
     } catch (err) {
       setError(err?.message || 'Une erreur est survenue. Cet email est peut-être déjà utilisé.');
     } finally {
@@ -81,30 +88,15 @@ export default function Register() {
     }
   };
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (!otpCode) { setError('Veuillez entrer le code reçu par email.'); return; }
-    setLoading(true);
-    try {
-      const res = await base44.auth.verifyOtp({ email, otpCode });
-      base44.auth.setToken(res.access_token);
-      window.location.href = '/';
-    } catch {
-      setError('Code incorrect ou expiré. Vérifiez votre boîte email et réessayez.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    setResending(true);
-    try { await base44.auth.resendOtp(email); } finally { setResending(false); }
-  };
-
   const handleSocial = async (provider) => {
     setSocialLoading(provider);
-    try { await base44.auth.loginWithProvider(provider, '/'); } catch { setSocialLoading(null); }
+    try {
+      await firebaseAuthService.loginWithProvider(provider);
+      window.location.href = '/';
+    } catch (err) {
+      setError(err?.message || `Erreur lors de la connexion avec ${provider}`);
+      setSocialLoading(null);
+    }
   };
 
   return (
@@ -187,191 +179,134 @@ export default function Register() {
         </div>
 
         <div className="relative z-10 w-full max-w-md mx-auto">
-          <AnimatePresence mode="wait">
-            {step === 'form' ? (
-              <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                {/* Header */}
-                <div className="mb-8">
-                  <h2 className="font-grotesk font-bold text-3xl text-foreground mb-2">Créer un compte 🚀</h2>
-                  <p className="font-inter text-sm text-muted-foreground">
-                    Rejoignez Brenne Aerial gratuitement et sans engagement.
-                  </p>
-                </div>
+          {/* Header */}
+          <div className="mb-8">
+            <h2 className="font-grotesk font-bold text-3xl text-foreground mb-2">Créer un compte 🚀</h2>
+            <p className="font-inter text-sm text-muted-foreground">
+              Rejoignez Brenne Aerial gratuitement et sans engagement.
+            </p>
+          </div>
 
-                {/* Social providers */}
-                <div className="grid grid-cols-3 gap-2.5 mb-6">
-                  {SOCIAL_PROVIDERS.map(({ key, label, icon }) => (
-                    <button
-                      key={key}
-                      onClick={() => handleSocial(key)}
-                      disabled={!!socialLoading || loading}
-                      aria-label={`Continuer avec ${label}`}
-                      className="flex items-center justify-center gap-2 h-11 rounded-xl border border-border bg-secondary/50 hover:bg-secondary transition-colors duration-150 font-inter text-xs font-medium text-foreground disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {socialLoading === key ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
-                      <span className="hidden sm:inline">{label}</span>
-                    </button>
-                  ))}
-                </div>
+          {/* Social providers */}
+          <div className="grid grid-cols-3 gap-2.5 mb-6">
+            {SOCIAL_PROVIDERS.map(({ key, label, icon }) => (
+              <button
+                key={key}
+                onClick={() => handleSocial(key)}
+                disabled={!!socialLoading || loading}
+                aria-label={`Continuer avec ${label}`}
+                className="flex items-center justify-center gap-2 h-11 rounded-xl border border-border bg-secondary/50 hover:bg-secondary transition-colors duration-150 font-inter text-xs font-medium text-foreground disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {socialLoading === key ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
+                <span className="hidden sm:inline">{label}</span>
+              </button>
+            ))}
+          </div>
 
-                {/* Divider */}
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="flex-1 h-px bg-border" />
-                  <span className="font-inter text-xs text-muted-foreground px-1">ou avec email</span>
-                  <div className="flex-1 h-px bg-border" />
-                </div>
+          {/* Divider */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1 h-px bg-border" />
+            <span className="font-inter text-xs text-muted-foreground px-1">ou avec email</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
 
-                {/* Form */}
-                <form onSubmit={handleRegister} className="space-y-4" noValidate>
-                  <div>
-                    <label htmlFor="reg-email" className="block font-inter text-xs font-medium text-foreground mb-1.5">
-                      Adresse email
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                      <Input id="reg-email" type="email" placeholder="vous@exemple.com" value={email}
-                        onChange={e => setEmail(e.target.value)} className="pl-9 h-11" autoComplete="email" />
-                    </div>
+          {/* Form */}
+          <form onSubmit={handleRegister} className="space-y-4" noValidate>
+            <div>
+              <label htmlFor="reg-email" className="block font-inter text-xs font-medium text-foreground mb-1.5">
+                Adresse email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input id="reg-email" type="email" placeholder="vous@exemple.com" value={email}
+                  onChange={e => setEmail(e.target.value)} className="pl-9 h-11" autoComplete="email" />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="reg-username" className="block font-inter text-xs font-medium text-foreground mb-1.5">
+                Nom d'utilisateur
+              </label>
+              <Input id="reg-username" type="text" placeholder="votre_nom" value={username}
+                onChange={e => setUsername(e.target.value)} className="h-11" autoComplete="username" />
+            </div>
+
+            <div>
+              <label htmlFor="reg-password" className="block font-inter text-xs font-medium text-foreground mb-1.5">
+                Mot de passe
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input id="reg-password" type={showPassword ? 'text' : 'password'}
+                  placeholder="Minimum 6 caractères" value={password}
+                  onChange={e => setPassword(e.target.value)} className="pl-9 pr-10 h-11" autoComplete="new-password" />
+                <button type="button" onClick={() => setShowPassword(v => !v)}
+                  aria-label={showPassword ? 'Masquer' : 'Afficher'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded">
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {/* Password strength */}
+              {password.length > 0 && (
+                <div className="mt-2">
+                  <div className="flex gap-1 mb-1">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= pwStrength ? pwColors[pwStrength] : 'bg-border'}`} />
+                    ))}
                   </div>
-
-                  <div>
-                    <label htmlFor="reg-password" className="block font-inter text-xs font-medium text-foreground mb-1.5">
-                      Mot de passe
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                      <Input id="reg-password" type={showPassword ? 'text' : 'password'}
-                        placeholder="Minimum 6 caractères" value={password}
-                        onChange={e => setPassword(e.target.value)} className="pl-9 pr-10 h-11" autoComplete="new-password" />
-                      <button type="button" onClick={() => setShowPassword(v => !v)}
-                        aria-label={showPassword ? 'Masquer' : 'Afficher'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded">
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                    {/* Password strength */}
-                    {password.length > 0 && (
-                      <div className="mt-2">
-                        <div className="flex gap-1 mb-1">
-                          {[1, 2, 3].map(i => (
-                            <div key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= pwStrength ? pwColors[pwStrength] : 'bg-border'}`} />
-                          ))}
-                        </div>
-                        <p className="font-mono text-[10px] text-muted-foreground">Sécurité : {pwLabels[pwStrength]}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label htmlFor="reg-confirm" className="block font-inter text-xs font-medium text-foreground mb-1.5">
-                      Confirmer le mot de passe
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                      <Input id="reg-confirm" type={showConfirm ? 'text' : 'password'}
-                        placeholder="••••••••" value={confirmPassword}
-                        onChange={e => setConfirmPassword(e.target.value)} className="pl-9 pr-10 h-11" autoComplete="new-password" />
-                      <button type="button" onClick={() => setShowConfirm(v => !v)}
-                        aria-label={showConfirm ? 'Masquer' : 'Afficher'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded">
-                        {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                    {confirmPassword && password && (
-                      <p className={`font-mono text-[10px] mt-1.5 flex items-center gap-1 ${confirmPassword === password ? 'text-green-400' : 'text-destructive'}`}>
-                        <CheckCircle2 className="w-3 h-3" />
-                        {confirmPassword === password ? 'Les mots de passe correspondent' : 'Ne correspondent pas'}
-                      </p>
-                    )}
-                  </div>
-
-                  {error && (
-                    <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                      className="font-inter text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-3 py-2.5">
-                      {error}
-                    </motion.p>
-                  )}
-
-                  <button type="submit" disabled={loading || !!socialLoading}
-                    className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-inter text-sm font-semibold hover:bg-primary/90 transition-colors duration-150 disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Créer mon compte <ArrowRight className="w-4 h-4" /></>}
-                  </button>
-                </form>
-
-                {/* Footer */}
-                <div className="mt-8 pt-6 border-t border-border">
-                  <p className="text-center font-inter text-sm text-muted-foreground">
-                    Déjà un compte ?{' '}
-                    <Link to="/login" className="text-primary hover:underline font-medium">Se connecter</Link>
-                  </p>
-                  <p className="text-center font-inter text-xs text-muted-foreground mt-4">
-                    En créant un compte, vous acceptez nos{' '}
-                    <Link to="/legal/terms" className="text-primary hover:underline">CGU</Link> et notre{' '}
-                    <Link to="/legal/privacy" className="text-primary hover:underline">Politique de confidentialité</Link>.
-                  </p>
+                  <p className="font-mono text-[10px] text-muted-foreground">Sécurité : {pwLabels[pwStrength]}</p>
                 </div>
-              </motion.div>
-            ) : (
-              <motion.div key="otp" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                {/* OTP step */}
-                <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-5">
-                    <KeyRound className="w-7 h-7 text-primary" />
-                  </div>
-                  <h2 className="font-grotesk font-bold text-3xl text-foreground mb-2">Vérification email</h2>
-                  <p className="font-inter text-sm text-muted-foreground">
-                    Nous avons envoyé un code à 6 chiffres à<br />
-                    <span className="font-medium text-foreground">{email}</span>
-                  </p>
-                </div>
+              )}
+            </div>
 
-                <form onSubmit={handleVerifyOtp} className="space-y-4" noValidate>
-                  <div>
-                    <label htmlFor="otp-input" className="block font-inter text-xs font-medium text-foreground mb-1.5 text-center">
-                      Code de vérification
-                    </label>
-                    <Input
-                      id="otp-input"
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={6}
-                      placeholder="000000"
-                      value={otpCode}
-                      onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                      className="text-center tracking-[0.6em] text-xl font-mono h-14 rounded-xl"
-                      autoFocus
-                    />
-                  </div>
+            <div>
+              <label htmlFor="reg-confirm" className="block font-inter text-xs font-medium text-foreground mb-1.5">
+                Confirmer le mot de passe
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input id="reg-confirm" type={showConfirm ? 'text' : 'password'}
+                  placeholder="••••••••" value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)} className="pl-9 pr-10 h-11" autoComplete="new-password" />
+                <button type="button" onClick={() => setShowConfirm(v => !v)}
+                  aria-label={showConfirm ? 'Masquer' : 'Afficher'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded">
+                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {confirmPassword && password && (
+                <p className={`font-mono text-[10px] mt-1.5 flex items-center gap-1 ${confirmPassword === password ? 'text-green-400' : 'text-destructive'}`}>
+                  <CheckCircle2 className="w-3 h-3" />
+                  {confirmPassword === password ? 'Les mots de passe correspondent' : 'Ne correspondent pas'}
+                </p>
+              )}
+            </div>
 
-                  {error && (
-                    <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                      className="font-inter text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-3 py-2.5">
-                      {error}
-                    </motion.p>
-                  )}
-
-                  <button type="submit" disabled={loading || otpCode.length !== 6}
-                    className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-inter text-sm font-semibold hover:bg-primary/90 transition-colors duration-150 disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Vérifier et accéder <ArrowRight className="w-4 h-4" /></>}
-                  </button>
-                </form>
-
-                <div className="mt-6 text-center space-y-3">
-                  <p className="font-inter text-sm text-muted-foreground">Vous n'avez pas reçu le code ?</p>
-                  <button type="button" onClick={handleResendOtp} disabled={resending}
-                    className="font-inter text-sm text-primary hover:underline disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:underline">
-                    {resending ? 'Envoi en cours…' : 'Renvoyer le code'}
-                  </button>
-                  <div className="pt-2">
-                    <button type="button" onClick={() => { setStep('form'); setError(''); setOtpCode(''); }}
-                      className="font-inter text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                      ← Modifier mon adresse email
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
+            {error && (
+              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                className="font-inter text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-3 py-2.5">
+                {error}
+              </motion.p>
             )}
-          </AnimatePresence>
+
+            <button type="submit" disabled={loading || !!socialLoading}
+              className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-inter text-sm font-semibold hover:bg-primary/90 transition-colors duration-150 disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Créer mon compte <ArrowRight className="w-4 h-4" /></>}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-border">
+            <p className="text-center font-inter text-sm text-muted-foreground">
+              Déjà un compte ?{' '}
+              <Link to="/login" className="text-primary hover:underline font-medium">Se connecter</Link>
+            </p>
+            <p className="text-center font-inter text-xs text-muted-foreground mt-4">
+              En créant un compte, vous acceptez nos{' '}
+              <Link to="/legal/terms" className="text-primary hover:underline">CGU</Link> et notre{' '}
+              <Link to="/legal/privacy" className="text-primary hover:underline">Politique de confidentialité</Link>.
+            </p>
+          </div>
         </div>
       </div>
     </div>

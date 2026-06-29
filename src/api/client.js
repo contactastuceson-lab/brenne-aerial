@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const viteMeta = /** @type {{ env?: { VITE_API_URL?: string } }} */ (import.meta);
+const rawApiUrl = (viteMeta.env?.VITE_API_URL || 'http://localhost:3000').replace(/\/+$/, '');
+const API_URL = rawApiUrl.endsWith('/api') ? rawApiUrl.replace(/\/api$/, '') : rawApiUrl;
 
 // Create axios instance
 const axiosClient = axios.create({
@@ -23,10 +25,15 @@ axiosClient.interceptors.request.use((config) => {
 axiosClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid - clear it
+    const hasToken = Boolean(localStorage.getItem('jwt_token'));
+    const isAuthRequest = error.config?.url?.includes('/auth/login') || error.config?.url?.includes('/auth/signup') || error.config?.url?.includes('/auth/verify-token');
+
+    if (error.response?.status === 401 && hasToken && !isAuthRequest) {
+      // Token expired or invalid - clear it and redirect only for authenticated sessions
       localStorage.removeItem('jwt_token');
-      window.location.href = '/login';
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -48,12 +55,20 @@ export const apiClient = {
      * @returns {Promise<{user: object, token: string}>}
      */
     signup: async (email, password, username, display_name) => {
-      return axiosClient.post('/api/auth/signup', {
-        email,
-        password,
-        username,
-        display_name,
-      });
+      const response = /** @type {{ user?: object, token?: string }} */ (
+        await axiosClient.post('/api/auth/signup', {
+          email,
+          password,
+          username,
+          display_name,
+        })
+      );
+
+      if (response.token) {
+        localStorage.setItem('jwt_token', response.token);
+      }
+
+      return response;
     },
 
     /**
@@ -63,16 +78,17 @@ export const apiClient = {
      * @returns {Promise<{user: object, token: string}>}
      */
     loginWithFirebase: async (email, firebaseToken) => {
-      const response = await axiosClient.post('/api/auth/login', {
-        email,
-        firebaseToken,
-      });
-      
-      // Store JWT token
+      const response = /** @type {{ user?: object, token?: string }} */ (
+        await axiosClient.post('/api/auth/login', {
+          email,
+          firebaseToken,
+        })
+      );
+
       if (response.token) {
         localStorage.setItem('jwt_token', response.token);
       }
-      
+
       return response;
     },
 
@@ -82,15 +98,16 @@ export const apiClient = {
      * @returns {Promise<{user: object, token: string}>}
      */
     verifyToken: async (firebaseToken) => {
-      const response = await axiosClient.post('/api/auth/verify-token', {
-        token: firebaseToken,
-      });
-      
-      // Store JWT token
+      const response = /** @type {{ user?: object, token?: string }} */ (
+        await axiosClient.post('/api/auth/verify-token', {
+          token: firebaseToken,
+        })
+      );
+
       if (response.token) {
         localStorage.setItem('jwt_token', response.token);
       }
-      
+
       return response;
     },
 
@@ -151,7 +168,7 @@ export const apiClient = {
 
     /**
      * Get all users (admin only)
-     * @returns {Promise<array>}
+     * @returns {Promise<any[]>}
      */
     getAllUsers: async () => {
       return axiosClient.get('/api/users');

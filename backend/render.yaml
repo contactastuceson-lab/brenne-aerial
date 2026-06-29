@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: brenne-aerial-backend
+    env: node
+    region: fra
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: brenne-aerial-db
+          property: connectionString
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY_ID
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_CLIENT_ID
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLIC_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        value: https://brenne-aerial.onrender.com
+      - key: APP_URL
+        value: https://brenne-aerial-backend.onrender.com
+      - key: PORT
+        value: "3000"
+
+databases:
+  - name: brenne-aerial-db
+    engine: postgresql
+    version: "15"
+    plan: starter

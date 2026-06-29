@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingModal from '@/components/shared/OnboardingModal';
-import EmailVerificationModal from '@/components/shared/EmailVerificationModal';
 import { Outlet, useLocation } from 'react-router-dom';
 import AppHeader from './AppHeader';
 import BottomTabBar from './BottomTabBar';
@@ -101,13 +100,6 @@ export default function PublicLayout() {
     );
   }
 
-  // Email verification — before onboarding
-  if (user && !user.email_verified) {
-    return <EmailVerificationModal user={user} onVerified={async () => {
-      const me = await base44.auth.me();
-      setUser(me);
-    }} />;
-  }
 
   // Show onboarding if user hasn't completed it
   if (user && !user.onboarding_completed) {
@@ -129,7 +121,7 @@ export default function PublicLayout() {
 
   // Site offline mode — shows dead-site grey screen to everyone except admins
   const isSiteOffline = settings['site_offline'] === 'true';
-  const hasHighAccess = user && (user.role === 'admin' || user.role === 'owner' || user.role === 'pdg_adjoint' || user?.email === 'sentenacborys@gmail.com');
+  const hasHighAccess = user && (user.role === 'admin' || user.role === 'owner' || user.role === 'PDG' || user?.email === 'contact.astuceson@gmail.com');
   if (isSiteOffline && !hasHighAccess) {
     return <SiteOfflinePage />;
   }

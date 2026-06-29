@@ -48,6 +48,7 @@ export default function PublicLayout() {
         setUser(userData);
       } catch (err) {
         console.error('Failed to fetch user:', err);
+        apiClient.clearAuth();
       }
       
       // For now, skip AppSettings (migrer plus tard)

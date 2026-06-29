@@ -5,6 +5,13 @@ import { Loader2, CheckCircle, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+const getApiBaseUrl = () => {
+  const rawUrl = import.meta.env.VITE_API_URL?.trim() || '';
+  const cleanedUrl = rawUrl.replace(/\/+$|\s+$/g, '');
+  const baseUrl = cleanedUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+  return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+};
+
 export default function EmailVerificationModal({ user, onVerified }) {
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [sending, setSending] = useState(false);
@@ -23,7 +30,7 @@ export default function EmailVerificationModal({ user, onVerified }) {
     setCode(['', '', '', '', '', '']);
 
     try {
-      const response = await fetch('/api/auth/send-verification-code', {
+      const response = await fetch(`${getApiBaseUrl()}/auth/send-verification-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email }),
@@ -78,7 +85,7 @@ export default function EmailVerificationModal({ user, onVerified }) {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/verify-email-code', {
+      const response = await fetch(`${getApiBaseUrl()}/auth/verify-email-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email, code: codeStr }),

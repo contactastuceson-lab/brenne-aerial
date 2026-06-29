@@ -5,6 +5,13 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Mail, CheckCircle, Loader2 } from 'lucide-react';
 
+const getApiBaseUrl = () => {
+  const rawUrl = import.meta.env.VITE_API_URL?.trim() || '';
+  const cleanedUrl = rawUrl.replace(/\/+$/g, '');
+  const baseUrl = cleanedUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+  return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+};
+
 export default function UsernameChanger({ user, username, onUpdate }) {
   const [mode, setMode] = useState('view'); // view | edit | verify
   const [newUsername, setNewUsername] = useState('');
@@ -52,7 +59,7 @@ export default function UsernameChanger({ user, username, onUpdate }) {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/auth/send-verification-code', {
+      const response = await fetch(`${getApiBaseUrl()}/auth/send-verification-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email }),
@@ -81,7 +88,7 @@ export default function UsernameChanger({ user, username, onUpdate }) {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/auth/verify-email-code', {
+      const response = await fetch(`${getApiBaseUrl()}/auth/verify-email-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email, code }),

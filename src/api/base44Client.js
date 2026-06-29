@@ -2,7 +2,17 @@ import { apiClient } from '@/api/client';
 
 const auth = {
   me: async () => apiClient.auth.getMe(),
-  isAuthenticated: async () => apiClient.isAuthenticated(),
+  isAuthenticated: async () => {
+    const token = apiClient.getToken();
+    if (!token) return false;
+    try {
+      await apiClient.auth.getMe();
+      return true;
+    } catch (err) {
+      apiClient.clearAuth();
+      return false;
+    }
+  },
   logout: async (redirectTo) => {
     apiClient.clearAuth();
     if (typeof window !== 'undefined' && redirectTo) {

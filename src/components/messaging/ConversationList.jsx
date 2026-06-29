@@ -45,13 +45,12 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
 
   useEffect(() => {
     if (!user.email) return;
-    const unsub = base44.entities.ChatMessage.subscribe((event) => {
-      const d = event.data;
-      if (d?.sender_email === user.email || d?.recipient_email === user.email) {
-        refetchMessages();
-      }
-    });
-    return unsub;
+    const handler = async () => {
+      try { await refetchMessages(); } catch (e) {}
+    };
+    handler();
+    const iv = setInterval(handler, 5000);
+    return () => clearInterval(iv);
   }, [user.email, refetchMessages]);
 
   const { data: allUsers = [] } = useQuery({

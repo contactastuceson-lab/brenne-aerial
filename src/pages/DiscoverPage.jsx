@@ -115,18 +115,22 @@ export default function DiscoverPage() {
     enabled: !!user,
   });
 
-  // Single subscription: refresh all-users list + update own user if it changed
+  // Poll backend periodically to refresh the public users list and update current user
   useEffect(() => {
-    const unsub = base44.entities.User.subscribe(evt => {
-      if (evt.type === 'update') {
+    if (!user) return;
+    const handler = async () => {
+      try {
         queryClient.invalidateQueries({ queryKey: ['all-users'] });
-        if (user?.email && evt.data?.email === user.email) {
-          setUser(evt.data);
+        if (user?.email) {
+          const me = await base44.auth.me().catch(() => null);
+          if (me && me.email === user.email) setUser(me);
         }
-      }
-    });
-    return () => unsub();
-  }, [queryClient, user?.email]);
+      } catch (e) {}
+    };
+    handler();
+    const iv = setInterval(handler, 15000);
+    return () => clearInterval(iv);
+  }, [queryClient, user]);
 
   const { data: follows = [] } = useQuery({
     queryKey: ['my-follows', user?.email],

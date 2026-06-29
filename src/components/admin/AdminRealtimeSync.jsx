@@ -29,9 +29,9 @@ export default function AdminRealtimeSync() {
   const qc = useQueryClient();
 
   useEffect(() => {
-    const unsubscribers = WATCHED_ENTITIES.map(entityName => {
-      return base44.entities[entityName]?.subscribe((event) => {
-        // Invalide toutes les queries qui contiennent le nom de l'entité
+    // Replace real-time subscriptions by periodic invalidation to keep admin panels updated
+    const handler = () => {
+      WATCHED_ENTITIES.forEach(entityName => {
         qc.invalidateQueries({ predicate: (query) => {
           const key = query.queryKey;
           if (!key) return false;
@@ -39,11 +39,10 @@ export default function AdminRealtimeSync() {
           return keyStr.includes(entityName.toLowerCase());
         }});
       });
-    }).filter(Boolean);
-
-    return () => {
-      unsubscribers.forEach(unsub => { try { unsub(); } catch {} });
     };
+    handler();
+    const iv = setInterval(handler, 15000);
+    return () => clearInterval(iv);
   }, [qc]);
 
   return null;

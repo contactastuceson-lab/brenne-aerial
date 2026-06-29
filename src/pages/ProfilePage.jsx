@@ -58,9 +58,10 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('profil');
 
   useEffect(() => {
-    let unsubscribe = () => {};
+    let alive = true;
     const loadUser = async () => {
       const u = await base44.auth.me();
+      if (!alive) return;
       setUser(u);
       setForm({
         display_name: u.display_name || u.full_name || '',
@@ -70,22 +71,20 @@ export default function ProfilePage() {
         location: u.location || '',
         website: u.website || '',
       });
-      unsubscribe = base44.entities.User.subscribe((event) => {
-        if (event.type === 'update' && event.data?.email === u.email) {
-          setUser(event.data);
-          setForm({
-            display_name: event.data.display_name || event.data.full_name || '',
-            username: event.data.username || '',
-            bio: event.data.bio || '',
-            phone: event.data.phone || '',
-            location: event.data.location || '',
-            website: event.data.website || '',
-          });
-        }
-      });
     };
     loadUser().catch(() => base44.auth.redirectToLogin('/profile'));
-    return () => unsubscribe();
+
+    // Poll for updates to the current user as replacement for real-time subscription
+    const handler = async () => {
+      try {
+        const latest = await base44.auth.me();
+        if (latest?.email === user?.email) {
+          setUser(latest);
+        }
+      } catch (e) {}
+    };
+    const iv = setInterval(handler, 8000);
+    return () => { alive = false; clearInterval(iv); };
   }, []);
 
   const saveMutation = useMutation({

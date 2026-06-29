@@ -12,15 +12,13 @@ export default function ActiveDevices({ user }) {
   const queryClient = useQueryClient();
   const [confirmDisconnect, setConfirmDisconnect] = useState(null);
 
-  // Subscription: refresh list on other sessions changes
+  // Poll for active devices periodically as replacement for realtime subscribe
   useEffect(() => {
     if (!user?.email) return;
-    
-    const unsubscribe = base44.entities.DeviceSession.subscribe((event) => {
-      // Force immediate refetch on any change
-      queryClient.refetchQueries({ queryKey: ['active-devices', user.email] });
-    });
-    return () => unsubscribe();
+    const handler = () => queryClient.refetchQueries({ queryKey: ['active-devices', user.email] });
+    handler();
+    const iv = setInterval(handler, 10000);
+    return () => clearInterval(iv);
   }, [user?.email, queryClient]);
 
   const { data: devices = [], isLoading } = useQuery({

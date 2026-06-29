@@ -209,20 +209,19 @@ export default function PublicProfilePage() {
           console.error('Unable to load affiliated accounts', error);
         }
 
-        // Subscribe aux changements en temps réel
-        const unsubscribe = base44.entities.Follow.subscribe((event) => {
-          if (event.data?.following_email === foundUser.email) {
-            if (event.type === 'create') {
-              setFollowers(prev => [...prev, event.data]);
-              if (me && event.data?.follower_email === me.email) setIsFollowing(true);
-            } else if (event.type === 'delete') {
-              setFollowers(prev => prev.filter(f => f.id !== event.id));
-              if (me && event.data?.follower_email === me.email) setIsFollowing(false);
+        // Poll followers periodically as replacement for real-time subscribe
+        const handler = async () => {
+          try {
+            const followersList = await base44.entities.Follow.filter({ following_email: foundUser.email }).catch(() => []);
+            setFollowers(Array.isArray(followersList) ? followersList : []);
+            if (me) {
+              setIsFollowing((followersList || []).some(f => f.follower_email === me.email));
             }
-          }
-        });
-
-        return unsubscribe;
+          } catch (e) {}
+        };
+        handler();
+        const iv = setInterval(handler, 8000);
+        return () => clearInterval(iv);
       } catch (err) {
         console.error('Profile load error:', err);
         setNotFound(true);

@@ -131,16 +131,15 @@ export default function MessageThread({ user, conv, onBack }) {
     staleTime: 5000,
   });
 
-  // Real-time subscription for the thread instead of polling
+  // Poll the thread periodically as replacement for real-time subscribe
   useEffect(() => {
     if (!convId) return;
-    const unsub = base44.entities.ChatMessage.subscribe((event) => {
-      const d = event.data;
-      if (d?.conversation_id === convId) {
-        refetchThread();
-      }
-    });
-    return unsub;
+    const handler = async () => {
+      try { await refetchThread(); } catch (e) {}
+    };
+    handler();
+    const iv = setInterval(handler, 3000);
+    return () => clearInterval(iv);
   }, [convId, refetchThread]);
 
   const pendingRequest = messages.find(

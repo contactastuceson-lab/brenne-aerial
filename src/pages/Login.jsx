@@ -170,7 +170,7 @@ export default function Login() {
 
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-3 mb-8">
-          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3282a4fc9_5722.png" alt="Brenne Aerial Logo" className="w-16 h-16 object-contain rounded-xl" />
+          <img src="https://cdn.discordapp.com/attachments/1495388901727273050/1521050852406726766/1550.jpg?ex=6a436c7e&is=6a421afe&hm=d1fffedf2eb1296dc067b5e3fdcc663f4fd8969896b4c10d93b0df532cdea9f3&" alt="Brenne Aerial Logo" className="w-16 h-16 object-contain rounded-xl" />
           <div>
             <h1 className="font-grotesk font-bold text-lg text-foreground">Brenne Aerial</h1>
             <p className="font-mono text-[9px] text-primary/60">Premium Drone Services</p>

@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email VARCHAR(255) UNIQUE NOT NULL,
   username VARCHAR(255) UNIQUE NOT NULL,
+  legacy_id TEXT UNIQUE,
   display_name VARCHAR(255),
   bio TEXT,
   phone VARCHAR(20),
@@ -119,7 +120,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   action VARCHAR(255) NOT NULL,
   entity_type VARCHAR(100),
-  entity_id UUID,
+  entity_id TEXT,
   details JSONB,
   ip_address INET,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

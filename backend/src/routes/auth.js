@@ -123,7 +123,7 @@ router.post('/verify-token', verifyFirebaseToken, async (req, res) => {
 });
 
 // GET /api/auth/me (Get current user)
-router.get('/me', verifyFirebaseToken, async (req, res) => {
+router.get('/me', verifyJWT, async (req, res) => {
   try {
     const result = await pool.query(
       'SELECT id, email, username, display_name, bio, avatar_url, cover_url, role, verified_status FROM users WHERE email = $1',

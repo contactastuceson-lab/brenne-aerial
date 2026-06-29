@@ -43,10 +43,24 @@ export default function PublicLayout() {
       ]);
 
       if (settingsResult.status === 'fulfilled') {
-        const map = {};
-        settingsResult.value.forEach(s => { map[s.key] = s.value; });
-        setSettings(map);
-      }
+  const map = {};
+
+  const settingsArray = Array.isArray(settingsResult.value)
+    ? settingsResult.value
+    : Array.isArray(settingsResult.value?.data)
+      ? settingsResult.value.data
+      : Array.isArray(settingsResult.value?.settings)
+        ? settingsResult.value.settings
+        : [];
+
+  settingsArray.forEach(s => {
+    if (s?.key) {
+      map[s.key] = s.value;
+    }
+  });
+
+  setSettings(map);
+}
 
       if (userResult.status === 'fulfilled') {
         setUser(userResult.value);

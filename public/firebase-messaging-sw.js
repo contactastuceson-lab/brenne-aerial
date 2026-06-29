@@ -2,12 +2,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey: "AIzaSyCVF8bvM1rRtNiLqVNWBAhz3mg7k3xHskU",
-  authDomain: "brenne-aerial-92df2.firebaseapp.com",
-  projectId: "brenne-aerial-92df2",
-  storageBucket: "brenne-aerial-92df2.firebasestorage.app",
-  messagingSenderId: "1089927039041",
-  appId: "1:1089927039041:web:ee4d69b56fd8280268dec0",
+  apiKey: "AIzaSyBeK6XlNs9eVEB5kVwh_Khyr9qyemUpaLw",
+  authDomain: "brenne-aerial-37443.firebaseapp.com",
+  projectId: "brenne-aerial-37443",
+  storageBucket: "brenne-aerial-37443.firebasestorage.app",
+  messagingSenderId: "476607554573",
+  appId: "1:476607554573:web:6e26e3b37fdc285979a144",
 });
 
 const messaging = firebase.messaging();

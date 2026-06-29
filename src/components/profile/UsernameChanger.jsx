@@ -5,13 +5,6 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Mail, CheckCircle, Loader2 } from 'lucide-react';
 
-const getApiBaseUrl = () => {
-  const rawUrl = import.meta.env.VITE_API_URL?.trim() || '';
-  const cleanedUrl = rawUrl.replace(/\/+$/g, '');
-  const baseUrl = cleanedUrl || (typeof window !== 'undefined' ? window.location.origin : '');
-  return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
-};
-
 export default function UsernameChanger({ user, username, onUpdate }) {
   const [mode, setMode] = useState('view'); // view | edit | verify
   const [newUsername, setNewUsername] = useState('');
@@ -59,22 +52,13 @@ export default function UsernameChanger({ user, username, onUpdate }) {
 
     setLoading(true);
     try {
-      const response = await fetch(`${getApiBaseUrl()}/auth/send-verification-code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email }),
-      });
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setCodeSent(true);
-        setMode('verify');
-        toast.success('Code envoyé à votre email');
-      } else {
-        toast.error(data.error || 'Erreur lors de l\'envoi du code');
-      }
+      // Envoyer code de vérification
+      await base44.functions.invoke('sendVerificationCode', { email: user.email });
+      setCodeSent(true);
+      setMode('verify');
+      toast.success('Code envoyé à votre email');
     } catch (err) {
-      toast.error('Erreur de connexion au serveur');
+      toast.error('Erreur lors de l\'envoi du code');
     } finally {
       setLoading(false);
     }
@@ -88,15 +72,13 @@ export default function UsernameChanger({ user, username, onUpdate }) {
 
     setLoading(true);
     try {
-      const response = await fetch(`${getApiBaseUrl()}/auth/verify-email-code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, code }),
+      // Vérifier le code
+      const verifyResult = await base44.functions.invoke('verifyEmailCode', {
+        code,
       });
-      const data = await response.json();
 
-      if (!response.ok || !data.success) {
-        toast.error(data.error || 'Code invalide ou expiré');
+      if (!verifyResult.data?.success) {
+        toast.error(verifyResult.data?.error || 'Code invalide ou expiré');
         setLoading(false);
         return;
       }

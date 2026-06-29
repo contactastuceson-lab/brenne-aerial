@@ -1,74 +1,14 @@
-import { apiClient } from '@/api/client';
+import { createClient } from '@base44/sdk';
+import { appParams } from '@/lib/app-params';
 
-const auth = {
-  me: async () => apiClient.auth.getMe(),
-  isAuthenticated: async () => {
-    const token = apiClient.getToken();
-    if (!token) return false;
-    try {
-      await apiClient.auth.getMe();
-      return true;
-    } catch (err) {
-      apiClient.clearAuth();
-      return false;
-    }
-  },
-  logout: async (redirectTo) => {
-    apiClient.clearAuth();
-    if (typeof window !== 'undefined' && redirectTo) {
-      window.location.href = redirectTo;
-    }
-  },
-  redirectToLogin: (path) => {
-    if (typeof window === 'undefined') return;
-    if (!path || path === '/') {
-      window.location.href = '/login';
-      return;
-    }
-    window.location.href = `/login?redirect=${encodeURIComponent(path)}`;
-  },
-  updateMe: async (data) => apiClient.users.updateProfile(data),
-};
+const { appId, token, functionsVersion, appBaseUrl } = appParams;
 
-const unsupportedEntityMethod = (entityName, method) => async () => {
-  throw new Error(`Base44 entity \"${entityName}.${method}\" is not supported. Migrate this call to a backend API endpoint.`);
-};
-
-const entityHandler = {
-  get(target, entityName) {
-    const methods = ['list', 'filter', 'get', 'create', 'update', 'delete', 'subscribe'];
-    const entityProxy = {};
-    methods.forEach((method) => {
-      if (method === 'subscribe') {
-        // provide a safe no-op subscribe to avoid runtime errors while migrating
-        entityProxy[method] = (handler) => {
-          console.warn(`Base44 entity "${entityName}.subscribe" called — subscribe is disabled in the shim.`);
-          // return an unsubscribe function
-          return () => {};
-        };
-      } else {
-        entityProxy[method] = unsupportedEntityMethod(entityName, method);
-      }
-    });
-    return entityProxy;
-  },
-};
-
-const unsupportedFunction = async (name) => {
-  throw new Error(`Base44 function \"${name}\" is not supported. Migrate this call to a backend API endpoint.`);
-};
-
-export const base44 = {
-  auth,
-  functions: {
-    invoke: async (name) => unsupportedFunction(name),
-  },
-  entities: new Proxy({}, entityHandler),
-  integrations: {
-    Core: {
-      UploadFile: async () => {
-        throw new Error('Base44 Core.UploadFile is not supported. Migrate uploads to a backend API.');
-      },
-    },
-  },
-};
+//Create a client with authentication required
+export const base44 = createClient({
+  appId,
+  token,
+  functionsVersion,
+  serverUrl: '',
+  requiresAuth: false,
+  appBaseUrl
+});

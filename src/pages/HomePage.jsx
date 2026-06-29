@@ -78,12 +78,10 @@ export default function HomePage() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
 
-  const { data: settingsData = [] } = useQuery({
+  const { data: settings = [] } = useQuery({
     queryKey: ['app-settings'],
-    // Temporarily disable Base44 calls on homepage: return empty settings
-    queryFn: async () => [],
+    queryFn: () => base44.entities.AppSettings.list(),
   });
-  const settings = Array.isArray(settingsData) ? settingsData : [];
   const sMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
 
   const heroTitle1 = sMap['hero_title_1'] || 'Services drone';
@@ -124,12 +122,10 @@ export default function HomePage() {
   const borderClass = isOffline ? 'border-red-500/20 hover:border-red-500/40' : hasDisabled ? 'border-yellow-400/20 hover:border-yellow-400/40' : 'border-green-500/20 hover:border-green-500/40';
   const bgClass = isOffline ? 'bg-red-500/5 hover:bg-red-500/10' : hasDisabled ? 'bg-yellow-400/5 hover:bg-yellow-400/10' : 'bg-green-500/5 hover:bg-green-500/10';
 
-  const { data: projectsData = [] } = useQuery({
+  const { data: projects = [] } = useQuery({
     queryKey: ['featured-projects'],
-    // Temporarily disable Base44 calls on homepage: return empty list
-    queryFn: async () => [],
+    queryFn: () => base44.entities.Project.filter({ is_featured: true, is_published: true }, '-created_date', 3),
   });
-  const projects = Array.isArray(projectsData) ? projectsData : [];
 
   return (
     <div className="relative overflow-x-hidden">

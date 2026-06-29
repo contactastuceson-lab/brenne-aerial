@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingModal from '@/components/shared/OnboardingModal';
+import EmailVerificationModal from '@/components/shared/EmailVerificationModal';
 import { Outlet, useLocation } from 'react-router-dom';
 import AppHeader from './AppHeader';
 import BottomTabBar from './BottomTabBar';
@@ -15,7 +16,7 @@ import MaintenancePage from '@/pages/MaintenancePage';
 import SiteOfflinePage from '@/pages/SiteOfflinePage';
 import BannedPage from '@/pages/BannedPage';
 import { useRegisterDevice } from '@/hooks/useRegisterDevice';
-import { apiClient } from '@/api/client';
+import { base44 } from '@/api/base44Client';
 
 export default function PublicLayout() {
   const [user, setUser] = useState(null);
@@ -25,35 +26,29 @@ export default function PublicLayout() {
   const noFooterPaths = ['/messages', '/discover', '/forum', '/planning'];
   const hideFooter = noFooterPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/'));
   const hiddenPaths = ['/messages', '/planning', '/forum'];
-
-  // Detect public profile routes like `/username` or `/@username` and hide floating buttons there
-  const isPublicProfile = /^\/@?[a-zA-Z0-9_.-]+$/.test(location.pathname);
-  const hideFloatingButton = hiddenPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/')) || isPublicProfile;
+  const hideFloatingButton = hiddenPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/'));
 
   // Register device session when user logs in
   useRegisterDevice(user);
 
   useEffect(() => {
     const init = async () => {
-      const jwtToken = localStorage.getItem('jwt_token');
-      if (!jwtToken) {
-        setSettings({});
-        setLoading(false);
-        return;
+      // Fetch app settings and user in parallel
+      const [settingsResult, userResult] = await Promise.allSettled([
+        base44.entities.AppSettings.list(),
+        base44.auth.me(),
+      ]);
+
+      if (settingsResult.status === 'fulfilled') {
+        const map = {};
+        settingsResult.value.forEach(s => { map[s.key] = s.value; });
+        setSettings(map);
       }
 
-      // Fetch user only when we have an existing JWT token
-      try {
-        const userData = await apiClient.auth.getMe();
-        setUser(userData);
-      } catch (err) {
-        console.error('Failed to fetch user:', err);
-        apiClient.clearAuth();
+      if (userResult.status === 'fulfilled') {
+        setUser(userResult.value);
       }
-      
-      // For now, skip AppSettings (migrer plus tard)
-      setSettings({});
-      
+
       setLoading(false);
     };
     init();
@@ -62,8 +57,8 @@ export default function PublicLayout() {
   // Heartbeat: update last_seen every 30s + immediate on visibility change
   useEffect(() => {
     if (!user) return;
-    const ping = () => apiClient.users.updateProfile({ last_seen: new Date().toISOString() }).catch(() => {});
-    const pingOffline = () => apiClient.users.updateProfile({ last_seen: new Date(Date.now() - 10 * 60 * 1000).toISOString() }).catch(() => {});
+    const ping = () => base44.auth.updateMe({ last_seen: new Date().toISOString() }).catch(() => {});
+    const pingOffline = () => base44.auth.updateMe({ last_seen: new Date(Date.now() - 10 * 60 * 1000).toISOString() }).catch(() => {});
     
     ping();
     const iv = setInterval(ping, 30000);
@@ -89,12 +84,18 @@ export default function PublicLayout() {
     );
   }
 
-
+  // Email verification — before onboarding
+  if (user && !user.email_verified) {
+    return <EmailVerificationModal user={user} onVerified={async () => {
+      const me = await base44.auth.me();
+      setUser(me);
+    }} />;
+  }
 
   // Show onboarding if user hasn't completed it
   if (user && !user.onboarding_completed) {
     return <OnboardingModal user={user} onComplete={async () => {
-      const me = await apiClient.auth.getMe();
+      const me = await base44.auth.me();
       setUser(me);
     }} />;
   }

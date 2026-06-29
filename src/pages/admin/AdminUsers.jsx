@@ -184,12 +184,14 @@ export default function AdminUsers() {
   const toggleSelect = (id) => setSelectedIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
   const toggleAll = () => setSelectedIds(selectedIds.length === filtered.length ? [] : filtered.map((u) => u.id));
 
-  // Poll backend periodically to refresh users list (replacement for realtime subscribe)
+  // Listen for user updates to refresh the list in real-time
   useEffect(() => {
-    const handler = () => qc.invalidateQueries({ queryKey: ['adm-users-list'] });
-    handler();
-    const iv = setInterval(handler, 15000);
-    return () => clearInterval(iv);
+    const unsub = base44.entities.User.subscribe((event) => {
+      if (event.type === 'update') {
+        qc.invalidateQueries({ queryKey: ['adm-users-list'] });
+      }
+    });
+    return () => unsub();
   }, [qc]);
 
   const filtered = users.

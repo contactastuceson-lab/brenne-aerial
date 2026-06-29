@@ -115,22 +115,18 @@ export default function DiscoverPage() {
     enabled: !!user,
   });
 
-  // Poll backend periodically to refresh the public users list and update current user
+  // Single subscription: refresh all-users list + update own user if it changed
   useEffect(() => {
-    if (!user) return;
-    const handler = async () => {
-      try {
+    const unsub = base44.entities.User.subscribe(evt => {
+      if (evt.type === 'update') {
         queryClient.invalidateQueries({ queryKey: ['all-users'] });
-        if (user?.email) {
-          const me = await base44.auth.me().catch(() => null);
-          if (me && me.email === user.email) setUser(me);
+        if (user?.email && evt.data?.email === user.email) {
+          setUser(evt.data);
         }
-      } catch (e) {}
-    };
-    handler();
-    const iv = setInterval(handler, 15000);
-    return () => clearInterval(iv);
-  }, [queryClient, user]);
+      }
+    });
+    return () => unsub();
+  }, [queryClient, user?.email]);
 
   const { data: follows = [] } = useQuery({
     queryKey: ['my-follows', user?.email],
@@ -387,12 +383,7 @@ export default function DiscoverPage() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ delay: i * 0.02 }}
                   className="flex items-center gap-3 px-3 py-2 transition-colors cursor-pointer group hover:bg-secondary/10"
-                  onClick={() => {
-                    if (typeof window !== 'undefined') {
-                      window.scrollTo({ top: 0, behavior: 'auto' });
-                    }
-                    navigate(`/@${profile.username}`);
-                  }}
+                  onClick={() => navigate(`/@${profile.username}`)}
                 >
                   <div
                     className="w-10 h-10 flex-shrink-0 rounded-full overflow-hidden border border-border bg-secondary flex items-center justify-center"

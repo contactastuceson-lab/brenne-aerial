@@ -5,13 +5,6 @@ import { Loader2, CheckCircle, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-const getApiBaseUrl = () => {
-  const rawUrl = import.meta.env.VITE_API_URL?.trim() || '';
-  const cleanedUrl = rawUrl.replace(/\/+$|\s+$/g, '');
-  const baseUrl = cleanedUrl || (typeof window !== 'undefined' ? window.location.origin : '');
-  return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
-};
-
 export default function EmailVerificationModal({ user, onVerified }) {
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [sending, setSending] = useState(false);
@@ -28,26 +21,14 @@ export default function EmailVerificationModal({ user, onVerified }) {
     setSending(true);
     setError('');
     setCode(['', '', '', '', '', '']);
-
-    try {
-      const response = await fetch(`${getApiBaseUrl()}/auth/send-verification-code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email }),
-      });
-      const data = await response.json();
-      setSending(false);
-
-      if (response.ok && data.success) {
-        setCodeSent(true);
-        toast.success('Code envoyé à ' + user.email);
-        setTimeout(() => inputRefs.current[0]?.focus(), 100);
-      } else {
-        setError(data.error || 'Erreur lors de l\'envoi');
-      }
-    } catch (error) {
-      setSending(false);
-      setError('Erreur de connexion au serveur');
+    const res = await base44.functions.invoke('sendVerificationCode', {});
+    setSending(false);
+    if (res.data?.success) {
+      setCodeSent(true);
+      toast.success('Code envoyé à ' + user.email);
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+    } else {
+      setError(res.data?.error || 'Erreur lors de l\'envoi');
     }
   };
 
@@ -83,27 +64,15 @@ export default function EmailVerificationModal({ user, onVerified }) {
   const verifyCode = async (codeStr) => {
     setVerifying(true);
     setError('');
-
-    try {
-      const response = await fetch(`${getApiBaseUrl()}/auth/verify-email-code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, code: codeStr }),
-      });
-      const data = await response.json();
-      setVerifying(false);
-
-      if (response.ok && data.success) {
-        toast.success('Email vérifié !');
-        onVerified();
-      } else {
-        setError(data.error || 'Code incorrect');
-        setCode(['', '', '', '', '', '']);
-        setTimeout(() => inputRefs.current[0]?.focus(), 100);
-      }
-    } catch (error) {
-      setVerifying(false);
-      setError('Erreur de connexion au serveur');
+    const res = await base44.functions.invoke('verifyEmailCode', { code: codeStr });
+    setVerifying(false);
+    if (res.data?.success) {
+      toast.success('Email vérifié !');
+      onVerified();
+    } else {
+      setError(res.data?.error || 'Code incorrect');
+      setCode(['', '', '', '', '', '']);
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
     }
   };
 

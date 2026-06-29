@@ -19,10 +19,8 @@ export default function UpdatesFloatingButton() {
 
   useEffect(() => {
     const load = async () => {
-      // Temporarily return no updates to avoid Base44 calls
-      const all = [];
-      const safeAll = Array.isArray(all) ? all : [];
-      const published = safeAll.filter(u => u && u.is_published);
+      const all = await base44.entities.AppUpdate.list('-published_at', 20);
+      const published = all.filter(u => u.is_published);
       setUpdates(published);
 
       // Check if there are updates newer than last seen

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { firebaseAuthService } from '@/lib/firebaseAuth';
+import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, Loader2, Mail, Lock, ArrowRight, Shield, Zap, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -67,10 +67,10 @@ export default function Login() {
     if (!email || !password) { setError('Veuillez remplir tous les champs.'); return; }
     setLoading(true);
     try {
-      await firebaseAuthService.loginWithEmail(email, password);
+      await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = '/';
-    } catch (err) {
-      setError(err?.message || 'Email ou mot de passe incorrect. Vérifiez vos identifiants.');
+    } catch {
+      setError('Email ou mot de passe incorrect. Vérifiez vos identifiants.');
     } finally {
       setLoading(false);
     }
@@ -79,10 +79,8 @@ export default function Login() {
   const handleSocial = async (provider) => {
     setSocialLoading(provider);
     try {
-      await firebaseAuthService.loginWithProvider(provider);
-      window.location.href = '/';
-    } catch (err) {
-      setError(err?.message || `Erreur lors de la connexion avec ${provider}`);
+      await base44.auth.loginWithProvider(provider, '/');
+    } catch {
       setSocialLoading(null);
     }
   };
@@ -100,7 +98,7 @@ export default function Login() {
 
         {/* Top — logo */}
         <div className="relative z-10 flex items-center gap-4">
-          <img src="https://cdn.discordapp.com/attachments/1495388901727273050/1521050852406726766/1550.jpg?ex=6a436c7e&is=6a421afe&hm=d1fffedf2eb1296dc067b5e3fdcc663f4fd8969896b4c10d93b0df532cdea9f3&" alt="Brenne Aerial Logo" className="w-28 h-28 object-contain rounded-2xl" />
+          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3282a4fc9_5722.png" alt="Brenne Aerial Logo" className="w-28 h-28 object-contain rounded-2xl" />
           <div>
             <h1 className="font-grotesk font-bold text-2xl text-foreground tracking-tight">Brenne Aerial</h1>
             <p className="font-mono text-[10px] text-primary/60 tracking-widest uppercase mt-1">Premium Drone Services</p>
@@ -172,7 +170,7 @@ export default function Login() {
 
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-3 mb-8">
-          <img src="https://cdn.discordapp.com/attachments/1495388901727273050/1521050852406726766/1550.jpg?ex=6a436c7e&is=6a421afe&hm=d1fffedf2eb1296dc067b5e3fdcc663f4fd8969896b4c10d93b0df532cdea9f3&" alt="Brenne Aerial Logo" className="w-16 h-16 object-contain rounded-xl" />
+          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3282a4fc9_5722.png" alt="Brenne Aerial Logo" className="w-16 h-16 object-contain rounded-xl" />
           <div>
             <h1 className="font-grotesk font-bold text-lg text-foreground">Brenne Aerial</h1>
             <p className="font-mono text-[9px] text-primary/60">Premium Drone Services</p>

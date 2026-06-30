@@ -44,8 +44,9 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
       setDeleted(true);
       toast.success('Post supprimé');
       onDeleted?.(post.id);
-    } catch {
-      toast.error('Erreur lors de la suppression');
+    } catch (err) {
+      console.error('Delete error:', err);
+      toast.error('Erreur lors de la suppression: ' + (err?.message || err));
     }
   }, [post.id, onDeleted]);
 

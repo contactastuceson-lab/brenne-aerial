@@ -150,11 +150,17 @@ export default function HomeFeed({ user }) {
 
     // Algorithmic sort for "Pour vous"
     if (filter === 'foryou') {
+      const now = Date.now();
       result = result
-        .map(p => ({
-          ...p,
-          algoScore: (p.likes_count || 0) * 2 + (p.replies_count || 0) * 5,
-        }))
+        .map(p => {
+          const ageHours = (now - new Date(p.created_date).getTime()) / 3600000;
+          // Decay: fresher posts get a bonus, older ones decay
+          const recencyBonus = Math.max(0, 48 - ageHours) * 0.5;
+          const engagementScore = (p.likes_count || 0) * 3 + (p.replies_count || 0) * 6 + (p.views_count || 0) * 0.1;
+          // Posts with media get a small boost
+          const mediaBoost = (p.media_urls?.length > 0) ? 5 : 0;
+          return { ...p, algoScore: engagementScore + recencyBonus + mediaBoost };
+        })
         .sort((a, b) => b.algoScore - a.algoScore);
     }
 

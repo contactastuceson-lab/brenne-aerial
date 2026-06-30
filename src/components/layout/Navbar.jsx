@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Bell, User, LogOut, LayoutDashboard, Menu, X, ChevronDown, Briefcase } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Bell, User, LogOut, LayoutDashboard, Menu, X, ChevronDown,
+  Briefcase, Search, Home, Compass, MessageCircle, FileText,
+  PenSquare, Settings, Sparkles
+} from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
@@ -9,32 +13,34 @@ import { motion, AnimatePresence } from 'framer-motion';
 import NotificationsPanel from '@/components/notifications/NotificationsPanel';
 
 const NAV_LINKS = [
-  { to: '/',         label: 'Accueil' },
-  { to: '/discover', label: 'Explorer' },
-  { to: '/messages',  label: 'Messages' },
-  { to: '/portfolio', label: 'Portfolio' },
-  { to: '/planning',  label: 'Planning' },
-  { to: '/blog',      label: 'Blog' },
-  { to: '/forum',     label: 'Forum' },
-  { to: '/espace-client', label: 'Espace Client', hideOnTablet: true },
+  { to: '/',          label: 'Accueil',     icon: Home },
+  { to: '/discover',  label: 'Explorer',    icon: Compass },
+  { to: '/messages',  label: 'Messages',    icon: MessageCircle },
+  { to: '/forum',     label: 'Forum',       icon: FileText },
 ];
 
-const TOOLS = [
-  { to: '/garage',           label: 'Garage Drones' },
-  { to: '/partenaires',      label: 'Partenaires' },
-  { to: '/parrainage',       label: 'Parrainage' },
-  { to: '/reglementation',   label: 'Réglementation' },
-  { to: '/comparateur',      label: 'Comparateur résolution' },
-  { to: '/espace-client',    label: 'Espace Client' },
-  { to: '/ecosysteme',       label: 'Écosystème' },
+const MORE_LINKS = [
+  { to: '/portfolio',     label: 'Portfolio' },
+  { to: '/planning',      label: 'Planning' },
+  { to: '/blog',          label: 'Blog' },
+  { to: '/partenaires',   label: 'Partenaires' },
+  { to: '/parrainage',    label: 'Parrainage' },
+  { to: '/reglementation',label: 'Réglementation' },
+  { to: '/espace-client', label: 'Espace Client' },
+  { to: '/ecosysteme',    label: 'Écosystème' },
+  { to: '/garage',        label: 'Garage Drones' },
 ];
 
 export default function Navbar() {
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
-  const [notifsOpen, setNotifsOpen] = useState(false);
-  const toolsRef = useRef(null);
+  const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen]   = useState(false);
+  const [moreOpen, setMoreOpen]       = useState(false);
+  const [notifsOpen, setNotifsOpen]   = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const moreRef = useRef(null);
+  const searchRef = useRef(null);
 
   const { data: user = null } = useQuery({
     queryKey: ['current-user'],
@@ -42,22 +48,6 @@ export default function Navbar() {
     staleTime: 60000,
     retry: false,
   });
-
-  // Close dropdowns on route change
-  useEffect(() => {
-    setToolsOpen(false);
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
-
-  // Close tools dropdown on outside click
-  useEffect(() => {
-    if (!toolsOpen) return;
-    const handler = (e) => {
-      if (toolsRef.current && !toolsRef.current.contains(e.target)) setToolsOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [toolsOpen]);
 
   const { data: notifs = [] } = useQuery({
     queryKey: ['unread-notifs', user?.email],
@@ -67,70 +57,114 @@ export default function Navbar() {
     staleTime: 30000,
   });
 
-  const isActive = (path) => {
-    if (path === '/') return location.pathname === '/';
-    return location.pathname.startsWith(path);
+  useEffect(() => {
+    setMoreOpen(false);
+    setMobileOpen(false);
+    setNotifsOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const h = (e) => { if (moreRef.current && !moreRef.current.contains(e.target)) setMoreOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [moreOpen]);
+
+  const isActive = (path) => path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/discover?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setSearchFocused(false);
+    }
   };
 
+  const displayName = user?.display_name || user?.full_name;
+  const avatarInitial = (displayName?.[0] || 'U').toUpperCase();
+
   return (
-    <nav className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
-            <div className="text-xl font-grotesk font-bold gradient-text">Brenne Aerial</div>
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50"
+      style={{ background: 'hsl(var(--background) / 0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-5 lg:px-6">
+        <div className="flex items-center h-[68px] gap-3">
+
+          {/* ── Logo ── */}
+          <Link to="/" className="flex-shrink-0 flex items-center gap-2.5 mr-2">
+            <div className="w-8 h-8 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-primary" />
+            </div>
+            <span className="font-grotesk font-bold text-base gradient-text hidden sm:block">Brenne Aerial</span>
           </Link>
 
-          {/* Desktop/Tablet Nav Links */}
-          <div className="hidden md:flex items-center gap-0.5">
-            {NAV_LINKS.map(link => (
+          {/* ── Search bar ── */}
+          <form onSubmit={handleSearch} className="flex-1 max-w-xs xl:max-w-sm hidden md:block">
+            <div className={`relative transition-all duration-200 ${searchFocused ? 'ring-1 ring-primary/40' : ''} rounded-xl`}>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <input
+                ref={searchRef}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                placeholder="Rechercher…"
+                className="w-full h-9 pl-9 pr-4 rounded-xl bg-secondary/50 border border-border/50 text-sm font-inter text-foreground placeholder:text-muted-foreground focus:outline-none focus:bg-secondary/70 transition-colors"
+              />
+            </div>
+          </form>
+
+          {/* ── Desktop nav links ── */}
+          <div className="hidden lg:flex items-center gap-0.5 ml-1">
+            {NAV_LINKS.map(({ to, label, icon: Icon }) => (
               <Link
-                key={link.to}
-                to={link.to}
-                className={`px-2 py-1.5 rounded-lg text-[12px] xl:text-[13px] font-inter transition-colors ${link.hideOnTablet ? 'hidden xl:block' : ''} ${
-                  isActive(link.to)
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
+                key={to}
+                to={to}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-inter transition-all ${
+                  isActive(to)
+                    ? 'bg-primary/12 text-primary font-medium'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
                 }`}
               >
-                {link.label}
+                <Icon className="w-4 h-4" />
+                <span className="hidden xl:inline">{label}</span>
               </Link>
             ))}
 
-            {/* Tools Dropdown */}
-            <div className="relative" ref={toolsRef}>
+            {/* More dropdown */}
+            <div className="relative" ref={moreRef}>
               <button
-                onClick={() => setToolsOpen(!toolsOpen)}
-                className={`px-2 py-1.5 rounded-lg text-[12px] xl:text-[13px] font-inter flex items-center gap-1 transition-colors ${
-                  toolsOpen
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
+                onClick={() => setMoreOpen(v => !v)}
+                className={`flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-inter transition-all ${
+                  moreOpen ? 'bg-secondary/60 text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
                 }`}
               >
-                Outils
-                <ChevronDown className={`w-4 h-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
+                Plus
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
               </button>
-
               <AnimatePresence>
-                {toolsOpen && (
+                {moreOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full left-0 mt-1 w-48 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-50"
+                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full left-0 mt-2 w-52 rounded-2xl border border-border bg-card shadow-2xl overflow-hidden z-50 py-1"
+                    style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.3)' }}
                   >
-                    {TOOLS.map(tool => (
+                    {MORE_LINKS.map(({ to, label }) => (
                       <Link
-                        key={tool.to}
-                        to={tool.to}
-                        onClick={() => setToolsOpen(false)}
-                        className={`block px-4 py-2.5 text-sm font-inter border-b border-border/50 last:border-b-0 transition-colors ${
-                          isActive(tool.to)
+                        key={to}
+                        to={to}
+                        onClick={() => setMoreOpen(false)}
+                        className={`flex items-center px-4 py-2.5 text-sm font-inter transition-colors ${
+                          isActive(to)
                             ? 'bg-primary/10 text-primary'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
                         }`}
                       >
-                        {tool.label}
+                        {label}
                       </Link>
                     ))}
                   </motion.div>
@@ -139,174 +173,179 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Right side: Notifs, Profile, Auth */}
-          <div className="flex items-center gap-3">
+          {/* ── Spacer ── */}
+          <div className="flex-1 lg:flex-none" />
+
+          {/* ── Right actions ── */}
+          <div className="flex items-center gap-1.5">
             {user ? (
               <>
-                {/* Notifications */}
-                <button
-                  onClick={() => setNotifsOpen(v => !v)}
-                  className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                {/* Create post shortcut */}
+                <Link
+                  to="/"
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-inter font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
                 >
-                  <Bell className="w-5 h-5" />
-                  {notifs.length > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-mono flex items-center justify-center">
-                      {notifs.length > 9 ? '9+' : notifs.length}
-                    </span>
-                  )}
-                </button>
-                <NotificationsPanel user={user} open={notifsOpen} onClose={() => setNotifsOpen(false)} />
+                  <PenSquare className="w-3.5 h-3.5" />
+                  <span className="hidden lg:inline">Publier</span>
+                </Link>
 
-                {/* Profile */}
-                <div className="hidden md:flex items-center gap-2">
-                  <Link
-                    to="/profile"
-                    className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden hover:bg-primary/20 transition-colors"
+                {/* Notifications */}
+                <div className="relative">
+                  <button
+                    onClick={() => setNotifsOpen(v => !v)}
+                    className="relative w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
                   >
-                    {user.avatar_url
-                      ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
-                      : <User className="w-4 h-4 text-primary" />}
-                  </Link>
-                  <div className="hidden xl:block">
-                    <p className="text-sm font-inter font-medium">{user.display_name || user.full_name}</p>
-                    <p className="text-xs text-muted-foreground">{user.role}</p>
-                  </div>
+                    <Bell className="w-4.5 h-4.5" />
+                    {notifs.length > 0 && (
+                      <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-mono flex items-center justify-center leading-none border border-card">
+                        {notifs.length > 9 ? '9+' : notifs.length}
+                      </span>
+                    )}
+                  </button>
+                  <NotificationsPanel user={user} open={notifsOpen} onClose={() => setNotifsOpen(false)} />
                 </div>
 
-                {/* Business space link — official/supreme */}
+                {/* Business badge */}
                 {canManageAffiliations(user) && (
                   <Link
                     to="/business"
-                    className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-inter bg-amber-400/10 text-amber-400 border border-amber-400/20 hover:bg-amber-400/20 transition-colors"
+                    className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-inter font-medium bg-amber-400/10 text-amber-400 border border-amber-400/20 hover:bg-amber-400/20 transition-colors"
                   >
-                    <Briefcase className="w-4 h-4" />
-                    Business
+                    <Briefcase className="w-3.5 h-3.5" />
+                    <span className="hidden lg:inline">Business</span>
                   </Link>
                 )}
 
-                {/* Admin link */}
+                {/* Admin */}
                 {hasAdminAccess(user) && (
                   <Link
                     to="/admin"
-                    className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-inter bg-secondary hover:bg-secondary/80 transition-colors"
+                    className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-inter bg-secondary hover:bg-secondary/70 transition-colors text-muted-foreground hover:text-foreground"
                   >
-                    <LayoutDashboard className="w-4 h-4" />
-                    Admin
+                    <LayoutDashboard className="w-3.5 h-3.5" />
+                    <span className="hidden lg:inline">Admin</span>
                   </Link>
                 )}
+
+                {/* Avatar */}
+                <div className="relative hidden md:block">
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-2 p-1 pr-2 rounded-xl hover:bg-secondary/60 transition-colors"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {user.avatar_url
+                        ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
+                        : <span className="font-grotesk font-bold text-primary text-xs">{avatarInitial}</span>
+                      }
+                    </div>
+                    <div className="hidden xl:block leading-none">
+                      <p className="text-xs font-inter font-medium text-foreground truncate max-w-[100px]">{displayName}</p>
+                    </div>
+                  </Link>
+                </div>
 
                 {/* Logout */}
                 <button
                   onClick={() => base44.auth.logout('/')}
-                  className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  className="hidden md:flex w-9 h-9 rounded-xl items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
                   title="Déconnexion"
                 >
-                  <LogOut className="w-5 h-5" />
+                  <LogOut className="w-4 h-4" />
                 </button>
               </>
             ) : (
               <>
                 <button
                   onClick={() => base44.auth.redirectToLogin()}
-                  className="hidden md:inline-flex px-3 py-1.5 rounded-lg text-xs font-inter text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                  className="hidden md:inline-flex px-3.5 py-2 rounded-xl text-sm font-inter font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                  style={{ boxShadow: '0 0 16px rgba(var(--primary),0.25)' }}
                 >
                   Connexion
                 </button>
                 <Link
-                  to="/quote"
-                  className="hidden md:inline-flex px-3 py-1.5 rounded-lg text-xs font-inter text-foreground bg-secondary hover:bg-secondary/80 transition-colors"
+                  to="/register"
+                  className="hidden md:inline-flex px-3.5 py-2 rounded-xl text-sm font-inter font-medium text-muted-foreground bg-secondary hover:bg-secondary/70 transition-colors"
                 >
-                  Devis gratuit
+                  S'inscrire
                 </Link>
               </>
             )}
 
-            {/* Mobile menu button */}
+            {/* Mobile hamburger */}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              onClick={() => setMobileOpen(v => !v)}
+              className="lg:hidden w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* ── Mobile menu ── */}
         <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.15 }}
-            className="md:hidden py-4 space-y-2 border-t border-border/60"
-          >
-            {NAV_LINKS.map(link => (
-              <Link
-                key={link.to}
-                to={link.to}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block px-3 py-2 rounded-lg text-sm font-inter transition-colors ${
-                  isActive(link.to)
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            
-            {/* Mobile Tools Submenu */}
-            <button
-              onClick={() => setToolsOpen(!toolsOpen)}
-              className={`block w-full text-left px-3 py-2 rounded-lg text-sm font-inter transition-colors ${
-                toolsOpen
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+          {mobileOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="lg:hidden overflow-hidden border-t border-border/50"
             >
-              <div className="flex items-center justify-between">
-                <span>Outils</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
-              </div>
-            </button>
-            <AnimatePresence>
-              {toolsOpen && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-1 px-3"
-                >
-                  {TOOLS.map(tool => (
-                    <Link
-                      key={tool.to}
-                      to={tool.to}
-                      onClick={() => { setMobileMenuOpen(false); setToolsOpen(false); }}
-                      className={`block px-3 py-2 rounded-lg text-sm font-inter transition-colors ${
-                        isActive(tool.to)
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
+              <div className="py-3 space-y-1">
+                {/* Mobile search */}
+                <form onSubmit={handleSearch} className="px-2 pb-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                    <input
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      placeholder="Rechercher…"
+                      className="w-full h-9 pl-9 pr-4 rounded-xl bg-secondary/50 border border-border/50 text-sm font-inter text-foreground placeholder:text-muted-foreground focus:outline-none"
+                    />
+                  </div>
+                </form>
+
+                {[...NAV_LINKS, ...MORE_LINKS].map(({ to, label }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={() => setMobileOpen(false)}
+                    className={`block px-3 py-2.5 rounded-xl text-sm font-inter transition-colors ${
+                      isActive(to)
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+
+                {!user ? (
+                  <div className="flex gap-2 pt-2 px-2">
+                    <button
+                      onClick={() => { base44.auth.redirectToLogin(); setMobileOpen(false); }}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-inter font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
                     >
-                      {tool.label}
+                      Se connecter
+                    </button>
+                    <Link to="/register" onClick={() => setMobileOpen(false)}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-inter text-center text-muted-foreground bg-secondary hover:bg-secondary/70 transition-colors"
+                    >
+                      S'inscrire
                     </Link>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {!user && (
-              <div className="flex gap-2 pt-2">
-                <button
-                  onClick={() => { base44.auth.redirectToLogin(); setMobileMenuOpen(false); }}
-                  className="flex-1 px-3 py-2 rounded-lg text-sm font-inter text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
-                >
-                  Connexion
-                </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { base44.auth.logout('/'); setMobileOpen(false); }}
+                    className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-sm font-inter text-rose-400 hover:bg-rose-400/10 transition-colors mt-2 border-t border-border/40 pt-3"
+                  >
+                    <LogOut className="w-4 h-4" /> Déconnexion
+                  </button>
+                )}
               </div>
-            )}
-          </motion.div>
-        )}
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
     </nav>

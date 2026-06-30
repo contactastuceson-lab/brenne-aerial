@@ -7,6 +7,14 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/s
 import { ExternalLink } from 'lucide-react';
 import { useOrganizationAffiliations, useCachedUser } from '@/hooks/useOrganizationAffiliations';
 
+// Build a stable descriptor for a user to avoid triggering re-renders
+function buildUserDescriptor(user) {
+  if (!user) return null;
+  if (user.id) return { userId: user.id };
+  if (user.email) return { userEmail: user.email };
+  return null;
+}
+
 const bgColorMap = {
   'text-sky-400':     '#0ea5e9',
   'text-amber-400':   '#f59e0b',
@@ -22,7 +30,8 @@ const TWITTER_SEAL = "M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91
  * @param {{ verifications?: Array<string>, size?: string, user?: any|null }} props
  */
 export default function VerificationIcons({ verifications = [], size = 'sm', user = null }) {
-  const { affiliations, loading: loadingAffiliation } = useOrganizationAffiliations(user);
+  const userDescriptor = buildUserDescriptor(user);
+  const { affiliations, loading: loadingAffiliation } = useOrganizationAffiliations(userDescriptor);
   const visibleAffiliations = useMemo(
     () => affiliations.filter((affiliation) => affiliation?.status === 'accepted' && affiliation?.visibility === 'public'),
     [affiliations]

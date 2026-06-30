@@ -29,7 +29,7 @@ export default function OrganizationAffiliationsTab({ user }) {
   const [inviteQuery, setInviteQuery] = useState('');
   const [inviteCandidate, setInviteCandidate] = useState(null);
 
-  const { affiliations, loading: affiliationLoading } = useOrganizationAffiliations({ organizationId: user?.id });
+  const { affiliations, loading: affiliationLoading } = useOrganizationAffiliations(user?.id ? { organizationId: user.id } : null);
   const loading = affiliationLoading;
 
   const canManage = canManageAffiliations(user);

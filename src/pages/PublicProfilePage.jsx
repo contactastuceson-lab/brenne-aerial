@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import ProfileNotFound from '@/components/profile/ProfileNotFound';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -10,6 +10,7 @@ import VerificationIcons from '@/components/ui/VerificationIcon';
 import { VERIFICATION_CONFIG } from '@/components/ui/VerificationChip';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { getHighestVerificationBadge } from '@/lib/affiliationUtils';
+import { useOrganizationAffiliations, prefillUserCache, resolveAffiliatedProfiles } from '@/hooks/useOrganizationAffiliations';
 import { ROLE_CONFIG } from '@/lib/roles';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -80,7 +81,18 @@ export default function PublicProfilePage() {
   const [recentDiscussions, setRecentDiscussions] = useState([]);
   const [followingCount, setFollowingCount] = useState(0);
   const [badgeCounts, setBadgeCounts] = useState({});
-  const [affiliatedAccounts, setAffiliatedAccounts] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+
+  // Affiliés de cette organisation — via le cache centralisé (évite N+1 queries)
+  const orgDescriptor = useMemo(() => user?.id ? { organizationId: user.id } : null, [user?.id]);
+  const { affiliations: orgAffiliations } = useOrganizationAffiliations(orgDescriptor);
+  const affiliatedAccounts = useMemo(
+    () => resolveAffiliatedProfiles(
+      orgAffiliations.filter(r => r.status === 'accepted' && r.visibility === 'public'),
+      allUsers
+    ),
+    [orgAffiliations, allUsers]
+  );
 
   // ── SEO meta tags dynamiques ──
   useEffect(() => {
@@ -143,8 +155,8 @@ export default function PublicProfilePage() {
         // Chercher l'utilisateur par username
         const userIdentifier = requestedUser;
         const response = await base44.functions.invoke('getPublicUsers', {});
-        const allUsers = response.data || response;
-        const foundUser = allUsers.find(u => {
+        const fetchedUsers = response.data || response;
+        const foundUser = fetchedUsers.find(u => {
           if (!userIdentifier) return false;
           const identifier = userIdentifier.toLowerCase();
           return u.username?.toLowerCase() === identifier
@@ -159,6 +171,9 @@ export default function PublicProfilePage() {
         }
 
         setUser(foundUser);
+        // Pré-remplir le cache utilisateur avec tous les profils déjà chargés (évite User.get() par ligne)
+        prefillUserCache(fetchedUsers);
+        setAllUsers(fetchedUsers);
 
         // Charger les followers & following en parallèle + discussions récentes
         const [followersList, followingList, discussions] = await Promise.all([
@@ -178,7 +193,7 @@ export default function PublicProfilePage() {
 
         // Count profiles per verification level
         const counts = { verified: 0, pro: 0, certified: 0, official: 0, supreme: 0 };
-        allUsers.forEach(u => {
+        fetchedUsers.forEach(u => {
           if (u.verifications?.includes('verified')) counts.verified++;
           if (u.verifications?.includes('pro')) counts.pro++;
           if (u.verifications?.includes('certified')) counts.certified++;
@@ -186,33 +201,6 @@ export default function PublicProfilePage() {
           if (u.verifications?.includes('supreme')) counts.supreme++;
         });
         setBadgeCounts(counts);
-
-        // Charger les affiliés publics pour cette organisation
-        try {
-          const affiliationRows = await base44.entities.OrganizationAffiliation.filter({
-            organizationId: foundUser.id,
-            status: 'accepted',
-            visibility: 'public',
-          }, '-createdAt', 100);
-
-          const affiliated = await Promise.all((affiliationRows || []).map(async (row) => {
-            let profile = allUsers.find((u) => u.id === row.userId || u.email === row.userId);
-            if (!profile && row.userId && row.userId.includes('@')) {
-              profile = allUsers.find((u) => u.email === row.userId);
-            }
-            if (!profile && row.userId && !row.userId.includes('@')) {
-              try {
-                profile = await base44.entities.User.get(row.userId);
-              } catch {
-                profile = null;
-              }
-            }
-            return profile ? { affiliation: row, profile } : null;
-          }));
-          setAffiliatedAccounts((affiliated || []).filter(Boolean));
-        } catch (error) {
-          console.error('Unable to load affiliated accounts', error);
-        }
 
         // Subscribe aux changements en temps réel
         const unsubscribe = base44.entities.Follow.subscribe((event) => {

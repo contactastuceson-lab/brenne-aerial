@@ -1,207 +1,187 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
-const createAffiliationKeys = (user) => {
-  if (!user) return [];
-  const keys = new Set();
-  if (user.id) keys.add(`id:${user.id}`);
-  if (user.email) keys.add(`email:${normalizeEmail(user.email)}`);
-  return [...keys];
-};
+
+// ─── Affiliation cache (by userId) ───────────────────────────────────────────
+// Key formats:
+//   "uid:<id>"   — filter by userId == id
+//   "uemail:<email>" — filter by userId == email
+//   "org:<id>"   — filter by organizationId == id
 
 const affiliationCache = new Map();
 
-const registerAffiliationEntryKeys = (entry, keys) => {
-  keys.forEach((key) => {
-    entry.keys.add(key);
-    affiliationCache.set(key, entry);
-  });
-};
+function getCacheKey(descriptor) {
+  if (!descriptor) return null;
+  if (descriptor.userId) return `uid:${descriptor.userId}`;
+  if (descriptor.userEmail) return `uemail:${normalizeEmail(descriptor.userEmail)}`;
+  if (descriptor.organizationId) return `org:${descriptor.organizationId}`;
+  return null;
+}
 
-const createAffiliationEntry = (keys) => {
-  const entry = {
-    keys: new Set(keys),
+function createEntry() {
+  return {
     affiliations: [],
     loading: false,
+    loaded: false, // once loaded, never fetch again unless explicitly refreshed
     error: null,
     promise: null,
     subscribers: new Set(),
   };
-  keys.forEach((key) => affiliationCache.set(key, entry));
-  return entry;
-};
+}
 
-const getAffiliationEntry = (user) => {
-  const keys = createAffiliationKeys(user);
-  if (!keys.length) return null;
-
-  for (const key of keys) {
-    if (affiliationCache.has(key)) {
-      const existingEntry = affiliationCache.get(key);
-      registerAffiliationEntryKeys(existingEntry, keys);
-      return existingEntry;
-    }
+function getOrCreateEntry(cacheKey) {
+  if (!affiliationCache.has(cacheKey)) {
+    affiliationCache.set(cacheKey, createEntry());
   }
+  return affiliationCache.get(cacheKey);
+}
 
-  return createAffiliationEntry(keys);
-};
-
-const dedupeAffiliations = (rows = []) => {
-  return Array.from(new Map((rows || []).map((row) => [row.id, row])).values());
-};
-
-const fetchAffiliationRows = async (user) => {
-  if (!user) return [];
-  const requests = [];
-  if (user.id) requests.push(base44.entities.OrganizationAffiliation.filter({ userId: user.id }, '-createdAt', 100));
-  if (user.email) requests.push(base44.entities.OrganizationAffiliation.filter({ userId: normalizeEmail(user.email) }, '-createdAt', 100));
-
-  const results = await Promise.allSettled(requests);
-  const rows = [];
-  let anySuccess = false;
-
-  results.forEach((result) => {
-    if (result.status === 'fulfilled') {
-      anySuccess = true;
-      rows.push(...(result.value || []));
-    }
-  });
-
-  if (!anySuccess && results.length > 0) {
-    throw results[0].reason;
-  }
-
-  return dedupeAffiliations(rows);
-};
-
-const notifyAffiliationEntry = (entry) => {
-  entry.subscribers.forEach((subscriber) => {
+function notifyEntry(entry) {
+  entry.subscribers.forEach((sub) => {
     try {
-      subscriber({ affiliations: entry.affiliations, loading: entry.loading, error: entry.error });
-    } catch (error) {
-      console.error('Affiliation cache subscriber failed', error);
+      sub({ affiliations: entry.affiliations, loading: entry.loading, error: entry.error });
+    } catch (e) {
+      console.error('Affiliation subscriber error', e);
     }
   });
-};
+}
 
-const loadAffiliationsForEntry = async (entry, user) => {
-  if (!entry || !user) return;
+async function fetchAffiliations(descriptor) {
+  if (!descriptor) return [];
+  let filter = {};
+  if (descriptor.userId) filter = { userId: descriptor.userId };
+  else if (descriptor.userEmail) filter = { userId: normalizeEmail(descriptor.userEmail) };
+  else if (descriptor.organizationId) filter = { organizationId: descriptor.organizationId };
+  else return [];
+
+  const rows = await base44.entities.OrganizationAffiliation.filter(filter, '-createdAt', 100);
+  return Array.isArray(rows) ? rows : [];
+}
+
+async function loadEntry(cacheKey, descriptor, forceReload = false) {
+  const entry = getOrCreateEntry(cacheKey);
+
+  // If already loading, return same promise
   if (entry.loading && entry.promise) return entry.promise;
+
+  // If already loaded and not forcing, return cached data
+  if (entry.loaded && !forceReload) return entry.affiliations;
 
   entry.loading = true;
   entry.error = null;
-  notifyAffiliationEntry(entry);
+  notifyEntry(entry);
 
   const promise = (async () => {
     try {
-      const rows = await fetchAffiliationRows(user);
+      const rows = await fetchAffiliations(descriptor);
+      // Only update if we got results OR it's the first successful load
       entry.affiliations = rows;
+      entry.loaded = true;
       entry.error = null;
-      return entry.affiliations;
     } catch (error) {
       entry.error = error;
-      return entry.affiliations;
+      // Keep existing affiliations — do NOT clear them on error
+      // Mark loaded=true on 429 so we don't retry in an infinite loop
+      if (!entry.loaded) entry.loaded = true;
     } finally {
       entry.loading = false;
       entry.promise = null;
-      notifyAffiliationEntry(entry);
+      notifyEntry(entry);
     }
+    return entry.affiliations;
   })();
 
   entry.promise = promise;
   return promise;
-};
+}
 
-const createUserKey = (identifier) => {
-  if (!identifier) return null;
-  const normalized = normalizeEmail(identifier);
-  return identifier.includes('@') ? `email:${normalized}` : `id:${identifier}`;
-};
+// ─── Public API ───────────────────────────────────────────────────────────────
 
-export const refreshAffiliations = async (identifier) => {
-  return refreshAffiliationsForIdentifier(identifier);
-};
+/**
+ * descriptor: { userId } | { userEmail } | { organizationId }
+ */
+export function useOrganizationAffiliations(descriptor) {
+  const cacheKey = getCacheKey(descriptor);
 
-export const refreshAffiliationsForIdentifier = async (identifier) => {
-  if (!identifier) return null;
-  const key = createUserKey(identifier);
-  if (!key) return null;
-
-  const entry = affiliationCache.get(key);
-  if (!entry) {
-    const user = identifier.includes('@') ? { email: identifier } : { id: identifier };
-    return loadAffiliationsForEntry(getAffiliationEntry(user), user);
-  }
-
-  const user = identifier.includes('@') ? { email: identifier } : { id: identifier };
-  return loadAffiliationsForEntry(entry, user);
-};
-
-export function useOrganizationAffiliations(user) {
   const [state, setState] = useState(() => {
-    const entry = getAffiliationEntry(user);
-    return entry
-      ? { affiliations: entry.affiliations, loading: entry.loading, error: entry.error }
-      : { affiliations: [], loading: false, error: null };
+    if (!cacheKey) return { affiliations: [], loading: false, error: null };
+    const entry = getOrCreateEntry(cacheKey);
+    return { affiliations: entry.affiliations, loading: entry.loading, error: entry.error };
   });
 
   useEffect(() => {
-    const entry = getAffiliationEntry(user);
-    if (!entry) {
+    if (!cacheKey) {
       setState({ affiliations: [], loading: false, error: null });
-      return undefined;
+      return;
     }
 
-    const subscriber = (payload) => setState(payload);
-    entry.subscribers.add(subscriber);
+    const entry = getOrCreateEntry(cacheKey);
+    const sub = (payload) => setState(payload);
+    entry.subscribers.add(sub);
+
+    // Sync state immediately from cache
     setState({ affiliations: entry.affiliations, loading: entry.loading, error: entry.error });
 
-    if (!entry.loading && entry.affiliations.length === 0) {
-      loadAffiliationsForEntry(entry, user).catch(() => {});
+    // Only fetch if not yet loaded and not currently loading
+    if (!entry.loaded && !entry.loading) {
+      loadEntry(cacheKey, descriptor).catch(() => {});
     }
 
     return () => {
-      entry.subscribers.delete(subscriber);
+      entry.subscribers.delete(sub);
     };
-  }, [user?.id, normalizeEmail(user?.email)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cacheKey]);
 
   return state;
 }
 
+/**
+ * Force-refresh affiliations for a descriptor.
+ * descriptor: { userId } | { userEmail } | { organizationId }
+ *   OR a plain string (email or id for backward compat)
+ */
+export async function refreshAffiliations(descriptorOrString) {
+  let descriptor = descriptorOrString;
+
+  // Backward compat: if a plain string was passed
+  if (typeof descriptorOrString === 'string') {
+    const s = descriptorOrString;
+    descriptor = s.includes('@') ? { userEmail: s } : { userId: s };
+  }
+  // Backward compat: { organizationId } passed directly — already fine
+
+  const cacheKey = getCacheKey(descriptor);
+  if (!cacheKey) return;
+  return loadEntry(cacheKey, descriptor, true);
+}
+
+export const refreshAffiliationsForIdentifier = refreshAffiliations;
+
+// ─── User cache (for organization profile lookups) ────────────────────────────
+
 const userCache = new Map();
 
-const createUserEntry = (id) => {
-  const entry = {
-    id,
-    user: null,
-    loading: false,
-    error: null,
-    promise: null,
-    subscribers: new Set(),
-  };
-  userCache.set(id, entry);
-  return entry;
-};
+function getUserEntry(id) {
+  if (!userCache.has(id)) {
+    userCache.set(id, { user: null, loading: false, loaded: false, error: null, promise: null, subscribers: new Set() });
+  }
+  return userCache.get(id);
+}
 
-const getUserEntry = (id) => {
-  if (!id) return null;
-  return userCache.get(id) || createUserEntry(id);
-};
-
-const notifyUserEntry = (entry) => {
-  entry.subscribers.forEach((subscriber) => {
-    try {
-      subscriber({ user: entry.user, loading: entry.loading, error: entry.error });
-    } catch (error) {
-      console.error('User cache subscriber failed', error);
-    }
+function notifyUserEntry(entry) {
+  entry.subscribers.forEach((sub) => {
+    try { sub({ user: entry.user, loading: entry.loading, error: entry.error }); } catch {}
   });
-};
+}
 
-const loadUserForEntry = async (entry) => {
-  if (!entry || !entry.id) return;
+async function loadUserEntry(id) {
+  const entry = getUserEntry(id);
   if (entry.loading && entry.promise) return entry.promise;
+  if (entry.loaded) return entry.user;
 
   entry.loading = true;
   entry.error = null;
@@ -209,51 +189,84 @@ const loadUserForEntry = async (entry) => {
 
   const promise = (async () => {
     try {
-      const response = await base44.entities.User.get(entry.id);
+      const response = await base44.entities.User.get(id);
       entry.user = response;
+      entry.loaded = true;
       entry.error = null;
-      return response;
     } catch (error) {
       entry.error = error;
-      return entry.user;
+      if (!entry.loaded) entry.loaded = true;
+      // Keep existing user on error
     } finally {
       entry.loading = false;
       entry.promise = null;
       notifyUserEntry(entry);
     }
+    return entry.user;
   })();
 
   entry.promise = promise;
   return promise;
-};
+}
 
 export function useCachedUser(id) {
   const [state, setState] = useState(() => {
+    if (!id) return { user: null, loading: false, error: null };
     const entry = getUserEntry(id);
-    return entry
-      ? { user: entry.user, loading: entry.loading, error: entry.error }
-      : { user: null, loading: false, error: null };
+    return { user: entry.user, loading: entry.loading, error: entry.error };
   });
 
   useEffect(() => {
     if (!id) {
       setState({ user: null, loading: false, error: null });
-      return undefined;
+      return;
     }
-
     const entry = getUserEntry(id);
-    const subscriber = (payload) => setState(payload);
-    entry.subscribers.add(subscriber);
+    const sub = (payload) => setState(payload);
+    entry.subscribers.add(sub);
     setState({ user: entry.user, loading: entry.loading, error: entry.error });
 
-    if (!entry.loading && entry.user === null) {
-      loadUserForEntry(entry).catch(() => {});
+    if (!entry.loaded && !entry.loading) {
+      loadUserEntry(id).catch(() => {});
     }
 
-    return () => {
-      entry.subscribers.delete(subscriber);
-    };
+    return () => { entry.subscribers.delete(sub); };
   }, [id]);
 
   return state;
+}
+
+/**
+ * Prefill the user cache from an already-fetched list (e.g. getPublicUsers result).
+ * Call this once at the top level to avoid individual User.get() calls per affiliation row.
+ */
+export function prefillUserCache(users = []) {
+  users.forEach((u) => {
+    if (!u?.id) return;
+    const entry = getUserEntry(u.id);
+    if (!entry.loaded) {
+      entry.user = u;
+      entry.loaded = true;
+      notifyUserEntry(entry);
+    }
+  });
+}
+
+/**
+ * Resolve affiliated profiles from a list of affiliation rows using already-cached users.
+ * Falls back to prefilled cache; does NOT make new User.get() calls.
+ */
+export function resolveAffiliatedProfiles(affiliationRows = [], allUsers = []) {
+  return affiliationRows
+    .map((row) => {
+      // First try allUsers list (already fetched)
+      let profile = allUsers.find((u) => u.id === row.userId || u.email === row.userId);
+      // Then try user cache
+      if (!profile) {
+        const cached = userCache.get(row.userId);
+        if (cached?.user) profile = cached.user;
+      }
+      return profile ? { affiliation: row, profile } : null;
+    })
+    .filter(Boolean);
 }

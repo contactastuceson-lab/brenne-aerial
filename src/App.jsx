@@ -98,6 +98,7 @@ import PublicProfilePage from "@/pages/PublicProfilePage";
 import EnorBiographyPage from "@/pages/EnorBiographyPage";
 import EcosystemePage from "@/pages/EcosystemePage";
 import BusinessSpacePage from "@/pages/BusinessSpacePage";
+import PostDetailPage from "@/pages/PostDetailPage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -176,6 +177,7 @@ const AuthenticatedApp = () => {
           <Route path="/enor" element={<EnorBiographyPage />} />
           <Route path="/ecosysteme" element={<EcosystemePage />} />
           <Route path="/business" element={<BusinessSpacePage />} />
+          <Route path="/post/:id" element={<PostDetailPage />} />
           {/* Profile catch-all route for /@username - must be last in public routes */}
           <Route path="/:pathUsername" element={<PublicProfilePage />} />
         </Route>

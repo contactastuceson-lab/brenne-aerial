@@ -1,20 +1,17 @@
 import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import HomePostCard from './HomePostCard';
-import HomeCreatePost from './HomeCreatePost';
-import { Loader2, RefreshCw, Rss, Sparkles, Flame, Clock, ArrowUp, Users, TrendingUp, Zap, ArrowRight, MessageSquare, Image, Wrench, HelpCircle, Hash, X } from 'lucide-react';
+import PostCard from '@/components/post/PostCard';
+import CreatePost from '@/components/post/CreatePost';
+import { RefreshCw, Rss, Sparkles, Flame, Clock, ArrowUp, Users, TrendingUp, Zap, ArrowRight, Hash, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { extractHashtags } from '@/lib/hashtags';
 
 const FILTERS = [
-  { id: 'recent',    label: 'Récents',    icon: Clock },
-  { id: 'popular',   label: 'Populaires', icon: Flame },
-  { id: 'general',   label: 'Général',    icon: MessageSquare },
-  { id: 'partages',  label: 'Partages',   icon: Image },
-  { id: 'technique', label: 'Technique',  icon: Wrench },
-  { id: 'aide',      label: 'Aide',       icon: HelpCircle },
+  { id: 'recent',   label: 'Récents',    icon: Clock },
+  { id: 'popular',  label: 'Populaires', icon: Flame },
+  { id: 'medias',   label: 'Médias',     icon: null },
 ];
 
 function GuestHero() {
@@ -22,7 +19,7 @@ function GuestHero() {
     <motion.div
       initial={{ opacity: 0, y: -16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-3xl overflow-hidden mb-5 relative"
+      className="rounded-3xl overflow-hidden mb-5 relative mx-4 mt-4"
       style={{
         background: 'linear-gradient(135deg, hsl(205 90% 6%) 0%, hsl(214 50% 5%) 40%, hsl(195 80% 6%) 100%)',
         border: '1px solid rgba(255,255,255,0.08)',
@@ -32,44 +29,36 @@ function GuestHero() {
       <div className="absolute inset-0 grid-bg opacity-25 pointer-events-none" />
       <div className="absolute right-0 top-0 w-56 h-56 rounded-full opacity-15 pointer-events-none"
         style={{ background: 'radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)', transform: 'translate(30%, -30%)' }} />
-
       <div className="relative p-6 md:p-8">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4"
-          style={{ background: 'hsl(var(--primary)/0.15)', border: '1px solid hsl(var(--primary)/0.25)' }}
-        >
+          style={{ background: 'hsl(var(--primary)/0.15)', border: '1px solid hsl(var(--primary)/0.25)' }}>
           <Sparkles className="w-3.5 h-3.5 text-primary" />
           <span className="font-mono text-xs text-primary">Réseau social · Communautés · Créateurs</span>
         </div>
-
         <h1 className="font-grotesk font-black text-2xl md:text-3xl xl:text-4xl mb-3 leading-tight"
-          style={{ background: 'linear-gradient(135deg, #fff 0%, hsl(var(--primary)) 55%, hsl(var(--accent)) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-        >
+          style={{ background: 'linear-gradient(135deg, #fff 0%, hsl(var(--primary)) 55%, hsl(var(--accent)) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
           Le réseau des créateurs<br />et organisations modernes
         </h1>
         <p className="font-inter text-sm text-muted-foreground mb-6 leading-relaxed max-w-md">
           Publiez, échangez, rejoignez des organisations, obtenez des badges de vérification et construisez votre communauté.
         </p>
-
         <div className="flex flex-wrap gap-3 mb-7">
           <Link to="/register"
             className="flex items-center gap-2 px-5 py-3 rounded-2xl font-grotesk font-bold text-sm text-primary-foreground transition-all duration-200 hover:scale-105 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)', boxShadow: '0 0 30px hsl(var(--primary)/0.4), inset 0 1px 0 rgba(255,255,255,0.15)' }}
-          >
+            style={{ background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)', boxShadow: '0 0 30px hsl(var(--primary)/0.4), inset 0 1px 0 rgba(255,255,255,0.15)' }}>
             Rejoindre gratuitement <ArrowRight className="w-4 h-4" />
           </Link>
           <Link to="/login"
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl font-inter text-sm text-muted-foreground border border-white/10 hover:bg-white/8 hover:text-foreground transition-all"
-          >
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl font-inter text-sm text-muted-foreground border border-white/10 hover:bg-white/8 hover:text-foreground transition-all">
             Se connecter
           </Link>
         </div>
-
         <div className="flex items-center gap-6 flex-wrap">
           {[
-            { icon: Users, label: 'Membres', value: '1 000+', color: 'text-blue-400' },
-            { icon: TrendingUp, label: 'Publications', value: '500+', color: 'text-emerald-400' },
-            { icon: Zap, label: 'Organisations', value: '50+', color: 'text-amber-400' },
-          ].map(({ icon: Icon, label, value, color }) => (
+            { Icon: Users,      label: 'Membres',      value: '1 000+', color: 'text-blue-400'  },
+            { Icon: TrendingUp, label: 'Publications',  value: '500+',   color: 'text-emerald-400'},
+            { Icon: Zap,        label: 'Organisations', value: '50+',    color: 'text-amber-400' },
+          ].map(({ Icon, label, value, color }) => (
             <div key={label} className="flex items-center gap-2">
               <Icon className={`w-4 h-4 ${color}`} />
               <div>
@@ -108,6 +97,7 @@ export default function HomeFeed({ user }) {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const urlTag = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -117,18 +107,20 @@ export default function HomeFeed({ user }) {
   const clearTag = () => navigate('/', { replace: true });
 
   const { data: posts = [], isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['home-feed', filter],
+    queryKey: ['home-feed-posts', filter],
     queryFn: async () => {
-      if (filter === 'popular') return base44.entities.Discussion.list('-views_count', 30);
-      if (['general', 'technique', 'partages', 'aide', 'autres'].includes(filter))
-        return base44.entities.Discussion.filter({ category: filter }, '-created_date', 30);
-      return base44.entities.Discussion.list('-created_date', 30);
+      if (filter === 'popular') return base44.entities.Post.list('-likes_count', 50);
+      if (filter === 'medias') {
+        const all = await base44.entities.Post.list('-created_date', 100);
+        return all.filter(p => p.media_urls?.length > 0);
+      }
+      return base44.entities.Post.list('-created_date', 50);
     },
     staleTime: 60000,
   });
 
   useEffect(() => {
-    const unsub = base44.entities.Discussion.subscribe((event) => {
+    const unsub = base44.entities.Post.subscribe((event) => {
       if (event.type === 'create') setNewCount(c => c + 1);
     });
     return unsub;
@@ -143,16 +135,26 @@ export default function HomeFeed({ user }) {
   const handleRefresh = () => { setNewCount(0); refetch(); };
   const handleFilter = (f) => { setFilter(f); setNewCount(0); };
 
+  const filteredPosts = useMemo(() => {
+    if (!urlTag) return posts;
+    return posts.filter(p => {
+      const tags = p.hashtags?.length
+        ? p.hashtags
+        : extractHashtags(p.content || '');
+      return tags.includes(urlTag.toLowerCase());
+    });
+  }, [posts, urlTag]);
+
   return (
     <main className="w-full max-w-[600px] min-w-0 border-x border-zinc-800/60">
 
       {/* Guest hero */}
-      {user === null && <div className="px-4 pt-4"><GuestHero /></div>}
+      {user === null && <GuestHero />}
 
       {/* Create post */}
       {user && (
         <div className="border-b border-zinc-800/60">
-          <HomeCreatePost user={user} onPost={() => { setNewCount(0); refetch(); }} />
+          <CreatePost user={user} onPost={() => { setNewCount(0); refetch(); }} />
         </div>
       )}
 
@@ -161,17 +163,17 @@ export default function HomeFeed({ user }) {
         <div className="flex items-center overflow-x-auto scrollbar-hide flex-1">
           {FILTERS.map((f) => (
             <button key={f.id} onClick={() => handleFilter(f.id)}
-              className={`flex-shrink-0 px-4 py-4 text-sm font-inter font-medium transition-all duration-150 whitespace-nowrap border-b-2 -mb-px ${
+              className={`flex-shrink-0 px-5 py-4 text-sm font-inter font-medium transition-all duration-150 whitespace-nowrap border-b-2 -mb-px ${
                 filter === f.id
                   ? 'border-primary text-foreground font-bold'
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/3'
-              }`}
-            >
+              }`}>
               {f.label}
             </button>
           ))}
         </div>
-        <button onClick={handleRefresh} disabled={isFetching} className="flex-shrink-0 p-4 text-muted-foreground hover:text-foreground transition-all">
+        <button onClick={handleRefresh} disabled={isFetching}
+          className="flex-shrink-0 p-4 text-muted-foreground hover:text-foreground transition-all">
           <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -185,16 +187,14 @@ export default function HomeFeed({ user }) {
             exit={{ opacity: 0, y: -12 }}
             onClick={handleRefresh}
             className="w-full flex items-center justify-center gap-2 py-3 text-sm font-inter font-medium transition-all hover:bg-primary/5 border-b border-border/40"
-            style={{ color: 'hsl(var(--primary))' }}
-          >
+            style={{ color: 'hsl(var(--primary))' }}>
             <Sparkles className="w-4 h-4" />
-            {newCount} nouvelle{newCount > 1 ? 's' : ''} publication{newCount > 1 ? 's' : ''} — Cliquer pour afficher
+            {newCount} nouveau{newCount > 1 ? 'x' : ''} post{newCount > 1 ? 's' : ''} — Cliquer pour afficher
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Feed content */}
-      {/* Active hashtag filter banner */}
+      {/* Active hashtag filter */}
       {urlTag && (
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border/40 bg-primary/5">
           <Hash className="w-4 h-4 text-primary flex-shrink-0" />
@@ -205,13 +205,13 @@ export default function HomeFeed({ user }) {
         </div>
       )}
 
+      {/* Feed */}
       {user === undefined || isLoading ? (
         <FeedSkeleton />
-      ) : posts.length === 0 ? (
+      ) : filteredPosts.length === 0 ? (
         <div className="py-24 text-center px-4">
           <div className="w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-          >
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <Rss className="w-9 h-9 text-primary/25" />
           </div>
           <p className="font-grotesk font-bold text-xl mb-2">Aucune publication</p>
@@ -221,16 +221,9 @@ export default function HomeFeed({ user }) {
         </div>
       ) : (
         <div>
-          {posts
-            .filter(p => {
-              if (!urlTag) return true;
-              const tags = p.tags?.length ? p.tags : extractHashtags((p.content || '') + ' ' + (p.title || ''));
-              return tags.includes(urlTag.toLowerCase());
-            })
-            .map((post, i) => (
-              <HomePostCard key={post.id} post={post} currentUser={user} index={i} />
-            ))
-          }
+          {filteredPosts.map(post => (
+            <PostCard key={post.id} post={post} currentUser={user} />
+          ))}
         </div>
       )}
 
@@ -243,11 +236,7 @@ export default function HomeFeed({ user }) {
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="fixed bottom-24 right-4 lg:bottom-8 lg:right-8 z-40 w-11 h-11 rounded-2xl flex items-center justify-center shadow-2xl transition-all hover:scale-110"
-            style={{
-              background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
-              boxShadow: '0 8px 32px hsl(var(--primary)/0.4)',
-            }}
-          >
+            style={{ background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)', boxShadow: '0 8px 32px hsl(var(--primary)/0.4)' }}>
             <ArrowUp className="w-5 h-5 text-white" />
           </motion.button>
         )}

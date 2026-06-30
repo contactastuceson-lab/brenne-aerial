@@ -1,0 +1,110 @@
+{
+  "name": "Post",
+  "type": "object",
+  "properties": {
+    "content": {
+      "type": "string",
+      "description": "Contenu du post (texte, hashtags, mentions)"
+    },
+    "author_id": {
+      "type": "string",
+      "description": "ID de l'auteur"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Nom complet de l'auteur (snapshot)"
+    },
+    "author_display_name": {
+      "type": "string",
+      "description": "Nom d'affichage de l'auteur (snapshot)"
+    },
+    "author_username": {
+      "type": "string",
+      "description": "Username de l'auteur (snapshot)"
+    },
+    "author_avatar": {
+      "type": "string",
+      "description": "Avatar de l'auteur (snapshot)"
+    },
+    "author_verifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Badges de v\u00e9rification de l'auteur"
+    },
+    "media_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs des m\u00e9dias attach\u00e9s (images, vid\u00e9os)"
+    },
+    "hashtags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Hashtags extraits du contenu"
+    },
+    "mentions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Usernames mentionn\u00e9s (@username)"
+    },
+    "likes_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de likes"
+    },
+    "liked_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs des utilisateurs ayant lik\u00e9"
+    },
+    "replies_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de r\u00e9ponses"
+    },
+    "reply_to_id": {
+      "type": "string",
+      "description": "ID du post parent si c'est une r\u00e9ponse"
+    },
+    "reply_to_author_username": {
+      "type": "string",
+      "description": "Username de l'auteur du post parent"
+    },
+    "views_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de vues"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Post \u00e9pingl\u00e9"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "followers"
+      ],
+      "default": "public",
+      "description": "Visibilit\u00e9 du post"
+    },
+    "migrated_from_discussion": {
+      "type": "string",
+      "description": "ID de la discussion d'origine si migr\u00e9"
+    }
+  },
+  "required": [
+    "content",
+    "author_id"
+  ]
+}

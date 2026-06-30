@@ -1,15 +1,19 @@
 /**
- * Hashtag utilities — parses, renders, and routes hashtags.
+ * Extract hashtags from text content
+ * @param {string} text
+ * @returns {string[]} array of hashtags (without #)
  */
-
-/** Extract all unique hashtags from a string */
 export function extractHashtags(text = '') {
-  const matches = text.match(/#([a-zA-ZÀ-ÿ0-9_]+)/g) || [];
+  const matches = text.match(/#([\wÀ-ÿ]+)/g) || [];
   return [...new Set(matches.map(t => t.slice(1).toLowerCase()))];
 }
 
-/** Replace #hashtag occurrences in text with a marker for rendering */
-export function parseHashtags(text = '') {
-  // Split text into parts: regular text and hashtags
-  return text.split(/(#[a-zA-ZÀ-ÿ0-9_]+)/g);
+/**
+ * Extract mentions from text content
+ * @param {string} text
+ * @returns {string[]} array of usernames (without @)
+ */
+export function extractMentions(text = '') {
+  const matches = text.match(/@([\w.-]+)/g) || [];
+  return [...new Set(matches.map(t => t.slice(1).toLowerCase()))];
 }

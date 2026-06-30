@@ -18,19 +18,40 @@ export default function UpdatesFloatingButton() {
   const [hasNew, setHasNew] = useState(false);
 
   useEffect(() => {
-    const load = async () => {
-      const all = await base44.entities.AppUpdate.list('-published_at', 20);
-      const published = all.filter((u) => u.is_published);
-      setUpdates(published);
+    const CACHE_KEY = 'updates_cache';
+    const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-      // Check if there are updates newer than last seen
-      const lastSeen = localStorage.getItem('updates_last_seen');
-      if (published.length > 0) {
-        const latest = published[0]?.created_date;
-        if (!lastSeen || new Date(latest) > new Date(lastSeen)) {
-          setHasNew(true);
+    const load = async () => {
+      // Use cache to avoid hitting rate limits on every mount
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const { data, ts } = JSON.parse(cached);
+          if (Date.now() - ts < CACHE_TTL) {
+            setUpdates(data);
+            const lastSeen = localStorage.getItem('updates_last_seen');
+            if (data.length > 0 && (!lastSeen || new Date(data[0]?.created_date) > new Date(lastSeen))) {
+              setHasNew(true);
+            }
+            return;
+          }
         }
-      }
+      } catch (_) {}
+
+      try {
+        const all = await base44.entities.AppUpdate.list('-published_at', 20);
+        const published = all.filter((u) => u.is_published);
+        setUpdates(published);
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ data: published, ts: Date.now() }));
+
+        const lastSeen = localStorage.getItem('updates_last_seen');
+        if (published.length > 0) {
+          const latest = published[0]?.created_date;
+          if (!lastSeen || new Date(latest) > new Date(lastSeen)) {
+            setHasNew(true);
+          }
+        }
+      } catch (_) {}
     };
     load();
   }, []);

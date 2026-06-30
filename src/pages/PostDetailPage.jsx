@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -13,6 +13,7 @@ export default function PostDetailPage() {
   const [replies, setReplies] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const replyRef = useRef(null);
 
   useEffect(() => {
     const load = async () => {
@@ -66,11 +67,13 @@ export default function PostDetailPage() {
         </div>
 
         {/* Original post (full size) */}
-        <PostCard post={post} currentUser={currentUser} onReply={() => {}} />
+        <PostCard post={post} currentUser={currentUser} onReply={() => replyRef.current?.scrollIntoView({ behavior: 'smooth' })} />
 
         {/* Reply composer */}
         {currentUser && (
-          <CreatePost user={currentUser} onPost={handleNewReply} replyTo={post} />
+          <div ref={replyRef}>
+            <CreatePost user={currentUser} onPost={handleNewReply} replyTo={post} />
+          </div>
         )}
 
         {/* Replies */}

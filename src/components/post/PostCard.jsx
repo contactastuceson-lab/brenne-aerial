@@ -105,9 +105,9 @@ export default function PostCard({ post, currentUser, onReply, compact = false }
           ) : (
             <span className="font-grotesk font-bold text-sm text-foreground truncate">{authorName}</span>
           )}
-          {post.author_verifications?.length > 0 && (
+          {post.author_id && (
             <span onClick={e => e.stopPropagation()}>
-              <VerificationIcons verifications={post.author_verifications} size="sm" user={{ id: post.author_id, verifications: post.author_verifications }} />
+              <VerificationIcons verifications={post.author_verifications || []} size="sm" user={{ id: post.author_id }} />
             </span>
           )}
           {authorUsername && (

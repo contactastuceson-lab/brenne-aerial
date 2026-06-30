@@ -1,95 +1,97 @@
-import { useEffect, useState } from 'react';
+/**
+ * Affiliation Store — source de vérité unique pour tout le système d'affiliation.
+ *
+ * Architecture :
+ *  - Un Map de cache côté module (singleton par session navigateur)
+ *  - Clés : "org:<organizationId>" ou "uid:<userId>"
+ *  - Chaque entrée est chargée UNE seule fois, puis figée (loaded=true)
+ *  - En cas d'erreur (429, réseau) : on conserve les données existantes, on ne vide pas
+ *  - Les composants s'abonnent via useOrganizationAffiliations(descriptor)
+ *  - refreshAffiliations(descriptor) force un rechargement (après mutation)
+ *  - prefillUserCache(users) + resolveAffiliatedProfiles(rows, users) évitent les User.get() N+1
+ */
+
+import { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Normalisation ────────────────────────────────────────────────────────────
 
-const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
+const normalizeEmail = (v) => String(v || '').trim().toLowerCase();
 
-// ─── Affiliation cache (by userId) ───────────────────────────────────────────
-// Key formats:
-//   "uid:<id>"   — filter by userId == id
-//   "uemail:<email>" — filter by userId == email
-//   "org:<id>"   — filter by organizationId == id
+// ─── Cache d'affiliations ─────────────────────────────────────────────────────
+// Clé : "org:<id>" | "uid:<id>" | "uemail:<email>"
 
-const affiliationCache = new Map();
+const affiliationStore = new Map(); // cacheKey → AffiliationEntry
 
-function getCacheKey(descriptor) {
+function buildCacheKey(descriptor) {
   if (!descriptor) return null;
-  if (descriptor.userId) return `uid:${descriptor.userId}`;
-  if (descriptor.userEmail) return `uemail:${normalizeEmail(descriptor.userEmail)}`;
   if (descriptor.organizationId) return `org:${descriptor.organizationId}`;
+  if (descriptor.userId)         return `uid:${descriptor.userId}`;
+  if (descriptor.userEmail)      return `uemail:${normalizeEmail(descriptor.userEmail)}`;
   return null;
 }
 
-function createEntry() {
+function buildFilter(descriptor) {
+  if (descriptor.organizationId) return { organizationId: descriptor.organizationId };
+  if (descriptor.userId)         return { userId: descriptor.userId };
+  if (descriptor.userEmail)      return { userId: normalizeEmail(descriptor.userEmail) };
+  return null;
+}
+
+function makeEntry() {
   return {
     affiliations: [],
     loading: false,
-    loaded: false, // once loaded, never fetch again unless explicitly refreshed
+    loaded: false,   // true dès le premier fetch terminé (succès OU erreur)
     error: null,
     promise: null,
     subscribers: new Set(),
   };
 }
 
-function getOrCreateEntry(cacheKey) {
-  if (!affiliationCache.has(cacheKey)) {
-    affiliationCache.set(cacheKey, createEntry());
+function getEntry(cacheKey) {
+  if (!affiliationStore.has(cacheKey)) {
+    affiliationStore.set(cacheKey, makeEntry());
   }
-  return affiliationCache.get(cacheKey);
+  return affiliationStore.get(cacheKey);
 }
 
-function notifyEntry(entry) {
+function notify(entry) {
+  const snapshot = { affiliations: entry.affiliations, loading: entry.loading, error: entry.error };
   entry.subscribers.forEach((sub) => {
-    try {
-      sub({ affiliations: entry.affiliations, loading: entry.loading, error: entry.error });
-    } catch (e) {
-      console.error('Affiliation subscriber error', e);
-    }
+    try { sub(snapshot); } catch {}
   });
 }
 
-async function fetchAffiliations(descriptor) {
-  if (!descriptor) return [];
-  let filter = {};
-  if (descriptor.userId) filter = { userId: descriptor.userId };
-  else if (descriptor.userEmail) filter = { userId: normalizeEmail(descriptor.userEmail) };
-  else if (descriptor.organizationId) filter = { organizationId: descriptor.organizationId };
-  else return [];
+async function fetchEntry(cacheKey, descriptor, forceReload = false) {
+  const entry = getEntry(cacheKey);
 
-  const rows = await base44.entities.OrganizationAffiliation.filter(filter, '-createdAt', 100);
-  return Array.isArray(rows) ? rows : [];
-}
-
-async function loadEntry(cacheKey, descriptor, forceReload = false) {
-  const entry = getOrCreateEntry(cacheKey);
-
-  // If already loading, return same promise
+  // Déjà en cours → même promesse
   if (entry.loading && entry.promise) return entry.promise;
 
-  // If already loaded and not forcing, return cached data
+  // Déjà chargé et pas de forçage → données en cache
   if (entry.loaded && !forceReload) return entry.affiliations;
+
+  const filter = buildFilter(descriptor);
+  if (!filter) return entry.affiliations;
 
   entry.loading = true;
   entry.error = null;
-  notifyEntry(entry);
+  notify(entry);
 
   const promise = (async () => {
     try {
-      const rows = await fetchAffiliations(descriptor);
-      // Only update if we got results OR it's the first successful load
-      entry.affiliations = rows;
-      entry.loaded = true;
+      const rows = await base44.entities.OrganizationAffiliation.filter(filter, '-createdAt', 100);
+      entry.affiliations = Array.isArray(rows) ? rows : [];
       entry.error = null;
-    } catch (error) {
-      entry.error = error;
-      // Keep existing affiliations — do NOT clear them on error
-      // Mark loaded=true on 429 so we don't retry in an infinite loop
-      if (!entry.loaded) entry.loaded = true;
+    } catch (err) {
+      entry.error = err;
+      // NE PAS vider entry.affiliations — on conserve les données existantes en cas de 429/erreur réseau
     } finally {
       entry.loading = false;
+      entry.loaded = true;
       entry.promise = null;
-      notifyEntry(entry);
+      notify(entry);
     }
     return entry.affiliations;
   })();
@@ -98,18 +100,25 @@ async function loadEntry(cacheKey, descriptor, forceReload = false) {
   return promise;
 }
 
-// ─── Public API ───────────────────────────────────────────────────────────────
+// ─── Hook principal ───────────────────────────────────────────────────────────
 
 /**
- * descriptor: { userId } | { userEmail } | { organizationId }
+ * descriptor: { organizationId } | { userId } | { userEmail }
+ *
+ * - "organizationId" : liste les affiliations DONT l'organisation est l'owner (pour le tab de gestion)
+ * - "userId" / "userEmail" : liste les affiliations DE cet utilisateur (pour les badges / profil)
  */
 export function useOrganizationAffiliations(descriptor) {
-  const cacheKey = getCacheKey(descriptor);
+  const cacheKey = useMemo(() => buildCacheKey(descriptor), [
+    descriptor?.organizationId,
+    descriptor?.userId,
+    descriptor?.userEmail,
+  ]);
 
   const [state, setState] = useState(() => {
     if (!cacheKey) return { affiliations: [], loading: false, error: null };
-    const entry = getOrCreateEntry(cacheKey);
-    return { affiliations: entry.affiliations, loading: entry.loading, error: entry.error };
+    const e = getEntry(cacheKey);
+    return { affiliations: e.affiliations, loading: e.loading, error: e.error };
   });
 
   useEffect(() => {
@@ -118,89 +127,87 @@ export function useOrganizationAffiliations(descriptor) {
       return;
     }
 
-    const entry = getOrCreateEntry(cacheKey);
-    const sub = (payload) => setState(payload);
+    const entry = getEntry(cacheKey);
+    const sub = (s) => setState(s);
     entry.subscribers.add(sub);
 
-    // Sync state immediately from cache
+    // Synchronisation immédiate depuis le cache
     setState({ affiliations: entry.affiliations, loading: entry.loading, error: entry.error });
 
-    // Only fetch if not yet loaded and not currently loading
+    // Chargement initial uniquement si pas encore fait
     if (!entry.loaded && !entry.loading) {
-      loadEntry(cacheKey, descriptor).catch(() => {});
+      fetchEntry(cacheKey, descriptor).catch(() => {});
     }
 
-    return () => {
-      entry.subscribers.delete(sub);
-    };
+    return () => { entry.subscribers.delete(sub); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheKey]);
 
   return state;
 }
 
+// ─── Refresh (après mutation) ─────────────────────────────────────────────────
+
 /**
- * Force-refresh affiliations for a descriptor.
- * descriptor: { userId } | { userEmail } | { organizationId }
- *   OR a plain string (email or id for backward compat)
+ * Forcer le rechargement d'une entrée après une création / mise à jour / suppression.
+ * descriptor: { organizationId } | { userId } | { userEmail }
+ *   OU une chaîne (email ou id, rétrocompat)
  */
 export async function refreshAffiliations(descriptorOrString) {
   let descriptor = descriptorOrString;
 
-  // Backward compat: if a plain string was passed
   if (typeof descriptorOrString === 'string') {
     const s = descriptorOrString;
     descriptor = s.includes('@') ? { userEmail: s } : { userId: s };
   }
-  // Backward compat: { organizationId } passed directly — already fine
 
-  const cacheKey = getCacheKey(descriptor);
+  const cacheKey = buildCacheKey(descriptor);
   if (!cacheKey) return;
-  return loadEntry(cacheKey, descriptor, true);
+  return fetchEntry(cacheKey, descriptor, true);
 }
 
+// Alias rétrocompat
 export const refreshAffiliationsForIdentifier = refreshAffiliations;
 
-// ─── User cache (for organization profile lookups) ────────────────────────────
+// ─── Cache utilisateur ────────────────────────────────────────────────────────
 
-const userCache = new Map();
+const userStore = new Map(); // userId → UserEntry
+
+function makeUserEntry(id) {
+  return { id, user: null, loading: false, loaded: false, error: null, promise: null, subscribers: new Set() };
+}
 
 function getUserEntry(id) {
-  if (!userCache.has(id)) {
-    userCache.set(id, { user: null, loading: false, loaded: false, error: null, promise: null, subscribers: new Set() });
-  }
-  return userCache.get(id);
+  if (!userStore.has(id)) userStore.set(id, makeUserEntry(id));
+  return userStore.get(id);
 }
 
-function notifyUserEntry(entry) {
-  entry.subscribers.forEach((sub) => {
-    try { sub({ user: entry.user, loading: entry.loading, error: entry.error }); } catch {}
-  });
+function notifyUser(entry) {
+  const snapshot = { user: entry.user, loading: entry.loading, error: entry.error };
+  entry.subscribers.forEach((sub) => { try { sub(snapshot); } catch {} });
 }
 
-async function loadUserEntry(id) {
+async function fetchUser(id) {
   const entry = getUserEntry(id);
   if (entry.loading && entry.promise) return entry.promise;
   if (entry.loaded) return entry.user;
 
   entry.loading = true;
   entry.error = null;
-  notifyUserEntry(entry);
+  notifyUser(entry);
 
   const promise = (async () => {
     try {
-      const response = await base44.entities.User.get(id);
-      entry.user = response;
-      entry.loaded = true;
+      entry.user = await base44.entities.User.get(id);
       entry.error = null;
-    } catch (error) {
-      entry.error = error;
-      if (!entry.loaded) entry.loaded = true;
-      // Keep existing user on error
+    } catch (err) {
+      entry.error = err;
+      // Conserver entry.user existant
     } finally {
       entry.loading = false;
+      entry.loaded = true;
       entry.promise = null;
-      notifyUserEntry(entry);
+      notifyUser(entry);
     }
     return entry.user;
   })();
@@ -212,24 +219,17 @@ async function loadUserEntry(id) {
 export function useCachedUser(id) {
   const [state, setState] = useState(() => {
     if (!id) return { user: null, loading: false, error: null };
-    const entry = getUserEntry(id);
-    return { user: entry.user, loading: entry.loading, error: entry.error };
+    const e = getUserEntry(id);
+    return { user: e.user, loading: e.loading, error: e.error };
   });
 
   useEffect(() => {
-    if (!id) {
-      setState({ user: null, loading: false, error: null });
-      return;
-    }
+    if (!id) { setState({ user: null, loading: false, error: null }); return; }
     const entry = getUserEntry(id);
-    const sub = (payload) => setState(payload);
+    const sub = (s) => setState(s);
     entry.subscribers.add(sub);
     setState({ user: entry.user, loading: entry.loading, error: entry.error });
-
-    if (!entry.loaded && !entry.loading) {
-      loadUserEntry(id).catch(() => {});
-    }
-
+    if (!entry.loaded && !entry.loading) fetchUser(id).catch(() => {});
     return () => { entry.subscribers.delete(sub); };
   }, [id]);
 
@@ -237,8 +237,8 @@ export function useCachedUser(id) {
 }
 
 /**
- * Prefill the user cache from an already-fetched list (e.g. getPublicUsers result).
- * Call this once at the top level to avoid individual User.get() calls per affiliation row.
+ * Pré-remplir le cache utilisateur à partir d'une liste déjà chargée (ex: getPublicUsers).
+ * Évite les User.get() individuels par ligne d'affiliation.
  */
 export function prefillUserCache(users = []) {
   users.forEach((u) => {
@@ -247,23 +247,23 @@ export function prefillUserCache(users = []) {
     if (!entry.loaded) {
       entry.user = u;
       entry.loaded = true;
-      notifyUserEntry(entry);
+      notifyUser(entry);
     }
   });
 }
 
 /**
- * Resolve affiliated profiles from a list of affiliation rows using already-cached users.
- * Falls back to prefilled cache; does NOT make new User.get() calls.
+ * Résoudre les profils des affiliés depuis la liste déjà chargée + cache userStore.
+ * Ne fait AUCUNE requête réseau.
  */
 export function resolveAffiliatedProfiles(affiliationRows = [], allUsers = []) {
   return affiliationRows
     .map((row) => {
-      // First try allUsers list (already fetched)
+      // 1. Dans la liste fournie (id ou email)
       let profile = allUsers.find((u) => u.id === row.userId || u.email === row.userId);
-      // Then try user cache
+      // 2. Dans le cache userStore
       if (!profile) {
-        const cached = userCache.get(row.userId);
+        const cached = userStore.get(row.userId);
         if (cached?.user) profile = cached.user;
       }
       return profile ? { affiliation: row, profile } : null;

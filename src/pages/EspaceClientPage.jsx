@@ -17,6 +17,7 @@ import CertificationTracking from '@/components/dashboard/CertificationTracking'
 import ReportTracking from '@/components/dashboard/ReportTracking';
 import QuoteTracking from '@/components/dashboard/QuoteTracking';
 import OrganizationAffiliationsTab from '@/components/client/OrganizationAffiliationsTab';
+import MyAffiliationsTab from '@/components/client/MyAffiliationsTab';
 import { canManageAffiliations as canManageUserAffiliations } from '@/lib/affiliationUtils';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -42,18 +43,19 @@ const SERVICE_LABELS = {
 };
 
 const NAV = [
-  { id: 'overview', label: 'Vue d\'ensemble', icon: Zap },
-  { id: 'files',    label: 'Mes fichiers',     icon: FolderOpen },
-  { id: 'quotes',   label: 'Mes devis',         icon: FileText },
-  { id: 'certs',    label: 'Certifications',    icon: Shield },
-  { id: 'billing',  label: 'Facturation',        icon: CreditCard },
-  { id: 'badges',   label: 'Badges',            icon: Award },
-  { id: 'reports',  label: 'Mes signalements',  icon: Flag },
+  { id: 'overview',      label: 'Vue d\'ensemble',  icon: Zap },
+  { id: 'files',         label: 'Mes fichiers',      icon: FolderOpen },
+  { id: 'quotes',        label: 'Mes devis',          icon: FileText },
+  { id: 'certs',         label: 'Certifications',     icon: Shield },
+  { id: 'billing',       label: 'Facturation',         icon: CreditCard },
+  { id: 'badges',        label: 'Badges',             icon: Award },
+  { id: 'reports',       label: 'Mes signalements',   icon: Flag },
+  { id: 'my-affils',     label: 'Mes affiliations',   icon: Users },
 ];
 
 const ORGANIZATION_NAV = [
   ...NAV,
-  { id: 'affiliations', label: 'Affiliations', icon: Users },
+  { id: 'affiliations', label: 'Gérer affiliations', icon: Users },
 ];
 
 const REPORT_STATUS = {
@@ -624,6 +626,12 @@ export default function EspaceClientPage() {
                 </div>
               )}
 
+              {/* MES AFFILIATIONS (côté affilié — tous les utilisateurs) */}
+              {activeTab === 'my-affils' && (
+                <MyAffiliationsTab user={user} />
+              )}
+
+              {/* GÉRER AFFILIATIONS (côté organisation — comptes official/supreme) */}
               {activeTab === 'affiliations' && (
                 <OrganizationAffiliationsTab user={user} />
               )}

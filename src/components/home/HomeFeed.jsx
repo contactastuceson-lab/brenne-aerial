@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import HomePostCard from './HomePostCard';
 import HomeCreatePost from './HomeCreatePost';
-import { Loader2, RefreshCw, Rss, Sparkles, Flame, Clock, ArrowUp, Users, TrendingUp, Zap, ArrowRight, MessageSquare, Image, Wrench, HelpCircle, Grid3x3 } from 'lucide-react';
+import { Loader2, RefreshCw, Rss, Sparkles, Flame, Clock, ArrowUp, Users, TrendingUp, Zap, ArrowRight, MessageSquare, Image, Wrench, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const FILTERS = [
@@ -85,30 +85,15 @@ function GuestHero() {
 
 function FeedSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-0">
       {[1, 2, 3].map(i => (
-        <div key={i} className="rounded-3xl border border-white/6 overflow-hidden animate-pulse"
-          style={{ background: 'rgba(255,255,255,0.03)', boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
-        >
-          <div className="p-5">
-            <div className="flex gap-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-white/8 flex-shrink-0" />
-              <div className="flex-1 space-y-2 py-1">
-                <div className="h-3.5 bg-white/8 rounded-lg w-32" />
-                <div className="h-2.5 bg-white/5 rounded-lg w-20" />
-              </div>
-            </div>
-            <div className="space-y-2.5">
-              <div className="h-5 bg-white/8 rounded-lg w-4/5" />
-              <div className="h-3.5 bg-white/5 rounded-lg w-full" />
-              <div className="h-3.5 bg-white/5 rounded-lg w-5/6" />
-              <div className="h-3.5 bg-white/4 rounded-lg w-3/4" />
-            </div>
-          </div>
-          <div className="px-5 pb-4 flex gap-3 pt-3 border-t border-white/5">
-            <div className="h-9 w-20 bg-white/5 rounded-2xl" />
-            <div className="h-9 w-16 bg-white/5 rounded-2xl" />
-            <div className="h-9 w-16 bg-white/5 rounded-2xl" />
+        <div key={i} className="flex gap-3 px-4 py-4 border-b border-border/40 animate-pulse">
+          <div className="w-10 h-10 rounded-full bg-white/8 flex-shrink-0" />
+          <div className="flex-1 space-y-2 pt-1">
+            <div className="h-3.5 bg-white/8 rounded-lg w-32" />
+            <div className="h-2.5 bg-white/5 rounded-lg w-20" />
+            <div className="h-4 bg-white/6 rounded-lg w-4/5 mt-2" />
+            <div className="h-3 bg-white/4 rounded-lg w-full" />
           </div>
         </div>
       ))}
@@ -149,12 +134,12 @@ export default function HomeFeed({ user }) {
   const handleFilter = (f) => { setFilter(f); setNewCount(0); };
 
   return (
-    <main className="w-full max-w-[600px] min-w-0 py-0">
+    <main className="w-full max-w-[600px] min-w-0 border-x border-zinc-800/60">
 
       {/* Guest hero */}
-      {user === null && <div className="px-4"><GuestHero /></div>}
+      {user === null && <div className="px-4 pt-4"><GuestHero /></div>}
 
-      {/* Create post — flat, délimité uniquement par une ligne basse */}
+      {/* Create post */}
       {user && (
         <div className="border-b border-zinc-800/60">
           <HomeCreatePost user={user} onPost={() => { setNewCount(0); refetch(); }} />
@@ -162,7 +147,7 @@ export default function HomeFeed({ user }) {
       )}
 
       {/* Filter bar */}
-      <div className="flex items-center border-b border-border/40">
+      <div className="flex items-center border-b border-border/40 sticky top-0 bg-background/95 backdrop-blur z-10">
         <div className="flex items-center overflow-x-auto scrollbar-hide flex-1">
           {FILTERS.map((f) => (
             <button key={f.id} onClick={() => handleFilter(f.id)}
@@ -185,16 +170,12 @@ export default function HomeFeed({ user }) {
       <AnimatePresence>
         {newCount > 0 && (
           <motion.button
-            initial={{ opacity: 0, y: -12, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -12, scale: 0.96 }}
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
             onClick={handleRefresh}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl mb-4 text-sm font-inter font-medium transition-all hover:scale-[1.01]"
-            style={{
-              background: 'linear-gradient(135deg, hsl(var(--primary)/0.15) 0%, hsl(var(--accent)/0.08) 100%)',
-              border: '1px solid hsl(var(--primary)/0.3)',
-              color: 'hsl(var(--primary))',
-            }}
+            className="w-full flex items-center justify-center gap-2 py-3 text-sm font-inter font-medium transition-all hover:bg-primary/5 border-b border-border/40"
+            style={{ color: 'hsl(var(--primary))' }}
           >
             <Sparkles className="w-4 h-4" />
             {newCount} nouvelle{newCount > 1 ? 's' : ''} publication{newCount > 1 ? 's' : ''} — Cliquer pour afficher
@@ -203,12 +184,10 @@ export default function HomeFeed({ user }) {
       </AnimatePresence>
 
       {/* Feed content */}
-      {user === undefined ? (
-        <FeedSkeleton />
-      ) : isLoading ? (
+      {user === undefined || isLoading ? (
         <FeedSkeleton />
       ) : posts.length === 0 ? (
-        <div className="py-24 text-center">
+        <div className="py-24 text-center px-4">
           <div className="w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
           >

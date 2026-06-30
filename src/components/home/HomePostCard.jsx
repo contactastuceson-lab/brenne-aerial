@@ -13,13 +13,16 @@ function AvatarColumn({ authorId, authorAvatar, authorDisplayName, profileLink }
   const liveUser = usePublicUser(authorId);
   const resolvedAvatar = liveUser?.avatar_url || authorAvatar;
   const initial = ((liveUser?.display_name || liveUser?.full_name || authorDisplayName || 'U')[0] || 'U').toUpperCase();
+
   const avatar = (
-    <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 flex-shrink-0"
+    <div
+      className="w-10 h-10 rounded-full overflow-hidden border border-white/10 flex-shrink-0"
       style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}
     >
       {resolvedAvatar
         ? <img src={resolvedAvatar} alt="" className="w-full h-full object-cover" />
-        : <div className="w-full h-full flex items-center justify-center"
+        : <div
+            className="w-full h-full flex items-center justify-center"
             style={{ background: 'linear-gradient(135deg, hsl(var(--primary)/0.3) 0%, hsl(var(--accent)/0.2) 100%)' }}
           >
             <span className="font-grotesk font-bold text-primary text-sm">{initial}</span>
@@ -27,6 +30,7 @@ function AvatarColumn({ authorId, authorAvatar, authorDisplayName, profileLink }
       }
     </div>
   );
+
   return profileLink ? <Link to={profileLink}>{avatar}</Link> : avatar;
 }
 
@@ -56,7 +60,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
   return (
     <article className="flex gap-3 px-4 py-4 border-b border-border/40 hover:bg-white/[0.02] transition-colors duration-150 relative group">
 
-      {/* Colonne gauche — Avatar uniquement */}
+      {/* Colonne gauche — Avatar fixe, ne rétrécit jamais */}
       <div className="flex-shrink-0 pt-0.5">
         <AvatarColumn
           authorId={post.author_id}
@@ -66,8 +70,9 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
         />
       </div>
 
-      {/* Colonne droite — tout le reste */}
-      <div className="flex-1 min-w-0">
+      {/* Colonne droite — tout le contenu, prend l'espace restant */}
+      <div className="flex-1 min-w-0 overflow-hidden">
+
         {/* Header : nom + badges + pseudo + temps */}
         <PostAuthorHeader
           authorId={post.author_id}
@@ -83,7 +88,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
           hideAvatar
         />
 
-        {/* Dropdown */}
+        {/* Dropdown menu */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div
@@ -110,7 +115,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
           )}
         </AnimatePresence>
 
-        {/* Title */}
+        {/* Titre */}
         {post.title && (
           <Link to={`/forum/${post.id}`}>
             <h3 className="font-grotesk font-bold text-[15px] mb-1 mt-1 hover:text-primary transition-colors leading-snug">
@@ -119,7 +124,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
           </Link>
         )}
 
-        {/* Content */}
+        {/* Contenu texte */}
         {displayContent && (
           <div className="text-sm text-foreground/80 leading-relaxed mt-1">
             <ReactMarkdown
@@ -135,6 +140,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
           </div>
         )}
 
+        {/* Voir plus / Réduire */}
         {isLong && (
           <button onClick={() => setCollapsed(v => !v)} className="flex items-center gap-1 mt-1 text-xs text-primary/70 hover:text-primary transition-colors">
             {collapsed ? <><ChevronDown className="w-3.5 h-3.5" /> Voir la suite</> : <><ChevronUp className="w-3.5 h-3.5" /> Réduire</>}
@@ -151,7 +157,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-between mt-3 max-w-md -ml-2">
+        <div className="flex items-center justify-between mt-3 max-w-xs -ml-2">
           <Link to={`/forum/${post.id}`}>
             <button className="flex items-center gap-1.5 p-2 rounded-full text-muted-foreground/60 hover:text-blue-400 hover:bg-blue-400/10 transition-all text-sm">
               <MessageCircle className="w-4 h-4" />

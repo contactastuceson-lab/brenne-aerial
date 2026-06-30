@@ -145,13 +145,12 @@ function renderWithTags(text, navigate) {
   });
 }
 
-export default function DiscordMarkdown({ content, className = '' }) {
+export default function DiscordMarkdown({ content, className = '', allowMarkdown = false }) {
   const navigate = useNavigate();
 
-  // If content has hashtags/mentions, render inline with clickable tags
-  if (content && (content.includes('#') || content.includes('@'))) {
-    // Still linkify URLs first
-    const lines = content.split('\n');
+  // Social posts: always render inline (never interpret # as heading)
+  if (!allowMarkdown) {
+    const lines = (content || '').split('\n');
     return (
       <div className={`discord-md text-[15px] leading-relaxed text-foreground/90 ${className}`}>
         {lines.map((line, i) => (
@@ -163,6 +162,7 @@ export default function DiscordMarkdown({ content, className = '' }) {
     );
   }
 
+  // Forum/discussion mode: full markdown rendering
   const processed = linkifyContent(content);
   return (
     <div className={`discord-md ${className}`}>

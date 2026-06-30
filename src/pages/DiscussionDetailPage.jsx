@@ -57,7 +57,7 @@ function ReplyCard({ reply, discussion, id }) {
           </span>
         )}
       </div>
-      <div className="mb-3"><DiscordMarkdown content={reply.content} /></div>
+      <div className="mb-3"><DiscordMarkdown content={reply.content} allowMarkdown={true} /></div>
       <div className="flex gap-2">
         <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
           <Heart size={14} className="mr-1" />{reply.likes_count || 0}
@@ -205,7 +205,7 @@ export default function DiscussionDetailPage() {
 
         {/* Discussion Content */}
         <div className="p-6 rounded-lg border border-slate-700/50 bg-slate-800/30">
-          <DiscordMarkdown content={discussion.content} />
+          <DiscordMarkdown content={discussion.content} allowMarkdown={true} />
         </div>
 
         {/* Replies Section */}

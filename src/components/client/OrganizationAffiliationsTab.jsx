@@ -9,14 +9,13 @@ import { canManageAffiliations } from '@/lib/affiliationUtils';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { notifyAffiliationInvitation, notifyAffiliationStatus } from '@/lib/affiliationNotifications';
+import { useOrganizationAffiliations, refreshAffiliations } from '@/hooks/useOrganizationAffiliations';
 
 const ROLE_OPTIONS = ['member', 'admin', 'moderator'];
 const STATUS_OPTIONS = ['all', 'pending', 'accepted', 'rejected', 'removed'];
 const VISIBILITY_OPTIONS = ['all', 'public', 'private'];
 
 export default function OrganizationAffiliationsTab({ user }) {
-  const [affiliations, setAffiliations] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -30,23 +29,10 @@ export default function OrganizationAffiliationsTab({ user }) {
   const [inviteQuery, setInviteQuery] = useState('');
   const [inviteCandidate, setInviteCandidate] = useState(null);
 
-  const canManage = canManageAffiliations(user);
+  const { affiliations, loading: affiliationLoading } = useOrganizationAffiliations({ organizationId: user?.id });
+  const loading = affiliationLoading;
 
-  useEffect(() => {
-    const load = async () => {
-      if (!user?.id) return;
-      setLoading(true);
-      try {
-        const rows = await base44.entities.OrganizationAffiliation.filter({ organizationId: user.id }, '-createdAt', 100);
-        setAffiliations(rows || []);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [user?.id]);
+  const canManage = canManageAffiliations(user);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -97,13 +83,11 @@ export default function OrganizationAffiliationsTab({ user }) {
         organizationName: user.display_name || user.full_name || user.email,
         organizationAvatarUrl: user.avatar_url || '',
       };
-      const created = autoAccept
-        ? await base44.functions.invoke('processOrganizationAffiliation', { action: 'create', affiliation: payload })
-        : await base44.entities.OrganizationAffiliation.create(payload);
+      const created = await base44.functions.invoke('processOrganizationAffiliation', { action: 'create', affiliation: payload });
       const affiliation = created?.data?.affiliation || created?.affiliation || created;
       const targetEmail = target?.email || inviteEmail;
       await notifyAffiliationInvitation({ targetEmail, organizationName: payload.organizationName, invitationId: affiliation.id });
-      setAffiliations((prev) => [affiliation, ...prev]);
+      await refreshAffiliations({ organizationId: user.id });
       setInviteEmail('');
       setInviteCandidate(null);
       setInviteQuery('');
@@ -118,16 +102,12 @@ export default function OrganizationAffiliationsTab({ user }) {
 
   const updateAffiliation = async (id, patch) => {
     try {
-      let updated;
-      if (patch.status === 'accepted') {
-        const response = await base44.functions.invoke('processOrganizationAffiliation', {
-          affiliationId: id,
-          patch,
-        });
-        updated = response?.data?.affiliation || response?.affiliation || response;
-      } else {
-        updated = await base44.entities.OrganizationAffiliation.update(id, patch);
-      }
+      const response = await base44.functions.invoke('processOrganizationAffiliation', {
+        action: 'update',
+        affiliationId: id,
+        patch,
+      });
+      const updated = response?.data?.affiliation || response?.affiliation || response;
 
       if (patch.status === 'accepted') {
         await notifyAffiliationStatus({ targetEmail: updated.userId, organizationName: updated.organizationName, status: 'accepted' });
@@ -136,7 +116,7 @@ export default function OrganizationAffiliationsTab({ user }) {
       } else if (patch.role) {
         await notifyAffiliationStatus({ targetEmail: updated.userId, organizationName: updated.organizationName, status: 'role_changed' });
       }
-      setAffiliations((prev) => prev.map((row) => row.id === id ? updated : row));
+      await refreshAffiliations({ organizationId: user.id });
       toast.success('Affiliation mise à jour');
     } catch {
       toast.error('Impossible de mettre à jour l’affiliation');
@@ -153,7 +133,7 @@ export default function OrganizationAffiliationsTab({ user }) {
       if (removed) {
         await notifyAffiliationStatus({ targetEmail: removed.userId, organizationName: removed.organizationName, status: 'removed' });
       }
-      setAffiliations((prev) => prev.filter((row) => row.id !== id));
+      await refreshAffiliations({ organizationId: user.id });
       toast.success('Affiliation supprimée');
     } catch {
       toast.error('Impossible de supprimer l’affiliation');

@@ -1,13 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { VERIFICATION_CONFIG } from './VerificationChip';
 import BadgePopup from './BadgePopup';
 import VerificationChip from './VerificationChip';
-import { base44 } from '@/api/base44Client';
 import { getVisibleAffiliation, getOrganizationBadge, getHighestVerificationBadge } from '@/lib/affiliationUtils';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { ExternalLink } from 'lucide-react';
+import { useOrganizationAffiliations, useCachedUser } from '@/hooks/useOrganizationAffiliations';
 
 const bgColorMap = {
   'text-sky-400':     '#0ea5e9',
@@ -24,33 +22,7 @@ const TWITTER_SEAL = "M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91
  * @param {{ verifications?: Array<string>, size?: string, user?: any|null }} props
  */
 export default function VerificationIcons({ verifications = [], size = 'sm', user = null }) {
-  const [affiliations, setAffiliations] = useState(/** @type {Array<any>} */([]));
-  const [loadingAffiliation, setLoadingAffiliation] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    const load = async () => {
-      const safeUser = /** @type {any} */ (user);
-      if (!safeUser) return;
-      setLoadingAffiliation(true);
-      try {
-        const [byId, byEmail] = await Promise.all([
-          safeUser.id ? base44.entities.OrganizationAffiliation.filter({ userId: safeUser.id }, '-createdAt', 50) : [],
-          safeUser.email ? base44.entities.OrganizationAffiliation.filter({ userId: safeUser.email }, '-createdAt', 50) : [],
-        ]);
-        const rows = [...(byId || []), ...(byEmail || [])];
-        const uniqueAffiliations = Array.from(new Map(rows.map((row) => [row.id, row])).values());
-        if (active) setAffiliations(uniqueAffiliations);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        if (active) setLoadingAffiliation(false);
-      }
-    };
-    load();
-    return () => { active = false; };
-  }, [user?.id, user?.email]);
-
+  const { affiliations, loading: loadingAffiliation } = useOrganizationAffiliations(user);
   const visibleAffiliations = useMemo(
     () => affiliations.filter((affiliation) => affiliation?.status === 'accepted' && affiliation?.visibility === 'public'),
     [affiliations]
@@ -59,35 +31,9 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
   const affiliationCount = visibleAffiliations.length;
   const displayedVerification = useMemo(() => getHighestVerificationBadge(verifications), [verifications]);
   const displayedVerifications = displayedVerification ? [displayedVerification] : [];
-  const [organizationUser, setOrganizationUser] = useState(/** @type {any|null} */(null));
-  const [organizationBadge, setOrganizationBadge] = useState(/** @type {'supreme'|'official'|null} */(null));
 
-  useEffect(() => {
-    let active = true;
-    const loadOrganization = async () => {
-      if (!visibleAffiliation?.organizationId) {
-        setOrganizationUser(null);
-        setOrganizationBadge(null);
-        return;
-      }
-
-      try {
-        const org = await base44.entities.User.get(visibleAffiliation.organizationId);
-        if (!active) return;
-        setOrganizationUser(org);
-        setOrganizationBadge(getOrganizationBadge(org));
-      } catch (error) {
-        console.error('Failed to load organization details', error);
-        if (active) {
-          setOrganizationUser(null);
-          setOrganizationBadge(null);
-        }
-      }
-    };
-
-    loadOrganization();
-    return () => { active = false; };
-  }, [visibleAffiliation]);
+  const { user: organizationUser, loading: loadingOrganization } = useCachedUser(visibleAffiliation?.organizationId);
+  const organizationBadge = getOrganizationBadge(organizationUser);
 
   if (!verifications?.length && !visibleAffiliation && !loadingAffiliation) return null;
 

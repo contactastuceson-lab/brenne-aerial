@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MessageCircle, Eye, Pin, Lock, Star, Megaphone } from 'lucide-react';
+import { MessageCircle, Eye, Pin, Lock, Star } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import AffiliationBadges from '@/components/shared/AffiliationBadges';
 
 // Strip markdown to plain text for preview
 function stripMarkdown(text = '') {
@@ -62,11 +63,12 @@ export default function DiscussionCard({ discussion }) {
               </div>
             )}
             <span className="truncate max-w-[100px]">{discussion.author_display_name || discussion.author_name}</span>
-            <VerificationIcons 
-              verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
+            <VerificationIcons
+              verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications}
               size="sm"
               user={{ id: discussion.author_id }}
             />
+            {discussion.author_id && <AffiliationBadges userId={discussion.author_id} size="sm" max={1} />}
             <span className="hidden sm:inline text-slate-600 truncate">{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">

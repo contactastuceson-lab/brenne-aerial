@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import AffiliationBadges from '@/components/shared/AffiliationBadges';
 
 const TRENDING = [
   { tag: 'communauté',   count: 284, rise: '+18%', hot: true  },
@@ -98,6 +99,7 @@ function SuggestedUserRow({ u }) {
             : <span className="font-grotesk font-semibold text-sm text-foreground truncate">{name}</span>
           }
           {u.verifications?.length > 0 && <VerificationIcons verifications={u.verifications} size="sm" user={u} />}
+          {u.id && <AffiliationBadges userId={u.id} size="sm" max={1} />}
         </div>
         {u.username && <p className="font-mono text-[10px] text-muted-foreground/35">@{u.username}</p>}
       </div>

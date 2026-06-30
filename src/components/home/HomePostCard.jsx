@@ -2,21 +2,19 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart, MessageCircle, Repeat2, Bookmark, MoreHorizontal,
-  Share2, Eye, Globe, Flag, UserPlus, Link as LinkIcon,
-  ChevronDown, ChevronUp, Crown, MessageSquare, Image, Wrench, HelpCircle, Grid3x3
+  Share2, Eye, Flag, UserPlus, Link as LinkIcon,
+  ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
-import VerificationIcons from '@/components/ui/VerificationIcon';
+import PostAuthorHeader from '@/components/shared/PostAuthorHeader';
 
-const CATEGORY_CONFIG = {
-  general:   { gradient: 'from-blue-500/20 to-blue-400/5',    dot: 'bg-blue-400',    label: 'Général' },
-  technique: { gradient: 'from-purple-500/20 to-purple-400/5',dot: 'bg-purple-400',  label: 'Technique' },
-  aide:      { gradient: 'from-amber-500/20 to-amber-400/5',  dot: 'bg-amber-400',   label: 'Aide' },
-  partages:  { gradient: 'from-emerald-500/20 to-emerald-400/5',dot:'bg-emerald-400',label: 'Partages' },
-  autres:    { gradient: 'from-zinc-500/20 to-zinc-400/5',    dot: 'bg-zinc-400',    label: 'Autres' },
+const CATEGORY_GRADIENT = {
+  general:   'from-blue-500/20 to-blue-400/5',
+  technique: 'from-purple-500/20 to-purple-400/5',
+  aide:      'from-amber-500/20 to-amber-400/5',
+  partages:  'from-emerald-500/20 to-emerald-400/5',
+  autres:    'from-zinc-500/20 to-zinc-400/5',
 };
 
 function LikeButton({ liked, count, onLike }) {
@@ -44,16 +42,8 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
   const [menuOpen, setMenuOpen]   = useState(false);
   const [collapsed, setCollapsed] = useState(true);
 
-  const cat = CATEGORY_CONFIG[post.category] || CATEGORY_CONFIG.general;
-  const authorName = post.author_display_name || post.author_name || 'Utilisateur';
-  const authorUsername = post.author_username;
-  const authorAvatar = post.author_avatar;
-  const avatarInitial = (authorName?.[0] || 'U').toUpperCase();
-  const profileLink = authorUsername ? `/@${authorUsername}` : null;
-
-  const timeAgo = post.created_date
-    ? formatDistanceToNow(new Date(post.created_date), { addSuffix: true, locale: fr })
-    : '';
+  const gradient = CATEGORY_GRADIENT[post.category] || CATEGORY_GRADIENT.general;
+  const profileLink = post.author_username ? `/@${post.author_username}` : null;
 
   const isLong = post.content?.length > 400;
   const displayContent = isLong && collapsed ? post.content.slice(0, 400) + '…' : post.content;
@@ -92,7 +82,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
       }}
     >
       {/* Category accent bar */}
-      <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${cat.gradient.replace('/20', '/60').replace('/5', '/0')}`} />
+      <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${gradient.replace('/20', '/60').replace('/5', '/0')}`} />
 
       {/* Hover glow */}
       <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
@@ -100,99 +90,51 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
       />
 
       {/* Header */}
-      <div className="relative flex items-start justify-between gap-3 px-5 pt-5 pb-0">
-        <div className="flex items-center gap-3.5 min-w-0">
-          {/* Avatar */}
-          <div className="relative flex-shrink-0">
-            <div className="w-12 h-12 rounded-2xl overflow-hidden border border-white/10"
-              style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}
+      <div className="relative px-5 pt-5 pb-0">
+        <PostAuthorHeader
+          authorId={post.author_id}
+          authorName={post.author_name}
+          authorDisplayName={post.author_display_name}
+          authorUsername={post.author_username}
+          authorAvatar={post.author_avatar}
+          authorVerifications={post.author_verifications}
+          authorIsSupreme={post.author_is_supreme}
+          createdDate={post.created_date}
+          category={post.category}
+          visibility="public"
+          onMenuClick={() => setMenuOpen(v => !v)}
+        />
+        {/* Dropdown menu */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -8 }}
+              transition={{ duration: 0.15 }}
+              className="absolute right-5 top-12 z-20 w-44 rounded-2xl overflow-hidden py-1.5"
+              style={{
+                background: 'rgba(10, 16, 30, 0.95)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
+                backdropFilter: 'blur(20px)',
+              }}
             >
-              {authorAvatar
-                ? <img src={authorAvatar} alt={authorName} className="w-full h-full object-cover" />
-                : <div className="w-full h-full flex items-center justify-center"
-                    style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3) 0%, hsl(var(--accent) / 0.2) 100%)' }}
-                  >
-                    <span className="font-grotesk font-bold text-primary text-base">{avatarInitial}</span>
-                  </div>
-              }
-            </div>
-            {post.author_is_supreme && (
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 0 8px rgba(245,158,11,0.6)' }}
-              >
-                <Crown className="w-2.5 h-2.5 text-amber-900" />
-              </div>
-            )}
-          </div>
-
-          {/* Author info */}
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              {profileLink ? (
-                <Link to={profileLink} className="font-grotesk font-bold text-sm text-foreground hover:text-primary transition-colors">
-                  {authorName}
+              {profileLink && (
+                <Link to={profileLink} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-inter text-muted-foreground hover:text-foreground hover:bg-white/8 transition-colors">
+                  <UserPlus className="w-3.5 h-3.5" /> Voir le profil
                 </Link>
-              ) : (
-                <span className="font-grotesk font-bold text-sm text-foreground">{authorName}</span>
               )}
-              {post.author_verifications?.length > 0 && (
-                <VerificationIcons verifications={post.author_verifications} size="sm" />
-              )}
-            </div>
-            <div className="flex items-center gap-2 mt-0.5">
-              {authorUsername && (
-                <span className="font-mono text-xs text-muted-foreground/60">@{authorUsername}</span>
-              )}
-              <span className="text-muted-foreground/30">·</span>
-              <span className="font-mono text-xs text-muted-foreground/60">{timeAgo}</span>
-              <span className="text-muted-foreground/30">·</span>
-              <div className="flex items-center gap-1">
-                <div className={`w-1.5 h-1.5 rounded-full ${cat.dot}`} />
-                <span className="font-mono text-[10px] text-muted-foreground/50">{cat.label}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Menu */}
-        <div className="relative flex-shrink-0">
-          <button
-            onClick={() => setMenuOpen(v => !v)}
-            className="p-2 rounded-xl text-muted-foreground/40 hover:text-muted-foreground hover:bg-white/8 transition-all opacity-0 group-hover:opacity-100"
-          >
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
-          <AnimatePresence>
-            {menuOpen && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -8 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -8 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 top-8 z-20 w-44 rounded-2xl overflow-hidden py-1.5"
-                style={{
-                  background: 'rgba(10, 16, 30, 0.95)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
-                  backdropFilter: 'blur(20px)',
-                }}
-              >
-                {profileLink && (
-                  <Link to={profileLink} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-inter text-muted-foreground hover:text-foreground hover:bg-white/8 transition-colors">
-                    <UserPlus className="w-3.5 h-3.5" /> Voir le profil
-                  </Link>
-                )}
-                <button onClick={() => { handleShare(); setMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-inter text-muted-foreground hover:text-foreground hover:bg-white/8 transition-colors text-left">
-                  <LinkIcon className="w-3.5 h-3.5" /> Copier le lien
-                </button>
-                <div className="my-1 mx-3 h-px bg-white/8" />
-                <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-inter text-rose-400 hover:bg-rose-400/10 transition-colors text-left">
-                  <Flag className="w-3.5 h-3.5" /> Signaler
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+              <button onClick={() => { handleShare(); setMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-inter text-muted-foreground hover:text-foreground hover:bg-white/8 transition-colors text-left">
+                <LinkIcon className="w-3.5 h-3.5" /> Copier le lien
+              </button>
+              <div className="my-1 mx-3 h-px bg-white/8" />
+              <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-inter text-rose-400 hover:bg-rose-400/10 transition-colors text-left">
+                <Flag className="w-3.5 h-3.5" /> Signaler
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Content */}

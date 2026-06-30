@@ -11,6 +11,7 @@ import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import AffiliationBadges from '@/components/shared/AffiliationBadges';
 import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
 import ExternalLinkModal from '@/components/forum/ExternalLinkModal.jsx';
 import { applySeoMeta, getForumSeoData } from '@/lib/seo';
@@ -123,11 +124,12 @@ export default function DiscussionDetailPage() {
               <span className={`truncate max-w-[140px] ${discussion.author_is_supreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
                 {discussion.author_display_name || discussion.author_name}
               </span>
-              <VerificationIcons 
-                verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications} 
+              <VerificationIcons
+                verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications}
                 size="sm"
                 user={{ id: discussion.author_id }}
               />
+              {discussion.author_id && <AffiliationBadges userId={discussion.author_id} size="sm" max={2} />}
             </div>
             <span className="text-xs">{formatDistanceToNow(new Date(discussion.created_date.endsWith('Z') ? discussion.created_date : discussion.created_date + 'Z'), { locale: fr, addSuffix: true })}</span>
             <div className="flex items-center gap-1 text-xs">
@@ -177,11 +179,12 @@ export default function DiscussionDetailPage() {
                         <p className={`font-semibold ${reply.author_is_supreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
                           {reply.author_display_name || reply.author_name}
                         </p>
-                        <VerificationIcons 
-                          verifications={reply.author_is_supreme ? ['supreme', ...(reply.author_verifications || [])] : (reply.author_verifications || [])} 
+                        <VerificationIcons
+                          verifications={reply.author_is_supreme ? ['supreme', ...(reply.author_verifications || [])] : (reply.author_verifications || [])}
                           size="sm"
                           user={{ id: reply.author_id }}
                         />
+                        {reply.author_id && <AffiliationBadges userId={reply.author_id} size="sm" max={1} />}
                       </div>
                       <p className="text-xs text-slate-400">
                         {formatDistanceToNow(new Date(reply.created_date.endsWith('Z') ? reply.created_date : reply.created_date + 'Z'), { locale: fr, addSuffix: true })}

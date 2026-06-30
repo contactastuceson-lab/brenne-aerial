@@ -174,9 +174,9 @@ export default function Navbar() {
                 </div>
 
                 {/* Business space link — official/supreme */}
-                {canManageAffiliations(user) && !hasAdminAccess(user) && (
+                {canManageAffiliations(user) && (
                   <Link
-                    to="/espace-client?tab=affiliations"
+                    to="/business"
                     className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-inter bg-amber-400/10 text-amber-400 border border-amber-400/20 hover:bg-amber-400/20 transition-colors"
                   >
                     <Briefcase className="w-4 h-4" />

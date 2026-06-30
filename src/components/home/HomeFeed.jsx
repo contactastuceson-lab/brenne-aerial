@@ -9,6 +9,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { extractHashtags } from '@/lib/hashtags';
 
 const FILTERS = [
+  { id: 'foryou',   label: 'Pour vous',  icon: Sparkles },
   { id: 'recent',   label: 'Récents',    icon: Clock },
   { id: 'popular',  label: 'Populaires', icon: Flame },
   { id: 'medias',   label: 'Médias',     icon: null },
@@ -114,7 +115,8 @@ export default function HomeFeed({ user }) {
         const all = await base44.entities.Post.list('-created_date', 100);
         return all.filter(p => p.media_urls?.length > 0);
       }
-      return base44.entities.Post.list('-created_date', 50);
+      // foryou + recent : on récupère les 100 derniers, le tri est fait en front
+      return base44.entities.Post.list('-created_date', 100);
     },
     staleTime: 60000,
   });
@@ -136,14 +138,28 @@ export default function HomeFeed({ user }) {
   const handleFilter = (f) => { setFilter(f); setNewCount(0); };
 
   const filteredPosts = useMemo(() => {
-    if (!urlTag) return posts;
-    return posts.filter(p => {
-      const tags = p.hashtags?.length
-        ? p.hashtags
-        : extractHashtags(p.content || '');
-      return tags.includes(urlTag.toLowerCase());
-    });
-  }, [posts, urlTag]);
+    let result = posts;
+
+    // Hashtag filter
+    if (urlTag) {
+      result = result.filter(p => {
+        const tags = p.hashtags?.length ? p.hashtags : extractHashtags(p.content || '');
+        return tags.includes(urlTag.toLowerCase());
+      });
+    }
+
+    // Algorithmic sort for "Pour vous"
+    if (filter === 'foryou') {
+      result = result
+        .map(p => ({
+          ...p,
+          algoScore: (p.likes_count || 0) * 2 + (p.replies_count || 0) * 5,
+        }))
+        .sort((a, b) => b.algoScore - a.algoScore);
+    }
+
+    return result;
+  }, [posts, urlTag, filter]);
 
   return (
     <main className="w-full max-w-[600px] min-w-0 border-x border-zinc-800/60">

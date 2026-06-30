@@ -152,6 +152,65 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Affiliation not found' }, { status: 404 });
     }
 
+    // ── Action "respond" : l'affilié lui-même accepte/refuse ou change la visibilité ──
+    if (action === 'respond') {
+      if (!patch) return Response.json({ error: 'Missing patch' }, { status: 400 });
+
+      // Vérifier que c'est bien l'affilié qui agit
+      const isTheAffiliate =
+        currentUser?.id === existingAffiliation.userId ||
+        currentUser?.email === existingAffiliation.userId ||
+        currentUser?.email === existingAffiliation.userEmail;
+
+      if (!isTheAffiliate) {
+        return Response.json({ error: 'Forbidden: Only the affiliated user can respond to this invitation' }, { status: 403 });
+      }
+
+      // Champs autorisés pour l'affilié : status (accepted/rejected) et visibility
+      const allowedPatch = {};
+      if (patch.status === 'accepted' || patch.status === 'rejected') allowedPatch.status = patch.status;
+      if (patch.visibility === 'public' || patch.visibility === 'private') allowedPatch.visibility = patch.visibility;
+
+      if (Object.keys(allowedPatch).length === 0) {
+        return Response.json({ error: 'No allowed fields to update' }, { status: 400 });
+      }
+
+      const updatedAffiliation = await base44.asServiceRole.entities.OrganizationAffiliation.update(affiliationId, allowedPatch);
+
+      // Si l'affilié accepte et que l'organisation est éligible → sync badge certified
+      if (allowedPatch.status === 'accepted') {
+        const organization = await base44.asServiceRole.entities.User.get(existingAffiliation.organizationId).catch(() => null);
+        if (organization && isEligibleOrg(organization)) {
+          const affiliateUser = await getUserByAffiliationTarget(base44, existingAffiliation.userId);
+          if (affiliateUser) {
+            const currentLevel = getHighestBadgeLevel(affiliateUser);
+            const sources = Array.isArray(affiliateUser.certified_affiliation_sources) ? affiliateUser.certified_affiliation_sources : [];
+            const affiliationSourceId = existingAffiliation.organizationId;
+            if (currentLevel < AFFILIATION_BADGE_LEVEL.certified) {
+              const verifications = Array.isArray(affiliateUser.verifications) ? affiliateUser.verifications : [];
+              const newVerifications = buildPrimaryVerificationSet(verifications, true);
+              const newSources = sources.includes(affiliationSourceId) ? sources : [...sources, affiliationSourceId];
+              if (JSON.stringify(newVerifications) !== JSON.stringify(affiliateUser.verifications)) {
+                await base44.asServiceRole.entities.User.update(affiliateUser.id, {
+                  verifications: newVerifications,
+                  certified_affiliation_sources: newSources,
+                });
+              } else if (!sources.includes(affiliationSourceId)) {
+                await base44.asServiceRole.entities.User.update(affiliateUser.id, { certified_affiliation_sources: newSources });
+              }
+            } else if (!sources.includes(affiliationSourceId)) {
+              await base44.asServiceRole.entities.User.update(affiliateUser.id, {
+                certified_affiliation_sources: [...sources, affiliationSourceId],
+              });
+            }
+          }
+        }
+      }
+
+      return Response.json({ affiliation: updatedAffiliation });
+    }
+
+    // Pour update/delete : seul l'owner de l'organisation est autorisé
     const organization = await base44.asServiceRole.entities.User.get(existingAffiliation.organizationId).catch(() => null);
     if (!organization) {
       return Response.json({ error: 'Organization not found' }, { status: 404 });

@@ -38,9 +38,9 @@ export default function MyAffiliationsTab({ user }) {
   const handleAccept = async (row) => {
     try {
       await base44.functions.invoke('processOrganizationAffiliation', {
-        action: 'update',
+        action: 'respond',
         affiliationId: row.id,
-        patch: { status: 'accepted', acceptedAt: new Date().toISOString() },
+        patch: { status: 'accepted' },
       });
       await notifyAffiliationStatus({
         targetEmail: user.email,
@@ -57,7 +57,7 @@ export default function MyAffiliationsTab({ user }) {
   const handleReject = async (row) => {
     try {
       await base44.functions.invoke('processOrganizationAffiliation', {
-        action: 'update',
+        action: 'respond',
         affiliationId: row.id,
         patch: { status: 'rejected' },
       });
@@ -72,7 +72,7 @@ export default function MyAffiliationsTab({ user }) {
     const next = row.visibility === 'public' ? 'private' : 'public';
     try {
       await base44.functions.invoke('processOrganizationAffiliation', {
-        action: 'update',
+        action: 'respond',
         affiliationId: row.id,
         patch: { visibility: next },
       });

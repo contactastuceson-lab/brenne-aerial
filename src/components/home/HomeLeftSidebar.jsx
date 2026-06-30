@@ -1,8 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Compass, MessageCircle, Bell, Bookmark, Calendar,
-  Settings, Users, BarChart3, Briefcase, FileText, Award,
-  LogOut, Sparkles, Heart, Star, User, MoreHorizontal
+  Users, BarChart3, Briefcase, FileText, Award,
+  Heart, Star, MoreHorizontal
 } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { hasAdminAccess } from '@/lib/roles';
@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 const NAV = [
   { icon: Home,          label: 'Accueil',       to: '/' },
   { icon: Compass,       label: 'Explorer',       to: '/discover' },
+  { icon: Bell,          label: 'Notifications',  to: '/dashboard?tab=notifications' },
   { icon: MessageCircle, label: 'Messages',       to: '/messages', badge: true },
   { icon: FileText,      label: 'Forum',          to: '/forum' },
   { icon: Calendar,      label: 'Événements',     to: '/planning' },
@@ -21,6 +22,7 @@ const NAV = [
   { icon: Users,         label: 'Affiliations',   to: '/espace-client?tab=my-affils' },
   { icon: Heart,         label: 'Parrainage',     to: '/parrainage' },
   { icon: Star,          label: 'Partenaires',    to: '/partenaires' },
+  { icon: Briefcase,     label: 'Business',       to: '/business', businessOnly: true },
 ];
 
 function NavItem({ icon: Icon, label, to, active, badge }) {
@@ -71,18 +73,17 @@ export default function HomeLeftSidebar({ user }) {
 
         {/* Nav items */}
         <nav className="flex-1 flex flex-col gap-0.5 mt-1">
-          {NAV.map(item => (
+          {NAV.filter(item => !item.businessOnly || isBusiness).map(item => (
             <NavItem key={item.to} {...item}
               active={isActive(item.to)}
               badge={item.badge && notifs.length > 0 ? notifs.length : 0}
             />
           ))}
 
-          {(isAdmin || isBusiness) && (
+          {isAdmin && (
             <>
               <div className="my-2 h-px bg-border/40" />
-              {isBusiness && <NavItem icon={Briefcase} label="Business" to="/business" active={isActive('/business')} />}
-              {isAdmin && <NavItem icon={BarChart3} label="Admin" to="/admin" active={isActive('/admin')} />}
+              <NavItem icon={BarChart3} label="Admin" to="/admin" active={isActive('/admin')} />
             </>
           )}
         </nav>

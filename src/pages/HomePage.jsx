@@ -19,7 +19,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-[1300px] mx-auto flex items-start pt-[68px]">
+      <div className="max-w-[1300px] mx-auto flex items-start">
         <HomeLeftSidebar user={user} />
         <HomeFeed user={user} />
         <HomeRightSidebar />

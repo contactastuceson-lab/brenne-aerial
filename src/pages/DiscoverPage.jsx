@@ -409,7 +409,9 @@ export default function DiscoverPage() {
                     <div className="flex items-center gap-2 text-sm font-semibold text-foreground truncate">
                       <span className="truncate">{profile.display_name || profile.full_name}</span>
                       {isSupreme && <span className="text-[11px]">👑</span>}
-                      <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
+                      <span className="relative z-10 flex-shrink-0">
+                        <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
+                      </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
                       {profile.username && <span className="truncate font-mono">@{profile.username}</span>}

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, User, LogOut, LayoutDashboard, Menu, X, ChevronDown } from 'lucide-react';
+import { Bell, User, LogOut, LayoutDashboard, Menu, X, ChevronDown, Briefcase } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
+import { canManageAffiliations } from '@/lib/affiliationUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationsPanel from '@/components/notifications/NotificationsPanel';
 
@@ -171,6 +172,17 @@ export default function Navbar() {
                     <p className="text-xs text-muted-foreground">{user.role}</p>
                   </div>
                 </div>
+
+                {/* Business space link — official/supreme */}
+                {canManageAffiliations(user) && !hasAdminAccess(user) && (
+                  <Link
+                    to="/espace-client?tab=affiliations"
+                    className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-inter bg-amber-400/10 text-amber-400 border border-amber-400/20 hover:bg-amber-400/20 transition-colors"
+                  >
+                    <Briefcase className="w-4 h-4" />
+                    Business
+                  </Link>
+                )}
 
                 {/* Admin link */}
                 {hasAdminAccess(user) && (

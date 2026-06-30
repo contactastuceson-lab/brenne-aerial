@@ -101,6 +101,7 @@ function MultiAffiliationChip({ affiliations, size }) {
   const s = size === 'sm' ? 20 : 24;
   const iconSize = size === 'sm' ? 10 : 12;
   const extra = affiliations.length - 1;
+  const [selectedAff, setSelectedAff] = useState(null);
 
   return (
     <Sheet>
@@ -109,7 +110,6 @@ function MultiAffiliationChip({ affiliations, size }) {
           title={`${affiliations.length} affiliations officielles`}
           className="inline-flex items-center gap-0.5 rounded-md p-0.5 bg-gradient-to-br from-primary/40 via-primary/30 to-primary/20 shadow-sm transition duration-200 ease-out hover:scale-[1.05] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
-          {/* Avatar de la première org */}
           <div
             className="relative flex items-center justify-center rounded-md bg-background border border-border overflow-hidden"
             style={{ width: s, height: s }}
@@ -122,7 +122,6 @@ function MultiAffiliationChip({ affiliations, size }) {
               </span>
             )}
           </div>
-          {/* Compteur +N */}
           <span
             className="font-mono font-bold text-primary bg-background border border-border rounded-md flex items-center justify-center"
             style={{ fontSize: iconSize - 1, width: s, height: s }}
@@ -134,10 +133,10 @@ function MultiAffiliationChip({ affiliations, size }) {
       <SheetContent
         side="bottom"
         hideClose
-        className="fixed inset-x-0 bottom-0 w-full h-auto max-h-[75vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden p-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+        className="fixed inset-x-0 bottom-0 w-full h-auto max-h-[80vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden p-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
       >
         {/* Header */}
-        <div className="w-full bg-gradient-to-r from-primary/60 via-primary/40 to-amber-400/20 p-3 px-5 flex items-center gap-3">
+        <div className="w-full bg-gradient-to-r from-primary/60 via-primary/40 to-amber-400/20 p-3 px-5 flex items-center gap-3 flex-shrink-0">
           <div className="w-8 h-8 rounded-lg bg-background/10 flex items-center justify-center">
             <Building2 className="w-4 h-4 text-white" />
           </div>
@@ -147,29 +146,69 @@ function MultiAffiliationChip({ affiliations, size }) {
           </div>
         </div>
 
-        {/* Liste des orgs */}
-        <div className="overflow-y-auto flex-1 divide-y divide-border">
-          {affiliations.map((aff) => (
-            <a
-              key={aff.id}
-              href={aff.organizationUsername ? `/@${aff.organizationUsername}` : `/profile?org=${aff.organizationId}`}
-              className="flex items-center gap-3 px-5 py-3 hover:bg-secondary/50 transition-colors"
-            >
-              <div className="w-9 h-9 rounded-lg bg-secondary border border-border overflow-hidden flex items-center justify-center flex-shrink-0">
-                {aff.organizationAvatarUrl ? (
-                  <img src={aff.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="font-bold text-primary text-sm">{(aff.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
-                )}
+        {/* Détail d'une org sélectionnée */}
+        {selectedAff ? (
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <div className="px-5 pt-4 pb-2 flex-shrink-0">
+              <button
+                onClick={() => setSelectedAff(null)}
+                className="text-xs text-primary flex items-center gap-1 mb-4 hover:underline"
+              >
+                ← Toutes les affiliations
+              </button>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-xl bg-secondary border border-border overflow-hidden flex items-center justify-center flex-shrink-0">
+                  {selectedAff.organizationAvatarUrl ? (
+                    <img src={selectedAff.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="font-bold text-primary text-lg">{(selectedAff.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
+                  )}
+                </div>
+                <div>
+                  <p className="font-grotesk font-bold text-base">{selectedAff.organizationName || 'Organisation'}</p>
+                  {selectedAff.role && <p className="text-xs text-muted-foreground">Rôle : {selectedAff.role}</p>}
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-foreground truncate">{aff.organizationName || 'Organisation'}</p>
-                {aff.role && <p className="text-xs text-muted-foreground truncate">{aff.role}</p>}
-              </div>
-              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-            </a>
-          ))}
-        </div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground mb-1">Affiliation vérifiée</p>
+              <p className="text-sm leading-6 text-foreground mb-4">
+                Ce compte est affilié à{' '}
+                <span className="font-semibold text-primary">{selectedAff.organizationName || 'l\'organisation'}</span>
+                . Cette affiliation est confirmée et visible publiquement.
+              </p>
+              <a
+                href={selectedAff.organizationUsername ? `/@${selectedAff.organizationUsername}` : `/profile?org=${selectedAff.organizationId}`}
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-md hover:brightness-95"
+              >
+                <ExternalLink className="w-4 h-4" /> Voir l'organisation
+              </a>
+            </div>
+          </div>
+        ) : (
+          /* Liste des orgs */
+          <div className="overflow-y-auto flex-1 divide-y divide-border">
+            {affiliations.map((aff) => (
+              <button
+                key={aff.id}
+                onClick={() => setSelectedAff(aff)}
+                className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-secondary/50 transition-colors text-left"
+              >
+                <div className="w-10 h-10 rounded-lg bg-secondary border border-border overflow-hidden flex items-center justify-center flex-shrink-0">
+                  {aff.organizationAvatarUrl ? (
+                    <img src={aff.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="font-bold text-primary text-sm">{(aff.organizationName || 'ORG').slice(0, 1).toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-foreground truncate">{aff.organizationName || 'Organisation'}</p>
+                  {aff.role && <p className="text-xs text-muted-foreground truncate capitalize">{aff.role}</p>}
+                  <p className="text-[10px] text-primary mt-0.5">Affiliation vérifiée · Voir les détails →</p>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+              </button>
+            ))}
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );

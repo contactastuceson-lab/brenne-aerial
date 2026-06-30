@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, X, TrendingUp, Flame, ArrowRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -16,10 +16,11 @@ const TRENDING = [
   { tag: 'partages',      count: 89,  rise: '+22%' },
 ];
 
-function SearchBar({ allUsers }) {
+function SearchBar({ allUsers, allTags }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handler = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
@@ -27,13 +28,34 @@ function SearchBar({ allUsers }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const filtered = query.trim().length > 0
+  const isHashSearch = query.startsWith('#');
+  const hashQuery = isHashSearch ? query.slice(1).toLowerCase() : '';
+
+  const filteredUsers = !isHashSearch && query.trim().length > 0
     ? allUsers.filter(u => {
         const q = query.toLowerCase();
         return (u.username || '').toLowerCase().includes(q)
           || (u.display_name || u.full_name || '').toLowerCase().includes(q);
       }).slice(0, 6)
     : [];
+
+  const filteredTags = isHashSearch && hashQuery.length > 0
+    ? allTags.filter(({ tag }) => tag.toLowerCase().includes(hashQuery)).slice(0, 6)
+    : isHashSearch && hashQuery.length === 0
+    ? allTags.slice(0, 6)
+    : [];
+
+  const handleTagClick = (tag) => {
+    setQuery('');
+    setOpen(false);
+    navigate(`/?tag=${tag}`);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && isHashSearch && hashQuery) {
+      handleTagClick(hashQuery);
+    }
+  };
 
   return (
     <div ref={ref} className="relative mb-5">
@@ -43,7 +65,8 @@ function SearchBar({ allUsers }) {
           value={query}
           onChange={e => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
-          placeholder="Chercher"
+          onKeyDown={handleKeyDown}
+          placeholder="Chercher ou #hashtag"
           className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/40 outline-none min-w-0"
         />
         {query && (
@@ -55,10 +78,26 @@ function SearchBar({ allUsers }) {
       </div>
 
       {/* Dropdown results */}
-      {open && filtered.length > 0 && (
+      {open && (filteredUsers.length > 0 || filteredTags.length > 0) && (
         <div className="absolute top-full left-0 right-0 mt-1 rounded-2xl overflow-hidden z-50 shadow-2xl"
           style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
-          {filtered.map(u => {
+
+          {/* Hashtag results */}
+          {filteredTags.map(({ tag, count }) => (
+            <button key={tag} onClick={() => handleTagClick(tag)}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left">
+              <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                <span className="font-grotesk font-bold text-primary text-sm">#</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-grotesk font-semibold text-sm text-foreground">#{tag}</p>
+                <p className="font-mono text-xs text-muted-foreground/50">{count} publication{count > 1 ? 's' : ''}</p>
+              </div>
+            </button>
+          ))}
+
+          {/* User results */}
+          {filteredUsers.map(u => {
             const name = u.display_name || u.full_name || u.username;
             const initial = (name?.[0] || 'U').toUpperCase();
             const profileLink = u.username ? `/@${u.username}` : null;
@@ -186,29 +225,37 @@ export default function HomeRightSidebar() {
 
   const suggestedUsers = allUsers.slice(0, 3);
 
-  const { data: recentPosts = [] } = useQuery({
-    queryKey: ['sidebar-recent-posts-tags'],
+  const { data: recentDiscussions = [] } = useQuery({
+    queryKey: ['sidebar-recent-discussions-tags'],
     queryFn: () => base44.entities.Discussion.list('-created_date', 100),
     staleTime: 2 * 60 * 1000,
   });
 
-  // Compute trending hashtags from all recent posts
+  const { data: recentSocialPosts = [] } = useQuery({
+    queryKey: ['sidebar-recent-social-posts-tags'],
+    queryFn: () => base44.entities.Post.list('-created_date', 100),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  // Compute trending hashtags from discussions + social posts
   const trendingTags = useMemo(() => {
     const freq = {};
-    recentPosts.forEach(p => {
-      const tags = p.tags?.length
-        ? p.tags
-        : extractHashtags((p.content || '') + ' ' + (p.title || ''));
+    recentDiscussions.forEach(p => {
+      const tags = p.tags?.length ? p.tags : extractHashtags((p.content || '') + ' ' + (p.title || ''));
+      tags.forEach(tag => { freq[tag] = (freq[tag] || 0) + 1; });
+    });
+    recentSocialPosts.forEach(p => {
+      const tags = p.hashtags?.length ? p.hashtags : extractHashtags(p.content || '');
       tags.forEach(tag => { freq[tag] = (freq[tag] || 0) + 1; });
     });
     return Object.entries(freq)
       .map(([tag, count]) => ({ tag, count }))
       .sort((a, b) => b.count - a.count);
-  }, [recentPosts]);
+  }, [recentDiscussions, recentSocialPosts]);
 
   return (
     <>
-      <SearchBar allUsers={allUsers} />
+      <SearchBar allUsers={allUsers} allTags={trendingTags} />
       <SuggestedUsers users={suggestedUsers} />
       <TrendingSection trendingTags={trendingTags} />
 

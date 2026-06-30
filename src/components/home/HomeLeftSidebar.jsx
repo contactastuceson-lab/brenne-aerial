@@ -67,11 +67,11 @@ export default function HomeLeftSidebar({ user }) {
       <div className="flex flex-col h-full py-2 px-2 xl:px-4 overflow-hidden">
 
         {/* Logo — fixe */}
-        <Link to="/" className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-white/5 transition mb-2 flex-shrink-0">
-          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/80278201e_1782606023373-Photoroom.png" alt="EZA" className="w-10 h-10 object-contain flex-shrink-0" />
-          <div className="hidden xl:flex flex-col leading-tight gap-0.5">
-            <span className="text-[11px] font-inter font-medium text-muted-foreground/60 tracking-[0.2em] uppercase">by</span>
-            <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3913412b6_1782605365815-Photoroom.png" alt="EZA GROUP" className="h-7 object-contain object-left" />
+        <Link to="/" className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 transition mb-2 flex-shrink-0">
+          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/80278201e_1782606023373-Photoroom.png" alt="EZA" className="w-11 h-11 object-contain flex-shrink-0" />
+          <div className="hidden xl:flex flex-col leading-tight gap-1">
+            <span className="text-[12px] font-inter font-semibold text-muted-foreground/70 tracking-[0.25em] uppercase">by</span>
+            <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3913412b6_1782605365815-Photoroom.png" alt="EZA GROUP" className="h-9 w-auto object-contain object-left" style={{ filter: 'brightness(1.2)' }} />
           </div>
         </Link>
 

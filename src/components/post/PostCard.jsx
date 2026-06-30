@@ -131,7 +131,7 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
           <Link to={profileLink} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center hover:opacity-80 transition-opacity">
               {(liveUser?.avatar_url || post.author_avatar)
-                ? <img src={liveUser?.avatar_url || post.author_avatar} alt={authorName} className="w-full h-full object-cover" />
+                ? <img src={liveUser?.avatar_url || post.author_avatar} alt={authorName} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 : <span className="font-grotesk font-bold text-primary text-sm">{initial}</span>
               }
             </div>
@@ -139,7 +139,7 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
         ) : (
           <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center">
             {(liveUser?.avatar_url || post.author_avatar)
-              ? <img src={liveUser?.avatar_url || post.author_avatar} alt={authorName} className="w-full h-full object-cover" />
+              ? <img src={liveUser?.avatar_url || post.author_avatar} alt={authorName} className="w-full h-full object-cover" loading="lazy" decoding="async" />
               : <span className="font-grotesk font-bold text-primary text-sm">{initial}</span>
             }
           </div>
@@ -258,7 +258,7 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
                 onClick={e => e.stopPropagation()}>
                 {url.match(/\.(mp4|webm|ogg)$/i)
                   ? <video src={url} controls className="w-full h-full object-cover rounded-lg" />
-                  : <img src={url} alt="" className="w-full h-full object-cover rounded-lg" />
+                  : <img src={url} alt="" className="w-full h-full object-cover rounded-lg bg-white/5" loading="lazy" decoding="async" />
                 }
                 {i === 3 && post.media_urls.length > 4 && (
                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">

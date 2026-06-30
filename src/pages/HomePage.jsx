@@ -18,14 +18,13 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Fil central — centré, max 600px */}
+      {/* Fil central */}
       <div className="flex-1 flex justify-center min-w-0">
         <HomeFeed user={user} />
       </div>
 
-      {/* Sidebar droite fixe — placeholder pour réserver l'espace */}
-      <div className="hidden xl:block w-[300px] flex-shrink-0" />
-      <div className="hidden xl:flex flex-col fixed top-0 right-0 w-[300px] h-screen overflow-y-auto py-4 px-3" style={{ scrollbarWidth: 'none' }}>
+      {/* Sidebar droite — sticky, ne scroll pas avec le feed */}
+      <div className="hidden xl:flex flex-col w-[300px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-4 px-3" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <HomeRightSidebar />
       </div>
     </div>

@@ -14,6 +14,7 @@ import { useOrganizationAffiliations, prefillUserCache, resolveAffiliatedProfile
 import { ROLE_CONFIG } from '@/lib/roles';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 
 const BADGE_CONFIG = {
   'Fondateur': { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -68,7 +69,6 @@ export default function PublicProfilePage() {
   const { pathUsername, userId } = useParams();
   const navigate = useNavigate();
   
-  // Extraire le username (enlever le @ s'il existe)
   const username = pathUsername?.startsWith('@') ? pathUsername.slice(1) : pathUsername;
   const requestedUser = username || userId;
   const [user, setUser] = useState(null);
@@ -83,7 +83,6 @@ export default function PublicProfilePage() {
   const [badgeCounts, setBadgeCounts] = useState({});
   const [allUsers, setAllUsers] = useState([]);
 
-  // Affiliés de cette organisation — via le cache centralisé (évite N+1 queries)
   const orgDescriptor = useMemo(() => user?.id ? { organizationId: user.id } : null, [user?.id]);
   const { affiliations: orgAffiliations } = useOrganizationAffiliations(orgDescriptor);
   const affiliatedAccounts = useMemo(
@@ -94,7 +93,6 @@ export default function PublicProfilePage() {
     [orgAffiliations, allUsers]
   );
 
-  // ── SEO meta tags dynamiques ──
   useEffect(() => {
     if (!user) return;
     const displayName = user.display_name || user.full_name || user.username;
@@ -143,7 +141,6 @@ export default function PublicProfilePage() {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        // Chercher l'utilisateur actuel
         let me = null;
         try {
           me = await base44.auth.me();
@@ -152,7 +149,6 @@ export default function PublicProfilePage() {
           // Non authentifié
         }
 
-        // Chercher l'utilisateur par username
         const userIdentifier = requestedUser;
         const response = await base44.functions.invoke('getPublicUsers', {});
         const fetchedUsers = response.data || response;
@@ -171,11 +167,9 @@ export default function PublicProfilePage() {
         }
 
         setUser(foundUser);
-        // Pré-remplir le cache utilisateur avec tous les profils déjà chargés (évite User.get() par ligne)
         prefillUserCache(fetchedUsers);
         setAllUsers(fetchedUsers);
 
-        // Charger les followers & following en parallèle + discussions récentes
         const [followersList, followingList, discussions] = await Promise.all([
           base44.entities.Follow.filter({ following_email: foundUser.email }),
           base44.entities.Follow.filter({ follower_email: foundUser.email }),
@@ -185,13 +179,11 @@ export default function PublicProfilePage() {
         setFollowingCount(followingList.length);
         setRecentDiscussions(discussions);
 
-        // Vérifier si l'utilisateur actuel suit ce profil
         if (me) {
           const isFollowingCheck = followersList.some(f => f.follower_email === me.email);
           setIsFollowing(isFollowingCheck);
         }
 
-        // Count profiles per verification level
         const counts = { verified: 0, pro: 0, certified: 0, official: 0, supreme: 0 };
         fetchedUsers.forEach(u => {
           if (u.verifications?.includes('verified')) counts.verified++;
@@ -202,7 +194,6 @@ export default function PublicProfilePage() {
         });
         setBadgeCounts(counts);
 
-        // Subscribe aux changements en temps réel
         const unsubscribe = base44.entities.Follow.subscribe((event) => {
           if (event.data?.following_email === foundUser.email) {
             if (event.type === 'create') {
@@ -252,11 +243,7 @@ export default function PublicProfilePage() {
   };
 
   const handleFollow = async () => {
-    if (!currentUser) {
-      navigate('/profile');
-      return;
-    }
-    
+    if (!currentUser) { navigate('/profile'); return; }
     setFollowingLoading(true);
     try {
       await base44.entities.Follow.create({
@@ -295,10 +282,7 @@ export default function PublicProfilePage() {
   };
 
   const handleMessage = () => {
-    if (!currentUser) {
-      navigate('/profile');
-      return;
-    }
+    if (!currentUser) { navigate('/profile'); return; }
     navigate(`/messages?to=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.display_name || user.full_name)}`);
   };
 
@@ -315,14 +299,12 @@ export default function PublicProfilePage() {
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-sm w-full text-center space-y-6"
         >
-          {/* Red closed banner */}
           <div className="rounded-2xl overflow-hidden shadow-2xl">
             <div className="bg-red-600 py-10 px-8 flex flex-col items-center gap-2">
               <p className="font-grotesk font-black text-white text-3xl tracking-widest uppercase">Compte Fermé</p>
               <p className="font-inter text-red-100 text-base tracking-wider italic">Closed</p>
             </div>
           </div>
-
           <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
             <div className="w-12 h-12 rounded-full bg-gray-400/10 border border-gray-400/20 flex items-center justify-center mx-auto">
               <span className="text-2xl">⛔</span>
@@ -346,292 +328,280 @@ export default function PublicProfilePage() {
   }
 
   return (
-    <div className="min-h-screen pb-20 overflow-x-hidden" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
-      {/* Fullscreen Cover Banner */}
-      <div
-        className="relative w-full h-44 sm:h-56 md:h-64 lg:h-72 xl:h-80 overflow-hidden"
-        style={isSupreme
-          ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
-          : user.cover_url
-          ? {}
-          : { background: getCoverGradient(user.full_name) }
-        }
-      >
-        {user.cover_url ? (
-          <img src={user.cover_url} alt="cover" className="absolute inset-0 w-full h-full object-cover object-center" />
-        ) : (
-          <>
-            <div className="absolute inset-0 opacity-20" style={{
-              backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)',
-            }} />
-            <div className="absolute inset-0 grid-bg opacity-30" />
-            <div className="absolute inset-0 flex items-center justify-center opacity-10">
-              <span className="font-grotesk font-black text-[10rem] text-white select-none leading-none">
-                {user.full_name?.[0]?.toUpperCase() || '?'}
-              </span>
-            </div>
-          </>
-        )}
-        {/* Gradient bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
-      </div>
-
-      <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 lg:px-6">
-        {/* Avatar + header */}
-        <div className="relative px-0 sm:px-4 md:px-6 -mt-16">
-          <div className="flex items-end justify-between gap-4 mb-4">
-            {/* Avatar */}
-            <div
-              className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
-              style={isSupreme
-                ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
-                : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
-              }
-            >
-              {user.avatar_url ? (
-                <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span className="font-grotesk font-bold text-4xl text-white drop-shadow-sm">
+    <div className="flex min-h-screen">
+      {/* Main profile content */}
+      <div className="flex-1 min-w-0 pb-20 overflow-x-hidden" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
+        {/* Fullscreen Cover Banner */}
+        <div
+          className="relative w-full h-44 sm:h-56 md:h-64 lg:h-72 xl:h-80 overflow-hidden"
+          style={isSupreme
+            ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
+            : user.cover_url
+            ? {}
+            : { background: getCoverGradient(user.full_name) }
+          }
+        >
+          {user.cover_url ? (
+            <img src={user.cover_url} alt="cover" className="absolute inset-0 w-full h-full object-cover object-center" />
+          ) : (
+            <>
+              <div className="absolute inset-0 opacity-20" style={{
+                backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)',
+              }} />
+              <div className="absolute inset-0 grid-bg opacity-30" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-10">
+                <span className="font-grotesk font-black text-[10rem] text-white select-none leading-none">
                   {user.full_name?.[0]?.toUpperCase() || '?'}
                 </span>
-              )}
-            </div>
-
-            {/* Status badges top right */}
-            <div className="flex items-center gap-2 flex-wrap pb-1">
-              {user.verified_status === 'yes' && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
-                  <CheckCircle className="w-3 h-3" /> Vérifié
-                </span>
-              )}
-              <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
-                {user.account_status === 'active' ? 'Actif' : 'Inactif'}
-              </span>
-            </div>
-          </div>
-
-          {/* Name + username */}
-          <h1
-            className="font-grotesk font-bold text-2xl sm:text-3xl mb-1"
-            style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-          >
-            {user.display_name || user.full_name}
-          </h1>
-
-          <div className="flex items-center gap-2 mb-3">
-            {user.username && (
-              <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
-            )}
-            <VerificationIcons verifications={user.verifications} size="md" user={user} />
-          </div>
-
-          {/* Role chip */}
-          {user.role && roleCfg && (
-            <span className={`inline-flex items-center gap-1 mb-4 font-mono text-[10px] px-2.5 py-1 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
-              {roleCfg.emoji} {roleCfg.label}
-            </span>
-          )}
-
-          {/* Bio */}
-          {user.bio && (
-            <p className="font-inter text-sm text-foreground/80 leading-relaxed mb-4 whitespace-pre-line">
-              {user.bio}
-            </p>
-          )}
-
-          {/* Info row */}
-          <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4">
-            {user.location && (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <MapPin className="w-3.5 h-3.5" /> {user.location}
               </div>
-            )}
-            {user.website && (
-              <div className="flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-primary" />
-                <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate max-w-[200px]">
-                  {user.website.replace(/^https?:\/\//, '')}
-                </a>
-              </div>
-            )}
-            {memberSince && (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Calendar className="w-3.5 h-3.5" /> Membre {memberSince}
-              </div>
-            )}
-          </div>
-
-          {/* Verification principale */}
-          {getHighestVerificationBadge(user.verifications) && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {(() => {
-                const badge = getHighestVerificationBadge(user.verifications);
-                const cfg = VERIFICATION_CONFIG[badge];
-                if (!cfg) return null;
-                const count = badgeCounts[badge] || 0;
-                return (
-                  <span key={badge} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.border} ${cfg.bg}`}>
-                    <span className={cfg.color}>•</span>
-                    <span className={cfg.color}>{cfg.label}</span>
-                    <span className="text-muted-foreground">·</span>
-                    <span className="text-muted-foreground font-mono text-[10px]">{count} {count <= 1 ? 'profil' : 'profils'}</span>
-                  </span>
-                );
-              })()}
-            </div>
+            </>
           )}
-
-          {/* Badges */}
-          {user.badges?.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {user.badges.map(b => {
-                const cfg = BADGE_CONFIG[b];
-                if (!cfg) return <BadgeChip key={b} badge={b} />;
-                return (
-                  <span key={b} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
-                    {b}
-                  </span>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Stats row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
-              <p className="font-grotesk font-bold text-xl text-foreground">{followers.length}</p>
-              <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonné{followers.length > 1 ? 's' : ''}</p>
-            </div>
-            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
-              <p className="font-grotesk font-bold text-xl text-foreground">{followingCount}</p>
-              <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonnements</p>
-            </div>
-            <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
-              <p className="font-grotesk font-bold text-xl text-foreground">{recentDiscussions.length}</p>
-              <p className="font-inter text-xs text-muted-foreground mt-0.5">Discussion{recentDiscussions.length > 1 ? 's' : ''}</p>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          {currentUser && currentUser.email !== user.email && (
-            <div className="flex flex-col gap-2 mb-6 sm:flex-row">
-              <Button
-                onClick={handleMessage}
-                variant="outline"
-                className="flex-1 gap-2 h-10 text-sm font-medium rounded-xl"
-              >
-                <MessageCircle className="w-4 h-4" />
-                Message
-              </Button>
-              {!isFollowing ? (
-                <Button
-                  onClick={handleFollow}
-                  disabled={followingLoading}
-                  className="flex-1 gap-2 h-10 text-sm font-medium bg-primary hover:bg-primary/90 rounded-xl"
-                >
-                  {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-                  S'abonner
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleUnfollow}
-                  disabled={followingLoading}
-                  className="flex-1 h-10 text-sm font-medium bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30 rounded-xl gap-2"
-                >
-                  {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
-                  Se désabonner
-                </Button>
-              )}
-            </div>
-          )}
-
-          {affiliatedAccounts.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h2 className="font-grotesk font-semibold text-base">Affiliés officiels</h2>
-                  <p className="text-sm text-muted-foreground">Comptes affiliés publiquement à cette entreprise.</p>
-                </div>
-                <span className="text-sm text-muted-foreground">{affiliatedAccounts.length} affilié{affiliatedAccounts.length > 1 ? 's' : ''}</span>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {affiliatedAccounts.map(({ affiliation, profile }) => (
-                  <Link
-                    key={affiliation.id}
-                    to={profile.username ? `/@${profile.username}` : `/user/${profile.id}`}
-                    onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        window.scrollTo({ top: 0, behavior: 'auto' });
-                      }
-                    }}
-                    className="block rounded-3xl border border-border bg-secondary/60 p-4 transition hover:border-primary/50 hover:shadow-lg"
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="h-12 w-12 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center">
-                        {profile.avatar_url ? (
-                          <img src={profile.avatar_url} alt={profile.display_name || profile.full_name || profile.username} className="h-full w-full object-cover" />
-                        ) : (
-                          <span className="font-semibold text-primary text-lg">{(profile.display_name || profile.full_name || profile.username || '?')[0]?.toUpperCase()}</span>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-sm text-foreground truncate">{profile.display_name || profile.full_name || profile.username}</p>
-                        {profile.username && <p className="text-[11px] text-muted-foreground truncate">@{profile.username}</p>}
-                        {profile.verifications?.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-                      {affiliation.role && <span className="rounded-full border border-border px-2 py-1">{affiliation.role}</span>}
-                      <span className="rounded-full border border-border px-2 py-1 bg-primary/10 text-primary">Affiliation publique</span>
-                      {profile.location && <span className="rounded-full border border-border px-2 py-1">{profile.location}</span>}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Discussions récentes */}
-          {recentDiscussions.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-              <h2 className="font-grotesk font-semibold text-base mb-3 flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-primary" />
-                Discussions récentes
-              </h2>
-              <div className="space-y-2">
-                {recentDiscussions.map(d => (
-                  <Link
-                    key={d.id}
-                    to={`/forum/${d.id}`}
-                    className="block p-3 bg-secondary/40 hover:bg-secondary/70 border border-border rounded-xl transition-colors group"
-                  >
-                    <p className="font-inter text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">{d.title}</p>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      {d.category && (
-                        <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
-                          <Hash className="w-2.5 h-2.5" />{d.category}
-                        </span>
-                      )}
-                      <span className="text-[10px] text-muted-foreground">
-                        {formatDistanceToNow(new Date(d.created_date), { addSuffix: true, locale: fr })}
-                      </span>
-                      {d.replies_count > 0 && (
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                          <MessageSquare className="w-2.5 h-2.5" />{d.replies_count}
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
         </div>
+
+        <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 lg:px-6">
+          <div className="relative px-0 sm:px-4 md:px-6 -mt-16">
+            <div className="flex items-end justify-between gap-4 mb-4">
+              {/* Avatar */}
+              <div
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
+                style={isSupreme
+                  ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
+                  : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
+                }
+              >
+                {user.avatar_url ? (
+                  <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-grotesk font-bold text-4xl text-white drop-shadow-sm">
+                    {user.full_name?.[0]?.toUpperCase() || '?'}
+                  </span>
+                )}
+              </div>
+
+              {/* Status badges top right */}
+              <div className="flex items-center gap-2 flex-wrap pb-1">
+                {user.verified_status === 'yes' && (
+                  <span className="flex items-center gap-1 font-mono text-[10px] text-accent bg-accent/10 border border-accent/30 px-2 py-1 rounded-full">
+                    <CheckCircle className="w-3 h-3" /> Vérifié
+                  </span>
+                )}
+                <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
+                  {user.account_status === 'active' ? 'Actif' : 'Inactif'}
+                </span>
+              </div>
+            </div>
+
+            {/* Name + username */}
+            <h1
+              className="font-grotesk font-bold text-2xl sm:text-3xl mb-1"
+              style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+            >
+              {user.display_name || user.full_name}
+            </h1>
+
+            <div className="flex items-center gap-2 mb-3">
+              {user.username && (
+                <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
+              )}
+              <VerificationIcons verifications={user.verifications} size="md" user={user} />
+            </div>
+
+            {/* Role chip */}
+            {user.role && roleCfg && (
+              <span className={`inline-flex items-center gap-1 mb-4 font-mono text-[10px] px-2.5 py-1 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
+                {roleCfg.emoji} {roleCfg.label}
+              </span>
+            )}
+
+            {/* Bio */}
+            {user.bio && (
+              <p className="font-inter text-sm text-foreground/80 leading-relaxed mb-4 whitespace-pre-line">
+                {user.bio}
+              </p>
+            )}
+
+            {/* Info row */}
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4">
+              {user.location && (
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <MapPin className="w-3.5 h-3.5" /> {user.location}
+                </div>
+              )}
+              {user.website && (
+                <div className="flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-primary" />
+                  <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate max-w-[200px]">
+                    {user.website.replace(/^https?:\/\//, '')}
+                  </a>
+                </div>
+              )}
+              {memberSince && (
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Calendar className="w-3.5 h-3.5" /> Membre {memberSince}
+                </div>
+              )}
+            </div>
+
+            {/* Verification principale */}
+            {getHighestVerificationBadge(user.verifications) && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {(() => {
+                  const badge = getHighestVerificationBadge(user.verifications);
+                  const cfg = VERIFICATION_CONFIG[badge];
+                  if (!cfg) return null;
+                  const count = badgeCounts[badge] || 0;
+                  return (
+                    <span key={badge} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.border} ${cfg.bg}`}>
+                      <span className={cfg.color}>•</span>
+                      <span className={cfg.color}>{cfg.label}</span>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="text-muted-foreground font-mono text-[10px]">{count} {count <= 1 ? 'profil' : 'profils'}</span>
+                    </span>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Badges */}
+            {user.badges?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {user.badges.map(b => {
+                  const cfg = BADGE_CONFIG[b];
+                  if (!cfg) return <BadgeChip key={b} badge={b} />;
+                  return (
+                    <span key={b} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+                      {b}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
+                <p className="font-grotesk font-bold text-xl text-foreground">{followers.length}</p>
+                <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonné{followers.length > 1 ? 's' : ''}</p>
+              </div>
+              <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
+                <p className="font-grotesk font-bold text-xl text-foreground">{followingCount}</p>
+                <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonnements</p>
+              </div>
+              <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
+                <p className="font-grotesk font-bold text-xl text-foreground">{recentDiscussions.length}</p>
+                <p className="font-inter text-xs text-muted-foreground mt-0.5">Discussion{recentDiscussions.length > 1 ? 's' : ''}</p>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            {currentUser && currentUser.email !== user.email && (
+              <div className="flex flex-col gap-2 mb-6 sm:flex-row">
+                <Button onClick={handleMessage} variant="outline" className="flex-1 gap-2 h-10 text-sm font-medium rounded-xl">
+                  <MessageCircle className="w-4 h-4" /> Message
+                </Button>
+                {!isFollowing ? (
+                  <Button onClick={handleFollow} disabled={followingLoading} className="flex-1 gap-2 h-10 text-sm font-medium bg-primary hover:bg-primary/90 rounded-xl">
+                    {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                    S'abonner
+                  </Button>
+                ) : (
+                  <Button onClick={handleUnfollow} disabled={followingLoading} className="flex-1 h-10 text-sm font-medium bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30 rounded-xl gap-2">
+                    {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
+                    Se désabonner
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {affiliatedAccounts.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2 className="font-grotesk font-semibold text-base">Affiliés officiels</h2>
+                    <p className="text-sm text-muted-foreground">Comptes affiliés publiquement à cette entreprise.</p>
+                  </div>
+                  <span className="text-sm text-muted-foreground">{affiliatedAccounts.length} affilié{affiliatedAccounts.length > 1 ? 's' : ''}</span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {affiliatedAccounts.map(({ affiliation, profile }) => (
+                    <Link
+                      key={affiliation.id}
+                      to={profile.username ? `/@${profile.username}` : `/user/${profile.id}`}
+                      onClick={() => { if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'auto' }); }}
+                      className="block rounded-3xl border border-border bg-secondary/60 p-4 transition hover:border-primary/50 hover:shadow-lg"
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center">
+                          {profile.avatar_url ? (
+                            <img src={profile.avatar_url} alt={profile.display_name || profile.full_name || profile.username} className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="font-semibold text-primary text-lg">{(profile.display_name || profile.full_name || profile.username || '?')[0]?.toUpperCase()}</span>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm text-foreground truncate">{profile.display_name || profile.full_name || profile.username}</p>
+                          {profile.username && <p className="text-[11px] text-muted-foreground truncate">@{profile.username}</p>}
+                          {profile.verifications?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                        {affiliation.role && <span className="rounded-full border border-border px-2 py-1">{affiliation.role}</span>}
+                        <span className="rounded-full border border-border px-2 py-1 bg-primary/10 text-primary">Affiliation publique</span>
+                        {profile.location && <span className="rounded-full border border-border px-2 py-1">{profile.location}</span>}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Discussions récentes */}
+            {recentDiscussions.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+                <h2 className="font-grotesk font-semibold text-base mb-3 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-primary" />
+                  Discussions récentes
+                </h2>
+                <div className="space-y-2">
+                  {recentDiscussions.map(d => (
+                    <Link
+                      key={d.id}
+                      to={`/forum/${d.id}`}
+                      className="block p-3 bg-secondary/40 hover:bg-secondary/70 border border-border rounded-xl transition-colors group"
+                    >
+                      <p className="font-inter text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">{d.title}</p>
+                      <div className="flex items-center gap-3 mt-1.5">
+                        {d.category && (
+                          <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
+                            <Hash className="w-2.5 h-2.5" />{d.category}
+                          </span>
+                        )}
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatDistanceToNow(new Date(d.created_date), { addSuffix: true, locale: fr })}
+                        </span>
+                        {d.replies_count > 0 && (
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <MessageSquare className="w-2.5 h-2.5" />{d.replies_count}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Right sidebar — sticky, same as HomePage */}
+      <div className="hidden xl:flex flex-col w-[300px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-4 px-3" style={{ scrollbarWidth: 'none' }}>
+        <HomeRightSidebar />
       </div>
     </div>
   );

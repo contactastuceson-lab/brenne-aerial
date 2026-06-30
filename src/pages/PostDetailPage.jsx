@@ -10,6 +10,7 @@ export default function PostDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
+  const [parentPost, setParentPost] = useState(null);
   const [replies, setReplies] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,6 +27,11 @@ export default function PostDetailPage() {
         setCurrentUser(me);
         setPost(postData);
         setReplies(replyList);
+        // Load parent post if this is a reply
+        if (postData.reply_to_id) {
+          const parent = await base44.entities.Post.get(postData.reply_to_id).catch(() => null);
+          setParentPost(parent);
+        }
         // Increment view count
         base44.entities.Post.update(id, { views_count: (postData.views_count || 0) + 1 }).catch(() => {});
       } catch {
@@ -65,6 +71,15 @@ export default function PostDetailPage() {
           </button>
           <h1 className="font-grotesk font-bold text-lg">Post</h1>
         </div>
+
+        {/* Parent post (if this is a reply) */}
+        {parentPost && (
+          <div className="relative">
+            <PostCard post={parentPost} currentUser={currentUser} />
+            {/* Thread line */}
+            <div className="absolute left-[2.25rem] top-0 bottom-0 w-0.5 bg-zinc-700/50 pointer-events-none" style={{ top: '3.5rem', bottom: '-1rem' }} />
+          </div>
+        )}
 
         {/* Original post (full size) */}
         <PostCard post={post} currentUser={currentUser} onReply={() => replyRef.current?.scrollIntoView({ behavior: 'smooth' })} />

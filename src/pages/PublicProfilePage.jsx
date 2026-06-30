@@ -359,37 +359,37 @@ export default function PublicProfilePage() {
   }
 
   return (
-    <div className="pt-16 min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen pb-20 overflow-x-hidden" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
       {/* Fullscreen Cover Banner */}
       <div
-        className="relative h-56 sm:h-72 overflow-hidden"
-          style={isSupreme
-            ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
-            : user.cover_url
-            ? {}
-            : { background: getCoverGradient(user.full_name) }
-          }
-        >
-          {user.cover_url ? (
-            <img src={user.cover_url} alt="cover" className="w-full h-full object-cover" />
-          ) : (
-            <>
-              <div className="absolute inset-0 opacity-20" style={{
-                backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)',
-              }} />
-              <div className="absolute inset-0 grid-bg opacity-30" />
-              <div className="absolute inset-0 flex items-center justify-end pr-10 opacity-10">
-                <span className="font-grotesk font-black text-[10rem] text-white select-none leading-none">
-                  {user.full_name?.[0]?.toUpperCase() || '?'}
-                </span>
-              </div>
-            </>
-          )}
-          {/* Gradient bottom fade */}
-          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
-        </div>
+        className="relative w-screen max-w-none left-1/2 -translate-x-1/2 h-[calc(100vh-52px)] sm:h-[calc(100vh-64px)] overflow-hidden"
+        style={isSupreme
+          ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
+          : user.cover_url
+          ? {}
+          : { background: getCoverGradient(user.full_name) }
+        }
+      >
+        {user.cover_url ? (
+          <img src={user.cover_url} alt="cover" className="min-w-full min-h-full object-cover" />
+        ) : (
+          <>
+            <div className="absolute inset-0 opacity-20" style={{
+              backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)',
+            }} />
+            <div className="absolute inset-0 grid-bg opacity-30" />
+            <div className="absolute inset-0 flex items-center justify-end pr-10 opacity-10">
+              <span className="font-grotesk font-black text-[10rem] text-white select-none leading-none">
+                {user.full_name?.[0]?.toUpperCase() || '?'}
+              </span>
+            </div>
+          </>
+        )}
+        {/* Gradient bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
+      </div>
 
+      <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 lg:px-6">
         {/* Avatar + header */}
         <div className="relative px-0 sm:px-4 md:px-6 -mt-16">
           <div className="flex items-end justify-between gap-4 mb-4">

@@ -207,13 +207,13 @@ export default function HomeRightSidebar() {
   }, [recentPosts]);
 
   return (
-    <aside className="hidden xl:flex flex-col w-72 flex-shrink-0 h-screen sticky top-0 overflow-y-auto py-3 px-3 scrollbar-hide">
+    <>
       <SearchBar allUsers={allUsers} />
       <SuggestedUsers users={suggestedUsers} />
       <TrendingSection trendingTags={trendingTags} />
 
       {/* Footer */}
-      <div className="px-1 pb-4">
+      <div className="px-1 pb-4 mt-auto">
         <div className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-[11px] text-muted-foreground/30">
           {[['À propos', '/about'], ['Blog', '/blog'], ['Forum', '/forum'], ['Contact', '/contact'], ['Confidentialité', '/legal/privacy'], ['CGU', '/legal/terms']].map(([l, to]) => (
             <Link key={l} to={to} className="hover:text-muted-foreground/60 transition-colors">{l}</Link>
@@ -221,6 +221,6 @@ export default function HomeRightSidebar() {
         </div>
         <p className="text-[11px] font-mono text-muted-foreground/20 mt-2">© 2026 Brenne Aerial</p>
       </div>
-    </aside>
+    </>
   );
 }

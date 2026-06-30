@@ -23,8 +23,11 @@ export default function HomePage() {
         <HomeFeed user={user} />
       </div>
 
-      {/* Sidebar droite */}
-      <HomeRightSidebar />
+      {/* Sidebar droite fixe — placeholder pour réserver l'espace */}
+      <div className="hidden xl:block w-[300px] flex-shrink-0" />
+      <div className="hidden xl:flex flex-col fixed top-0 right-0 w-[300px] h-screen overflow-y-auto py-4 px-3" style={{ scrollbarWidth: 'none' }}>
+        <HomeRightSidebar />
+      </div>
     </div>
   );
 }

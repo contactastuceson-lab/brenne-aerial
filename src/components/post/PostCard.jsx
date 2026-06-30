@@ -58,11 +58,17 @@ function renderContent(content, navigate) {
   return <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{elements}</p>;
 }
 
+const TRUNCATE_LIMIT = 280;
+
 export default function PostCard({ post, currentUser, onReply, compact = false }) {
   const navigate = useNavigate();
   const [liked, setLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  const isLong = (post.content || '').length > TRUNCATE_LIMIT;
+  const displayContent = isLong && !expanded ? post.content.slice(0, TRUNCATE_LIMIT) + '…' : post.content;
 
   const authorName = post.author_display_name || post.author_name || post.author_username || 'Utilisateur';
   const authorUsername = post.author_username;
@@ -167,9 +173,17 @@ export default function PostCard({ post, currentUser, onReply, compact = false }
         )}
 
         {/* Post text */}
-        <div className="text-foreground/90 mb-2">
-          {renderContent(post.content, navigate)}
+        <div className="text-foreground/90 mb-1">
+          {renderContent(displayContent, navigate)}
         </div>
+        {isLong && !expanded && (
+          <button
+            onClick={e => { e.stopPropagation(); setExpanded(true); }}
+            className="text-sm text-primary hover:underline mb-2 block"
+          >
+            Voir plus
+          </button>
+        )}
 
         {/* Media */}
         {post.media_urls?.length > 0 && (

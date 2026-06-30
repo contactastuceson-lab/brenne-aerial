@@ -1,0 +1,215 @@
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import {
+  TrendingUp, Hash, Sparkles, UserPlus, Flame, Users,
+  Calendar, ArrowRight, Verified, Building2, Zap, Star
+} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import VerificationIcons from '@/components/ui/VerificationIcon';
+
+const TRENDING = [
+  { tag: 'drone',       count: 142, rise: '+12%',  hot: true  },
+  { tag: 'captation4k', count: 98,  rise: '+24%',  hot: true  },
+  { tag: 'aerial',      count: 76,  rise: '+8%',   hot: false },
+  { tag: 'inspection',  count: 64,  rise: '+5%',   hot: false },
+  { tag: 'brenne',      count: 51,  rise: '+18%',  hot: false },
+  { tag: 'innovation',  count: 43,  rise: '+31%',  hot: true  },
+];
+
+function SectionCard({ children, delay = 0 }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 16 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay, duration: 0.4 }}
+      className="rounded-3xl overflow-hidden"
+      style={{
+        background: 'linear-gradient(145deg, rgba(255,255,255,0.065) 0%, rgba(255,255,255,0.025) 100%)',
+        border: '1px solid rgba(255,255,255,0.09)',
+        boxShadow: '0 4px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.06)',
+        backdropFilter: 'blur(12px)',
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function SectionHeader({ icon: Icon, iconColor = 'text-primary', title, to }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/7">
+      <div className="flex items-center gap-2.5">
+        <div className="w-7 h-7 rounded-xl flex items-center justify-center"
+          style={{ background: 'rgba(255,255,255,0.07)' }}
+        >
+          <Icon className={`w-3.5 h-3.5 ${iconColor}`} />
+        </div>
+        <p className="font-grotesk font-bold text-sm text-foreground">{title}</p>
+      </div>
+      {to && (
+        <Link to={to} className="text-[11px] font-inter text-muted-foreground/60 hover:text-primary transition-colors flex items-center gap-1">
+          Tout voir <ArrowRight className="w-3 h-3" />
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function TrendItem({ tag, count, rise, hot, i }) {
+  return (
+    <Link to="/forum" className="group flex items-center gap-3 px-4 py-2.5 hover:bg-white/6 transition-colors rounded-2xl mx-1">
+      <span className="font-mono text-xs text-muted-foreground/30 w-4 text-right">{i + 1}</span>
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: hot ? 'rgba(251, 146, 60, 0.12)' : 'rgba(255,255,255,0.05)' }}
+      >
+        {hot ? <Flame className="w-3.5 h-3.5 text-orange-400" /> : <Hash className="w-3.5 h-3.5 text-muted-foreground/50" />}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-inter text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">#{tag}</p>
+        <p className="font-mono text-[10px] text-muted-foreground/40">{count} publications</p>
+      </div>
+      <span className="font-mono text-[10px] text-emerald-400 flex-shrink-0">{rise}</span>
+    </Link>
+  );
+}
+
+function UserRow({ u, delay = 0 }) {
+  const name = u.display_name || u.full_name || u.username;
+  const avatarInitial = (name?.[0] || 'U').toUpperCase();
+  const profileLink = u.username ? `/@${u.username}` : null;
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-2.5 group">
+      <div className="w-10 h-10 rounded-2xl overflow-hidden border border-white/8 flex-shrink-0"
+        style={{ background: 'hsl(var(--primary) / 0.12)' }}
+      >
+        {u.avatar_url
+          ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" />
+          : <div className="w-full h-full flex items-center justify-center">
+              <span className="font-grotesk font-bold text-primary text-xs">{avatarInitial}</span>
+            </div>
+        }
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 mb-0.5">
+          {profileLink ? (
+            <Link to={profileLink} className="font-grotesk font-semibold text-sm text-foreground hover:text-primary transition-colors truncate">
+              {name}
+            </Link>
+          ) : (
+            <span className="font-grotesk font-semibold text-sm text-foreground truncate">{name}</span>
+          )}
+          {u.verifications?.length > 0 && <VerificationIcons verifications={u.verifications} size="sm" user={u} />}
+        </div>
+        {u.username && <p className="font-mono text-[10px] text-muted-foreground/40">@{u.username}</p>}
+      </div>
+      {profileLink && (
+        <Link to={profileLink}>
+          <button className="flex-shrink-0 flex items-center gap-1 text-[10px] font-inter font-semibold text-primary border border-primary/25 hover:bg-primary/15 px-2.5 py-1.5 rounded-xl transition-all hover:scale-105">
+            <UserPlus className="w-2.5 h-2.5" />
+            Suivre
+          </button>
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function HotPostRow({ post, i }) {
+  return (
+    <Link to={`/forum/${post.id}`} className="group flex items-start gap-3 px-4 py-3 hover:bg-white/6 rounded-2xl mx-1 transition-colors">
+      <span className="font-mono text-xs text-muted-foreground/25 flex-shrink-0 mt-0.5 w-4">{i + 1}</span>
+      <div className="flex-1 min-w-0">
+        <p className="font-inter text-sm text-foreground/85 group-hover:text-primary transition-colors line-clamp-2 leading-snug">{post.title}</p>
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="font-mono text-[10px] text-muted-foreground/35">{post.replies_count || 0} rép.</span>
+          <span className="w-0.5 h-0.5 rounded-full bg-muted-foreground/20" />
+          {post.created_date && (
+            <span className="font-mono text-[10px] text-muted-foreground/35">
+              {formatDistanceToNow(new Date(post.created_date), { addSuffix: true, locale: fr })}
+            </span>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+export default function HomeRightSidebar() {
+  const { data: suggestedUsers = [] } = useQuery({
+    queryKey: ['sidebar-suggested-users'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getPublicUsers', {});
+      return (res?.data || []).filter(u => u.username).slice(0, 4);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: hotPosts = [] } = useQuery({
+    queryKey: ['sidebar-hot-posts'],
+    queryFn: () => base44.entities.Discussion.list('-views_count', 5),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  return (
+    <aside className="hidden xl:flex flex-col w-80 2xl:w-88 flex-shrink-0 h-[calc(100vh-68px)] sticky top-[68px] overflow-y-auto py-4 px-3 2xl:px-4 scrollbar-hide space-y-3">
+
+      {/* Trending */}
+      <SectionCard delay={0}>
+        <SectionHeader icon={TrendingUp} title="Tendances" to="/forum" />
+        <div className="py-2">
+          {TRENDING.map((t, i) => <TrendItem key={t.tag} {...t} i={i} />)}
+        </div>
+      </SectionCard>
+
+      {/* Suggested accounts */}
+      {suggestedUsers.length > 0 && (
+        <SectionCard delay={0.08}>
+          <SectionHeader icon={Sparkles} title="Comptes suggérés" to="/discover" />
+          <div className="py-2">
+            {suggestedUsers.map((u, i) => <UserRow key={u.id} u={u} delay={i * 0.05} />)}
+          </div>
+          <div className="px-4 pb-3">
+            <Link to="/discover"
+              className="block w-full text-center text-xs font-inter font-medium text-primary/80 hover:text-primary py-2.5 rounded-2xl border border-primary/15 hover:bg-primary/8 transition-all"
+            >
+              Voir tous les membres
+            </Link>
+          </div>
+        </SectionCard>
+      )}
+
+      {/* Hot discussions */}
+      {hotPosts.length > 0 && (
+        <SectionCard delay={0.16}>
+          <SectionHeader icon={Flame} iconColor="text-orange-400" title="Discussions populaires" to="/forum" />
+          <div className="py-2">
+            {hotPosts.map((p, i) => <HotPostRow key={p.id} post={p} i={i} />)}
+          </div>
+        </SectionCard>
+      )}
+
+      {/* Quick links */}
+      <SectionCard delay={0.24}>
+        <div className="p-4">
+          <div className="flex flex-wrap gap-x-3 gap-y-2 text-[11px] font-inter text-muted-foreground/40">
+            {[
+              ['À propos', '/about'], ['Blog', '/blog'], ['Forum', '/forum'],
+              ['Partenaires', '/partenaires'], ['Parrainage', '/parrainage'],
+              ['Contact', '/contact'], ['Confidentialité', '/legal/privacy'], ['CGU', '/legal/terms']
+            ].map(([l, to]) => (
+              <Link key={l} to={to} className="hover:text-muted-foreground/80 transition-colors">{l}</Link>
+            ))}
+          </div>
+          <div className="mt-3 pt-3 border-t border-white/6">
+            <p className="text-[10px] font-mono text-muted-foreground/25">© 2026 Brenne Aerial · Tous droits réservés</p>
+          </div>
+        </div>
+      </SectionCard>
+
+    </aside>
+  );
+}

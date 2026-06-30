@@ -196,7 +196,7 @@ function TrendingSection({ trendingTags }) {
       </div>
       <div className="divide-y divide-border/40">
         {trendingTags.slice(0, 5).map(({ tag, count }, i) => (
-          <Link key={tag} to={`/forum?tag=${tag}`}
+          <Link key={tag} to={`/?tag=${tag}`}
             className="flex items-start justify-between gap-3 px-4 py-3 hover:bg-white/3 transition-colors group">
             <div className="flex-1 min-w-0">
               <p className="font-mono text-[11px] text-muted-foreground/40 mb-0.5">Tendance · {i + 1}</p>

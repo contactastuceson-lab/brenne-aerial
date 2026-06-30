@@ -109,12 +109,16 @@ export default function HomeFeed({ user }) {
   const { data: posts = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['home-feed-posts', filter],
     queryFn: async () => {
-      if (filter === 'popular') return base44.entities.Post.list('-likes_count', 50);
+      if (filter === 'popular') {
+        const all = await base44.entities.Post.list('-likes_count', 100);
+        return all.filter(p => !p.reply_to_id);
+      }
       if (filter === 'medias') {
         const all = await base44.entities.Post.list('-created_date', 100);
-        return all.filter(p => p.media_urls?.length > 0);
+        return all.filter(p => p.media_urls?.length > 0 && !p.reply_to_id);
       }
-      return base44.entities.Post.list('-created_date', 50);
+      const all = await base44.entities.Post.list('-created_date', 100);
+      return all.filter(p => !p.reply_to_id);
     },
     staleTime: 60000,
   });

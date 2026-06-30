@@ -17,7 +17,6 @@ import SplashScreen from "@/components/SplashScreen";
 // Layout
 import PublicLayout from "@/components/layout/PublicLayout";
 import SidebarLayout from "@/components/layout/SidebarLayout";
-
 import AdminLayout from "@/components/admin/AdminLayout";
 
 // Public pages

@@ -354,11 +354,11 @@ export default function PublicProfilePage() {
 
   return (
     <div className="pt-16 min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
-      <div className="w-full max-w-full mx-auto px-0">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Cover */}
         <div
-          className="relative h-72 overflow-hidden"
+          className="relative h-56 sm:h-72 overflow-hidden"
           style={isSupreme
             ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
             : user.cover_url
@@ -386,11 +386,11 @@ export default function PublicProfilePage() {
         </div>
 
         {/* Avatar + header */}
-        <div className="relative px-8 md:px-16 -mt-16">
+        <div className="relative px-0 sm:px-4 md:px-6 -mt-16">
           <div className="flex items-end justify-between gap-4 mb-4">
             {/* Avatar */}
             <div
-              className="w-28 h-28 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
+              className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
               style={isSupreme
                 ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
                 : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
@@ -420,7 +420,7 @@ export default function PublicProfilePage() {
 
           {/* Name + username */}
           <h1
-            className="font-grotesk font-bold text-3xl mb-1"
+            className="font-grotesk font-bold text-2xl sm:text-3xl mb-1"
             style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
           >
             {user.display_name || user.full_name}
@@ -504,7 +504,7 @@ export default function PublicProfilePage() {
           )}
 
           {/* Stats row */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
               <p className="font-grotesk font-bold text-xl text-foreground">{followers.length}</p>
               <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonné{followers.length > 1 ? 's' : ''}</p>
@@ -521,7 +521,7 @@ export default function PublicProfilePage() {
 
           {/* Action buttons */}
           {currentUser && currentUser.email !== user.email && (
-            <div className="flex gap-2 mb-6">
+            <div className="flex flex-col gap-2 mb-6 sm:flex-row">
               <Button
                 onClick={handleMessage}
                 variant="outline"

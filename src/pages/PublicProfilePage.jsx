@@ -359,12 +359,10 @@ export default function PublicProfilePage() {
   }
 
   return (
-    <div className="pt-16 min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Cover */}
-        <div
-          className="relative h-56 sm:h-72 overflow-hidden"
+    <div className="min-h-screen pb-20" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
+      {/* Fullscreen Cover Banner */}
+      <div
+        className="relative w-full h-56 sm:h-72 overflow-hidden -mb-16"
           style={isSupreme
             ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
             : user.cover_url

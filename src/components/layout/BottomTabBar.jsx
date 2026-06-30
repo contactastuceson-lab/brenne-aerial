@@ -1,37 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Compass, MessageCircle, MoreHorizontal, X, Bell, User, LogOut, LayoutDashboard, FolderOpen, Warehouse, Building2, Users, Shield, ZoomIn, Calculator, Phone, Camera, BookOpen, MessageSquare, Scale, Lock, Heart, Zap, Layers } from 'lucide-react';
+import {
+  Home, Compass, MessageCircle, MoreHorizontal, X,
+  Bell, User, LogOut, LayoutDashboard, Bookmark,
+  Users, FileText, Calendar, Settings, Heart, Shield,
+  Building2, Star, Award
+} from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { hasAdminAccess } from '@/lib/roles';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MAIN_TABS = [
-  { to: '/',          icon: Home,          label: 'Accueil' },
-  { to: '/discover',  icon: Compass,        label: 'Explorer' },
-  { to: '/messages',  icon: MessageCircle,  label: 'Messages' },
-  { to: '/planning',  icon: BookOpen,       label: 'Planning' },
-  { to: null,         icon: MoreHorizontal, label: 'Plus',   isMore: true },
+  { to: '/',         icon: Home,          label: 'Accueil' },
+  { to: '/discover', icon: Compass,       label: 'Explorer' },
+  { to: '/messages', icon: MessageCircle, label: 'Messages' },
+  { to: '/forum',    icon: FileText,      label: 'Forum' },
+  { to: null,        icon: MoreHorizontal,label: 'Plus',   isMore: true },
 ];
 
 const MORE_ITEMS = [
-  { to: '/dashboard',        icon: Bell,          label: 'Tableau de bord',        color: 'text-primary' },
-  { to: '/profile',          icon: User,          label: 'Mon profil',             color: 'text-accent' },
-  { to: '/portfolio',        icon: Camera,        label: 'Portfolio',              color: 'text-purple-400' },
-  { to: '/calculateur',      icon: Calculator,    label: 'Calculateur de prix',    color: 'text-yellow-400' },
-  { to: '/contact',          icon: Phone,         label: 'Contact',                color: 'text-cyan-400' },
-  { to: '/espace-client',    icon: FolderOpen,    label: 'Espace Client',          color: 'text-orange-400' },
-  { to: '/garage',           icon: Warehouse,     label: 'Garage Drones',          color: 'text-blue-400' },
-  { to: '/partenaires',      icon: Building2,     label: 'Partenaires',            color: 'text-pink-400' },
-  { to: '/parrainage',       icon: Users,         label: 'Parrainage',             color: 'text-teal-400' },
-  { to: '/reglementation',   icon: Shield,        label: 'Réglementation',         color: 'text-red-400' },
-  { to: '/comparateur',      icon: ZoomIn,        label: 'Comparateur résolution', color: 'text-amber-400' },
-  { to: '/forum',            icon: MessageSquare, label: 'Forum',                 color: 'text-blue-400' },
-  { to: '/donation',         icon: Heart,         label: 'Donation',               color: 'text-red-400' },
-  { to: '/toiture-checkup',  icon: Zap,           label: 'Inspection Toiture',     color: 'text-yellow-400' },
-  { to: '/legal/privacy',    icon: Lock,          label: 'Confidentialité',        color: 'text-slate-400' },
-  { to: '/legal/terms',      icon: Scale,         label: 'Conditions',             color: 'text-slate-400' },
-  { to: '/ecosysteme',       icon: Layers,        label: 'Écosystème',             color: 'text-primary' },
+  { to: '/profile',              icon: User,         label: 'Mon profil',      color: 'text-primary' },
+  { to: '/discover',             icon: Compass,      label: 'Explorer',        color: 'text-cyan-400' },
+  { to: '/forum',                icon: FileText,     label: 'Forum',           color: 'text-blue-400' },
+  { to: '/planning',             icon: Calendar,     label: 'Événements',      color: 'text-purple-400' },
+  { to: '/espace-client',        icon: Bookmark,     label: 'Mes fichiers',    color: 'text-amber-400' },
+  { to: '/espace-client?tab=badges', icon: Award,    label: 'Mes badges',      color: 'text-yellow-400' },
+  { to: '/espace-client?tab=my-affils', icon: Building2, label: 'Affiliations', color: 'text-emerald-400' },
+  { to: '/partenaires',          icon: Users,        label: 'Partenaires',     color: 'text-pink-400' },
+  { to: '/parrainage',           icon: Heart,        label: 'Parrainage',      color: 'text-rose-400' },
+  { to: '/ecosysteme',           icon: Star,         label: 'Écosystème',      color: 'text-orange-400' },
+  { to: '/donation',             icon: Heart,        label: 'Soutenir',        color: 'text-red-400' },
+  { to: '/legal/privacy',        icon: Shield,       label: 'Confidentialité', color: 'text-slate-400' },
 ];
 
 export default function BottomTabBar() {
@@ -56,137 +56,134 @@ export default function BottomTabBar() {
   const isActive = (path) => {
     if (!path) return false;
     if (path === '/') return location.pathname === '/';
-    return location.pathname.startsWith(path);
+    return location.pathname.startsWith(path.split('?')[0]);
   };
 
   const unreadCount = notifs.length;
 
   return (
     <>
-      {/* Fullscreen drawer menu */}
+      {/* Fullscreen drawer */}
       <AnimatePresence>
         {showMore && (
           <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/70 backdrop-blur-md z-40"
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
               onClick={() => setShowMore(false)}
             />
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-b from-card/98 to-background/95 backdrop-blur-xl rounded-t-3xl max-h-[95vh] flex flex-col overflow-hidden"
+              transition={{ type: 'spring', damping: 28, stiffness: 380 }}
+              className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl max-h-[88vh] flex flex-col overflow-hidden"
+              style={{
+                background: 'linear-gradient(180deg, rgba(14,22,40,0.98) 0%, rgba(4,10,20,0.99) 100%)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderBottom: 'none',
+                boxShadow: '0 -16px 64px rgba(0,0,0,0.5)',
+              }}
             >
-              {/* Grab handle + close */}
-              <div className="flex items-center justify-between px-6 pt-4 pb-2">
-                <div className="w-12 h-1 rounded-full bg-border/40 mx-auto absolute top-3" />
-                <div className="h-1" />
-                <button 
-                  onClick={() => setShowMore(false)}
-                  className="w-10 h-10 rounded-full bg-secondary/50 hover:bg-secondary flex items-center justify-center transition-colors"
-                >
-                  <X className="w-5 h-5 text-muted-foreground" />
+              {/* Handle */}
+              <div className="flex items-center justify-between px-5 pt-3 pb-1 flex-shrink-0">
+                <div className="w-10 h-1 rounded-full bg-white/15 mx-auto" />
+                <button onClick={() => setShowMore(false)}
+                  className="absolute right-4 top-3 w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/8 transition-all">
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Scrollable content */}
-              <div className="overflow-y-auto flex-1 px-4">
-                {/* User quick actions */}
+              <div className="overflow-y-auto flex-1 px-4 pb-6">
+                {/* User card */}
                 {user && (
-                  <div className="mb-6">
-                    <p className="font-grotesk text-xs text-muted-foreground uppercase tracking-wider mb-3">Mon compte</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      <Link to="/profile" onClick={() => setShowMore(false)}
-                        className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-primary/10 border border-primary/30 hover:border-primary/50 transition-all">
-                        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center overflow-hidden flex-shrink-0">
-                          {user.avatar_url
-                            ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
-                            : <User className="w-5 h-5 text-primary" />}
-                        </div>
-                        <span className="font-inter text-[11px] text-primary font-medium text-center">Profil</span>
-                      </Link>
-                      <Link to="/dashboard" onClick={() => setShowMore(false)}
-                        className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-secondary/50 border border-border hover:bg-secondary transition-all relative">
-                        <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center flex-shrink-0">
-                          <Bell className="w-5 h-5 text-muted-foreground" />
-                        </div>
-                        {unreadCount > 0 && (
-                          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-mono font-bold flex items-center justify-center">
-                            {unreadCount > 9 ? '9+' : unreadCount}
-                          </span>
-                        )}
-                        <span className="font-inter text-[11px] text-muted-foreground text-center">Notifs</span>
-                      </Link>
-                      {hasAdminAccess(user) && (
-                        <Link to="/admin" onClick={() => setShowMore(false)}
-                          className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-secondary/50 border border-border hover:bg-secondary transition-all">
-                          <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center flex-shrink-0">
-                            <LayoutDashboard className="w-5 h-5 text-primary" />
-                          </div>
-                          <span className="font-inter text-[11px] text-muted-foreground text-center">Admin</span>
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {!user && (
-                  <div className="mb-6 flex gap-2">
-                    <button onClick={() => { base44.auth.redirectToLogin(); setShowMore(false); }}
-                      className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-grotesk font-semibold text-sm transition-transform hover:scale-105 active:scale-95">
-                      Connexion
-                    </button>
-                    <Link to="/quote" onClick={() => setShowMore(false)}
-                      className="flex-1 py-3 rounded-xl bg-secondary border border-border font-inter text-sm text-center text-foreground transition-all hover:bg-secondary/80">
-                      Devis gratuit
+                  <div className="mb-5 mt-2">
+                    <Link to="/profile" onClick={() => setShowMore(false)}
+                      className="flex items-center gap-3 p-3.5 rounded-2xl border border-white/8 hover:bg-white/5 transition-colors"
+                      style={{ background: 'rgba(255,255,255,0.04)' }}
+                    >
+                      <div className="w-11 h-11 rounded-full overflow-hidden border border-primary/25 flex-shrink-0"
+                        style={{ background: 'hsl(var(--primary)/0.15)' }}
+                      >
+                        {user.avatar_url
+                          ? <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
+                          : <div className="w-full h-full flex items-center justify-center">
+                              <span className="font-grotesk font-bold text-primary">{(user.display_name || user.full_name || 'U')[0].toUpperCase()}</span>
+                            </div>
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-grotesk font-bold text-sm truncate">{user.display_name || user.full_name}</p>
+                        {user.username && <p className="font-mono text-xs text-muted-foreground">@{user.username}</p>}
+                      </div>
+                      <Settings className="w-4 h-4 text-muted-foreground/40" />
                     </Link>
                   </div>
                 )}
 
-                {/* Navigation sections */}
-                <div className="mb-6">
-                  <p className="font-grotesk text-xs text-muted-foreground uppercase tracking-wider mb-3">Navigation</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {MORE_ITEMS.filter(item => {
-                      if (!user && (item.to === '/dashboard' || item.to === '/profile')) return false;
-                      return true;
-                    }).map(item => {
+                {!user && (
+                  <div className="mb-5 mt-2 flex gap-2">
+                    <button onClick={() => { base44.auth.redirectToLogin(); setShowMore(false); }}
+                      className="flex-1 py-3 rounded-2xl font-grotesk font-semibold text-sm text-primary-foreground transition-all"
+                      style={{ background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)', boxShadow: '0 0 20px hsl(var(--primary)/0.3)' }}>
+                      Se connecter
+                    </button>
+                    <Link to="/register" onClick={() => setShowMore(false)}
+                      className="flex-1 py-3 rounded-2xl font-inter text-sm text-center text-muted-foreground border border-white/10 hover:bg-white/5 transition-all">
+                      S'inscrire
+                    </Link>
+                  </div>
+                )}
+
+                {/* Quick actions */}
+                {user && (
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    {[
+                      { to: '/profile', icon: User, label: 'Profil', color: 'text-primary' },
+                      { to: '/espace-client', icon: Bookmark, label: 'Mes fichiers', color: 'text-amber-400', badge: unreadCount },
+                      ...(hasAdminAccess(user) ? [{ to: '/admin', icon: LayoutDashboard, label: 'Admin', color: 'text-purple-400' }] : []),
+                    ].map(item => {
                       const Icon = item.icon;
                       return (
-                        <Link
-                          key={item.to}
-                          to={item.to}
-                          onClick={() => setShowMore(false)}
-                          className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all border ${
-                            isActive(item.to) 
-                              ? 'bg-primary/10 border-primary/30' 
-                              : 'bg-secondary/30 border-border/50 hover:bg-secondary/50'
-                          }`}
+                        <Link key={item.to} to={item.to} onClick={() => setShowMore(false)}
+                          className="relative flex flex-col items-center gap-2 p-3.5 rounded-2xl border border-white/8 hover:bg-white/6 transition-all"
+                          style={{ background: 'rgba(255,255,255,0.035)' }}
                         >
-                          <div className={`w-10 h-10 rounded-xl bg-background flex items-center justify-center flex-shrink-0 ${item.color}`}>
-                            <Icon className="w-5 h-5" />
-                          </div>
-                          <span className="font-inter text-[10px] text-muted-foreground text-center leading-tight">{item.label}</span>
+                          <Icon className={`w-5 h-5 ${item.color}`} />
+                          {item.badge > 0 && (
+                            <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
+                              {item.badge > 9 ? '9+' : item.badge}
+                            </span>
+                          )}
+                          <span className="font-inter text-[11px] text-muted-foreground text-center">{item.label}</span>
                         </Link>
                       );
                     })}
                   </div>
+                )}
+
+                {/* All links */}
+                <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/40 mb-3 px-1">Navigation complète</p>
+                <div className="grid grid-cols-3 gap-2 mb-5">
+                  {MORE_ITEMS.map(item => {
+                    const Icon = item.icon;
+                    return (
+                      <Link key={item.to} to={item.to} onClick={() => setShowMore(false)}
+                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all border ${
+                          isActive(item.to) ? 'border-primary/30 bg-primary/10' : 'border-white/6 bg-white/3 hover:bg-white/6'
+                        }`}
+                      >
+                        <Icon className={`w-4.5 h-4.5 ${item.color}`} style={{ width: 18, height: 18 }} />
+                        <span className="font-inter text-[10px] text-muted-foreground text-center leading-tight">{item.label}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
 
-                {/* Logout */}
                 {user && (
-                  <div className="pb-4">
-                    <button onClick={() => { base44.auth.logout('/'); setShowMore(false); }}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive hover:bg-destructive/20 transition-all font-inter text-sm font-medium">
-                      <LogOut className="w-4 h-4" />
-                      Quitter mon compte
-                    </button>
-                  </div>
+                  <button onClick={() => { base44.auth.logout('/'); setShowMore(false); }}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-rose-400/20 text-rose-400 hover:bg-rose-400/10 transition-all font-inter text-sm font-medium">
+                    <LogOut className="w-4 h-4" /> Déconnexion
+                  </button>
                 )}
               </div>
             </motion.div>
@@ -194,57 +191,46 @@ export default function BottomTabBar() {
         )}
       </AnimatePresence>
 
-      {/* Bottom Tab Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 glass border-t border-border/60 pb-safe">
-        <div className="flex items-center px-2 h-16 overflow-x-auto scrollbar-hide gap-1">
+      {/* Tab bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/8 pb-safe"
+        style={{ background: 'rgba(4,10,20,0.92)', backdropFilter: 'blur(20px)' }}
+      >
+        <div className="flex items-center px-1 h-16 gap-0.5">
           {MAIN_TABS.map((tab) => {
             const Icon = tab.icon;
             const active = tab.isMore ? showMore : isActive(tab.to);
 
             if (tab.isMore) {
               return (
-                <button
-                  key="more"
-                  onClick={() => setShowMore(v => !v)}
-                  className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all flex-shrink-0"
+                <button key="more" onClick={() => setShowMore(v => !v)}
+                  className="flex flex-col items-center gap-1 flex-1 py-2 rounded-2xl transition-all"
                 >
-                  <div className={`w-7 h-7 flex items-center justify-center rounded-xl transition-all ${
-                    active ? 'bg-primary/20' : ''
-                  }`}>
-                    <Icon className={`w-5 h-5 transition-colors ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${active ? 'bg-primary/20' : ''}`}>
+                    {active ? <X className={`w-5 h-5 text-primary`} /> : <Icon className={`w-5 h-5 text-muted-foreground`} />}
                   </div>
-                  <span className={`font-inter text-[10px] transition-colors ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
-                    {tab.label}
+                  <span className={`font-inter text-[10px] ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                    {active ? 'Fermer' : tab.label}
                   </span>
                 </button>
               );
             }
 
             return (
-              <Link
-                key={tab.to}
-                to={tab.to}
-                onClick={() => setShowMore(false)}
-                className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all relative flex-shrink-0"
+              <Link key={tab.to} to={tab.to} onClick={() => setShowMore(false)}
+                className="flex flex-col items-center gap-1 flex-1 py-2 rounded-2xl transition-all relative"
               >
-                {/* Notification badge on Messages */}
                 {tab.to === '/messages' && unreadCount > 0 && user && (
-                  <span className="absolute top-1 right-2 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-mono flex items-center justify-center z-10">
+                  <span className="absolute top-1.5 right-[calc(50%-10px)] w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-mono flex items-center justify-center z-10 border border-background">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
-                <div className={`w-7 h-7 flex items-center justify-center rounded-xl transition-all ${
-                  active ? 'bg-primary/20' : ''
-                }`}>
-                  <Icon className={`w-5 h-5 transition-colors ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+                <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${active ? 'bg-primary/20' : ''}`}>
+                  <Icon className={`w-5 h-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
                 </div>
                 {active && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
-                    className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-primary"
-                  />
+                  <motion.div layoutId="activeTab" className="absolute -bottom-0.5 w-4 h-0.5 rounded-full bg-primary" />
                 )}
-                <span className={`font-inter text-[10px] transition-colors ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                <span className={`font-inter text-[10px] ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                   {tab.label}
                 </span>
               </Link>
@@ -252,8 +238,6 @@ export default function BottomTabBar() {
           })}
         </div>
       </div>
-
-      {/* Spacer to push content above the tab bar */}
       <div className="h-16" />
     </>
   );

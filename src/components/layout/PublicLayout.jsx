@@ -24,7 +24,7 @@ export default function PublicLayout() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   // Show footer only on homepage
-  const hideFooter = location.pathname !== '/';
+  const hideFooter = true; // Footer removed from all pages in social network mode
   const hiddenPaths = ['/messages', '/planning', '/forum'];
 
   // Detect public profile routes like `/username` or `/@username` and hide floating buttons there

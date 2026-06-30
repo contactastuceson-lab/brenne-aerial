@@ -686,8 +686,9 @@ export default function DiscoverPage() {
                       )}
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              );
+            })}
           {filtered.length === 0 && (
             <div className="text-center py-20 text-muted-foreground font-inter text-sm">
               Aucun profil trouvé

@@ -98,14 +98,7 @@ export default function PostAuthorHeader({
               </div>
             )}
           </div>
-          {resolvedIsSupreme && (
-            <div
-              className={`absolute ${crownSize} rounded-full flex items-center justify-center`}
-              style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 0 8px rgba(245,158,11,0.6)' }}
-            >
-              <Crown className={`${crownIconSize} text-amber-900`} />
-            </div>
-          )}
+
         </div>
 
         {/* Info */}
@@ -132,10 +125,7 @@ export default function PostAuthorHeader({
               />
             )}
 
-            {/* Badges d'affiliation directement sur la publication */}
-            {authorId && (
-              <AffiliationBadges userId={authorId} size="sm" />
-            )}
+
           </div>
 
           {/* Ligne 2 : @pseudo · temps · catégorie · visibilité */}

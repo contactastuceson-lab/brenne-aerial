@@ -99,7 +99,7 @@ function SuggestedUserRow({ u }) {
             : <span className="font-grotesk font-semibold text-sm text-foreground truncate">{name}</span>
           }
           {u.verifications?.length > 0 && <VerificationIcons verifications={u.verifications} size="sm" user={u} />}
-          {u.id && <AffiliationBadges userId={u.id} size="sm" max={1} />}
+
         </div>
         {u.username && <p className="font-mono text-[10px] text-muted-foreground/35">@{u.username}</p>}
       </div>

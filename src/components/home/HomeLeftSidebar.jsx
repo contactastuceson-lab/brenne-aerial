@@ -118,7 +118,7 @@ export default function HomeLeftSidebar({ user }) {
                     <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                       <p className="font-grotesk font-bold text-sm text-foreground truncate">{displayName}</p>
                       <VerificationIcons verifications={user.verifications} size="sm" user={user} />
-                      {user.id && <AffiliationBadges userId={user.id} size="sm" max={1} />}
+
                     </div>
                     {user.username && <p className="font-mono text-xs text-muted-foreground/60">@{user.username}</p>}
                     {user.bio && <p className="font-inter text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">{user.bio}</p>}

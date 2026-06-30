@@ -76,7 +76,7 @@ export default function DiscussionCard({ discussion }) {
               size="sm"
               user={{ id: discussion.author_id }}
             />
-            {discussion.author_id && <AffiliationBadges userId={discussion.author_id} size="sm" max={1} />}
+
             <span className="hidden sm:inline text-slate-600 truncate">{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">

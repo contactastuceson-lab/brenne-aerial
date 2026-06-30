@@ -45,7 +45,7 @@ function ReplyCard({ reply, discussion, id }) {
               size="sm"
               user={{ id: reply.author_id }}
             />
-            {reply.author_id && <AffiliationBadges userId={reply.author_id} size="sm" max={1} />}
+
           </div>
           <p className="text-xs text-slate-400">
             {formatDistanceToNow(new Date(reply.created_date.endsWith('Z') ? reply.created_date : reply.created_date + 'Z'), { locale: fr, addSuffix: true })}
@@ -92,7 +92,7 @@ function DiscussionAuthorHeader({ discussion }) {
         size="sm"
         user={{ id: discussion.author_id }}
       />
-      {discussion.author_id && <AffiliationBadges userId={discussion.author_id} size="sm" max={2} />}
+
     </div>
   );
 }

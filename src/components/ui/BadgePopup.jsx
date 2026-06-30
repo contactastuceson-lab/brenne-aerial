@@ -189,10 +189,10 @@ function Popup({ info, anchorRect, onClose }) {
   );
 }
 
-export default function BadgePopup({ badgeKey, children }) {
+export default function BadgePopup({ badgeKey, badgeInfo = null, children }) {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
-  const info = BADGE_INFO[badgeKey];
+  const info = badgeInfo || BADGE_INFO[badgeKey];
 
   if (!info) return <>{children}</>;
 

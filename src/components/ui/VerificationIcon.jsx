@@ -109,10 +109,19 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
         const labelNorm = (cfg.label || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
         const isVerifiedKey = ['verified', 'verifie', 'verif'].includes((key || '').toLowerCase()) || labelNorm.includes('verif');
 
+        const isAffiliationCertified = key === 'certified' && visibleAffiliation && organizationBadge;
+        const affiliationUsername = organizationUsername || visibleAffiliation.organizationName || 'cette organisation';
+        const customBadgeInfo = isAffiliationCertified ? {
+          ...cfg,
+          description: `Ce compte est Certifié, car c'est un affilié de ${affiliationUsername} sur la plateforme.`,
+          short: `Affilié officiel de ${affiliationUsername}.`,
+          issuer: 'Affiliation officielle',
+        } : undefined;
+
         // For the main "verified" badge, use the small anchored popup (BadgePopup)
         if (isVerifiedKey) {
           return (
-            <BadgePopup key={key} badgeKey={key}>
+            <BadgePopup key={key} badgeKey={key} badgeInfo={customBadgeInfo}>
               <span
                 className="inline-flex items-center justify-center flex-shrink-0 relative"
                 style={{
@@ -135,7 +144,7 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
         }
 
         return (
-          <BadgePopup key={key} badgeKey={key}>
+          <BadgePopup key={key} badgeKey={key} badgeInfo={customBadgeInfo}>
             <span
               className="inline-flex items-center justify-center flex-shrink-0 relative"
               style={{

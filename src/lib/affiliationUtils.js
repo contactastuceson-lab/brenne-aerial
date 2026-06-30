@@ -1,13 +1,24 @@
 export const AFFILIATION_ELIGIBLE_BADGES = ['official', 'supreme', 'officiel', 'suprême'];
+export const AFFILIATION_BADGE_HIERARCHY = ['verified', 'certified', 'pro', 'official', 'supreme'];
+export const AFFILIATION_BADGE_LEVEL = {
+  verified: 1,
+  certified: 2,
+  pro: 3,
+  official: 4,
+  supreme: 5,
+};
+
+const normalizeBadge = (value) => String(value || '').toLowerCase();
+const includesAny = (values = [], candidates = []) => {
+  const normalized = values.map(normalizeBadge);
+  return candidates.some((candidate) => normalized.includes(normalizeBadge(candidate)));
+};
 
 export function isAffiliationEligibleOrganization(user = {}) {
   const verifications = Array.isArray(user?.verifications) ? user.verifications : [];
   const badges = Array.isArray(user?.badges) ? user.badges : [];
-  const normalizedVerifications = verifications.map((value) => String(value || '').toLowerCase());
-  const normalizedBadges = badges.map((value) => String(value || '').toLowerCase());
-
-  return normalizedVerifications.some((value) => AFFILIATION_ELIGIBLE_BADGES.includes(value))
-    || normalizedBadges.some((value) => AFFILIATION_ELIGIBLE_BADGES.includes(value));
+  return includesAny(verifications, AFFILIATION_ELIGIBLE_BADGES)
+    || includesAny(badges, AFFILIATION_ELIGIBLE_BADGES);
 }
 
 export function canManageAffiliations(user = {}) {
@@ -21,10 +32,24 @@ export function getVisibleAffiliation(affiliations = []) {
 export function getOrganizationBadge(user = {}) {
   const verifications = Array.isArray(user?.verifications) ? user.verifications : [];
   const badges = Array.isArray(user?.badges) ? user.badges : [];
-  const normalizedVerifications = verifications.map((value) => String(value || '').toLowerCase());
-  if (normalizedVerifications.includes('supreme')) return 'supreme';
-  if (normalizedVerifications.includes('official')) return 'official';
-  if (badges.some((value) => String(value || '').toLowerCase() === 'suprême')) return 'supreme';
-  if (badges.some((value) => String(value || '').toLowerCase() === 'officiel')) return 'official';
+  const normalizedVerifications = verifications.map(normalizeBadge);
+
+  if (normalizedVerifications.includes('supreme') || normalizedVerifications.includes('suprême')) return 'supreme';
+  if (normalizedVerifications.includes('official') || normalizedVerifications.includes('officiel')) return 'official';
+  if (badges.some((value) => normalizeBadge(value) === 'suprême')) return 'supreme';
+  if (badges.some((value) => normalizeBadge(value) === 'officiel')) return 'official';
   return null;
+}
+
+export function getHighestBadgeLevel(user = {}) {
+  const verifications = Array.isArray(user?.verifications) ? user.verifications : [];
+  const badges = Array.isArray(user?.badges) ? user.badges : [];
+  const normalized = [...verifications, ...badges].map(normalizeBadge);
+
+  if (includesAny(normalized, ['supreme', 'suprême'])) return AFFILIATION_BADGE_LEVEL.supreme;
+  if (includesAny(normalized, ['official', 'officiel'])) return AFFILIATION_BADGE_LEVEL.official;
+  if (includesAny(normalized, ['pro'])) return AFFILIATION_BADGE_LEVEL.pro;
+  if (includesAny(normalized, ['certified', 'certifié'])) return AFFILIATION_BADGE_LEVEL.certified;
+  if (includesAny(normalized, ['verified', 'vérifié', 'verifie', 'verif'])) return AFFILIATION_BADGE_LEVEL.verified;
+  return 0;
 }

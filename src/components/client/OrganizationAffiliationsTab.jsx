@@ -97,10 +97,13 @@ export default function OrganizationAffiliationsTab({ user }) {
         organizationName: user.display_name || user.full_name || user.email,
         organizationAvatarUrl: user.avatar_url || '',
       };
-      const created = await base44.entities.OrganizationAffiliation.create(payload);
+      const created = autoAccept
+        ? await base44.functions.invoke('processOrganizationAffiliation', { action: 'create', affiliation: payload })
+        : await base44.entities.OrganizationAffiliation.create(payload);
+      const affiliation = created?.data?.affiliation || created?.affiliation || created;
       const targetEmail = target?.email || inviteEmail;
-      await notifyAffiliationInvitation({ targetEmail, organizationName: payload.organizationName, invitationId: created.id });
-      setAffiliations((prev) => [created, ...prev]);
+      await notifyAffiliationInvitation({ targetEmail, organizationName: payload.organizationName, invitationId: affiliation.id });
+      setAffiliations((prev) => [affiliation, ...prev]);
       setInviteEmail('');
       setInviteCandidate(null);
       setInviteQuery('');
@@ -115,7 +118,17 @@ export default function OrganizationAffiliationsTab({ user }) {
 
   const updateAffiliation = async (id, patch) => {
     try {
-      const updated = await base44.entities.OrganizationAffiliation.update(id, patch);
+      let updated;
+      if (patch.status === 'accepted') {
+        const response = await base44.functions.invoke('processOrganizationAffiliation', {
+          affiliationId: id,
+          patch,
+        });
+        updated = response?.data?.affiliation || response?.affiliation || response;
+      } else {
+        updated = await base44.entities.OrganizationAffiliation.update(id, patch);
+      }
+
       if (patch.status === 'accepted') {
         await notifyAffiliationStatus({ targetEmail: updated.userId, organizationName: updated.organizationName, status: 'accepted' });
       } else if (patch.status === 'rejected') {
@@ -132,7 +145,10 @@ export default function OrganizationAffiliationsTab({ user }) {
 
   const removeAffiliation = async (id) => {
     try {
-      await base44.entities.OrganizationAffiliation.delete(id);
+      const response = await base44.functions.invoke('processOrganizationAffiliation', {
+        affiliationId: id,
+        action: 'delete',
+      });
       const removed = affiliations.find((row) => row.id === id);
       if (removed) {
         await notifyAffiliationStatus({ targetEmail: removed.userId, organizationName: removed.organizationName, status: 'removed' });

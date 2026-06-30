@@ -57,6 +57,13 @@
         "type": "string"
       }
     },
+    "certified_affiliation_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Liste des organisations ayant attribué le badge certifié par affiliation"
+    },
     "verified_status": {
       "type": "string",
       "enum": [

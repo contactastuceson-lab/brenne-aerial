@@ -110,7 +110,7 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
         const isVerifiedKey = ['verified', 'verifie', 'verif'].includes((key || '').toLowerCase()) || labelNorm.includes('verif');
 
         const isAffiliationCertified = key === 'certified' && visibleAffiliation && organizationBadge;
-        const affiliationUsername = organizationUsername || visibleAffiliation.organizationName || 'cette organisation';
+        const affiliationUsername = organizationUsername || visibleAffiliation?.organizationName || 'cette organisation';
         const customBadgeInfo = isAffiliationCertified ? {
           ...cfg,
           description: `Ce compte est Certifié, car c'est un affilié de ${affiliationUsername} sur la plateforme.`,

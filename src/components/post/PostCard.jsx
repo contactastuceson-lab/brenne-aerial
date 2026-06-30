@@ -8,55 +8,7 @@ import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import ReactMarkdown from 'react-markdown';
 import { extractHashtags, extractMentions } from '@/lib/hashtags';
-import { useNavigate as useNav } from 'react-router-dom';
-
-function renderContent(content, navigate) {
-  if (!content) return null;
-  // Replace hashtags and mentions with links
-  const parts = content.split(/(\s|^)(#\w+|@\w+)/g);
-  const tokens = content.split(/(\s)(#[\wÀ-ÿ]+|@[\w.-]+)|^(#[\wÀ-ÿ]+|@[\w.-]+)/);
-
-  // Simple render: highlight #tag and @mention inline
-  const elements = [];
-  let remaining = content;
-  const regex = /(#[\wÀ-ÿ]+|@[\w.-]+)/g;
-  let lastIndex = 0;
-  let match;
-  while ((match = regex.exec(content)) !== null) {
-    if (match.index > lastIndex) {
-      elements.push(<span key={lastIndex}>{content.slice(lastIndex, match.index)}</span>);
-    }
-    const token = match[0];
-    if (token.startsWith('#')) {
-      elements.push(
-        <span
-          key={match.index}
-          className="text-primary cursor-pointer hover:underline"
-          onClick={(e) => { e.stopPropagation(); navigate(`/?tag=${token.slice(1).toLowerCase()}`); }}
-        >
-          {token}
-        </span>
-      );
-    } else {
-      const username = token.slice(1);
-      elements.push(
-        <Link
-          key={match.index}
-          to={`/@${username}`}
-          className="text-primary hover:underline"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {token}
-        </Link>
-      );
-    }
-    lastIndex = match.index + token.length;
-  }
-  if (lastIndex < content.length) {
-    elements.push(<span key={lastIndex}>{content.slice(lastIndex)}</span>);
-  }
-  return <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{elements}</p>;
-}
+import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
 
 const TRUNCATE_LIMIT = 280;
 
@@ -173,8 +125,8 @@ export default function PostCard({ post, currentUser, onReply, compact = false }
         )}
 
         {/* Post text */}
-        <div className="text-foreground/90 mb-1">
-          {renderContent(displayContent, navigate)}
+        <div className="text-foreground/90 mb-1" onClick={e => e.stopPropagation()}>
+          <DiscordMarkdown content={displayContent} />
         </div>
         {isLong && !expanded && (
           <button

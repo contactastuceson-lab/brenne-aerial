@@ -26,7 +26,7 @@ function SectionCard({ children, delay = 0 }) {
       initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay, duration: 0.4 }}
-      className="rounded-2xl overflow-hidden border border-zinc-800/60"
+      className="rounded-2xl overflow-hidden border border-zinc-800/40"
     >
       {children}
     </motion.div>

@@ -17,8 +17,11 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <HomeFeed user={user} />
+    <div className="flex min-h-screen bg-background w-full">
+      {/* Fil central — max 600px, centré, jamais plus large */}
+      <div className="flex-1 min-w-0 flex justify-center">
+        <HomeFeed user={user} />
+      </div>
       <HomeRightSidebar />
     </div>
   );

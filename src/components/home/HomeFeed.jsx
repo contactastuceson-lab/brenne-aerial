@@ -149,7 +149,7 @@ export default function HomeFeed({ user }) {
   const handleFilter = (f) => { setFilter(f); setNewCount(0); };
 
   return (
-    <main className="flex-1 min-w-0 max-w-2xl mx-auto w-full py-0">
+    <main className="w-full max-w-[600px] min-w-0 py-0">
 
       {/* Guest hero */}
       {user === null && <div className="px-4"><GuestHero /></div>}

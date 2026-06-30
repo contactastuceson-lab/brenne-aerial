@@ -236,7 +236,7 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
           </div>
         ) : (
           <>
-            <div className="text-foreground/90 mb-1" onClick={e => e.stopPropagation()}>
+            <div className="text-foreground/90 mb-1">
               <DiscordMarkdown content={displayContent} />
             </div>
             {isLong && !expanded && (

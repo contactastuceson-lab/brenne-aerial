@@ -225,31 +225,44 @@ export default function DiscoverPage() {
     .filter(e => !search || e.full_name?.toLowerCase().includes(search.toLowerCase()) || e.job_title?.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="pt-24 min-h-screen px-5 lg:px-10 pb-20">
-      <div className="max-w-5xl mx-auto">
+    <div className="pt-6 min-h-screen px-5 lg:px-10 pb-20 bg-gradient-to-b from-background to-background">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
-              <Users className="w-4 h-4 text-primary" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-accent/30 border border-primary/30 flex items-center justify-center">
+                <Users className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="font-grotesk font-bold text-3xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Découvrir</h1>
+                <p className="font-inter text-xs text-muted-foreground mt-0.5">Explorez la communauté Brenne Aerial</p>
+              </div>
             </div>
-            <h1 className="font-grotesk font-bold text-2xl gradient-text">Découvrir</h1>
           </div>
         </motion.div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-secondary/50 rounded-xl p-1 w-fit">
+        <div className="flex gap-2 mb-8">
           <button
             onClick={() => setActiveTab('members')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-inter text-sm font-medium transition-all ${activeTab === 'members' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-inter text-sm font-semibold transition-all duration-200 ${
+              activeTab === 'members'
+                ? 'bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 shadow-sm'
+                : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent'
+            }`}
           >
-            <Users className="w-4 h-4" /> Membres <span className="font-mono text-xs text-muted-foreground">({filtered.length})</span>
+            <Users className="w-4 h-4" /> Membres <span className="font-mono text-xs ml-1 opacity-70">({filtered.length})</span>
           </button>
           <button
             onClick={() => setActiveTab('team')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-inter text-sm font-medium transition-all ${activeTab === 'team' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-inter text-sm font-semibold transition-all duration-200 ${
+              activeTab === 'team'
+                ? 'bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 shadow-sm'
+                : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent'
+            }`}
           >
-            <Briefcase className="w-4 h-4" /> Équipe <span className="font-mono text-xs text-muted-foreground">({employees.length})</span>
+            <Briefcase className="w-4 h-4" /> Équipe <span className="font-mono text-xs ml-1 opacity-70">({employees.length})</span>
           </button>
         </div>
 
@@ -387,7 +400,8 @@ export default function DiscoverPage() {
                     if (typeof window !== 'undefined') {
                       window.scrollTo({ top: 0, behavior: 'auto' });
                     }
-                    navigate(`/@${profile.username}`);
+                    const destination = profile.username ? `/@${profile.username}` : `/profile?user=${profile.id}`;
+                    navigate(destination);
                   }}
                 >
                   <div
@@ -509,7 +523,10 @@ export default function DiscoverPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: i * 0.04 }}
-                  onClick={() => navigate(`/@${profile.username}`)}
+                  onClick={() => {
+                    const destination = profile.username ? `/@${profile.username}` : `/user/${profile.id}`;
+                    navigate(destination);
+                  }}
                   className={`group relative rounded-2xl overflow-hidden hover-lift cursor-pointer ${isSupreme ? 'border-2' : 'border border-border bg-card'}`}
                   style={isSupreme ? {
                     background: 'linear-gradient(145deg, #0d0800, #1a0e00, #0d0800)',

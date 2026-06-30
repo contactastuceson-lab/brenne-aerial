@@ -63,11 +63,12 @@ function getCoverGradient(name = '') {
 }
 
 export default function PublicProfilePage() {
-  const { pathUsername } = useParams();
+  const { pathUsername, userId } = useParams();
   const navigate = useNavigate();
   
   // Extraire le username (enlever le @ s'il existe)
   const username = pathUsername?.startsWith('@') ? pathUsername.slice(1) : pathUsername;
+  const requestedUser = username || userId;
   const [user, setUser] = useState(null);
   const [followers, setFollowers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -140,12 +141,17 @@ export default function PublicProfilePage() {
         }
 
         // Chercher l'utilisateur par username
-        const searchUsername = username.toLowerCase();
+        const searchUsername = username?.toLowerCase();
+        const userIdentifier = requestedUser;
         const response = await base44.functions.invoke('getPublicUsers', {});
         const allUsers = response.data || response;
-        const foundUser = allUsers.find(u => 
-          u.username?.toLowerCase() === searchUsername
-        );
+        const foundUser = allUsers.find(u => {
+          if (!userIdentifier) return false;
+          const identifier = userIdentifier.toLowerCase();
+          return u.username?.toLowerCase() === identifier
+            || u.id === userIdentifier
+            || u.email?.toLowerCase() === identifier;
+        });
 
         if (!foundUser) {
           setNotFound(true);
@@ -565,7 +571,7 @@ export default function PublicProfilePage() {
                 {affiliatedAccounts.map(({ affiliation, profile }) => (
                   <Link
                     key={affiliation.id}
-                    to={profile.username ? `/@${profile.username}` : `/profile?user=${profile.id}`}
+                    to={profile.username ? `/@${profile.username}` : `/user/${profile.id}`}
                     onClick={() => {
                       if (typeof window !== 'undefined') {
                         window.scrollTo({ top: 0, behavior: 'auto' });

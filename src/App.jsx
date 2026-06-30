@@ -118,7 +118,7 @@ const AuthenticatedApp = () => {
     const publicPaths = ['/', '/about', '/services', '/portfolio', '/blog', '/contact', '/quote',
       '/planning', '/discover', '/forum', '/partenaires', '/parrainage', '/garage', '/calculateur',
       '/reglementation', '/comparateur', '/toiture-checkup', '/uptime', '/enor', '/legal',
-      '/status', '/donation'];
+      '/status', '/donation', '/user'];
     const currentPath = window.location.pathname;
     const isPublicPath = publicPaths.some(p => currentPath === p || currentPath.startsWith(p + '/'))
       || /^\/@?[a-zA-Z0-9_.-]+$/.test(currentPath); // public profile /@username or /username

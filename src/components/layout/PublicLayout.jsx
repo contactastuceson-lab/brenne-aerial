@@ -23,8 +23,8 @@ export default function PublicLayout() {
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const noFooterPaths = ['/messages', '/discover', '/forum', '/planning'];
-  const hideFooter = noFooterPaths.some(p => location.pathname === p || location.pathname.startsWith('/forum/'));
+  // Show footer only on homepage
+  const hideFooter = location.pathname !== '/';
   const hiddenPaths = ['/messages', '/planning', '/forum'];
 
   // Detect public profile routes like `/username` or `/@username` and hide floating buttons there

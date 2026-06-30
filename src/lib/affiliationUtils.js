@@ -9,10 +9,29 @@ export const AFFILIATION_BADGE_LEVEL = {
 };
 
 const normalizeBadge = (value) => String(value || '').toLowerCase();
+const AFFILIATION_VERIFICATION_ORDER = ['verified', 'certified', 'pro', 'official', 'supreme'];
+const canonicalVerificationBadge = (value) => {
+  const normalized = normalizeBadge(value);
+  if (['supreme', 'suprême'].includes(normalized)) return 'supreme';
+  if (['official', 'officiel'].includes(normalized)) return 'official';
+  if (normalized === 'pro') return 'pro';
+  if (['certified', 'certifié'].includes(normalized)) return 'certified';
+  if (['verified', 'vérifié', 'verifie', 'verif'].includes(normalized)) return 'verified';
+  return normalized;
+};
 const includesAny = (values = [], candidates = []) => {
   const normalized = values.map(normalizeBadge);
   return candidates.some((candidate) => normalized.includes(normalizeBadge(candidate)));
 };
+
+export function getHighestVerificationBadge(values = []) {
+  const normalized = (Array.isArray(values) ? values : []).map(canonicalVerificationBadge);
+  for (let i = AFFILIATION_VERIFICATION_ORDER.length - 1; i >= 0; i -= 1) {
+    const badge = AFFILIATION_VERIFICATION_ORDER[i];
+    if (normalized.includes(badge)) return badge;
+  }
+  return null;
+}
 
 export function isAffiliationEligibleOrganization(user = {}) {
   const verifications = Array.isArray(user?.verifications) ? user.verifications : [];

@@ -3,7 +3,7 @@ import { VERIFICATION_CONFIG } from './VerificationChip';
 import BadgePopup from './BadgePopup';
 import VerificationChip from './VerificationChip';
 import { base44 } from '@/api/base44Client';
-import { getVisibleAffiliation, getOrganizationBadge } from '@/lib/affiliationUtils';
+import { getVisibleAffiliation, getOrganizationBadge, getHighestVerificationBadge } from '@/lib/affiliationUtils';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -57,6 +57,8 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
   );
   const visibleAffiliation = useMemo(() => getVisibleAffiliation(affiliations), [affiliations]);
   const affiliationCount = visibleAffiliations.length;
+  const displayedVerification = useMemo(() => getHighestVerificationBadge(verifications), [verifications]);
+  const displayedVerifications = displayedVerification ? [displayedVerification] : [];
   const [organizationUser, setOrganizationUser] = useState(/** @type {any|null} */(null));
   const [organizationBadge, setOrganizationBadge] = useState(/** @type {'supreme'|'official'|null} */(null));
 
@@ -96,7 +98,7 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
 
   return (
     <div className="inline-flex items-center gap-1.5">
-      {verifications.map(key => {
+      {displayedVerifications.map(key => {
         const badgeKey = /** @type {keyof typeof VERIFICATION_CONFIG} */ (key);
         const cfg = VERIFICATION_CONFIG[badgeKey];
         if (!cfg) return null;
@@ -116,6 +118,12 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
           description: `Ce compte est Certifié, car c'est un affilié de ${affiliationUsername} sur la plateforme.`,
           short: `Affilié officiel de ${affiliationUsername}.`,
           issuer: 'Affiliation officielle',
+          hideAction: true,
+          content: (
+            <p className="text-sm leading-6 text-foreground">
+              Ce compte est <strong>Certifié</strong>, car c'est un affilié de <span className="text-primary">{affiliationUsername}</span> sur la plateforme.
+            </p>
+          ),
         } : undefined;
 
         // For the main "verified" badge, use the small anchored popup (BadgePopup)

@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const AFFILIATION_ELIGIBLE_BADGES = ['official', 'supreme', 'officiel', 'suprême'];
+const AFFILIATION_VERIFICATION_ORDER = ['verified', 'certified', 'pro', 'official', 'supreme'];
 const AFFILIATION_BADGE_LEVEL = {
   verified: 1,
   certified: 2,
@@ -10,9 +11,37 @@ const AFFILIATION_BADGE_LEVEL = {
 };
 
 const normalize = (value) => String(value || '').trim().toLowerCase();
+const canonicalVerification = (value) => {
+  const normalized = normalize(value);
+  if (['supreme', 'suprême'].includes(normalized)) return 'supreme';
+  if (['official', 'officiel'].includes(normalized)) return 'official';
+  if (normalized === 'pro') return 'pro';
+  if (['certified', 'certifié'].includes(normalized)) return 'certified';
+  if (['verified', 'vérifié', 'verifie', 'verif'].includes(normalized)) return 'verified';
+  return normalized;
+};
 const includesAny = (values = [], candidates = []) => {
   const normalizedValues = values.map(normalize);
   return candidates.some((candidate) => normalizedValues.includes(normalize(candidate)));
+};
+const getHighestVerification = (values = []) => {
+  const normalized = values.map(canonicalVerification);
+  for (let i = AFFILIATION_VERIFICATION_ORDER.length - 1; i >= 0; i -= 1) {
+    const badge = AFFILIATION_VERIFICATION_ORDER[i];
+    if (normalized.includes(badge)) return badge;
+  }
+  return null;
+};
+const retainHighestVerificationBadge = (values = []) => {
+  const highest = getHighestVerification(values);
+  return highest ? [highest] : [];
+};
+const filterKnownVerifications = (values = []) => {
+  return values.filter((value) => AFFILIATION_VERIFICATION_ORDER.includes(canonicalVerification(value)));
+};
+const buildPrimaryVerificationSet = (values = [], forceCertified = false) => {
+  if (forceCertified) return ['certified'];
+  return retainHighestVerificationBadge(filterKnownVerifications(values));
 };
 
 const getHighestBadgeLevel = (user = {}) => {
@@ -79,23 +108,34 @@ Deno.serve(async (req) => {
           const affiliationSourceId = affiliation.organizationId;
           if (currentLevel < AFFILIATION_BADGE_LEVEL.certified) {
             const verifications = Array.isArray(affiliateUser.verifications) ? affiliateUser.verifications : [];
-            const normalized = verifications.map(normalize);
-            if (!normalized.includes('certified') && !normalized.includes('certifié')) {
-              const newVerifications = [...verifications, 'certified'];
-              const newSources = sources.includes(affiliationSourceId)
-                ? sources
-                : [...sources, affiliationSourceId];
+            const newVerifications = buildPrimaryVerificationSet(verifications, true);
+            const newSources = sources.includes(affiliationSourceId)
+              ? sources
+              : [...sources, affiliationSourceId];
+            if (JSON.stringify(newVerifications) !== JSON.stringify(affiliateUser.verifications)) {
               await base44.asServiceRole.entities.User.update(affiliateUser.id, {
                 verifications: newVerifications,
                 certified_affiliation_sources: newSources,
               });
               affiliateUser = await base44.asServiceRole.entities.User.get(affiliateUser.id).catch(() => affiliateUser);
             }
-          } else if (!sources.includes(affiliationSourceId)) {
-            const newSources = [...sources, affiliationSourceId];
-            await base44.asServiceRole.entities.User.update(affiliateUser.id, {
-              certified_affiliation_sources: newSources,
-            });
+          } else {
+            const normalized = Array.isArray(affiliateUser.verifications) ? affiliateUser.verifications.map(canonicalVerification) : [];
+            const newVerifications = buildPrimaryVerificationSet(normalized, false);
+            const newSources = sources.includes(affiliationSourceId)
+              ? sources
+              : [...sources, affiliationSourceId];
+            if (JSON.stringify(newVerifications) !== JSON.stringify(normalized)) {
+              await base44.asServiceRole.entities.User.update(affiliateUser.id, {
+                verifications: newVerifications,
+                certified_affiliation_sources: newSources,
+              });
+              affiliateUser = await base44.asServiceRole.entities.User.get(affiliateUser.id).catch(() => affiliateUser);
+            } else if (!sources.includes(affiliationSourceId)) {
+              await base44.asServiceRole.entities.User.update(affiliateUser.id, {
+                certified_affiliation_sources: newSources,
+              });
+            }
           }
         }
       }
@@ -134,14 +174,17 @@ Deno.serve(async (req) => {
           const affiliationSourceId = existingAffiliation.organizationId;
           if (currentLevel < AFFILIATION_BADGE_LEVEL.certified) {
             const verifications = Array.isArray(affiliateUser.verifications) ? affiliateUser.verifications : [];
-            const normalized = verifications.map(normalize);
-            if (!normalized.includes('certified') && !normalized.includes('certifié')) {
-              const newVerifications = [...verifications, 'certified'];
-              const newSources = sources.includes(affiliationSourceId)
-                ? sources
-                : [...sources, affiliationSourceId];
+            const newVerifications = buildPrimaryVerificationSet(verifications, true);
+            const newSources = sources.includes(affiliationSourceId)
+              ? sources
+              : [...sources, affiliationSourceId];
+            if (JSON.stringify(newVerifications) !== JSON.stringify(affiliateUser.verifications)) {
               await base44.asServiceRole.entities.User.update(affiliateUser.id, {
                 verifications: newVerifications,
+                certified_affiliation_sources: newSources,
+              });
+            } else if (!sources.includes(affiliationSourceId)) {
+              await base44.asServiceRole.entities.User.update(affiliateUser.id, {
                 certified_affiliation_sources: newSources,
               });
             }

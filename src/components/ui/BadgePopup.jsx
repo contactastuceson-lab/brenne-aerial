@@ -73,8 +73,27 @@ const BADGE_INFO = {
   Donateur: { label: 'Donateur', icon: Heart, bg: '#ef4444', short: 'Supporteur du projet.', description: 'Membre ayant soutenu financièrement le projet.' },
 };
 
+/**
+ * @param {{
+ *   info: {
+ *     label: string,
+ *     icon: import('react').ComponentType<any>,
+ *     bg?: string,
+ *     gradient?: boolean,
+ *     issuer?: string,
+ *     criteria?: string[],
+ *     short?: string,
+ *     description?: string,
+ *     helpLink?: string,
+ *     hideAction?: boolean,
+ *     content?: import('react').ReactNode,
+ *   },
+ *   anchorRect: DOMRect | null,
+ *   onClose: () => void,
+ * }} props
+ */
 function Popup({ info, anchorRect, onClose }) {
-  const popupRef = useRef(null);
+  const popupRef = useRef(/** @type {HTMLDivElement | null} */ (null));
   const pos = anchorRect
     ? { top: anchorRect.top + window.scrollY - 8, left: anchorRect.left + anchorRect.width / 2 }
     : { top: 0, left: 0 };
@@ -87,8 +106,9 @@ function Popup({ info, anchorRect, onClose }) {
   }, []);
 
   useEffect(() => {
+    /** @param {MouseEvent} e */
     const handler = (e) => {
-      if (popupRef.current && !popupRef.current.contains(e.target)) {
+      if (popupRef.current && !popupRef.current.contains(/** @type {Node} */ (e.target))) {
         onClose();
       }
     };
@@ -97,6 +117,7 @@ function Popup({ info, anchorRect, onClose }) {
   }, [onClose]);
 
   const Icon = info.icon;
+  const criteria = /** @type {string[]} */ (info.criteria || []);
   // Special modal variant for verification-like badges (Vérifié / Certifié / Pro / Suprême / Officiel): slide up from bottom to center
   const labelNorm = (info.label || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
   const verificationKeywords = ['verif', 'certif', 'pro', 'suprem', 'supr', 'offic', 'official'];
@@ -134,20 +155,26 @@ function Popup({ info, anchorRect, onClose }) {
           <div className="flex-1 px-4 pb-2">
             <div className="mx-auto flex max-w-6xl flex-col gap-2 pt-2">
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Badge vérifié</p>
-              <p className="text-sm leading-6 text-foreground">{info.description}</p>
-              {info.criteria && (
+              {info.content ? (
+                <div className="text-sm leading-6 text-foreground">{info.content}</div>
+              ) : (
+                <p className="text-sm leading-6 text-foreground">{info.description}</p>
+              )}
+              {criteria.length > 0 && (
                 <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                  {info.criteria.slice(0, 2).map((c, i) => <li key={i}>{c}</li>)}
+                  {criteria.slice(0, 2).map((c, i) => <li key={i}>{c}</li>)}
                 </ul>
               )}
             </div>
           </div>
 
-          <div className="border-t border-border bg-card p-2">
-            <a href={info.helpLink || '#'} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90">
-              Plus d'infos
-            </a>
-          </div>
+          {info.hideAction ? null : (
+            <div className="border-t border-border bg-card p-2">
+              <a href={info.helpLink || '#'} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90">
+                Plus d'infos
+              </a>
+            </div>
+          )}
         </div>
       </div>,
       document.body
@@ -189,10 +216,41 @@ function Popup({ info, anchorRect, onClose }) {
   );
 }
 
+/**
+ * @param {{
+ *   badgeKey: keyof typeof BADGE_INFO,
+ *   badgeInfo?: {
+ *     label: string,
+ *     icon: import('react').ComponentType<any>,
+ *     bg?: string,
+ *     gradient?: boolean,
+ *     issuer?: string,
+ *     criteria?: string[],
+ *     short?: string,
+ *     description?: string,
+ *     helpLink?: string,
+ *     hideAction?: boolean,
+ *     content?: import('react').ReactNode,
+ *   } | null,
+ *   children: import('react').ReactNode,
+ * }} props
+ */
 export default function BadgePopup({ badgeKey, badgeInfo = null, children }) {
   const [open, setOpen] = useState(false);
-  const anchorRef = useRef(null);
-  const info = badgeInfo || BADGE_INFO[badgeKey];
+  const anchorRef = useRef(/** @type {HTMLSpanElement | null} */ (null));
+  const info = /** @type {{
+      label: string,
+      icon: import('react').ComponentType<any>,
+      bg?: string,
+      gradient?: boolean,
+      issuer?: string,
+      criteria?: string[],
+      short?: string,
+      description?: string,
+      helpLink?: string,
+      hideAction?: boolean,
+      content?: import('react').ReactNode,
+    }} */ (badgeInfo || BADGE_INFO[badgeKey]);
 
   if (!info) return <>{children}</>;
 
@@ -206,7 +264,7 @@ export default function BadgePopup({ badgeKey, badgeInfo = null, children }) {
       </span>
 
       {open && (
-        <Popup info={info} anchorRect={anchorRef.current?.getBoundingClientRect()} onClose={() => setOpen(false)} />
+        <Popup info={info} anchorRect={anchorRef.current?.getBoundingClientRect() ?? null} onClose={() => setOpen(false)} />
       )}
     </span>
   );

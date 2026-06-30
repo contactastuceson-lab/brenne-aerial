@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { VERIFICATION_CONFIG } from '@/components/ui/VerificationChip';
 import BadgeChip from '@/components/ui/BadgeChip';
+import { getHighestVerificationBadge } from '@/lib/affiliationUtils';
 import { ROLE_CONFIG } from '@/lib/roles';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -88,9 +89,8 @@ export default function PublicProfilePage() {
     const handle = user.username ? `@${user.username}` : '';
     const followerCount = followers.length;
     const bio = user.bio ? user.bio.slice(0, 120) : '';
-    const badges = user.verifications?.length
-      ? user.verifications.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')
-      : '';
+    const displayedVerification = getHighestVerificationBadge(user.verifications);
+    const badges = displayedVerification ? [displayedVerification].map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ') : '';
 
     const title = `${displayName} (${handle}) · Brenne Aerial`;
     const desc = [
@@ -141,7 +141,6 @@ export default function PublicProfilePage() {
         }
 
         // Chercher l'utilisateur par username
-        const searchUsername = username?.toLowerCase();
         const userIdentifier = requestedUser;
         const response = await base44.functions.invoke('getPublicUsers', {});
         const allUsers = response.data || response;
@@ -474,22 +473,23 @@ export default function PublicProfilePage() {
             )}
           </div>
 
-          {/* Verifications with counts */}
-          {user.verifications?.length > 0 && (
+          {/* Verification principale */}
+          {getHighestVerificationBadge(user.verifications) && (
             <div className="flex flex-wrap gap-2 mb-4">
-              {user.verifications.map(v => {
-                const cfg = VERIFICATION_CONFIG[v];
+              {(() => {
+                const badge = getHighestVerificationBadge(user.verifications);
+                const cfg = VERIFICATION_CONFIG[badge];
                 if (!cfg) return null;
-                const count = badgeCounts[v] || 0;
+                const count = badgeCounts[badge] || 0;
                 return (
-                  <span key={v} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.border} ${cfg.bg}`}>
+                  <span key={badge} className={`flex items-center gap-1.5 font-inter text-xs px-2.5 py-1 rounded-full border ${cfg.border} ${cfg.bg}`}>
                     <span className={cfg.color}>•</span>
                     <span className={cfg.color}>{cfg.label}</span>
                     <span className="text-muted-foreground">·</span>
                     <span className="text-muted-foreground font-mono text-[10px]">{count} {count <= 1 ? 'profil' : 'profils'}</span>
                   </span>
                 );
-              })}
+              })()}
             </div>
           )}
 

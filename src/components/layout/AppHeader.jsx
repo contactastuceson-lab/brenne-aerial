@@ -55,7 +55,7 @@ export default function AppHeader() {
       <div className="flex items-center justify-between px-4 h-14 gap-3">
 
         {/* Gauche : avatar utilisateur ou back */}
-        <div className="w-10 flex-shrink-0">
+        <div className="flex-shrink-0">
           {user ? (
             <Link to="/profile">
               <div className="w-9 h-9 rounded-full overflow-hidden border border-white/15 flex items-center justify-center"
@@ -92,7 +92,7 @@ export default function AppHeader() {
         </div>
 
         {/* Droite : icônes actions */}
-        <div className="w-10 flex-shrink-0 flex items-center justify-end gap-1">
+        <div className="flex-shrink-0 flex items-center justify-end gap-0.5">
           <Link to="/discover" className="relative p-2 rounded-full hover:bg-white/8 transition-colors">
             <Search className="w-5 h-5 text-muted-foreground" />
           </Link>

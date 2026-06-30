@@ -68,8 +68,7 @@ export default function HomeLeftSidebar({ user }) {
 
         {/* Logo — fixe */}
         <Link to="/" className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/5 transition mb-1 xl:ml-1 flex-shrink-0">
-          <img src="/logo.png" alt="" className="w-7 h-7 object-contain" onError={e => { e.target.style.display='none'; }} />
-          <Home className="w-6 h-6 text-primary hidden" />
+          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/80278201e_1782606023373-Photoroom.png" alt="EZA" className="w-10 h-10 object-contain" />
         </Link>
 
         {/* Nav items — scrollable */}

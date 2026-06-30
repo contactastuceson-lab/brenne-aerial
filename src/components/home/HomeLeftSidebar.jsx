@@ -62,7 +62,7 @@ export default function HomeLeftSidebar({ user }) {
   const avatarInitial = (displayName?.[0] || 'U').toUpperCase();
 
   return (
-    <aside className="hidden lg:flex flex-col w-16 xl:w-64 flex-shrink-0 h-screen sticky top-0 border-r border-zinc-800/60">
+    <aside className="hidden md:flex flex-col w-16 xl:w-64 flex-shrink-0 h-screen sticky top-0 border-r border-zinc-800/60">
       {/* Scrollable inner — logo et nav scrollent, user reste épinglé en bas */}
       <div className="flex flex-col h-full py-2 px-2 xl:px-4 overflow-hidden">
 

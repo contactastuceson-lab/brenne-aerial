@@ -131,7 +131,7 @@ export default function PublicLayout() {
       <AnnouncementBanner user={user} />
 
       {/* Mobile + tablette : AppHeader visible jusqu'à lg (où la sidebar prend le relais) */}
-      <div className="lg:hidden">
+      <div className="md:hidden">
         <AppHeader />
       </div>
 
@@ -151,7 +151,7 @@ export default function PublicLayout() {
       {!hideFooter && <Footer />}
 
       {/* Mobile + tablette : BottomTabBar visible jusqu'à lg (où la sidebar prend le relais) */}
-      <div className="lg:hidden">
+      <div className="md:hidden">
         <BottomTabBar />
       </div>
 

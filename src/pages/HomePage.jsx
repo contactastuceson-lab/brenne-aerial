@@ -19,7 +19,7 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen">
       {/* Fil central */}
-      <div className="flex-1 flex justify-center min-w-0">
+      <div className="flex-1 flex min-w-0">
         <HomeFeed user={user} />
       </div>
 

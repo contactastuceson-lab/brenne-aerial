@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import { openExternalLink } from './ExternalLinkModal.jsx';
+import { useNavigate } from 'react-router-dom';
 
 const components = {
   // Paragraphe
@@ -101,11 +102,9 @@ const components = {
 // Convert bare URLs into clickable markdown links
 function linkifyContent(text) {
   if (!text) return '';
-  // Match URLs not already inside markdown link syntax [...](...) 
   return text.replace(
     /(?<!\]\()(?<!\()(https?:\/\/[^\s)\]>]+)/g,
     (match, url, offset, str) => {
-      // Check if this URL is already part of a markdown link
       const before = str.slice(Math.max(0, offset - 2), offset);
       if (before.includes('](') || before.endsWith('(')) return match;
       return `[${url}](${url})`;
@@ -113,7 +112,57 @@ function linkifyContent(text) {
   );
 }
 
+// Render text with clickable #hashtags and @mentions
+function renderWithTags(text, navigate) {
+  if (!text) return null;
+  const parts = text.split(/(#\w+|@\w+)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('#')) {
+      const tag = part.slice(1).toLowerCase();
+      return (
+        <span
+          key={i}
+          className="text-primary hover:underline cursor-pointer"
+          onClick={e => { e.stopPropagation(); navigate(`/?tag=${tag}`); }}
+        >
+          {part}
+        </span>
+      );
+    }
+    if (part.startsWith('@')) {
+      const username = part.slice(1);
+      return (
+        <span
+          key={i}
+          className="text-primary hover:underline cursor-pointer"
+          onClick={e => { e.stopPropagation(); navigate(`/@${username}`); }}
+        >
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+}
+
 export default function DiscordMarkdown({ content, className = '' }) {
+  const navigate = useNavigate();
+
+  // If content has hashtags/mentions, render inline with clickable tags
+  if (content && (content.includes('#') || content.includes('@'))) {
+    // Still linkify URLs first
+    const lines = content.split('\n');
+    return (
+      <div className={`discord-md text-[15px] leading-relaxed text-foreground/90 ${className}`}>
+        {lines.map((line, i) => (
+          <p key={i} className={i < lines.length - 1 ? 'mb-1' : ''}>
+            {renderWithTags(linkifyContent(line), navigate)}
+          </p>
+        ))}
+      </div>
+    );
+  }
+
   const processed = linkifyContent(content);
   return (
     <div className={`discord-md ${className}`}>

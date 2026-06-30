@@ -362,7 +362,7 @@ export default function PublicProfilePage() {
     <div className="min-h-screen pb-20 overflow-x-hidden" style={isSupreme ? { background: 'linear-gradient(180deg, #0d0800 0%, hsl(214 50% 4%) 25%)' } : {}}>
       {/* Fullscreen Cover Banner */}
       <div
-        className="relative w-screen max-w-none left-1/2 -translate-x-1/2 h-[calc(100vh-52px)] sm:h-[calc(100vh-64px)] overflow-hidden"
+        className="relative w-screen max-w-none left-1/2 -translate-x-1/2 h-44 sm:h-56 md:h-64 lg:h-72 xl:h-80 overflow-hidden"
         style={isSupreme
           ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500, #1a0c00)', borderBottom: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
           : user.cover_url

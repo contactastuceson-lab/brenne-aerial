@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Bell } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -83,7 +83,7 @@ export default function AppHeader() {
               <img
                 src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/80278201e_1782606023373-Photoroom.png"
                 alt="Logo"
-                className="h-8 w-8 object-contain"
+                className="h-10 w-10 object-contain"
               />
             </Link>
           ) : (
@@ -91,12 +91,9 @@ export default function AppHeader() {
           )}
         </div>
 
-        {/* Droite : icônes actions */}
-        <div className="flex-shrink-0 flex items-center justify-end gap-0.5">
-          <Link to="/discover" className="relative p-2 rounded-full hover:bg-white/8 transition-colors">
-            <Search className="w-5 h-5 text-muted-foreground" />
-          </Link>
-          <Link to="/dashboard?tab=notifications" className="relative p-2 rounded-full hover:bg-white/8 transition-colors">
+        {/* Droite : icône notifications avec badge */}
+        <div className="flex-shrink-0">
+          <Link to="/dashboard?tab=notifications" className="relative p-2 rounded-full hover:bg-white/8 transition-colors flex items-center justify-center">
             <Bell className="w-5 h-5 text-muted-foreground" />
             {unreadCount > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">

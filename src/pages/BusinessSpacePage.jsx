@@ -43,11 +43,17 @@ function StatCard({ icon: Icon, label, value, color, bg }) {
 }
 
 /* ── Member row ── */
-function MemberRow({ row, onUpdate, onRemove }) {
+function MemberRow({ row, onUpdate, onRemove, usersMap }) {
   const s = STATUS_STYLES[row.status] || STATUS_STYLES.removed;
   const [busy, setBusy] = useState(false);
+  const profile = usersMap?.[row.userId];
 
   const act = async (fn) => { setBusy(true); try { await fn(); } finally { setBusy(false); } };
+
+  const displayName = profile?.display_name || profile?.full_name || profile?.username || row.userId;
+  const username    = profile?.username;
+  const avatarUrl   = profile?.avatar_url;
+  const initials    = (displayName?.[0] || '?').toUpperCase();
 
   return (
     <motion.div
@@ -57,15 +63,19 @@ function MemberRow({ row, onUpdate, onRemove }) {
       exit={{ opacity: 0, scale: 0.97 }}
       className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 border-b border-zinc-800 last:border-b-0 hover:bg-zinc-900/60 transition-colors"
     >
-      {/* Avatar placeholder */}
-      <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0 text-sm font-bold text-zinc-400">
-        {(row.userId || '?')[0].toUpperCase()}
+      {/* Avatar */}
+      <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0 text-sm font-bold text-zinc-400 overflow-hidden">
+        {avatarUrl
+          ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+          : initials
+        }
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-inter text-sm font-medium text-zinc-200 truncate">{row.userId}</span>
+          <span className="font-inter text-sm font-medium text-zinc-200 truncate">{displayName}</span>
+          {username && <span className="font-mono text-[11px] text-zinc-500">@{username}</span>}
           <span className={`inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full border ${s.bg} ${s.border} ${s.text}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
             {s.label}
@@ -385,6 +395,16 @@ export default function BusinessSpacePage() {
   const descriptor = useMemo(() => user?.id ? { organizationId: user.id } : null, [user?.id]);
   const { affiliations, loading } = useOrganizationAffiliations(descriptor);
 
+  const [publicUsers, setPublicUsers] = useState([]);
+  useEffect(() => {
+    base44.functions.invoke('getPublicUsers', {}).then(r => setPublicUsers(r?.data || [])).catch(() => {});
+  }, []);
+  const usersMap = useMemo(() => {
+    const map = {};
+    publicUsers.forEach(u => { if (u.id) map[u.id] = u; });
+    return map;
+  }, [publicUsers]);
+
   const badge = getOrganizationBadge(user || {});
   const isSupreme = badge === 'supreme';
 
@@ -392,10 +412,14 @@ export default function BusinessSpacePage() {
     const q = search.toLowerCase();
     return affiliations.filter(r => {
       if (statusFilter !== 'all' && r.status !== statusFilter) return false;
-      if (q) return [r.userId, r.role].filter(Boolean).join(' ').toLowerCase().includes(q);
+      if (q) {
+        const profile = usersMap[r.userId];
+        const text = [r.userId, r.role, profile?.full_name, profile?.display_name, profile?.username].filter(Boolean).join(' ').toLowerCase();
+        return text.includes(q);
+      }
       return true;
     });
-  }, [affiliations, search, statusFilter]);
+  }, [affiliations, search, statusFilter, usersMap]);
 
   const stats = useMemo(() => ({
     total:    affiliations.length,
@@ -597,7 +621,7 @@ export default function BusinessSpacePage() {
                   <div>
                     <AnimatePresence initial={false}>
                       {filtered.map(row => (
-                        <MemberRow key={row.id} row={row} onUpdate={handleUpdate} onRemove={handleRemove} />
+                        <MemberRow key={row.id} row={row} onUpdate={handleUpdate} onRemove={handleRemove} usersMap={usersMap} />
                       ))}
                     </AnimatePresence>
                   </div>

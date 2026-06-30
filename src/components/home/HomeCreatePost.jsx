@@ -244,14 +244,7 @@ export default function HomeCreatePost({ user, onPost }) {
     (activePanel === 'poll' && pollOptions.some(Boolean));
 
   return (
-    <motion.div layout className="rounded-3xl overflow-hidden"
-      style={{
-        background: 'linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%)',
-        border: '1px solid rgba(255,255,255,0.10)',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.07)',
-        backdropFilter: 'blur(16px)',
-      }}
-    >
+    <motion.div layout className="w-full">
       {/* Category tabs */}
       <AnimatePresence>
         {expanded && (
@@ -283,7 +276,7 @@ export default function HomeCreatePost({ user, onPost }) {
       </AnimatePresence>
 
       {/* Textarea */}
-      <div className="p-4 flex gap-3.5">
+      <div className="px-4 pt-4 pb-2 flex gap-3.5">
         <div className="w-11 h-11 rounded-full flex-shrink-0 overflow-hidden border border-primary/20"
           style={{ background: 'hsl(var(--primary) / 0.12)', boxShadow: '0 0 16px hsl(var(--primary) / 0.15)' }}
         >
@@ -327,8 +320,8 @@ export default function HomeCreatePost({ user, onPost }) {
       </AnimatePresence>
 
       {/* Footer */}
-      <div className="px-5 pb-4">
-        <div className="flex items-center gap-2 pt-3 border-t border-white/8">
+      <div className="px-4 pb-3">
+        <div className="flex items-center gap-2 pt-2 border-t border-border/30">
           {/* Quick actions */}
           <div className="flex items-center gap-0.5 flex-1 overflow-x-auto scrollbar-hide">
             {QUICK_ACTIONS.map(({ id, icon: Icon, label, color, hoverBg }) => (

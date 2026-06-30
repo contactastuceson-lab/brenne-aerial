@@ -1,59 +1,44 @@
-import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Compass, MessageCircle, Bell, Bookmark, Calendar,
   Settings, Users, BarChart3, Briefcase, FileText, Award,
-  LogOut, Sparkles, Building2, Heart, Star, User
+  LogOut, Sparkles, Heart, Star, User, MoreHorizontal
 } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
-import AffiliationBadges from '@/components/shared/AffiliationBadges';
 import { hasAdminAccess } from '@/lib/roles';
 import { canManageAffiliations } from '@/lib/affiliationUtils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
 const NAV = [
-  { icon: Home,          label: 'Accueil',       to: '/',          section: 'main' },
-  { icon: Compass,       label: 'Explorer',       to: '/discover',  section: 'main' },
-  { icon: MessageCircle, label: 'Messages',       to: '/messages',  section: 'main' },
-  { icon: FileText,      label: 'Forum',          to: '/forum',     section: 'main' },
-  { icon: Calendar,      label: 'Événements',     to: '/planning',  section: 'main' },
-  { icon: Bookmark,      label: 'Enregistrés',   to: '/espace-client?tab=files', section: 'perso' },
-  { icon: Award,         label: 'Mes badges',    to: '/espace-client?tab=badges', section: 'perso' },
-  { icon: Users,         label: 'Affiliations',  to: '/espace-client?tab=my-affils', section: 'perso' },
-  { icon: Heart,         label: 'Parrainage',    to: '/parrainage', section: 'perso' },
-  { icon: Star,          label: 'Partenaires',   to: '/partenaires', section: 'perso' },
+  { icon: Home,          label: 'Accueil',       to: '/' },
+  { icon: Compass,       label: 'Explorer',       to: '/discover' },
+  { icon: MessageCircle, label: 'Messages',       to: '/messages', badge: true },
+  { icon: FileText,      label: 'Forum',          to: '/forum' },
+  { icon: Calendar,      label: 'Événements',     to: '/planning' },
+  { icon: Bookmark,      label: 'Enregistrés',   to: '/espace-client?tab=files' },
+  { icon: Award,         label: 'Badges',         to: '/espace-client?tab=badges' },
+  { icon: Users,         label: 'Affiliations',   to: '/espace-client?tab=my-affils' },
+  { icon: Heart,         label: 'Parrainage',     to: '/parrainage' },
+  { icon: Star,          label: 'Partenaires',    to: '/partenaires' },
 ];
 
 function NavItem({ icon: Icon, label, to, active, badge }) {
   return (
-    <Link to={to} className={`group flex items-center gap-3.5 px-3 py-2.5 rounded-2xl transition-all duration-200 relative ${
-      active
-        ? 'text-primary'
-        : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-    }`}
-      style={active ? {
-        background: 'linear-gradient(135deg, hsl(var(--primary)/0.15) 0%, hsl(var(--primary)/0.05) 100%)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
-      } : {}}
-    >
-      {active && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full"
-          style={{ background: 'hsl(var(--primary))' }} />
-      )}
-      <div className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 flex-shrink-0 ${
-        active ? '' : 'bg-white/5 group-hover:bg-white/10'
+    <Link to={to}
+      className={`group flex items-center gap-4 px-3 py-3 rounded-full transition-all duration-150 relative w-full ${
+        active ? 'text-foreground font-bold' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
       }`}
-        style={active ? { background: 'hsl(var(--primary)/0.2)', boxShadow: '0 0 12px hsl(var(--primary)/0.35)' } : {}}
-      >
-        <Icon style={{ width: 18, height: 18 }} className={active ? 'text-primary' : ''} />
+    >
+      <div className="relative flex-shrink-0">
+        <Icon style={{ width: 22, height: 22, strokeWidth: active ? 2.5 : 1.75 }} />
         {badge > 0 && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center border border-background">
+          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
             {badge > 9 ? '9+' : badge}
           </span>
         )}
       </div>
-      <span className="font-inter text-sm font-medium hidden xl:block truncate">{label}</span>
+      <span className="font-inter text-[17px] hidden xl:block">{label}</span>
     </Link>
   );
 }
@@ -73,143 +58,72 @@ export default function HomeLeftSidebar({ user }) {
   const isBusiness = canManageAffiliations(user);
   const displayName = user?.display_name || user?.full_name;
   const avatarInitial = (displayName?.[0] || 'U').toUpperCase();
-  const mainNav = NAV.filter(n => n.section === 'main');
-  const persoNav = NAV.filter(n => n.section === 'perso');
 
   return (
-    <aside className="hidden lg:flex flex-col w-20 xl:w-64 flex-shrink-0 h-[calc(100vh-68px)] sticky top-[68px]">
-      <div className="flex flex-col h-full overflow-y-auto py-4 px-2 xl:px-3 scrollbar-hide">
+    <aside className="hidden lg:flex flex-col w-16 xl:w-64 flex-shrink-0 h-[calc(100vh-0px)] sticky top-0 border-r border-border/40">
+      <div className="flex flex-col h-full py-2 px-2 xl:px-4">
 
-        {/* Profile card */}
-        {user && (
-          <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-            <Link to="/profile">
-              <div className="rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] group"
-                style={{
-                  background: 'linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)',
-                  border: '1px solid rgba(255,255,255,0.09)',
-                }}
-              >
-                {/* Cover */}
-                <div className="h-14 relative overflow-hidden hidden xl:block">
-                  <div className="absolute inset-0" style={{
-                    background: 'linear-gradient(135deg, hsl(205 90% 15% / 0.9) 0%, hsl(195 80% 10% / 0.7) 50%, hsl(214 50% 6% / 0.95) 100%)',
-                  }} />
-                  <div className="absolute inset-0 grid-bg opacity-30" />
-                  {/* Glow */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <div className="w-24 h-24 rounded-full" style={{ background: 'radial-gradient(circle, hsl(var(--primary)/0.3) 0%, transparent 70%)' }} />
-                  </div>
-                </div>
+        {/* Logo */}
+        <Link to="/" className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/5 transition mb-1 xl:ml-1">
+          <img src="/logo.png" alt="" className="w-7 h-7 object-contain" onError={e => { e.target.style.display='none'; }} />
+          <Home className="w-6 h-6 text-primary hidden" />
+        </Link>
 
-                <div className="xl:px-4 xl:pb-4 xl:-mt-6 flex xl:flex-col items-center xl:items-start gap-3 xl:gap-0 p-2 xl:p-0">
-                  <div className="w-10 h-10 xl:w-12 xl:h-12 rounded-full flex-shrink-0 overflow-hidden xl:border-2 xl:border-background shadow-lg"
-                    style={{ background: 'hsl(var(--primary)/0.2)' }}
-                  >
-                    {user.avatar_url
-                      ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                      : <div className="w-full h-full flex items-center justify-center">
-                          <span className="font-grotesk font-bold text-primary">{avatarInitial}</span>
-                        </div>
-                    }
-                  </div>
-
-                  <div className="flex-1 min-w-0 hidden xl:block xl:mt-2.5">
-                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <p className="font-grotesk font-bold text-sm text-foreground truncate">{displayName}</p>
-                      <VerificationIcons verifications={user.verifications} size="sm" user={user} />
-
-                    </div>
-                    {user.username && <p className="font-mono text-xs text-muted-foreground/60">@{user.username}</p>}
-                    {user.bio && <p className="font-inter text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">{user.bio}</p>}
-
-                    <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/8">
-                      <div className="text-center flex-1">
-                        <p className="font-grotesk font-bold text-xs text-primary">{user.badges?.length || 0}</p>
-                        <p className="font-mono text-[10px] text-muted-foreground/50">badges</p>
-                      </div>
-                      <div className="text-center flex-1">
-                        <p className="font-grotesk font-bold text-xs text-primary">{user.verifications?.length || 0}</p>
-                        <p className="font-mono text-[10px] text-muted-foreground/50">certifs</p>
-                      </div>
-                      <div className="text-center flex-1">
-                        <p className="font-grotesk font-bold text-xs text-foreground/60">{user.role === 'admin' ? 'Admin' : 'Mbr'}</p>
-                        <p className="font-mono text-[10px] text-muted-foreground/50">rôle</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
-        )}
-
-        {/* Guest card */}
-        {user === null && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4">
-            <div className="rounded-2xl border border-white/8 p-4 text-center hidden xl:block"
-              style={{ background: 'rgba(255,255,255,0.04)' }}
-            >
-              <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center"
-                style={{ background: 'hsl(var(--primary)/0.15)', border: '1px solid hsl(var(--primary)/0.2)' }}
-              >
-                <Sparkles className="w-6 h-6 text-primary/60" />
-              </div>
-              <p className="font-grotesk font-bold text-sm mb-1">Rejoignez-nous</p>
-              <p className="font-inter text-xs text-muted-foreground mb-4 leading-relaxed">Créez un compte pour accéder à toutes les fonctionnalités</p>
-              <Link to="/register" className="block w-full text-xs font-inter font-semibold px-3 py-2.5 rounded-xl mb-2 text-center text-primary-foreground transition-all hover:scale-105"
-                style={{ background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)', boxShadow: '0 0 20px hsl(var(--primary)/0.3)' }}
-              >
-                Créer un compte
-              </Link>
-              <Link to="/login" className="block w-full text-xs font-inter text-muted-foreground hover:text-foreground transition-colors py-2">
-                Se connecter
-              </Link>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Nav */}
-        <nav className="space-y-0.5 flex-1">
-          {mainNav.map((item, i) => (
-            <motion.div key={item.to} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}>
-              <NavItem {...item} active={isActive(item.to)} badge={item.to === '/messages' ? notifs.length : 0} />
-            </motion.div>
+        {/* Nav items */}
+        <nav className="flex-1 flex flex-col gap-0.5 mt-1">
+          {NAV.map(item => (
+            <NavItem key={item.to} {...item}
+              active={isActive(item.to)}
+              badge={item.badge && notifs.length > 0 ? notifs.length : 0}
+            />
           ))}
-
-          {user && (
-            <>
-              <div className="my-3 mx-3 h-px bg-white/6" />
-              <p className="hidden xl:block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/35 px-3 pb-1">Mon espace</p>
-              {persoNav.map((item, i) => (
-                <motion.div key={item.to} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: (mainNav.length + i) * 0.04 }}>
-                  <NavItem {...item} active={isActive(item.to)} />
-                </motion.div>
-              ))}
-            </>
-          )}
 
           {(isAdmin || isBusiness) && (
             <>
-              <div className="my-3 mx-3 h-px bg-white/6" />
-              {isBusiness && <NavItem icon={Briefcase} label="Business Space" to="/business" active={isActive('/business')} />}
-              {isAdmin && <NavItem icon={BarChart3} label="Administration" to="/admin" active={isActive('/admin')} />}
+              <div className="my-2 h-px bg-border/40" />
+              {isBusiness && <NavItem icon={Briefcase} label="Business" to="/business" active={isActive('/business')} />}
+              {isAdmin && <NavItem icon={BarChart3} label="Admin" to="/admin" active={isActive('/admin')} />}
             </>
           )}
         </nav>
 
-        {/* Settings + Logout */}
-        {user && (
-          <div className="mt-4 pt-4 border-t border-white/6 space-y-0.5">
-            <NavItem icon={Settings} label="Paramètres" to="/profile" active={false} />
-            <button onClick={() => base44.auth.logout('/')}
-              className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-muted-foreground hover:text-rose-400 hover:bg-rose-400/8 transition-all group"
+        {/* Guest CTA */}
+        {user === null && (
+          <div className="mb-4 hidden xl:block">
+            <Link to="/register"
+              className="block w-full text-center text-sm font-inter font-bold px-4 py-3 rounded-full text-primary-foreground transition-all hover:opacity-90"
+              style={{ background: 'hsl(var(--primary))' }}
             >
-              <div className="w-9 h-9 rounded-xl bg-white/5 group-hover:bg-rose-400/12 flex items-center justify-center transition-all flex-shrink-0">
-                <LogOut style={{ width: 18, height: 18 }} />
+              Créer un compte
+            </Link>
+          </div>
+        )}
+
+        {/* User profile bottom — style X */}
+        {user && (
+          <div className="mb-2">
+            <Link to="/profile"
+              className="flex items-center gap-3 px-3 py-3 rounded-full hover:bg-white/5 transition-all group"
+            >
+              <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-border/40"
+                style={{ background: 'hsl(var(--primary)/0.15)' }}
+              >
+                {user.avatar_url
+                  ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                  : <div className="w-full h-full flex items-center justify-center">
+                      <span className="font-grotesk font-bold text-primary text-sm">{avatarInitial}</span>
+                    </div>
+                }
               </div>
-              <span className="font-inter text-sm font-medium hidden xl:block">Déconnexion</span>
-            </button>
+              <div className="flex-1 min-w-0 hidden xl:block">
+                <div className="flex items-center gap-1.5">
+                  <p className="font-grotesk font-bold text-sm text-foreground truncate">{displayName}</p>
+                  <VerificationIcons verifications={user.verifications} size="sm" user={user} />
+                </div>
+                {user.username && <p className="font-mono text-xs text-muted-foreground/60 truncate">@{user.username}</p>}
+              </div>
+              <MoreHorizontal className="w-4 h-4 text-muted-foreground hidden xl:block flex-shrink-0" />
+            </Link>
           </div>
         )}
       </div>

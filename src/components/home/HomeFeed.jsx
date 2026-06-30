@@ -149,42 +149,35 @@ export default function HomeFeed({ user }) {
   const handleFilter = (f) => { setFilter(f); setNewCount(0); };
 
   return (
-    <main className="flex-1 min-w-0 max-w-2xl mx-auto w-full px-3 sm:px-5 xl:px-6 py-5">
+    <main className="flex-1 min-w-0 max-w-2xl mx-auto w-full py-0">
 
       {/* Guest hero */}
-      {user === null && <GuestHero />}
+      {user === null && <div className="px-4"><GuestHero /></div>}
 
       {/* Create post */}
       {user && (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
+        <div className="border-b border-border/40">
           <HomeCreatePost user={user} onPost={() => { setNewCount(0); refetch(); }} />
-        </motion.div>
+        </div>
       )}
 
       {/* Filter bar */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide flex-1 pb-0.5">
-          {FILTERS.map((f) => {
-            const FIcon = f.icon;
-            return (
-              <button key={f.id} onClick={() => handleFilter(f.id)}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-inter font-medium transition-all duration-200 whitespace-nowrap ${
-                  filter === f.id
-                    ? 'text-primary-foreground shadow-[0_0_16px_hsl(var(--primary)/0.35)]'
-                    : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-white/10 hover:bg-white/5'
-                }`}
-                style={filter === f.id ? { background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)' } : {}}
-              >
-                {FIcon && <FIcon className="w-3.5 h-3.5" />}
-                {f.label}
-              </button>
-            );
-          })}
+      <div className="flex items-center border-b border-border/40">
+        <div className="flex items-center overflow-x-auto scrollbar-hide flex-1">
+          {FILTERS.map((f) => (
+            <button key={f.id} onClick={() => handleFilter(f.id)}
+              className={`flex-shrink-0 px-4 py-4 text-sm font-inter font-medium transition-all duration-150 whitespace-nowrap border-b-2 -mb-px ${
+                filter === f.id
+                  ? 'border-primary text-foreground font-bold'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/3'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
-        <button onClick={handleRefresh} disabled={isFetching}
-          className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground border border-white/8 hover:bg-white/8 transition-all"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
+        <button onClick={handleRefresh} disabled={isFetching} className="flex-shrink-0 p-4 text-muted-foreground hover:text-foreground transition-all">
+          <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
@@ -227,13 +220,11 @@ export default function HomeFeed({ user }) {
           </p>
         </div>
       ) : (
-        <motion.div layout className="space-y-4">
-          <AnimatePresence initial={false}>
-            {posts.map((post, i) => (
-              <HomePostCard key={post.id} post={post} currentUser={user} index={i} />
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <div>
+          {posts.map((post, i) => (
+            <HomePostCard key={post.id} post={post} currentUser={user} index={i} />
+          ))}
+        </div>
       )}
 
       {/* Scroll to top */}

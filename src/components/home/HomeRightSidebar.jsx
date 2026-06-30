@@ -26,13 +26,8 @@ function SectionCard({ children, delay = 0 }) {
       initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay, duration: 0.4 }}
-      className="rounded-3xl overflow-hidden"
-      style={{
-        background: 'linear-gradient(145deg, rgba(255,255,255,0.065) 0%, rgba(255,255,255,0.025) 100%)',
-        border: '1px solid rgba(255,255,255,0.09)',
-        boxShadow: '0 4px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(12px)',
-      }}
+      className="rounded-2xl overflow-hidden border border-border/40"
+      style={{ background: 'hsl(var(--card))' }}
     >
       {children}
     </motion.div>
@@ -153,7 +148,7 @@ export default function HomeRightSidebar() {
   });
 
   return (
-    <aside className="hidden xl:flex flex-col w-80 flex-shrink-0 h-[calc(100vh-68px)] sticky top-[68px] overflow-y-auto py-4 px-3 scrollbar-hide space-y-3">
+    <aside className="hidden xl:flex flex-col w-80 flex-shrink-0 h-[calc(100vh-0px)] sticky top-0 overflow-y-auto py-4 px-4 scrollbar-hide space-y-3 border-l border-border/40">
 
       {/* Trending hashtags */}
       <SectionCard delay={0}>

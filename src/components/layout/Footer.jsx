@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Youtube, Instagram, ArrowUpRight, Sparkles, Heart } from 'lucide-react';
+import { Mail, Youtube, Instagram, ArrowUpRight, Sparkles, Heart, Circle } from 'lucide-react';
 
 const PLATFORM = [
   { to: '/',          label: 'Accueil' },
@@ -107,7 +107,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/6">
           <p className="font-mono text-xs text-muted-foreground/40">
-            © {year} Brenne Aerial · Fait avec <Heart className="w-3 h-3 inline text-rose-400/60" /> en France
+            © {year} Brenne Aerial · Fait en France
           </p>
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />

@@ -11,12 +11,12 @@ import { fr } from 'date-fns/locale';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 
 const TRENDING = [
-  { tag: 'communauté',  count: 284, rise: '+18%', hot: true  },
-  { tag: 'créateurs',   count: 193, rise: '+31%', hot: true  },
+  { tag: 'communauté',   count: 284, rise: '+18%', hot: true  },
+  { tag: 'créateurs',    count: 193, rise: '+31%', hot: true  },
   { tag: 'organisations',count: 147, rise: '+12%', hot: false },
   { tag: 'publications', count: 112, rise: '+9%',  hot: false },
-  { tag: 'partages',    count: 89,  rise: '+22%', hot: true  },
-  { tag: 'events',      count: 64,  rise: '+45%', hot: false },
+  { tag: 'partages',     count: 89,  rise: '+22%', hot: true  },
+  { tag: 'evenements',   count: 64,  rise: '+45%', hot: false },
 ];
 
 function SectionCard({ children, delay = 0 }) {

@@ -4,16 +4,16 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import HomePostCard from './HomePostCard';
 import HomeCreatePost from './HomeCreatePost';
-import { Loader2, RefreshCw, Rss, Sparkles, Flame, Clock, ArrowUp, Users, TrendingUp, Zap, ArrowRight } from 'lucide-react';
+import { Loader2, RefreshCw, Rss, Sparkles, Flame, Clock, ArrowUp, Users, TrendingUp, Zap, ArrowRight, MessageSquare, Image, Wrench, HelpCircle, Grid3x3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const FILTERS = [
   { id: 'recent',    label: 'Récents',    icon: Clock },
   { id: 'popular',   label: 'Populaires', icon: Flame },
-  { id: 'general',   label: '💬 Général',  icon: null },
-  { id: 'partages',  label: '📸 Partages', icon: null },
-  { id: 'technique', label: '🔧 Technique',icon: null },
-  { id: 'aide',      label: '🙏 Aide',     icon: null },
+  { id: 'general',   label: 'Général',    icon: MessageSquare },
+  { id: 'partages',  label: 'Partages',   icon: Image },
+  { id: 'technique', label: 'Technique',  icon: Wrench },
+  { id: 'aide',      label: 'Aide',       icon: HelpCircle },
 ];
 
 function GuestHero() {
@@ -164,19 +164,22 @@ export default function HomeFeed({ user }) {
       {/* Filter bar */}
       <div className="flex items-center gap-2 mb-4">
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide flex-1 pb-0.5">
-          {FILTERS.map((f) => (
-            <button key={f.id} onClick={() => handleFilter(f.id)}
-              className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-inter font-medium transition-all duration-200 whitespace-nowrap ${
-                filter === f.id
-                  ? 'text-primary-foreground shadow-[0_0_16px_hsl(var(--primary)/0.35)]'
-                  : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-white/10 hover:bg-white/5'
-              }`}
-              style={filter === f.id ? { background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)' } : {}}
-            >
-              {f.icon && <f.icon className="w-3.5 h-3.5" />}
-              {f.label}
-            </button>
-          ))}
+          {FILTERS.map((f) => {
+            const FIcon = f.icon;
+            return (
+              <button key={f.id} onClick={() => handleFilter(f.id)}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-inter font-medium transition-all duration-200 whitespace-nowrap ${
+                  filter === f.id
+                    ? 'text-primary-foreground shadow-[0_0_16px_hsl(var(--primary)/0.35)]'
+                    : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-white/10 hover:bg-white/5'
+                }`}
+                style={filter === f.id ? { background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)' } : {}}
+              >
+                {FIcon && <FIcon className="w-3.5 h-3.5" />}
+                {f.label}
+              </button>
+            );
+          })}
         </div>
         <button onClick={handleRefresh} disabled={isFetching}
           className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground border border-white/8 hover:bg-white/8 transition-all"

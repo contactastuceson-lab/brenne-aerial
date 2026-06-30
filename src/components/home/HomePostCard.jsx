@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart, MessageCircle, Repeat2, Bookmark, MoreHorizontal,
   Share2, Eye, Globe, Flag, UserPlus, Link as LinkIcon,
-  ChevronDown, ChevronUp, Verified, Sparkles
+  ChevronDown, ChevronUp, Crown, MessageSquare, Image, Wrench, HelpCircle, Grid3x3
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
@@ -117,10 +117,10 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
               }
             </div>
             {post.author_is_supreme && (
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px]"
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center"
                 style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 0 8px rgba(245,158,11,0.6)' }}
               >
-                👑
+                <Crown className="w-2.5 h-2.5 text-amber-900" />
               </div>
             )}
           </div>

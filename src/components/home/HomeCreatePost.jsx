@@ -2,17 +2,18 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Image, Video, FileText, MapPin, Hash, Send, Loader2,
-  Globe, Lock, BarChart3, Link as LinkIcon, Smile, X, Plus
+  Globe, Lock, BarChart3, Link as LinkIcon, Smile, X, Plus,
+  MessageSquare, Wrench, HelpCircle, Grid3x3
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
 const CATEGORIES = [
-  { id: 'general',   label: '💬 Général' },
-  { id: 'partages',  label: '📸 Partages' },
-  { id: 'technique', label: '🔧 Technique' },
-  { id: 'aide',      label: '🙏 Aide' },
-  { id: 'autres',    label: '🗂 Autres' },
+  { id: 'general',   label: 'Général',   icon: MessageSquare },
+  { id: 'partages',  label: 'Partages',  icon: Image },
+  { id: 'technique', label: 'Technique', icon: Wrench },
+  { id: 'aide',      label: 'Aide',      icon: HelpCircle },
+  { id: 'autres',    label: 'Autres',    icon: Grid3x3 },
 ];
 
 const QUICK_ACTIONS = [
@@ -79,21 +80,25 @@ export default function HomeCreatePost({ user, onPost }) {
             exit={{ opacity: 0, height: 0 }}
             className="flex items-center gap-1.5 px-5 pt-4 pb-0 overflow-x-auto scrollbar-hide"
           >
-            {CATEGORIES.map(c => (
-              <button key={c.id} onClick={() => setCategory(c.id)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-inter font-medium transition-all ${
-                  category === c.id
-                    ? 'text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground bg-white/5 hover:bg-white/10'
-                }`}
-                style={category === c.id ? {
-                  background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
-                  boxShadow: '0 0 12px hsl(var(--primary) / 0.35)',
-                } : {}}
-              >
-                {c.label}
-              </button>
-            ))}
+            {CATEGORIES.map(c => {
+              const CatIcon = c.icon;
+              return (
+                <button key={c.id} onClick={() => setCategory(c.id)}
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-inter font-medium transition-all ${
+                    category === c.id
+                      ? 'text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground bg-white/5 hover:bg-white/10'
+                  }`}
+                  style={category === c.id ? {
+                    background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
+                    boxShadow: '0 0 12px hsl(var(--primary) / 0.35)',
+                  } : {}}
+                >
+                  <CatIcon className="w-3 h-3" />
+                  {c.label}
+                </button>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>

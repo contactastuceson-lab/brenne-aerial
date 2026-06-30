@@ -26,8 +26,7 @@ function SectionCard({ children, delay = 0 }) {
       initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay, duration: 0.4 }}
-      className="rounded-2xl overflow-hidden border border-border/40"
-      style={{ background: 'hsl(var(--card))' }}
+      className="rounded-2xl overflow-hidden border border-zinc-800/60"
     >
       {children}
     </motion.div>
@@ -148,7 +147,7 @@ export default function HomeRightSidebar() {
   });
 
   return (
-    <aside className="hidden xl:flex flex-col w-80 flex-shrink-0 h-[calc(100vh-0px)] sticky top-0 overflow-y-auto py-4 px-4 scrollbar-hide space-y-3 border-l border-border/40">
+    <aside className="hidden xl:flex flex-col w-80 flex-shrink-0 h-screen sticky top-0 overflow-y-auto py-4 px-4 scrollbar-hide space-y-3 border-l border-zinc-800/60">
 
       {/* Trending hashtags */}
       <SectionCard delay={0}>

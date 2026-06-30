@@ -17,7 +17,7 @@ export default function SidebarLayout() {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen" style={{ background: 'hsl(var(--background))' }}>
       <HomeLeftSidebar user={user} />
       <main className="flex-1 min-w-0">
         <Outlet />

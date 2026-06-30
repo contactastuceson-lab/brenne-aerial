@@ -62,17 +62,18 @@ export default function HomeLeftSidebar({ user }) {
   const avatarInitial = (displayName?.[0] || 'U').toUpperCase();
 
   return (
-    <aside className="hidden lg:flex flex-col w-16 xl:w-64 flex-shrink-0 h-[calc(100vh-0px)] sticky top-0 border-r border-border/40">
-      <div className="flex flex-col h-full py-2 px-2 xl:px-4">
+    <aside className="hidden lg:flex flex-col w-16 xl:w-64 flex-shrink-0 h-screen sticky top-0 border-r border-zinc-800/60">
+      {/* Scrollable inner — logo et nav scrollent, user reste épinglé en bas */}
+      <div className="flex flex-col h-full py-2 px-2 xl:px-4 overflow-hidden">
 
-        {/* Logo */}
-        <Link to="/" className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/5 transition mb-1 xl:ml-1">
+        {/* Logo — fixe */}
+        <Link to="/" className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/5 transition mb-1 xl:ml-1 flex-shrink-0">
           <img src="/logo.png" alt="" className="w-7 h-7 object-contain" onError={e => { e.target.style.display='none'; }} />
           <Home className="w-6 h-6 text-primary hidden" />
         </Link>
 
-        {/* Nav items */}
-        <nav className="flex-1 flex flex-col gap-0.5 mt-1">
+        {/* Nav items — scrollable */}
+        <nav className="flex-1 flex flex-col gap-0.5 mt-1 overflow-y-auto scrollbar-hide">
           {NAV.filter(item => !item.businessOnly || isBusiness).map(item => (
             <NavItem key={item.to} {...item}
               active={isActive(item.to)}
@@ -88,9 +89,9 @@ export default function HomeLeftSidebar({ user }) {
           )}
         </nav>
 
-        {/* Guest CTA */}
+        {/* Guest CTA — épinglé en bas */}
         {user === null && (
-          <div className="mb-4 hidden xl:block">
+          <div className="mb-4 hidden xl:block flex-shrink-0">
             <Link to="/register"
               className="block w-full text-center text-sm font-inter font-bold px-4 py-3 rounded-full text-primary-foreground transition-all hover:opacity-90"
               style={{ background: 'hsl(var(--primary))' }}
@@ -100,9 +101,9 @@ export default function HomeLeftSidebar({ user }) {
           </div>
         )}
 
-        {/* User profile bottom — style X */}
+        {/* User profile bottom — épinglé, style X */}
         {user && (
-          <div className="mb-2">
+          <div className="mb-2 flex-shrink-0">
             <Link to="/profile"
               className="flex items-center gap-3 px-3 py-3 rounded-full hover:bg-white/5 transition-all group"
             >

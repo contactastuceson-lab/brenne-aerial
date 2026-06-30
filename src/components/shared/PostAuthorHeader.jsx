@@ -50,6 +50,7 @@ export default function PostAuthorHeader({
   onMenuClick,
   showMenu = true,
   size = 'md',
+  hideAvatar = false,
 }) {
   // Résolution live du profil — écrase les données gravées dès que disponible
   const liveUser = usePublicUser(authorId);
@@ -81,25 +82,26 @@ export default function PostAuthorHeader({
   return (
     <div className="flex items-start justify-between gap-3 w-full">
       <div className="flex items-start gap-3 min-w-0 flex-1">
-        {/* Avatar */}
-        <div className="relative flex-shrink-0">
-          <div
-            className={`${avatarSize} ${avatarRounded} overflow-hidden border border-white/10`}
-            style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}
-          >
-            {resolvedAvatar ? (
-              <img src={resolvedAvatar} alt={displayName} className="w-full h-full object-cover" />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, hsl(var(--primary)/0.3) 0%, hsl(var(--accent)/0.2) 100%)' }}
-              >
-                <span className="font-grotesk font-bold text-primary text-sm">{avatarInitial}</span>
-              </div>
-            )}
+        {/* Avatar — masqué si hideAvatar=true (géré par le parent) */}
+        {!hideAvatar && (
+          <div className="relative flex-shrink-0">
+            <div
+              className={`${avatarSize} ${avatarRounded} overflow-hidden border border-white/10`}
+              style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}
+            >
+              {resolvedAvatar ? (
+                <img src={resolvedAvatar} alt={displayName} className="w-full h-full object-cover" />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, hsl(var(--primary)/0.3) 0%, hsl(var(--accent)/0.2) 100%)' }}
+                >
+                  <span className="font-grotesk font-bold text-primary text-sm">{avatarInitial}</span>
+                </div>
+              )}
+            </div>
           </div>
-
-        </div>
+        )}
 
         {/* Info */}
         <div className="min-w-0 flex-1">

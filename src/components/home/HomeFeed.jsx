@@ -154,9 +154,9 @@ export default function HomeFeed({ user }) {
       {/* Guest hero */}
       {user === null && <div className="px-4"><GuestHero /></div>}
 
-      {/* Create post */}
+      {/* Create post — flat, délimité uniquement par une ligne basse */}
       {user && (
-        <div className="border-b border-border/40">
+        <div className="border-b border-zinc-800/60">
           <HomeCreatePost user={user} onPost={() => { setNewCount(0); refetch(); }} />
         </div>
       )}

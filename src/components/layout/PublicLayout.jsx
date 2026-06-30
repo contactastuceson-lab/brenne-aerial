@@ -130,8 +130,8 @@ export default function PublicLayout() {
     <div className="min-h-screen bg-background flex flex-col">
       <AnnouncementBanner user={user} />
 
-      {/* Mobile only: AppHeader */}
-      <div className="md:hidden">
+      {/* Mobile + tablette : AppHeader visible jusqu'à lg (où la sidebar prend le relais) */}
+      <div className="lg:hidden">
         <AppHeader />
       </div>
 
@@ -150,8 +150,8 @@ export default function PublicLayout() {
       
       {!hideFooter && <Footer />}
 
-      {/* Mobile only: BottomTabBar */}
-      <div className="md:hidden">
+      {/* Mobile + tablette : BottomTabBar visible jusqu'à lg (où la sidebar prend le relais) */}
+      <div className="lg:hidden">
         <BottomTabBar />
       </div>
 

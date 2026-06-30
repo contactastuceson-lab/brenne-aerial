@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -12,8 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Filter, Megaphone, X } from 'lucide-react';
+import { Search, Filter, Megaphone, X, Hash } from 'lucide-react';
 import ExternalLinkModal from '@/components/forum/ExternalLinkModal.jsx';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const CATEGORIES = [
   { value: 'all', label: 'Toutes les catégories' },
@@ -32,9 +33,19 @@ const SORTS = [
 
 export default function ForumPage() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [sort, setSort] = useState('recent');
+
+  // Read hashtag from URL query param
+  const urlTag = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('tag') || '';
+  }, [location.search]);
+
+  const clearTag = () => navigate('/forum', { replace: true });
 
   const { data: discussions = [] } = useQuery({
     queryKey: ['discussions'],
@@ -55,6 +66,15 @@ export default function ForumPage() {
 
     if (category !== 'all') {
       result = result.filter((d) => d.category === category);
+    }
+
+    // Filter by hashtag from URL
+    if (urlTag) {
+      result = result.filter((d) =>
+        d.tags?.includes(urlTag.toLowerCase()) ||
+        d.content?.toLowerCase().includes(`#${urlTag.toLowerCase()}`) ||
+        d.title?.toLowerCase().includes(`#${urlTag.toLowerCase()}`)
+      );
     }
 
     if (search) {
@@ -143,6 +163,17 @@ export default function ForumPage() {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Active hashtag filter banner */}
+        {urlTag && (
+          <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3">
+            <Hash className="w-4 h-4 text-primary flex-shrink-0" />
+            <p className="text-sm text-primary flex-1">Filtre actif : <strong>#{urlTag}</strong></p>
+            <button onClick={clearTag} className="text-muted-foreground hover:text-foreground transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Announcement Banner */}
         {announcement && (

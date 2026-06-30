@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, X, TrendingUp, Flame, ArrowRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import { extractHashtags } from '@/lib/hashtags';
 
 const TRENDING = [
   { tag: 'communauté',    count: 284, rise: '+18%' },
@@ -146,8 +147,8 @@ function SuggestedUsers({ users }) {
   );
 }
 
-function TrendingSection({ hotPosts }) {
-  if (!hotPosts.length) return null;
+function TrendingSection({ trendingTags }) {
+  if (!trendingTags.length) return null;
   return (
     <div className="mb-5 rounded-2xl overflow-hidden"
       style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
@@ -155,14 +156,13 @@ function TrendingSection({ hotPosts }) {
         <h2 className="font-grotesk font-bold text-xl text-foreground">Tendances</h2>
       </div>
       <div className="divide-y divide-border/40">
-        {hotPosts.map((p, i) => (
-          <Link key={p.id} to={`/forum/${p.id}`}
+        {trendingTags.slice(0, 5).map(({ tag, count }, i) => (
+          <Link key={tag} to={`/forum?tag=${tag}`}
             className="flex items-start justify-between gap-3 px-4 py-3 hover:bg-white/3 transition-colors group">
             <div className="flex-1 min-w-0">
-              <p className="font-mono text-[11px] text-muted-foreground/40 mb-0.5">Tendance · #{i + 1}</p>
-              <p className="font-grotesk font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">#{p.title?.replace(/\s+/g, '').toLowerCase().slice(0, 20) || `post${i + 1}`}</p>
-              <p className="font-inter text-xs text-muted-foreground/50 mt-0.5 line-clamp-1">{p.title}</p>
-              <p className="font-mono text-[11px] text-muted-foreground/35 mt-0.5">{p.replies_count || 0} publications</p>
+              <p className="font-mono text-[11px] text-muted-foreground/40 mb-0.5">Tendance · {i + 1}</p>
+              <p className="font-grotesk font-bold text-sm text-foreground group-hover:text-primary transition-colors">#{tag}</p>
+              <p className="font-mono text-[11px] text-muted-foreground/35 mt-0.5">{count} publication{count > 1 ? 's' : ''}</p>
             </div>
           </Link>
         ))}
@@ -186,17 +186,31 @@ export default function HomeRightSidebar() {
 
   const suggestedUsers = allUsers.slice(0, 3);
 
-  const { data: hotPosts = [] } = useQuery({
-    queryKey: ['sidebar-hot-posts'],
-    queryFn: () => base44.entities.Discussion.list('-views_count', 5),
+  const { data: recentPosts = [] } = useQuery({
+    queryKey: ['sidebar-recent-posts-tags'],
+    queryFn: () => base44.entities.Discussion.list('-created_date', 100),
     staleTime: 2 * 60 * 1000,
   });
+
+  // Compute trending hashtags from all recent posts
+  const trendingTags = useMemo(() => {
+    const freq = {};
+    recentPosts.forEach(p => {
+      const tags = p.tags?.length
+        ? p.tags
+        : extractHashtags((p.content || '') + ' ' + (p.title || ''));
+      tags.forEach(tag => { freq[tag] = (freq[tag] || 0) + 1; });
+    });
+    return Object.entries(freq)
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [recentPosts]);
 
   return (
     <aside className="hidden xl:flex flex-col w-72 flex-shrink-0 h-screen sticky top-0 overflow-y-auto py-3 px-3 scrollbar-hide">
       <SearchBar allUsers={allUsers} />
       <SuggestedUsers users={suggestedUsers} />
-      <TrendingSection hotPosts={hotPosts} />
+      <TrendingSection trendingTags={trendingTags} />
 
       {/* Footer */}
       <div className="px-1 pb-4">

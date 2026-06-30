@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import HomePostCard from './HomePostCard';
 import HomeCreatePost from './HomeCreatePost';
-import { Loader2, RefreshCw, Rss, Sparkles, Flame, Clock, ArrowUp, Users, TrendingUp, Zap, ArrowRight, MessageSquare, Image, Wrench, HelpCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Loader2, RefreshCw, Rss, Sparkles, Flame, Clock, ArrowUp, Users, TrendingUp, Zap, ArrowRight, MessageSquare, Image, Wrench, HelpCircle, Hash, X } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { extractHashtags } from '@/lib/hashtags';
 
 const FILTERS = [
   { id: 'recent',    label: 'Récents',    icon: Clock },
@@ -105,6 +106,15 @@ export default function HomeFeed({ user }) {
   const [filter, setFilter] = useState('recent');
   const [newCount, setNewCount] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const urlTag = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('tag') || '';
+  }, [location.search]);
+
+  const clearTag = () => navigate('/', { replace: true });
 
   const { data: posts = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['home-feed', filter],
@@ -184,6 +194,17 @@ export default function HomeFeed({ user }) {
       </AnimatePresence>
 
       {/* Feed content */}
+      {/* Active hashtag filter banner */}
+      {urlTag && (
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border/40 bg-primary/5">
+          <Hash className="w-4 h-4 text-primary flex-shrink-0" />
+          <p className="text-sm text-primary flex-1">#{urlTag}</p>
+          <button onClick={clearTag} className="text-muted-foreground hover:text-foreground transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {user === undefined || isLoading ? (
         <FeedSkeleton />
       ) : posts.length === 0 ? (
@@ -200,9 +221,16 @@ export default function HomeFeed({ user }) {
         </div>
       ) : (
         <div>
-          {posts.map((post, i) => (
-            <HomePostCard key={post.id} post={post} currentUser={user} index={i} />
-          ))}
+          {posts
+            .filter(p => {
+              if (!urlTag) return true;
+              const tags = p.tags?.length ? p.tags : extractHashtags((p.content || '') + ' ' + (p.title || ''));
+              return tags.includes(urlTag.toLowerCase());
+            })
+            .map((post, i) => (
+              <HomePostCard key={post.id} post={post} currentUser={user} index={i} />
+            ))
+          }
         </div>
       )}
 

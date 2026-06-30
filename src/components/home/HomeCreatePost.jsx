@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { extractHashtags } from '@/lib/hashtags';
 
 const CATEGORIES = [
   { id: 'general',   label: 'Général',   icon: MessageSquare },
@@ -217,10 +218,12 @@ export default function HomeCreatePost({ user, onPost }) {
     if (!content.trim()) return;
     setPosting(true);
     try {
+      const tags = extractHashtags(content);
       await base44.entities.Discussion.create({
         title: text.split('\n')[0].slice(0, 120) || text.slice(0, 120),
         content,
         category,
+        tags,
         author_id: user.id,
         author_name: user.full_name,
         author_display_name: user.display_name || user.full_name,

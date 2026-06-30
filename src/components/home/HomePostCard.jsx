@@ -8,6 +8,8 @@ import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import PostAuthorHeader from '@/components/shared/PostAuthorHeader';
 import usePublicUser from '@/hooks/usePublicUser';
+import { parseHashtags } from '@/lib/hashtags';
+import { useNavigate } from 'react-router-dom';
 
 function AvatarColumn({ authorId, authorAvatar, authorDisplayName, profileLink }) {
   const liveUser = usePublicUser(authorId);
@@ -32,6 +34,28 @@ function AvatarColumn({ authorId, authorAvatar, authorDisplayName, profileLink }
   );
 
   return profileLink ? <Link to={profileLink}>{avatar}</Link> : avatar;
+}
+
+function HashtagText({ text }) {
+  const navigate = useNavigate();
+  const parts = parseHashtags(text);
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.startsWith('#') ? (
+          <span
+            key={i}
+            className="text-primary cursor-pointer hover:underline"
+            onClick={e => { e.preventDefault(); e.stopPropagation(); navigate(`/forum?tag=${part.slice(1).toLowerCase()}`); }}
+          >
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
 }
 
 export default function HomePostCard({ post, currentUser, index = 0 }) {
@@ -133,6 +157,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
                 a: ({ href, children }) => <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>,
                 strong: ({ children }) => <strong className="font-semibold text-foreground/95">{children}</strong>,
                 code: ({ children }) => <code className="px-1 py-0.5 rounded bg-white/6 font-mono text-xs text-primary/80">{children}</code>,
+                text: ({ children }) => <HashtagText text={String(children)} />,
               }}
             >
               {displayContent}
@@ -151,7 +176,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
         {post.tags?.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {post.tags.map(tag => (
-              <span key={tag} className="text-xs text-primary/60 hover:text-primary cursor-pointer transition-colors font-mono">#{tag}</span>
+              <Link key={tag} to={`/forum?tag=${tag}`} className="text-xs text-primary/60 hover:text-primary cursor-pointer transition-colors font-mono">#{tag}</Link>
             ))}
           </div>
         )}

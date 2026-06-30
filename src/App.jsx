@@ -16,6 +16,8 @@ import SplashScreen from "@/components/SplashScreen";
 
 // Layout
 import PublicLayout from "@/components/layout/PublicLayout";
+import SidebarLayout from "@/components/layout/SidebarLayout";
+
 import AdminLayout from "@/components/admin/AdminLayout";
 
 // Public pages
@@ -136,47 +138,48 @@ const AuthenticatedApp = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Public */}
+      {/* Public — PublicLayout handles modals/maintenance, SidebarLayout adds sidebar */}
       <Route element={<PublicLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/services" element={<ServicesPage />} />
-        <Route path="/portfolio" element={<PortfolioPage />} />
-        <Route path="/quote" element={<QuotePage />} />
-        <Route path="/planning" element={<PlanningPage />} />
-        <Route path="/blog" element={<BlogPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/discover" element={<DiscoverPage />} />
-        <Route path="/messages" element={<MessagesPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/certification-success" element={<CertificationSuccessPage />} />
-        <Route path="/donation" element={<DonationPage />} />
-        <Route path="/donation-success" element={<DonationSuccessPage />} />
-        <Route path="/status" element={<ExternalRedirect to="https://status.brenneaerial.fr" />} />
-        <Route path="/uptime" element={<UptimePage />} />
-        <Route path="/account-deletion" element={<AccountDeletionPage />} />
-        <Route path="/legal/privacy" element={<PrivacyPage />} />
-        <Route path="/legal/terms" element={<TermsPage />} />
-        <Route path="/legal/cookies" element={<CookiePage />} />
-        <Route path="/garage" element={<GaragePage />} />
-        <Route path="/calculateur" element={<QuoteCalculatorPage />} />
-        <Route path="/reglementation" element={<ReglementationPage />} />
-        <Route path="/comparateur" element={<ComparateurPage />} />
-        <Route path="/blog/:id" element={<BlogArticlePage />} />
-        <Route path="/toiture-checkup" element={<ToitureCheckupPage />} />
-        <Route path="/espace-client" element={<EspaceClientPage />} />
-        <Route path="/partenaires" element={<PartenairesPage />} />
-        <Route path="/parrainage" element={<ParrainagePage />} />
-        <Route path="/parrainage/rejoindre" element={<ParrainageRejoindre />} />
-
-        <Route path="/forum" element={<ForumPage />} />
-        <Route path="/forum/:id" element={<DiscussionDetailPage />} />
-        <Route path="/enor" element={<EnorBiographyPage />} />
-        <Route path="/ecosysteme" element={<EcosystemePage />} />
-        <Route path="/business" element={<BusinessSpacePage />} />
-        {/* Profile catch-all route for /@username - must be last in public routes */}
-        <Route path="/:pathUsername" element={<PublicProfilePage />} />
+        <Route element={<SidebarLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/quote" element={<QuotePage />} />
+          <Route path="/planning" element={<PlanningPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/discover" element={<DiscoverPage />} />
+          <Route path="/messages" element={<MessagesPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/certification-success" element={<CertificationSuccessPage />} />
+          <Route path="/donation" element={<DonationPage />} />
+          <Route path="/donation-success" element={<DonationSuccessPage />} />
+          <Route path="/status" element={<ExternalRedirect to="https://status.brenneaerial.fr" />} />
+          <Route path="/uptime" element={<UptimePage />} />
+          <Route path="/account-deletion" element={<AccountDeletionPage />} />
+          <Route path="/legal/privacy" element={<PrivacyPage />} />
+          <Route path="/legal/terms" element={<TermsPage />} />
+          <Route path="/legal/cookies" element={<CookiePage />} />
+          <Route path="/garage" element={<GaragePage />} />
+          <Route path="/calculateur" element={<QuoteCalculatorPage />} />
+          <Route path="/reglementation" element={<ReglementationPage />} />
+          <Route path="/comparateur" element={<ComparateurPage />} />
+          <Route path="/blog/:id" element={<BlogArticlePage />} />
+          <Route path="/toiture-checkup" element={<ToitureCheckupPage />} />
+          <Route path="/espace-client" element={<EspaceClientPage />} />
+          <Route path="/partenaires" element={<PartenairesPage />} />
+          <Route path="/parrainage" element={<ParrainagePage />} />
+          <Route path="/parrainage/rejoindre" element={<ParrainageRejoindre />} />
+          <Route path="/forum" element={<ForumPage />} />
+          <Route path="/forum/:id" element={<DiscussionDetailPage />} />
+          <Route path="/enor" element={<EnorBiographyPage />} />
+          <Route path="/ecosysteme" element={<EcosystemePage />} />
+          <Route path="/business" element={<BusinessSpacePage />} />
+          {/* Profile catch-all route for /@username - must be last in public routes */}
+          <Route path="/:pathUsername" element={<PublicProfilePage />} />
+        </Route>
       </Route>
 
       {/* Admin */}

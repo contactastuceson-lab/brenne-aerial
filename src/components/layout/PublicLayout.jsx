@@ -26,7 +26,6 @@ export default function PublicLayout() {
   // Show footer only on homepage
   const hideFooter = true; // Footer removed from all pages in social network mode
   const hiddenPaths = ['/messages', '/planning', '/forum'];
-  const hideNavbar = location.pathname === '/';
 
   // Detect public profile routes like `/username` or `/@username` and hide floating buttons there
   const isPublicProfile = /^\/@?[a-zA-Z0-9_.-]+$/.test(location.pathname);
@@ -130,20 +129,15 @@ export default function PublicLayout() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AnnouncementBanner user={user} />
-      
-      {/* Desktop/Tablet: Navbar — hidden on homepage (sidebar handles nav) */}
-      <div className={`hidden md:block ${hideNavbar ? 'md:hidden' : ''}`}>
-        <Navbar />
-      </div>
-      
+
       {/* Mobile only: AppHeader */}
       <div className="md:hidden">
         <AppHeader />
       </div>
-      
-      <main className="flex-1">
+
+      <div className="flex-1 flex flex-col">
         <Outlet />
-      </main>
+      </div>
       <AnnouncementPopup user={user} />
 
       {/* Floating buttons (hidden on certain pages) */}

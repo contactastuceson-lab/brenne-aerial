@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
+import HomeLeftSidebar from '@/components/home/HomeLeftSidebar';
 import { base44 } from '@/api/base44Client';
-import HomeFeed from '@/components/home/HomeFeed';
-import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 
-export default function HomePage() {
+export default function SidebarLayout() {
   const [user, setUser] = useState(undefined);
 
   useEffect(() => {
@@ -18,8 +18,10 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <HomeFeed user={user} />
-      <HomeRightSidebar />
+      <HomeLeftSidebar user={user} />
+      <main className="flex-1 min-w-0">
+        <Outlet />
+      </main>
     </div>
   );
 }

@@ -73,19 +73,12 @@ const BADGE_INFO = {
   Donateur: { label: 'Donateur', icon: Heart, bg: '#ef4444', short: 'Supporteur du projet.', description: 'Membre ayant soutenu financièrement le projet.' },
 };
 
-function Popup({ info, anchorEl, onClose }) {
+function Popup({ info, anchorRect, onClose }) {
   const popupRef = useRef(null);
-  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const pos = anchorRect
+    ? { top: anchorRect.top + window.scrollY - 8, left: anchorRect.left + anchorRect.width / 2 }
+    : { top: 0, left: 0 };
   const [entered, setEntered] = useState(false);
-
-  useEffect(() => {
-    if (!anchorEl) return;
-    const rect = anchorEl.getBoundingClientRect();
-    setPos({
-      top: rect.top + window.scrollY - 8,
-      left: rect.left + rect.width / 2,
-    });
-  }, [anchorEl]);
 
   useEffect(() => {
     // trigger entrance animation for modal variant
@@ -95,14 +88,13 @@ function Popup({ info, anchorEl, onClose }) {
 
   useEffect(() => {
     const handler = (e) => {
-      if (popupRef.current && !popupRef.current.contains(e.target) &&
-          anchorEl && !anchorEl.contains(e.target)) {
+      if (popupRef.current && !popupRef.current.contains(e.target)) {
         onClose();
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [onClose, anchorEl]);
+  }, [onClose]);
 
   const Icon = info.icon;
   // Special modal variant for verification-like badges (Vérifié / Certifié / Pro / Suprême / Officiel): slide up from bottom to center
@@ -214,7 +206,7 @@ export default function BadgePopup({ badgeKey, children }) {
       </span>
 
       {open && (
-        <Popup info={info} anchorEl={anchorRef.current} onClose={() => setOpen(false)} />
+        <Popup info={info} anchorRect={anchorRef.current?.getBoundingClientRect()} onClose={() => setOpen(false)} />
       )}
     </span>
   );

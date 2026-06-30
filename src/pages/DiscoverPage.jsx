@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -228,7 +227,7 @@ export default function DiscoverPage() {
     <div className="pt-6 min-h-screen px-5 lg:px-10 pb-20 bg-gradient-to-b from-background to-background">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-accent/30 border border-primary/30 flex items-center justify-center">
@@ -240,7 +239,7 @@ export default function DiscoverPage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-8">
@@ -267,7 +266,7 @@ export default function DiscoverPage() {
         </div>
 
         {/* Search & View Mode */}
-         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-6">
+        <div className="mb-6">
           <div className="flex gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -309,7 +308,7 @@ export default function DiscoverPage() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {/* Team tab - pole filters (scroll horizontal) */}
         {activeTab === 'team' && (
@@ -329,23 +328,18 @@ export default function DiscoverPage() {
         {/* Grid */}
         {activeTab === 'team' ? (
           <div className="space-y-2">
-            <AnimatePresence>
               {filteredEmployees.map((emp, i) => {
                 const pole = POLES[emp.pole];
                 return (
-                  <motion.div
+                  <div
                     key={emp.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    transition={{ delay: i * 0.03 }}
                     className="flex items-center gap-3 bg-card border border-border rounded-xl px-3 py-3 cursor-pointer hover:border-primary/30 transition-colors"
                     onClick={() => setViewEmployee(emp)}
                   >
                     {/* Avatar */}
                     <div className="w-11 h-11 rounded-xl border border-border bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
                       {emp.avatar_url
-                        ? <img src={emp.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ? <img loading="eager" src={emp.avatar_url} alt="" className="w-full h-full object-cover" />
                         : <span className="font-grotesk font-bold text-base text-primary">{emp.full_name?.[0]}</span>
                       }
                     </div>
@@ -371,17 +365,15 @@ export default function DiscoverPage() {
                         <span className="hidden sm:inline">{pole.label}</span>
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 );
               })}
-            </AnimatePresence>
             {filteredEmployees.length === 0 && (
               <div className="text-center py-12 text-muted-foreground font-inter text-sm">Aucun membre d'équipe trouvé</div>
             )}
           </div>
         ) : membersViewMode === 'list' ? (
         <div className="divide-y divide-border rounded-2xl border border-border bg-background">
-          <AnimatePresence>
             {filtered.map((profile, i) => {
               const isFollowing = followingEmails.has(profile.email);
               const followRecord = follows.find(f => f.following_email === profile.email);
@@ -389,12 +381,8 @@ export default function DiscoverPage() {
               const isSupreme = profile.verifications?.includes('supreme');
 
               return (
-                <motion.div
+                <div
                   key={profile.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ delay: i * 0.02 }}
                   className="flex items-center gap-3 px-3 py-2 transition-colors cursor-pointer group hover:bg-secondary/10"
                   onClick={() => {
                     if (typeof window !== 'undefined') {
@@ -409,7 +397,7 @@ export default function DiscoverPage() {
                     style={isSupreme ? { boxShadow: '0 0 10px rgba(245,158,11,0.15)' } : { background: profile.avatar_url ? 'var(--secondary)' : getAvatarGradient(profile.full_name) }}
                   >
                     {profile.avatar_url ? (
-                      <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                      <img loading="eager" src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <span className="font-grotesk font-semibold text-base text-white drop-shadow-sm">
                         {(profile.display_name || profile.full_name)?.[0]?.toUpperCase() || '?'}
@@ -496,10 +484,9 @@ export default function DiscoverPage() {
                       </Link>
                     )}
                   </div>
-                </motion.div>
+                </div>
               );
             })}
-          </AnimatePresence>
           {filtered.length === 0 && (
             <div className="text-center py-20 text-muted-foreground font-inter text-sm">
               Aucun profil trouvé
@@ -508,7 +495,6 @@ export default function DiscoverPage() {
         </div>
         ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <AnimatePresence>
             {filtered.map((profile, i) => {
               const isFollowing = followingEmails.has(profile.email);
               const followRecord = follows.find(f => f.following_email === profile.email);
@@ -517,12 +503,8 @@ export default function DiscoverPage() {
               const isSupreme = profile.verifications?.includes('supreme');
 
               return (
-                <motion.div
+                <div
                   key={profile.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: i * 0.04 }}
                   onClick={() => {
                     const destination = profile.username ? `/@${profile.username}` : `/user/${profile.id}`;
                     navigate(destination);
@@ -547,7 +529,7 @@ export default function DiscoverPage() {
                   {/* Cover */}
                   <div className="h-24 relative overflow-hidden">
                     {profile.cover_url
-                      ? <img src={profile.cover_url} alt="" className="w-full h-full object-cover" />
+                      ? <img loading="eager" src={profile.cover_url} alt="" className="w-full h-full object-cover" />
                       : (
                         <div className="w-full h-full relative" style={{ background: getCoverGradient(profile.full_name) }}>
                           {/* Pattern overlay */}
@@ -704,10 +686,8 @@ export default function DiscoverPage() {
                       )}
                     </div>
                   </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                );
+              })}
           {filtered.length === 0 && (
             <div className="text-center py-20 text-muted-foreground font-inter text-sm">
               Aucun profil trouvé

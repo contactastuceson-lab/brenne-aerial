@@ -3,7 +3,7 @@ import ProfileNotFound from '@/components/profile/ProfileNotFound';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash } from 'lucide-react';
+import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash, Settings, Image, Reply } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -15,6 +15,7 @@ import { ROLE_CONFIG } from '@/lib/roles';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
+import PostCard from '@/components/post/PostCard';
 
 const BADGE_CONFIG = {
   'Fondateur': { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -79,6 +80,10 @@ export default function PublicProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followingLoading, setFollowingLoading] = useState(false);
   const [recentDiscussions, setRecentDiscussions] = useState([]);
+  const [userPosts, setUserPosts] = useState([]);
+  const [userReplies, setUserReplies] = useState([]);
+  const [userMediaPosts, setUserMediaPosts] = useState([]);
+  const [profileTab, setProfileTab] = useState('posts');
   const [followingCount, setFollowingCount] = useState(0);
   const [badgeCounts, setBadgeCounts] = useState({});
   const [allUsers, setAllUsers] = useState([]);
@@ -170,14 +175,18 @@ export default function PublicProfilePage() {
         prefillUserCache(fetchedUsers);
         setAllUsers(fetchedUsers);
 
-        const [followersList, followingList, discussions] = await Promise.all([
+        const [followersList, followingList, discussions, allPosts] = await Promise.all([
           base44.entities.Follow.filter({ following_email: foundUser.email }),
           base44.entities.Follow.filter({ follower_email: foundUser.email }),
           base44.entities.Discussion.filter({ author_id: foundUser.id }, '-created_date', 5).catch(() => []),
+          base44.entities.Post.filter({ author_id: foundUser.id }, '-created_date', 50).catch(() => []),
         ]);
         setFollowers(followersList);
         setFollowingCount(followingList.length);
         setRecentDiscussions(discussions);
+        setUserPosts(allPosts.filter(p => !p.reply_to_id));
+        setUserReplies(allPosts.filter(p => !!p.reply_to_id));
+        setUserMediaPosts(allPosts.filter(p => p.media_urls?.length > 0));
 
         if (me) {
           const isFollowingCheck = followersList.some(f => f.follower_email === me.email);
@@ -359,8 +368,8 @@ export default function PublicProfilePage() {
           <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
         </div>
 
-        <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 lg:px-6">
-          <div className="relative px-0 sm:px-4 md:px-6 -mt-16">
+        <div className="w-full max-w-2xl mx-auto">
+          <div className="relative px-4 -mt-16">
             <div className="flex items-end justify-between gap-4 mb-4">
               {/* Avatar */}
               <div
@@ -489,112 +498,86 @@ export default function PublicProfilePage() {
                 <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonnements</p>
               </div>
               <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
-                <p className="font-grotesk font-bold text-xl text-foreground">{recentDiscussions.length}</p>
-                <p className="font-inter text-xs text-muted-foreground mt-0.5">Discussion{recentDiscussions.length > 1 ? 's' : ''}</p>
+                <p className="font-grotesk font-bold text-xl text-foreground">{userPosts.length}</p>
+                <p className="font-inter text-xs text-muted-foreground mt-0.5">Post{userPosts.length > 1 ? 's' : ''}</p>
               </div>
             </div>
 
             {/* Action buttons */}
-            {currentUser && currentUser.email !== user.email && (
-              <div className="flex flex-col gap-2 mb-6 sm:flex-row">
-                <Button onClick={handleMessage} variant="outline" className="flex-1 gap-2 h-10 text-sm font-medium rounded-xl">
-                  <MessageCircle className="w-4 h-4" /> Message
-                </Button>
-                {!isFollowing ? (
-                  <Button onClick={handleFollow} disabled={followingLoading} className="flex-1 gap-2 h-10 text-sm font-medium bg-primary hover:bg-primary/90 rounded-xl">
-                    {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-                    S'abonner
+            <div className="flex gap-2 mb-6 flex-wrap">
+              {currentUser && currentUser.email === user.email ? (
+                <Link to="/profile">
+                  <Button variant="outline" className="gap-2 h-9 text-sm font-semibold rounded-full px-5">
+                    <Settings className="w-4 h-4" /> Modifier le profil
                   </Button>
-                ) : (
-                  <Button onClick={handleUnfollow} disabled={followingLoading} className="flex-1 h-10 text-sm font-medium bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30 rounded-xl gap-2">
-                    {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
-                    Se désabonner
+                </Link>
+              ) : currentUser ? (
+                <>
+                  <Button onClick={handleMessage} variant="outline" className="gap-2 h-9 text-sm font-semibold rounded-full px-4">
+                    <MessageCircle className="w-4 h-4" /> Message
                   </Button>
-                )}
-              </div>
-            )}
+                  {!isFollowing ? (
+                    <Button onClick={handleFollow} disabled={followingLoading} className="gap-2 h-9 text-sm font-semibold rounded-full px-5 bg-foreground text-background hover:bg-foreground/90">
+                      {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                      S'abonner
+                    </Button>
+                  ) : (
+                    <Button onClick={handleUnfollow} disabled={followingLoading} className="gap-2 h-9 text-sm font-semibold rounded-full px-5 bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30">
+                      {followingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
+                      Abonné
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <Link to="/login">
+                  <Button className="gap-2 h-9 text-sm font-semibold rounded-full px-5 bg-foreground text-background hover:bg-foreground/90">
+                    <UserPlus className="w-4 h-4" /> S'abonner
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
 
-            {affiliatedAccounts.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h2 className="font-grotesk font-semibold text-base">Affiliés officiels</h2>
-                    <p className="text-sm text-muted-foreground">Comptes affiliés publiquement à cette entreprise.</p>
+          {/* Profile Tabs — style X */}
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border/40 flex">
+            {[
+              { id: 'posts', label: 'Posts', count: userPosts.length },
+              { id: 'replies', label: 'Réponses', count: userReplies.length },
+              { id: 'medias', label: 'Médias', count: userMediaPosts.length },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setProfileTab(tab.id)}
+                className={`flex-1 py-4 text-sm font-inter font-medium transition-all border-b-2 -mb-px ${
+                  profileTab === tab.id
+                    ? 'border-primary text-foreground font-bold'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/3'
+                }`}
+              >
+                {tab.label}
+                {tab.count > 0 && <span className="ml-1.5 font-mono text-xs opacity-60">{tab.count}</span>}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div className="min-h-[300px]">
+            {(() => {
+              const tabPosts = profileTab === 'posts' ? userPosts : profileTab === 'replies' ? userReplies : userMediaPosts;
+              if (tabPosts.length === 0) {
+                return (
+                  <div className="py-16 text-center px-4">
+                    <p className="font-grotesk font-bold text-lg text-muted-foreground">Aucun contenu</p>
+                    <p className="font-inter text-sm text-muted-foreground/60 mt-1">
+                      {profileTab === 'posts' ? 'Aucun post publié.' : profileTab === 'replies' ? 'Aucune réponse.' : 'Aucun média partagé.'}
+                    </p>
                   </div>
-                  <span className="text-sm text-muted-foreground">{affiliatedAccounts.length} affilié{affiliatedAccounts.length > 1 ? 's' : ''}</span>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {affiliatedAccounts.map(({ affiliation, profile }) => (
-                    <Link
-                      key={affiliation.id}
-                      to={profile.username ? `/@${profile.username}` : `/user/${profile.id}`}
-                      onClick={() => { if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'auto' }); }}
-                      className="block rounded-3xl border border-border bg-secondary/60 p-4 transition hover:border-primary/50 hover:shadow-lg"
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="h-12 w-12 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center">
-                          {profile.avatar_url ? (
-                            <img src={profile.avatar_url} alt={profile.display_name || profile.full_name || profile.username} className="h-full w-full object-cover" />
-                          ) : (
-                            <span className="font-semibold text-primary text-lg">{(profile.display_name || profile.full_name || profile.username || '?')[0]?.toUpperCase()}</span>
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-semibold text-sm text-foreground truncate">{profile.display_name || profile.full_name || profile.username}</p>
-                          {profile.username && <p className="text-[11px] text-muted-foreground truncate">@{profile.username}</p>}
-                          {profile.verifications?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-                        {affiliation.role && <span className="rounded-full border border-border px-2 py-1">{affiliation.role}</span>}
-                        <span className="rounded-full border border-border px-2 py-1 bg-primary/10 text-primary">Affiliation publique</span>
-                        {profile.location && <span className="rounded-full border border-border px-2 py-1">{profile.location}</span>}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Discussions récentes */}
-            {recentDiscussions.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-                <h2 className="font-grotesk font-semibold text-base mb-3 flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-primary" />
-                  Discussions récentes
-                </h2>
-                <div className="space-y-2">
-                  {recentDiscussions.map(d => (
-                    <Link
-                      key={d.id}
-                      to={`/forum/${d.id}`}
-                      className="block p-3 bg-secondary/40 hover:bg-secondary/70 border border-border rounded-xl transition-colors group"
-                    >
-                      <p className="font-inter text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">{d.title}</p>
-                      <div className="flex items-center gap-3 mt-1.5">
-                        {d.category && (
-                          <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
-                            <Hash className="w-2.5 h-2.5" />{d.category}
-                          </span>
-                        )}
-                        <span className="text-[10px] text-muted-foreground">
-                          {formatDistanceToNow(new Date(d.created_date), { addSuffix: true, locale: fr })}
-                        </span>
-                        {d.replies_count > 0 && (
-                          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                            <MessageSquare className="w-2.5 h-2.5" />{d.replies_count}
-                          </span>
-                        )}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+                );
+              }
+              return tabPosts.map(post => (
+                <PostCard key={post.id} post={post} currentUser={currentUser} />
+              ));
+            })()}
           </div>
         </div>
       </div>

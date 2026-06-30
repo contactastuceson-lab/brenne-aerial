@@ -119,6 +119,10 @@ const createUserKey = (identifier) => {
   return identifier.includes('@') ? `email:${normalized}` : `id:${identifier}`;
 };
 
+export const refreshAffiliations = async (identifier) => {
+  return refreshAffiliationsForIdentifier(identifier);
+};
+
 export const refreshAffiliationsForIdentifier = async (identifier) => {
   if (!identifier) return null;
   const key = createUserKey(identifier);

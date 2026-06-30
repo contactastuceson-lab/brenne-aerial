@@ -67,8 +67,12 @@ export default function HomeLeftSidebar({ user }) {
       <div className="flex flex-col h-full py-2 px-2 xl:px-4 overflow-hidden">
 
         {/* Logo — fixe */}
-        <Link to="/" className="w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/5 transition mb-1 xl:ml-1 flex-shrink-0">
-          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/80278201e_1782606023373-Photoroom.png" alt="EZA" className="w-10 h-10 object-contain" />
+        <Link to="/" className="flex items-center gap-2 px-1 py-1 rounded-full hover:bg-white/5 transition mb-1 flex-shrink-0">
+          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/80278201e_1782606023373-Photoroom.png" alt="EZA" className="w-10 h-10 object-contain flex-shrink-0" />
+          <div className="hidden xl:flex flex-col leading-none">
+            <span className="text-[10px] font-inter text-muted-foreground/50 tracking-widest uppercase">by</span>
+            <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/3913412b6_1782605365815-Photoroom.png" alt="EZA GROUP" className="h-5 object-contain" />
+          </div>
         </Link>
 
         {/* Nav items — scrollable */}

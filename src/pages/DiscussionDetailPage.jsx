@@ -13,8 +13,89 @@ import { cn } from '@/lib/utils';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import AffiliationBadges from '@/components/shared/AffiliationBadges';
 import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
+import usePublicUser from '@/hooks/usePublicUser';
 import ExternalLinkModal from '@/components/forum/ExternalLinkModal.jsx';
 import { applySeoMeta, getForumSeoData } from '@/lib/seo';
+
+// Composant isolé pour chaque réponse — hook usePublicUser au niveau du composant
+function ReplyCard({ reply, discussion, id }) {
+  const liveAuthor = usePublicUser(reply.author_id);
+  const avatar = liveAuthor?.avatar_url || reply.author_avatar;
+  const name = liveAuthor?.display_name || liveAuthor?.full_name || reply.author_display_name || reply.author_name;
+  const verifications = liveAuthor?.verifications ?? reply.author_verifications ?? [];
+  const isSupreme = liveAuthor?.is_supreme ?? reply.author_is_supreme;
+
+  return (
+    <div className={cn('p-4 rounded-lg border', reply.is_solution ? 'bg-green-900/20 border-green-500/40' : 'bg-slate-800/30 border-slate-700/50')}>
+      <div className="flex justify-between items-start mb-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            {avatar ? (
+              <img src={avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
+                {name?.[0]?.toUpperCase() || '?'}
+              </div>
+            )}
+            <p className={`font-semibold ${isSupreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
+              {name}
+            </p>
+            <VerificationIcons
+              verifications={isSupreme ? ['supreme', ...(verifications || [])] : (verifications || [])}
+              size="sm"
+              user={{ id: reply.author_id }}
+            />
+            {reply.author_id && <AffiliationBadges userId={reply.author_id} size="sm" max={1} />}
+          </div>
+          <p className="text-xs text-slate-400">
+            {formatDistanceToNow(new Date(reply.created_date.endsWith('Z') ? reply.created_date : reply.created_date + 'Z'), { locale: fr, addSuffix: true })}
+          </p>
+        </div>
+        {reply.is_solution && (
+          <span className="px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs flex items-center gap-1">
+            <Check size={12} /> Solution
+          </span>
+        )}
+      </div>
+      <div className="mb-3"><DiscordMarkdown content={reply.content} /></div>
+      <div className="flex gap-2">
+        <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
+          <Heart size={14} className="mr-1" />{reply.likes_count || 0}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// Composant pour l'en-tête de la discussion principale
+function DiscussionAuthorHeader({ discussion }) {
+  const liveAuthor = usePublicUser(discussion.author_id);
+  const avatar = liveAuthor?.avatar_url || discussion.author_avatar;
+  const name = liveAuthor?.display_name || liveAuthor?.full_name || discussion.author_display_name || discussion.author_name;
+  const verifications = liveAuthor?.verifications ?? discussion.author_verifications ?? [];
+  const isSupreme = liveAuthor?.is_supreme ?? discussion.author_is_supreme;
+
+  return (
+    <div className="flex items-center gap-2">
+      {avatar ? (
+        <img src={avatar} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+      ) : (
+        <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+          {name?.[0]?.toUpperCase() || '?'}
+        </div>
+      )}
+      <span className={`truncate max-w-[140px] ${isSupreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
+        {name}
+      </span>
+      <VerificationIcons
+        verifications={isSupreme ? ['supreme', ...(verifications || [])] : verifications}
+        size="sm"
+        user={{ id: discussion.author_id }}
+      />
+      {discussion.author_id && <AffiliationBadges userId={discussion.author_id} size="sm" max={2} />}
+    </div>
+  );
+}
 
 export default function DiscussionDetailPage() {
   const { id } = useParams();
@@ -113,24 +194,7 @@ export default function DiscussionDetailPage() {
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white">{discussion.title}</h1>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-400">
-            <div className="flex items-center gap-2">
-              {discussion.author_avatar ? (
-                <img src={discussion.author_avatar} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-                  {discussion.author_name?.[0]?.toUpperCase() || '?'}
-                </div>
-              )}
-              <span className={`truncate max-w-[140px] ${discussion.author_is_supreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
-                {discussion.author_display_name || discussion.author_name}
-              </span>
-              <VerificationIcons
-                verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications}
-                size="sm"
-                user={{ id: discussion.author_id }}
-              />
-              {discussion.author_id && <AffiliationBadges userId={discussion.author_id} size="sm" max={2} />}
-            </div>
+            <DiscussionAuthorHeader discussion={discussion} />
             <span className="text-xs">{formatDistanceToNow(new Date(discussion.created_date.endsWith('Z') ? discussion.created_date : discussion.created_date + 'Z'), { locale: fr, addSuffix: true })}</span>
             <div className="flex items-center gap-1 text-xs">
               <Eye size={12} />
@@ -157,56 +221,7 @@ export default function DiscussionDetailPage() {
           ) : (
             <div className="space-y-4">
               {replies.map((reply) => (
-                <div
-                  key={reply.id}
-                  className={cn(
-                    'p-4 rounded-lg border',
-                    reply.is_solution
-                      ? 'bg-green-900/20 border-green-500/40'
-                      : 'bg-slate-800/30 border-slate-700/50'
-                  )}
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        {reply.author_avatar ? (
-                          <img src={reply.author_avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
-                        ) : (
-                          <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
-                            {reply.author_name?.[0]?.toUpperCase() || '?'}
-                          </div>
-                        )}
-                        <p className={`font-semibold ${reply.author_is_supreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
-                          {reply.author_display_name || reply.author_name}
-                        </p>
-                        <VerificationIcons
-                          verifications={reply.author_is_supreme ? ['supreme', ...(reply.author_verifications || [])] : (reply.author_verifications || [])}
-                          size="sm"
-                          user={{ id: reply.author_id }}
-                        />
-                        {reply.author_id && <AffiliationBadges userId={reply.author_id} size="sm" max={1} />}
-                      </div>
-                      <p className="text-xs text-slate-400">
-                        {formatDistanceToNow(new Date(reply.created_date.endsWith('Z') ? reply.created_date : reply.created_date + 'Z'), { locale: fr, addSuffix: true })}
-                      </p>
-                    </div>
-                    {reply.is_solution && (
-                      <span className="px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs flex items-center gap-1">
-                        <Check size={12} />
-                        Solution
-                      </span>
-                    )}
-                  </div>
-                  <div className="mb-3">
-                    <DiscordMarkdown content={reply.content} />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
-                      <Heart size={14} className="mr-1" />
-                      {reply.likes_count || 0}
-                    </Button>
-                  </div>
-                </div>
+                <ReplyCard key={reply.id} reply={reply} discussion={discussion} id={id} />
               ))}
             </div>
           )}

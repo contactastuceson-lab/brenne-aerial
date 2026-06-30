@@ -4,6 +4,7 @@ import { fr } from 'date-fns/locale';
 import { MessageCircle, Eye, Pin, Lock, Star } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import AffiliationBadges from '@/components/shared/AffiliationBadges';
+import usePublicUser from '@/hooks/usePublicUser';
 
 // Strip markdown to plain text for preview
 function stripMarkdown(text = '') {
@@ -17,10 +18,17 @@ function stripMarkdown(text = '') {
 }
 
 export default function DiscussionCard({ discussion }) {
+  const liveAuthor = usePublicUser(discussion.author_id);
+
   const isOfficial = discussion.is_official;
   const isPinned = discussion.is_pinned;
   const isLocked = discussion.is_locked;
   const plainContent = stripMarkdown(discussion.content);
+
+  const authorAvatar = liveAuthor?.avatar_url || discussion.author_avatar;
+  const authorName = liveAuthor?.display_name || liveAuthor?.full_name || discussion.author_display_name || discussion.author_name;
+  const authorVerifications = liveAuthor?.verifications ?? discussion.author_verifications;
+  const authorIsSupreme = liveAuthor?.is_supreme ?? discussion.author_is_supreme;
 
   return (
     <Link to={`/forum/${discussion.id}`}>
@@ -55,16 +63,16 @@ export default function DiscussionCard({ discussion }) {
 
         <div className="flex items-center justify-between gap-2 text-xs text-slate-500 min-w-0">
           <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-            {discussion.author_avatar ? (
-              <img src={discussion.author_avatar} alt="" className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+            {authorAvatar ? (
+              <img src={authorAvatar} alt="" className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
             ) : (
               <div className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0">
-                {discussion.author_name?.[0]?.toUpperCase() || '?'}
+                {authorName?.[0]?.toUpperCase() || '?'}
               </div>
             )}
-            <span className="truncate max-w-[100px]">{discussion.author_display_name || discussion.author_name}</span>
+            <span className="truncate max-w-[100px]">{authorName}</span>
             <VerificationIcons
-              verifications={discussion.author_is_supreme ? ['supreme', ...(discussion.author_verifications || [])] : discussion.author_verifications}
+              verifications={authorIsSupreme ? ['supreme', ...(authorVerifications || [])] : authorVerifications}
               size="sm"
               user={{ id: discussion.author_id }}
             />

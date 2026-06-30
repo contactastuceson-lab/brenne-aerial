@@ -4,11 +4,12 @@
  */
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Crown, Building2, Globe, Users, Lock, MoreHorizontal } from 'lucide-react';
+import { Crown, Globe, Users, Lock, MoreHorizontal } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import AffiliationBadges from '@/components/shared/AffiliationBadges';
+import usePublicUser from '@/hooks/usePublicUser';
 
 const CATEGORY_CONFIG = {
   general:   { dot: 'bg-blue-400',    label: 'Général' },
@@ -50,9 +51,17 @@ export default function PostAuthorHeader({
   showMenu = true,
   size = 'md',
 }) {
-  const displayName = authorDisplayName || authorName || 'Utilisateur';
+  // Résolution live du profil — écrase les données gravées dès que disponible
+  const liveUser = usePublicUser(authorId);
+
+  const displayName = liveUser?.display_name || liveUser?.full_name || authorDisplayName || authorName || 'Utilisateur';
+  const resolvedAvatar = liveUser?.avatar_url || authorAvatar;
+  const resolvedUsername = liveUser?.username || authorUsername;
+  const resolvedVerifications = liveUser?.verifications ?? authorVerifications;
+  const resolvedIsSupreme = liveUser?.is_supreme ?? authorIsSupreme;
+
   const avatarInitial = (displayName?.[0] || 'U').toUpperCase();
-  const profileLink = authorUsername ? `/@${authorUsername}` : null;
+  const profileLink = resolvedUsername ? `/@${resolvedUsername}` : null;
   const cat = category ? CATEGORY_CONFIG[category] : null;
 
   const timeAgo = useMemo(() => {
@@ -78,8 +87,8 @@ export default function PostAuthorHeader({
             className={`${avatarSize} ${avatarRounded} overflow-hidden border border-white/10`}
             style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}
           >
-            {authorAvatar ? (
-              <img src={authorAvatar} alt={displayName} className="w-full h-full object-cover" />
+            {resolvedAvatar ? (
+              <img src={resolvedAvatar} alt={displayName} className="w-full h-full object-cover" />
             ) : (
               <div
                 className="w-full h-full flex items-center justify-center"
@@ -89,7 +98,7 @@ export default function PostAuthorHeader({
               </div>
             )}
           </div>
-          {authorIsSupreme && (
+          {resolvedIsSupreme && (
             <div
               className={`absolute ${crownSize} rounded-full flex items-center justify-center`}
               style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 0 8px rgba(245,158,11,0.6)' }}
@@ -114,10 +123,10 @@ export default function PostAuthorHeader({
               <span className="font-grotesk font-bold text-sm text-foreground leading-tight">{displayName}</span>
             )}
 
-            {/* Badges de vérification */}
-            {authorVerifications?.length > 0 && (
+            {/* Badges de vérification — toujours live */}
+            {(resolvedVerifications?.length > 0 || resolvedIsSupreme) && (
               <VerificationIcons
-                verifications={authorVerifications}
+                verifications={resolvedIsSupreme ? ['supreme', ...(resolvedVerifications || [])] : resolvedVerifications}
                 size="sm"
                 user={authorId ? { id: authorId } : null}
               />
@@ -131,8 +140,8 @@ export default function PostAuthorHeader({
 
           {/* Ligne 2 : @pseudo · temps · catégorie · visibilité */}
           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-            {authorUsername && (
-              <span className="font-mono text-xs text-muted-foreground/55">@{authorUsername}</span>
+            {resolvedUsername && (
+              <span className="font-mono text-xs text-muted-foreground/55">@{resolvedUsername}</span>
             )}
             {timeAgo && (
               <>

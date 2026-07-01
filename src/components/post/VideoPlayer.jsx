@@ -295,13 +295,13 @@ export default function VideoPlayer({ initialPost, initialUrl, onClose, currentU
       try {
         const posts = await base44.entities.Post.list('-created_date', 50);
         const videoPosts = posts
-          .filter(p => p.media_urls?.some(u => u.match(/\.(mp4|webm|ogg)$/i)))
+          .filter(p => p.media_urls?.some(u => u?.match(/\.(mp4|webm|ogg)$/i)))
           .filter(p => p.id !== initialPost.id);
 
         const items = videoPosts.map(p => ({
           post: p,
-          url: p.media_urls.find(u => u.match(/\.(mp4|webm|ogg)$/i)),
-        }));
+          url: p.media_urls.find(u => u?.match(/\.(mp4|webm|ogg)$/i)),
+        })).filter(item => item.url);
 
         setQueue([{ post: initialPost, url: initialUrl }, ...items]);
       } catch {

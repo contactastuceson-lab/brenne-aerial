@@ -53,7 +53,7 @@ export default function LazyMedia({ urls = [], className = '', post = null, curr
   return (
     <>
       <div className={`grid gap-1 rounded-2xl overflow-hidden ${single ? 'grid-cols-1' : 'grid-cols-2'} ${className}`}>
-        {urls.slice(0, 4).map((url, i) => (
+        {urls.slice(0, 4).filter(Boolean).map((url, i) => (
           <div key={i} className="relative overflow-hidden rounded-2xl bg-white/5">
             {url.match(/\.(mp4|webm|ogg)$/i) ? (
               <div

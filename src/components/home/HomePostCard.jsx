@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import LazyMedia from '@/components/post/LazyMedia';
 import {
   Heart, MessageCircle, Repeat2, Bookmark, Share2, Eye,
   Flag, UserPlus, Link as LinkIcon, ChevronDown, ChevronUp,
@@ -173,18 +174,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
         )}
 
         {/* Media */}
-        {post.media_urls?.length > 0 && (
-          <div className={`grid gap-1 mt-2 mb-1 rounded-2xl overflow-hidden ${post.media_urls.length >= 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-            {post.media_urls.slice(0, 4).map((url, i) => (
-              <div key={i} className="relative overflow-hidden rounded-2xl bg-white/5">
-                {url.match(/\.(mp4|webm|ogg)$/i)
-                  ? <video src={url} controls className="w-full h-auto max-h-[512px] object-contain" />
-                  : <img src={url} alt="" className={`w-full h-auto ${post.media_urls.length >= 2 ? 'max-h-48 object-cover' : 'object-contain'}`} loading="lazy" decoding="async" />
-                }
-              </div>
-            ))}
-          </div>
-        )}
+        {post.media_urls?.length > 0 && <LazyMedia urls={post.media_urls} className="mt-2 mb-1" />}
 
         {/* Tags */}
         {post.tags?.length > 0 && (

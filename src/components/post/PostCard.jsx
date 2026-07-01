@@ -12,6 +12,7 @@ import { extractHashtags, extractMentions } from '@/lib/hashtags';
 import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
 import usePublicUser from '@/hooks/usePublicUser';
 import PollDisplay from '@/components/post/PollDisplay';
+import LazyMedia from '@/components/post/LazyMedia';
 
 const TRUNCATE_LIMIT = 280;
 
@@ -255,21 +256,8 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
 
         {/* Media */}
         {post.media_urls?.length > 0 && (
-          <div className={`grid gap-1 mb-3 rounded-2xl overflow-hidden ${post.media_urls.length >= 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-            {post.media_urls.slice(0, 4).map((url, i) => (
-              <div key={i} className="relative overflow-hidden rounded-2xl bg-white/5"
-                onClick={e => e.stopPropagation()}>
-                {url.match(/\.(mp4|webm|ogg)$/i)
-                  ? <video src={url} controls className="w-full h-auto max-h-[512px] object-contain" />
-                  : <img src={url} alt="" className={`w-full h-auto ${post.media_urls.length >= 2 ? 'max-h-48 object-cover' : 'object-contain'}`} loading="lazy" decoding="async" />
-                }
-                {i === 3 && post.media_urls.length > 4 && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">+{post.media_urls.length - 4}</span>
-                  </div>
-                )}
-              </div>
-            ))}
+          <div onClick={e => e.stopPropagation()}>
+            <LazyMedia urls={post.media_urls} className="mb-3" />
           </div>
         )}
 

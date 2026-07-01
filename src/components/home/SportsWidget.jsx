@@ -76,7 +76,7 @@ export default function SportsWidget() {
   const league = matches[0]?.league || 'Football';
 
   return (
-    <div className="mb-5 rounded-2xl overflow-hidden bg-card border border-border">
+    <div className="mb-5 rounded-2xl bg-card border border-border">
       {/* Header */}
       <div className="px-4 pt-3 pb-2 flex items-center justify-between border-b border-border/30">
         <div className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export default function SportsWidget() {
       </div>
 
       {/* Matches */}
-      <div className="px-4 py-1">
+      <div className="px-4 py-1 overflow-visible">
         {matches.map(m => <MatchRow key={m.id} match={m} />)}
       </div>
     </div>

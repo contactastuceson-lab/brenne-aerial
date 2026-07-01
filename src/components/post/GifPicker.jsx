@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
-
-const GIPHY_KEY = 'dc6zaTOxFJmzC';
+import { base44 } from '@/api/base44Client';
 
 export default function GifPicker({ onSelect, onClose }) {
   const [query, setQuery] = useState('');
@@ -15,13 +14,8 @@ export default function GifPicker({ onSelect, onClose }) {
     setLoading(true);
     setError(false);
     try {
-      const endpoint = q
-        ? `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=30&rating=g`
-        : `https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_KEY}&limit=30&rating=g`;
-      const res = await fetch(endpoint);
-      if (!res.ok) throw new Error();
-      const json = await res.json();
-      setGifs(json.data || []);
+      const res = await base44.functions.invoke('searchGifs', { query: q });
+      setGifs(res.data?.data || []);
     } catch {
       setError(true);
       setGifs([]);

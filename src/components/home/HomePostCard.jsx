@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import PostAuthorHeader from '@/components/shared/PostAuthorHeader';
 import usePublicUser from '@/hooks/usePublicUser';
-import { parseHashtags } from '@/lib/hashtags';
+import { extractHashtags } from '@/lib/hashtags';
 import { useNavigate } from 'react-router-dom';
 
 function AvatarColumn({ authorId, authorAvatar, authorDisplayName, profileLink }) {
@@ -38,7 +38,7 @@ function AvatarColumn({ authorId, authorAvatar, authorDisplayName, profileLink }
 
 function HashtagText({ text }) {
   const navigate = useNavigate();
-  const parts = parseHashtags(text);
+  const parts = text.split(/(#[\wÀ-ÿ]+)/g);
   return (
     <>
       {parts.map((part, i) =>
@@ -46,7 +46,7 @@ function HashtagText({ text }) {
           <span
             key={i}
             className="text-primary cursor-pointer hover:underline"
-            onClick={e => { e.preventDefault(); e.stopPropagation(); navigate(`/forum?tag=${part.slice(1).toLowerCase()}`); }}
+            onClick={e => { e.preventDefault(); e.stopPropagation(); navigate(`/?tag=${part.slice(1).toLowerCase()}`); }}
           >
             {part}
           </span>

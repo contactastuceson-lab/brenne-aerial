@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import PostCard from '@/components/post/PostCard';
+import HomePostCard from '@/components/home/HomePostCard';
 import CreatePost from '@/components/post/CreatePost';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 
@@ -62,50 +63,54 @@ export default function PostDetailPage() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Main */}
-      <div className="flex-1 min-w-0 max-w-[600px] mx-auto border-x border-zinc-800/60">
-        {/* Header */}
-        <div className="flex items-center gap-4 px-4 py-3 border-b border-zinc-800/60 sticky top-0 bg-background/95 backdrop-blur z-10">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-white/5 transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="font-grotesk font-bold text-lg">Post</h1>
-        </div>
+      {/* Main feed column */}
+      <div className="flex-1 flex justify-center min-w-0">
+        <main className="w-full max-w-[680px] min-w-0 border-x border-zinc-800/60">
 
-        {/* Parent post (if this is a reply) */}
-        {parentPost && (
-          <div className="relative">
-            <PostCard post={parentPost} currentUser={currentUser} />
-            {/* Thread line */}
-            <div className="absolute left-[2.25rem] top-0 bottom-0 w-0.5 bg-zinc-700/50 pointer-events-none" style={{ top: '3.5rem', bottom: '-1rem' }} />
+          {/* Header */}
+          <div className="flex items-center gap-4 px-4 py-3 border-b border-zinc-800/60 sticky top-0 bg-background/95 backdrop-blur z-10">
+            <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-white/5 transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="font-grotesk font-bold text-lg">Post</h1>
           </div>
-        )}
 
-        {/* Original post (full size) */}
-        <PostCard post={post} currentUser={currentUser} onReply={() => replyRef.current?.scrollIntoView({ behavior: 'smooth' })} />
-
-        {/* Reply composer */}
-        {currentUser && (
-          <div ref={replyRef}>
-            <CreatePost user={currentUser} onPost={handleNewReply} replyTo={post} />
-          </div>
-        )}
-
-        {/* Replies */}
-        <div>
-          {replies.map(reply => (
-            <PostCard key={reply.id} post={reply} currentUser={currentUser} compact />
-          ))}
-          {replies.length === 0 && (
-            <div className="py-12 text-center text-muted-foreground/40 text-sm">
-              Aucune réponse pour le moment
+          {/* Parent post (thread context) */}
+          {parentPost && (
+            <div className="relative">
+              <HomePostCard post={parentPost} currentUser={currentUser} />
+              <div className="absolute left-[2.25rem] w-0.5 bg-zinc-700/50 pointer-events-none" style={{ top: '3.5rem', bottom: '-1rem' }} />
             </div>
           )}
-        </div>
+
+          {/* Main post */}
+          <HomePostCard post={post} currentUser={currentUser} />
+
+          {/* Reply composer */}
+          {currentUser && (
+            <div ref={replyRef} className="border-b border-zinc-800/60">
+              <CreatePost user={currentUser} onPost={handleNewReply} replyTo={post} />
+            </div>
+          )}
+
+          {/* Replies */}
+          <div>
+            {replies.length === 0 ? (
+              <div className="py-12 text-center text-muted-foreground/40 text-sm font-inter">
+                Aucune réponse pour le moment
+              </div>
+            ) : (
+              replies.map(reply => (
+                <HomePostCard key={reply.id} post={reply} currentUser={currentUser} />
+              ))
+            )}
+          </div>
+
+        </main>
       </div>
 
       {/* Right sidebar */}
-      <div className="hidden xl:flex flex-col w-[300px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-4 px-3" style={{ scrollbarWidth: 'none' }}>
+      <div className="hidden xl:flex flex-col w-[360px] flex-shrink-0 sticky top-0 h-screen overflow-y-scroll py-4 px-4" style={{ scrollbarWidth: 'none' }}>
         <HomeRightSidebar />
       </div>
     </div>

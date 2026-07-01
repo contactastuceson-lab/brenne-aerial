@@ -151,15 +151,27 @@ export default function HomeFeed({ user }) {
     // Algorithmic sort for "Pour vous"
     if (filter === 'foryou') {
       const now = Date.now();
+      // Seed stable par session pour que l'ordre ne change pas à chaque render
+      const sessionSeed = parseInt(sessionStorage.getItem('feed_seed') || String(Math.floor(Math.random() * 10000)));
+      sessionStorage.setItem('feed_seed', String(sessionSeed));
+
       result = result
-        .map(p => {
+        .map((p, i) => {
           const ageHours = (now - new Date(p.created_date).getTime()) / 3600000;
-          // Decay: fresher posts get a bonus, older ones decay
-          const recencyBonus = Math.max(0, 48 - ageHours) * 0.5;
-          const engagementScore = (p.likes_count || 0) * 3 + (p.replies_count || 0) * 6 + (p.views_count || 0) * 0.1;
-          // Posts with media get a small boost
-          const mediaBoost = (p.media_urls?.length > 0) ? 5 : 0;
-          return { ...p, algoScore: engagementScore + recencyBonus + mediaBoost };
+          // Fraîcheur : forte pondération dans les 6 premières heures, décroit sur 72h
+          const recencyScore = ageHours < 1 ? 50
+            : ageHours < 6 ? 30
+            : ageHours < 24 ? 15
+            : Math.max(0, 72 - ageHours) * 0.2;
+          // Engagement
+          const engagementScore = (p.likes_count || 0) * 4 + (p.replies_count || 0) * 8 + (p.views_count || 0) * 0.05;
+          // Médias
+          const mediaBoost = (p.media_urls?.length > 0) ? 8 : 0;
+          // Variabilité stable par session (évite l'ordre identique pour tous)
+          const seededRandom = ((sessionSeed * (i + 1) * 9301 + 49297) % 233280) / 233280;
+          const randomBoost = seededRandom * 6;
+
+          return { ...p, algoScore: engagementScore + recencyScore + mediaBoost + randomBoost };
         })
         .sort((a, b) => b.algoScore - a.algoScore);
     }

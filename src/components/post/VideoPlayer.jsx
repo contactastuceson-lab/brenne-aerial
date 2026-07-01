@@ -6,11 +6,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { notify } from '@/lib/notificationHelper';
 
 // ─── Single video slide ──────────────────────────────────────────────────────
-function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser, onLikeUpdate }) {
+function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser, onLikeUpdate, onClose }) {
+  const navigate = useNavigate();
   const videoRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -231,7 +233,7 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
         </button>
 
         {/* Comment */}
-        <button onClick={handleShare} className="flex flex-col items-center gap-1 text-white active:scale-90 transition-transform">
+        <button onClick={() => { onClose?.(); navigate(`/post/${post.id}#reply`); }} className="flex flex-col items-center gap-1 text-white active:scale-90 transition-transform">
           <div className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center">
             <MessageCircle className="w-6 h-6" />
           </div>
@@ -400,6 +402,7 @@ export default function VideoPlayer({ initialPost, initialUrl, onClose, currentU
                 muted={muted}
                 onToggleMute={() => setMuted(m => !m)}
                 currentUser={currentUser}
+                onClose={onClose}
               />
             </motion.div>
           )}

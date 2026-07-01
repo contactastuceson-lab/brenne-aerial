@@ -93,7 +93,7 @@ function FeedSkeleton() {
 }
 
 export default function HomeFeed({ user }) {
-  const [filter, setFilter] = useState('recent');
+  const [filter, setFilter] = useState('foryou');
   const [newCount, setNewCount] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const location = useLocation();

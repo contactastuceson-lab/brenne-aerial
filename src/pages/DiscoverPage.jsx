@@ -14,14 +14,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import ReportModal from '@/components/shared/ReportModal';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import EmployeeProfileModal from '@/components/admin/EmployeeProfileModal';
-import UserProfileModal from '@/components/shared/UserProfileModal';
 import { POLES } from '@/lib/employeeRoles';
+import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 
-function getConversationId(emailA, emailB) {
-  return [emailA, emailB].sort().join('_');
-}
-
-// Génère un dégradé unique et cohérent basé sur le nom
 function getAvatarGradient(name = '') {
   const GRADIENTS = [
     ['#1a237e', '#0d47a1', '#01579b'],
@@ -95,7 +90,6 @@ export default function DiscoverPage() {
     base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin('/discover'));
   }, []);
 
-
   const { data: settings = [] } = useQuery({
     queryKey: ['app-settings'],
     queryFn: () => base44.entities.AppSettings.list(),
@@ -114,7 +108,6 @@ export default function DiscoverPage() {
     enabled: !!user,
   });
 
-  // Single subscription: refresh all-users list + update own user if it changed
   useEffect(() => {
     const unsub = base44.entities.User.subscribe(evt => {
       if (evt.type === 'update') {
@@ -191,11 +184,8 @@ export default function DiscoverPage() {
 
   const followingEmails = new Set(follows.map(f => f.following_email));
   const requestedEmails = new Set(myRequests.map(r => r.recipient_email));
-  
-  // Helper function to count followers for a user
-  const getFollowersCount = (email) => {
-    return allFollows.filter(f => f.following_email === email).length;
-  };
+
+  const getFollowersCount = (email) => allFollows.filter(f => f.following_email === email).length;
 
   const filtered = allUsers
     .filter(u => u.email !== user.email)
@@ -205,16 +195,12 @@ export default function DiscoverPage() {
       u.email?.toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) => {
-      if (sortBy === 'popular') {
-        return getFollowersCount(b.email) - getFollowersCount(a.email);
-      } else if (sortBy === 'verified') {
-        const aVerified = a.verifications?.includes('supreme') ? 0 : 1;
-        const bVerified = b.verifications?.includes('supreme') ? 0 : 1;
-        return aVerified - bVerified;
-      } else if (sortBy === 'premium') {
-        const aSupreme = a.verifications?.includes('supreme') ? 0 : 1;
-        const bSupreme = b.verifications?.includes('supreme') ? 0 : 1;
-        return aSupreme - bSupreme;
+      if (sortBy === 'popular') return getFollowersCount(b.email) - getFollowersCount(a.email);
+      if (sortBy === 'verified') {
+        return (a.verifications?.includes('supreme') ? 0 : 1) - (b.verifications?.includes('supreme') ? 0 : 1);
+      }
+      if (sortBy === 'premium') {
+        return (a.verifications?.includes('supreme') ? 0 : 1) - (b.verifications?.includes('supreme') ? 0 : 1);
       }
       return 0;
     });
@@ -224,11 +210,12 @@ export default function DiscoverPage() {
     .filter(e => !search || e.full_name?.toLowerCase().includes(search.toLowerCase()) || e.job_title?.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="pt-6 min-h-screen px-5 lg:px-10 pb-20 bg-gradient-to-b from-background to-background">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+    <div className="flex min-h-screen">
+      {/* Main content */}
+      <div className="flex-1 min-w-0 pt-6 px-5 lg:px-10 pb-20">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-accent/30 border border-primary/30 flex items-center justify-center">
                 <Users className="w-5 h-5 text-primary" />
@@ -239,96 +226,95 @@ export default function DiscoverPage() {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-8">
-          <button
-            onClick={() => setActiveTab('members')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-inter text-sm font-semibold transition-all duration-200 ${
-              activeTab === 'members'
-                ? 'bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 shadow-sm'
-                : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent'
-            }`}
-          >
-            <Users className="w-4 h-4" /> Membres <span className="font-mono text-xs ml-1 opacity-70">({filtered.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('team')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-inter text-sm font-semibold transition-all duration-200 ${
-              activeTab === 'team'
-                ? 'bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 shadow-sm'
-                : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent'
-            }`}
-          >
-            <Briefcase className="w-4 h-4" /> Équipe <span className="font-mono text-xs ml-1 opacity-70">({employees.length})</span>
-          </button>
-        </div>
-
-        {/* Search & View Mode */}
-        <div className="mb-6">
-          <div className="flex gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder={activeTab === 'team' ? 'Rechercher dans l\'équipe...' : 'Rechercher un profil...'}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="pl-10 bg-card border-border font-inter"
-              />
-            </div>
-            {activeTab === 'members' && (
-              <div className="flex gap-2">
-                <select
-                  value={sortBy}
-                  onChange={e => setSortBy(e.target.value)}
-                  className="px-3 py-2 rounded-lg bg-card border border-border text-sm font-inter text-foreground"
-                >
-                  <option value="recent">Plus récents</option>
-                  <option value="popular">Plus populaires</option>
-                  <option value="verified">Vérifiés</option>
-                  <option value="premium">Premium</option>
-                </select>
-                <div className="flex gap-1 bg-secondary/50 rounded-lg p-1">
-                  <button
-                    onClick={() => setMembersViewMode('grid')}
-                    className={`p-2 rounded transition-colors ${membersViewMode === 'grid' ? 'bg-card text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                    title="Mode Grille"
-                  >
-                    <Grid3x3 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setMembersViewMode('list')}
-                    className={`p-2 rounded transition-colors ${membersViewMode === 'list' ? 'bg-card text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                    title="Mode Liste"
-                  >
-                    <List className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Team tab - pole filters (scroll horizontal) */}
-        {activeTab === 'team' && (
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-            <button onClick={() => setFilterPole('all')} className={`flex-shrink-0 px-3 py-1 rounded-full font-inter text-xs border transition-all ${filterPole === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'}`}>
-              Tous
+          {/* Tabs */}
+          <div className="flex gap-2 mb-8">
+            <button
+              onClick={() => setActiveTab('members')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-inter text-sm font-semibold transition-all duration-200 ${
+                activeTab === 'members'
+                  ? 'bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent'
+              }`}
+            >
+              <Users className="w-4 h-4" /> Membres <span className="font-mono text-xs ml-1 opacity-70">({filtered.length})</span>
             </button>
-            {Object.entries(POLES).map(([k, v]) => (
-              <button key={k} onClick={() => setFilterPole(filterPole === k ? 'all' : k)}
-                className={`flex-shrink-0 px-3 py-1 rounded-full font-inter text-xs border transition-all flex items-center gap-1 ${filterPole === k ? `${v.bg} ${v.color} ${v.border}` : 'border-border text-muted-foreground hover:text-foreground'}`}>
-                {v.emoji} <span className="hidden sm:inline">{v.label}</span>
-              </button>
-            ))}
+            <button
+              onClick={() => setActiveTab('team')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-inter text-sm font-semibold transition-all duration-200 ${
+                activeTab === 'team'
+                  ? 'bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent'
+              }`}
+            >
+              <Briefcase className="w-4 h-4" /> Équipe <span className="font-mono text-xs ml-1 opacity-70">({employees.length})</span>
+            </button>
           </div>
-        )}
 
-        {/* Grid */}
-        {activeTab === 'team' ? (
-          <div className="space-y-2">
-              {filteredEmployees.map((emp, i) => {
+          {/* Search & View Mode */}
+          <div className="mb-6">
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder={activeTab === 'team' ? "Rechercher dans l'équipe..." : 'Rechercher un profil...'}
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="pl-10 bg-card border-border font-inter"
+                />
+              </div>
+              {activeTab === 'members' && (
+                <div className="flex gap-2">
+                  <select
+                    value={sortBy}
+                    onChange={e => setSortBy(e.target.value)}
+                    className="px-3 py-2 rounded-lg bg-card border border-border text-sm font-inter text-foreground"
+                  >
+                    <option value="recent">Plus récents</option>
+                    <option value="popular">Plus populaires</option>
+                    <option value="verified">Vérifiés</option>
+                    <option value="premium">Premium</option>
+                  </select>
+                  <div className="flex gap-1 bg-secondary/50 rounded-lg p-1">
+                    <button
+                      onClick={() => setMembersViewMode('grid')}
+                      className={`p-2 rounded transition-colors ${membersViewMode === 'grid' ? 'bg-card text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                      title="Mode Grille"
+                    >
+                      <Grid3x3 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setMembersViewMode('list')}
+                      className={`p-2 rounded transition-colors ${membersViewMode === 'list' ? 'bg-card text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                      title="Mode Liste"
+                    >
+                      <List className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Team tab - pole filters */}
+          {activeTab === 'team' && (
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+              <button onClick={() => setFilterPole('all')} className={`flex-shrink-0 px-3 py-1 rounded-full font-inter text-xs border transition-all ${filterPole === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'}`}>
+                Tous
+              </button>
+              {Object.entries(POLES).map(([k, v]) => (
+                <button key={k} onClick={() => setFilterPole(filterPole === k ? 'all' : k)}
+                  className={`flex-shrink-0 px-3 py-1 rounded-full font-inter text-xs border transition-all flex items-center gap-1 ${filterPole === k ? `${v.bg} ${v.color} ${v.border}` : 'border-border text-muted-foreground hover:text-foreground'}`}>
+                  {v.emoji} <span className="hidden sm:inline">{v.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Content */}
+          {activeTab === 'team' ? (
+            <div className="space-y-2">
+              {filteredEmployees.map((emp) => {
                 const pole = POLES[emp.pole];
                 return (
                   <div
@@ -336,14 +322,12 @@ export default function DiscoverPage() {
                     className="flex items-center gap-3 bg-card border border-border rounded-xl px-3 py-3 cursor-pointer hover:border-primary/30 transition-colors"
                     onClick={() => setViewEmployee(emp)}
                   >
-                    {/* Avatar */}
                     <div className="w-11 h-11 rounded-xl border border-border bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
                       {emp.avatar_url
                         ? <img loading="eager" src={emp.avatar_url} alt="" className="w-full h-full object-cover" />
                         : <span className="font-grotesk font-bold text-base text-primary">{emp.full_name?.[0]}</span>
                       }
                     </div>
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
                       <p className="font-grotesk font-semibold text-sm truncate">{emp.full_name}</p>
                       <p className="font-inter text-xs text-primary truncate">{emp.job_title}</p>
@@ -358,7 +342,6 @@ export default function DiscoverPage() {
                         </p>
                       </div>
                     </div>
-                    {/* Pole badge */}
                     {pole && (
                       <div className={`flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-full font-mono text-[9px] border ${pole.bg} ${pole.color} ${pole.border}`}>
                         <span>{pole.emoji}</span>
@@ -368,354 +351,293 @@ export default function DiscoverPage() {
                   </div>
                 );
               })}
-            {filteredEmployees.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground font-inter text-sm">Aucun membre d'équipe trouvé</div>
-            )}
-          </div>
-        ) : membersViewMode === 'list' ? (
-        <div className="divide-y divide-border rounded-2xl border border-border bg-background">
-            {filtered.map((profile, i) => {
-              const isFollowing = followingEmails.has(profile.email);
-              const followRecord = follows.find(f => f.following_email === profile.email);
-              const alreadyRequested = requestedEmails.has(profile.email);
-              const isSupreme = profile.verifications?.includes('supreme');
-
-              return (
-                <div
-                  key={profile.id}
-                  className="flex items-center gap-3 px-3 py-2 transition-colors cursor-pointer group hover:bg-secondary/10"
-                  onClick={() => {
-                    if (typeof window !== 'undefined') {
-                      window.scrollTo({ top: 0, behavior: 'auto' });
-                    }
-                    const destination = profile.username ? `/@${profile.username}` : `/profile?user=${profile.id}`;
-                    navigate(destination);
-                  }}
-                >
+              {filteredEmployees.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground font-inter text-sm">Aucun membre d'équipe trouvé</div>
+              )}
+            </div>
+          ) : membersViewMode === 'list' ? (
+            <div className="divide-y divide-border rounded-2xl border border-border bg-background">
+              {filtered.map((profile) => {
+                const isFollowing = followingEmails.has(profile.email);
+                const followRecord = follows.find(f => f.following_email === profile.email);
+                const alreadyRequested = requestedEmails.has(profile.email);
+                const isSupreme = profile.verifications?.includes('supreme');
+                return (
                   <div
-                    className="w-10 h-10 flex-shrink-0 rounded-full overflow-hidden border border-border bg-secondary flex items-center justify-center"
-                    style={isSupreme ? { boxShadow: '0 0 10px rgba(245,158,11,0.15)' } : { background: profile.avatar_url ? 'var(--secondary)' : getAvatarGradient(profile.full_name) }}
+                    key={profile.id}
+                    className="flex items-center gap-3 px-3 py-2 transition-colors cursor-pointer group hover:bg-secondary/10"
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: 'auto' });
+                      navigate(profile.username ? `/@${profile.username}` : `/profile?user=${profile.id}`);
+                    }}
                   >
-                    {profile.avatar_url ? (
-                      <img loading="eager" src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="font-grotesk font-semibold text-base text-white drop-shadow-sm">
-                        {(profile.display_name || profile.full_name)?.[0]?.toUpperCase() || '?'}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground truncate">
-                      <span className="truncate">{profile.display_name || profile.full_name}</span>
-                      {isSupreme && <span className="text-[11px]">👑</span>}
-                      <span className="relative z-10 flex-shrink-0">
-                        <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
-                      {profile.username && <span className="truncate font-mono">@{profile.username}</span>}
-                      {profile.location && (
-                        <span className="truncate flex items-center gap-1">
-                          <MapPin className="w-3 h-3" /> {profile.location}
+                    <div
+                      className="w-10 h-10 flex-shrink-0 rounded-full overflow-hidden border border-border bg-secondary flex items-center justify-center"
+                      style={isSupreme ? { boxShadow: '0 0 10px rgba(245,158,11,0.15)' } : { background: profile.avatar_url ? 'var(--secondary)' : getAvatarGradient(profile.full_name) }}
+                    >
+                      {profile.avatar_url ? (
+                        <img loading="eager" src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="font-grotesk font-semibold text-base text-white drop-shadow-sm">
+                          {(profile.display_name || profile.full_name)?.[0]?.toUpperCase() || '?'}
                         </span>
                       )}
-                      <span className="truncate">• {formatFollowers(getFollowersCount(profile.email))}</span>
                     </div>
-                    {profile.badges?.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-1 mt-1 text-[10px] text-muted-foreground">
-                        {profile.badges.slice(0, 2).map((badge) => {
-                          const cfg = BADGE_CONFIG[badge];
-                          const BadgeIcon = cfg?.icon;
-                          return (
-                            <BadgePopup key={badge} badgeKey={badge}>
-                              <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full border ${cfg?.border || 'border-border'} ${cfg?.bg || 'bg-secondary/20'} ${cfg?.color || 'text-muted-foreground'}`}>
-                                {BadgeIcon ? <BadgeIcon className="w-3 h-3" /> : null}
-                                {badge}
-                              </span>
-                            </BadgePopup>
-                          );
-                        })}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-foreground truncate">
+                        <span className="truncate">{profile.display_name || profile.full_name}</span>
+                        {isSupreme && <span className="text-[11px]">👑</span>}
+                        <span className="relative z-10 flex-shrink-0">
+                          <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
+                        </span>
                       </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-shrink-0 items-center gap-2" onClick={e => e.stopPropagation()}>
-                    {isFollowing ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-[11px] h-8 px-2 rounded-full"
-                        style={isSupreme ? { borderColor: 'rgba(217,119,6,0.35)', color: '#d97706' } : {}}
-                        onClick={() => unfollowMutation.mutate(followRecord.id)}
-                        disabled={unfollowMutation.isPending}
-                      >
-                        <UserCheck className="w-3 h-3" />
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        className="text-[11px] h-8 px-2 rounded-full"
-                        style={isSupreme
-                          ? { background: 'rgba(217,119,6,0.12)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.25)' }
-                          : { background: 'rgba(56,170,220,0.12)', color: 'hsl(var(--primary))', border: '1px solid rgba(56,170,220,0.2)' }
-                        }
-                        onClick={() => followMutation.mutate(profile)}
-                        disabled={followMutation.isPending}
-                      >
-                        <UserPlus className="w-3 h-3" />
-                      </Button>
-                    )}
-
-                    {alreadyRequested ? (
-                      <Button size="sm" variant="outline" className="text-[11px] h-8 px-2 rounded-full opacity-70" disabled>
-                        <MessageCircle className="w-3 h-3" />
-                      </Button>
-                    ) : (
-                      <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`}>
-                        <Button
-                          size="sm"
-                          className="text-[11px] h-8 px-2 rounded-full"
-                          style={isSupreme
-                            ? { background: 'rgba(217,119,6,0.12)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.25)' }
-                            : { background: 'rgba(56,200,180,0.12)', color: 'hsl(var(--accent))', border: '1px solid rgba(56,200,180,0.2)' }
-                          }
-                        >
-                          <MessageCircle className="w-3 h-3" />
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          {filtered.length === 0 && (
-            <div className="text-center py-20 text-muted-foreground font-inter text-sm">
-              Aucun profil trouvé
-            </div>
-          )}
-        </div>
-        ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((profile, i) => {
-              const isFollowing = followingEmails.has(profile.email);
-              const followRecord = follows.find(f => f.following_email === profile.email);
-              const alreadyRequested = requestedEmails.has(profile.email);
-
-              const isSupreme = profile.verifications?.includes('supreme');
-
-              return (
-                <div
-                  key={profile.id}
-                  onClick={() => {
-                    const destination = profile.username ? `/@${profile.username}` : `/user/${profile.id}`;
-                    navigate(destination);
-                  }}
-                  className={`group relative rounded-2xl overflow-hidden hover-lift cursor-pointer ${isSupreme ? 'border-2' : 'border border-border bg-card'}`}
-                  style={isSupreme ? {
-                    background: 'linear-gradient(145deg, #0d0800, #1a0e00, #0d0800)',
-                    borderColor: '#d97706',
-                    boxShadow: '0 0 0 1px rgba(245,158,11,0.15), 0 0 30px rgba(245,158,11,0.2), 0 0 80px rgba(245,158,11,0.07)',
-                  } : {}}
-                >
-                  {isSupreme && (
-                    <div className="absolute inset-0 rounded-2xl pointer-events-none z-0" style={{ background: 'linear-gradient(145deg, rgba(245,158,11,0.06) 0%, transparent 40%, rgba(245,158,11,0.04) 100%)' }} />
-                  )}
-                  {isSupreme && (
-                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'linear-gradient(135deg, #92400e, #d97706)', boxShadow: '0 2px 8px rgba(245,158,11,0.4)' }}>
-                      <span style={{ fontSize: '10px' }}>👑</span>
-                      <span className="font-mono text-[9px] font-bold text-yellow-100 uppercase tracking-widest">Suprême</span>
-                    </div>
-                  )}
-
-                  {/* Cover */}
-                  <div className="h-24 relative overflow-hidden">
-                    {profile.cover_url
-                      ? <img loading="eager" src={profile.cover_url} alt="" className="w-full h-full object-cover" />
-                      : (
-                        <div className="w-full h-full relative" style={{ background: getCoverGradient(profile.full_name) }}>
-                          {/* Pattern overlay */}
-                          <div className="absolute inset-0 opacity-20" style={{
-                            backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)',
-                          }} />
-                          <div className="absolute inset-0 grid-bg opacity-30" />
-                          {/* Initials watermark */}
-                          <div className="absolute inset-0 flex items-center justify-end pr-4 opacity-10">
-                            <span className="font-grotesk font-black text-6xl text-white select-none">
-                              {(profile.display_name || profile.full_name)?.[0]?.toUpperCase() || '?'}
-                            </span>
-                          </div>
-                        </div>
-                      )
-                    }
-                    {/* Report button */}
-                    <button
-                      onClick={e => { e.stopPropagation(); setReportTarget(profile); }}
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center hover:bg-background"
-                    >
-                      <Flag className="w-3 h-3 text-muted-foreground" />
-                    </button>
-                  </div>
-
-                  {/* Avatar */}
-                  <div className="px-4 -mt-8 pb-4">
-                    <div className="relative w-14 h-14 mb-3">
-                      <div
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden"
-                        style={isSupreme
-                          ? { border: '2px solid #d97706', boxShadow: '0 0 12px rgba(245,158,11,0.5)', background: '#1a0e00' }
-                          : { border: '2px solid var(--background)', background: profile.avatar_url ? 'var(--secondary)' : getAvatarGradient(profile.full_name) }
-                        }
-                      >
-                        {profile.avatar_url ? (
-                          <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="font-grotesk font-bold text-xl text-white drop-shadow-sm">
-                            {(profile.display_name || profile.full_name)?.[0]?.toUpperCase() || '?'}
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                        {profile.username && <span className="truncate font-mono">@{profile.username}</span>}
+                        {profile.location && (
+                          <span className="truncate flex items-center gap-1">
+                            <MapPin className="w-3 h-3" /> {profile.location}
                           </span>
                         )}
+                        <span className="truncate">• {formatFollowers(getFollowersCount(profile.email))}</span>
                       </div>
-                      {profile.last_seen && (Date.now() - new Date(profile.last_seen).getTime()) < 2 * 60 * 1000 && (
-                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background" />
+                      {profile.badges?.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1 mt-1 text-[10px] text-muted-foreground">
+                          {profile.badges.slice(0, 2).map((badge) => {
+                            const cfg = BADGE_CONFIG[badge];
+                            const BadgeIcon = cfg?.icon;
+                            return (
+                              <BadgePopup key={badge} badgeKey={badge}>
+                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full border ${cfg?.border || 'border-border'} ${cfg?.bg || 'bg-secondary/20'} ${cfg?.color || 'text-muted-foreground'}`}>
+                                  {BadgeIcon ? <BadgeIcon className="w-3 h-3" /> : null}
+                                  {badge}
+                                </span>
+                              </BadgePopup>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
-
-                    <div className="flex items-center gap-1 mb-0.5">
-                       <h3
-                         className="font-grotesk font-semibold text-sm truncate"
-                         style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-                       >{profile.display_name || profile.full_name}</h3>
-                       <VerificationIcons verifications={profile.verifications} user={profile} />
-                     </div>
-                     {profile.username && (
-                       <p className="font-mono text-xs text-muted-foreground mb-2">@{profile.username}</p>
-                     )}
-                    <div className="flex flex-col gap-1 mb-2">
-                      {profile.location && (
-                        <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
-                          <MapPin className="w-2.5 h-2.5" /> {profile.location}
-                        </p>
-                      )}
-                      <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
-                        <Users className="w-2.5 h-2.5" /> {getFollowersCount(profile.email)} abonné{getFollowersCount(profile.email) > 1 ? 's' : ''}
-                      </p>
-                    </div>
-
-                    {profile.role && (
-                      <span className="inline-block font-mono text-[9px] text-primary/80 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full mb-2 capitalize">
-                        {profile.role}
-                      </span>
-                    )}
-
-                    {/* Bio */}
-                    {profile.bio && (
-                      <p className="font-inter text-[11px] text-muted-foreground mb-2 line-clamp-2">{profile.bio}</p>
-                    )}
-
-                    {/* Badges */}
-                    {profile.badges?.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {profile.badges.slice(0, 3).map(b => {
-                          const cfg = BADGE_CONFIG[b];
-                          if (!cfg) return (
-                            <BadgePopup key={b} badgeKey={b}>
-                              <span className="font-mono text-[9px] bg-secondary border border-border px-2 py-0.5 rounded-full cursor-pointer">{b}</span>
-                            </BadgePopup>
-                          );
-                          const Icon = cfg.icon;
-                          return (
-                            <BadgePopup key={b} badgeKey={b}>
-                              <span className={`flex items-center gap-1 font-inter text-[9px] px-2 py-0.5 rounded-full border cursor-pointer ${cfg.color} ${cfg.bg} ${cfg.border}`}>
-                                <Icon className="w-2.5 h-2.5" /> {b}
-                              </span>
-                            </BadgePopup>
-                          );
-                        })}
-                        {profile.badges.length > 3 && (
-                          <span className="font-mono text-[9px] text-muted-foreground bg-secondary border border-border px-2 py-0.5 rounded-full">+{profile.badges.length - 3}</span>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex gap-2 mt-1">
+                    <div className="flex flex-shrink-0 items-center gap-2" onClick={e => e.stopPropagation()}>
                       {isFollowing ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 text-xs font-inter gap-1.5 h-8"
-                          style={isSupreme ? { borderColor: 'rgba(217,119,6,0.4)', color: '#d97706' } : {}}
-                          onClick={() => unfollowMutation.mutate(followRecord.id)}
-                          disabled={unfollowMutation.isPending}
-                        >
+                        <Button size="sm" variant="outline" className="text-[11px] h-8 px-2 rounded-full"
+                          style={isSupreme ? { borderColor: 'rgba(217,119,6,0.35)', color: '#d97706' } : {}}
+                          onClick={() => unfollowMutation.mutate(followRecord.id)} disabled={unfollowMutation.isPending}>
                           <UserCheck className="w-3 h-3" />
-                          Suivi
                         </Button>
                       ) : (
-                        <Button
-                          size="sm"
-                          className="flex-1 text-xs font-inter gap-1.5 h-8"
+                        <Button size="sm" className="text-[11px] h-8 px-2 rounded-full"
                           style={isSupreme
-                            ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
-                            : { background: 'rgba(56,170,220,0.1)', color: 'hsl(var(--primary))', border: '1px solid rgba(56,170,220,0.2)' }
-                          }
-                          onClick={() => followMutation.mutate(profile)}
-                          disabled={followMutation.isPending}
-                        >
+                            ? { background: 'rgba(217,119,6,0.12)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.25)' }
+                            : { background: 'rgba(56,170,220,0.12)', color: 'hsl(var(--primary))', border: '1px solid rgba(56,170,220,0.2)' }}
+                          onClick={() => followMutation.mutate(profile)} disabled={followMutation.isPending}>
                           <UserPlus className="w-3 h-3" />
-                          Suivre
                         </Button>
                       )}
-
                       {alreadyRequested ? (
-                        <Button size="sm" variant="outline" className="flex-1 text-xs border-border font-inter gap-1.5 h-8 opacity-60" disabled>
+                        <Button size="sm" variant="outline" className="text-[11px] h-8 px-2 rounded-full opacity-70" disabled>
                           <MessageCircle className="w-3 h-3" />
-                          Envoyé
                         </Button>
                       ) : (
-                        <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`} className="flex-1">
-                          <Button
-                            size="sm"
-                            className="w-full text-xs font-inter gap-1.5 h-8"
+                        <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`}>
+                          <Button size="sm" className="text-[11px] h-8 px-2 rounded-full"
                             style={isSupreme
-                              ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
-                              : { background: 'rgba(56,200,180,0.1)', color: 'hsl(var(--accent))', border: '1px solid rgba(56,200,180,0.2)' }
-                            }
-                          >
+                              ? { background: 'rgba(217,119,6,0.12)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.25)' }
+                              : { background: 'rgba(56,200,180,0.12)', color: 'hsl(var(--accent))', border: '1px solid rgba(56,200,180,0.2)' }}>
                             <MessageCircle className="w-3 h-3" />
-                            Contacter
                           </Button>
                         </Link>
                       )}
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          {filtered.length === 0 && (
-            <div className="text-center py-20 text-muted-foreground font-inter text-sm">
-              Aucun profil trouvé
+                );
+              })}
+              {filtered.length === 0 && (
+                <div className="text-center py-20 text-muted-foreground font-inter text-sm">Aucun profil trouvé</div>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filtered.map((profile) => {
+                const isFollowing = followingEmails.has(profile.email);
+                const followRecord = follows.find(f => f.following_email === profile.email);
+                const alreadyRequested = requestedEmails.has(profile.email);
+                const isSupreme = profile.verifications?.includes('supreme');
+                return (
+                  <div
+                    key={profile.id}
+                    onClick={() => navigate(profile.username ? `/@${profile.username}` : `/user/${profile.id}`)}
+                    className={`group relative rounded-2xl overflow-hidden hover-lift cursor-pointer ${isSupreme ? 'border-2' : 'border border-border bg-card'}`}
+                    style={isSupreme ? {
+                      background: 'linear-gradient(145deg, #0d0800, #1a0e00, #0d0800)',
+                      borderColor: '#d97706',
+                      boxShadow: '0 0 0 1px rgba(245,158,11,0.15), 0 0 30px rgba(245,158,11,0.2), 0 0 80px rgba(245,158,11,0.07)',
+                    } : {}}
+                  >
+                    {isSupreme && (
+                      <div className="absolute inset-0 rounded-2xl pointer-events-none z-0" style={{ background: 'linear-gradient(145deg, rgba(245,158,11,0.06) 0%, transparent 40%, rgba(245,158,11,0.04) 100%)' }} />
+                    )}
+                    {isSupreme && (
+                      <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'linear-gradient(135deg, #92400e, #d97706)', boxShadow: '0 2px 8px rgba(245,158,11,0.4)' }}>
+                        <span style={{ fontSize: '10px' }}>👑</span>
+                        <span className="font-mono text-[9px] font-bold text-yellow-100 uppercase tracking-widest">Suprême</span>
+                      </div>
+                    )}
+                    <div className="h-24 relative overflow-hidden">
+                      {profile.cover_url
+                        ? <img loading="eager" src={profile.cover_url} alt="" className="w-full h-full object-cover" />
+                        : (
+                          <div className="w-full h-full relative" style={{ background: getCoverGradient(profile.full_name) }}>
+                            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)' }} />
+                            <div className="absolute inset-0 grid-bg opacity-30" />
+                            <div className="absolute inset-0 flex items-center justify-end pr-4 opacity-10">
+                              <span className="font-grotesk font-black text-6xl text-white select-none">
+                                {(profile.display_name || profile.full_name)?.[0]?.toUpperCase() || '?'}
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      }
+                      <button
+                        onClick={e => { e.stopPropagation(); setReportTarget(profile); }}
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center hover:bg-background"
+                      >
+                        <Flag className="w-3 h-3 text-muted-foreground" />
+                      </button>
+                    </div>
+                    <div className="px-4 -mt-8 pb-4">
+                      <div className="relative w-14 h-14 mb-3">
+                        <div
+                          className="w-14 h-14 rounded-2xl flex items-center justify-center overflow-hidden"
+                          style={isSupreme
+                            ? { border: '2px solid #d97706', boxShadow: '0 0 12px rgba(245,158,11,0.5)', background: '#1a0e00' }
+                            : { border: '2px solid var(--background)', background: profile.avatar_url ? 'var(--secondary)' : getAvatarGradient(profile.full_name) }}
+                        >
+                          {profile.avatar_url ? (
+                            <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="font-grotesk font-bold text-xl text-white drop-shadow-sm">
+                              {(profile.display_name || profile.full_name)?.[0]?.toUpperCase() || '?'}
+                            </span>
+                          )}
+                        </div>
+                        {profile.last_seen && (Date.now() - new Date(profile.last_seen).getTime()) < 2 * 60 * 1000 && (
+                          <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <h3 className="font-grotesk font-semibold text-sm truncate"
+                          style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}>
+                          {profile.display_name || profile.full_name}
+                        </h3>
+                        <VerificationIcons verifications={profile.verifications} user={profile} />
+                      </div>
+                      {profile.username && (
+                        <p className="font-mono text-xs text-muted-foreground mb-2">@{profile.username}</p>
+                      )}
+                      <div className="flex flex-col gap-1 mb-2">
+                        {profile.location && (
+                          <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-2.5 h-2.5" /> {profile.location}
+                          </p>
+                        )}
+                        <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
+                          <Users className="w-2.5 h-2.5" /> {getFollowersCount(profile.email)} abonné{getFollowersCount(profile.email) > 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      {profile.role && (
+                        <span className="inline-block font-mono text-[9px] text-primary/80 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full mb-2 capitalize">
+                          {profile.role}
+                        </span>
+                      )}
+                      {profile.bio && (
+                        <p className="font-inter text-[11px] text-muted-foreground mb-2 line-clamp-2">{profile.bio}</p>
+                      )}
+                      {profile.badges?.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {profile.badges.slice(0, 3).map(b => {
+                            const cfg = BADGE_CONFIG[b];
+                            if (!cfg) return (
+                              <BadgePopup key={b} badgeKey={b}>
+                                <span className="font-mono text-[9px] bg-secondary border border-border px-2 py-0.5 rounded-full cursor-pointer">{b}</span>
+                              </BadgePopup>
+                            );
+                            const Icon = cfg.icon;
+                            return (
+                              <BadgePopup key={b} badgeKey={b}>
+                                <span className={`flex items-center gap-1 font-inter text-[9px] px-2 py-0.5 rounded-full border cursor-pointer ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+                                  <Icon className="w-2.5 h-2.5" /> {b}
+                                </span>
+                              </BadgePopup>
+                            );
+                          })}
+                          {profile.badges.length > 3 && (
+                            <span className="font-mono text-[9px] text-muted-foreground bg-secondary border border-border px-2 py-0.5 rounded-full">+{profile.badges.length - 3}</span>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex gap-2 mt-1">
+                        {isFollowing ? (
+                          <Button size="sm" variant="outline" className="flex-1 text-xs font-inter gap-1.5 h-8"
+                            style={isSupreme ? { borderColor: 'rgba(217,119,6,0.4)', color: '#d97706' } : {}}
+                            onClick={() => unfollowMutation.mutate(followRecord.id)} disabled={unfollowMutation.isPending}>
+                            <UserCheck className="w-3 h-3" /> Suivi
+                          </Button>
+                        ) : (
+                          <Button size="sm" className="flex-1 text-xs font-inter gap-1.5 h-8"
+                            style={isSupreme
+                              ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
+                              : { background: 'rgba(56,170,220,0.1)', color: 'hsl(var(--primary))', border: '1px solid rgba(56,170,220,0.2)' }}
+                            onClick={() => followMutation.mutate(profile)} disabled={followMutation.isPending}>
+                            <UserPlus className="w-3 h-3" /> Suivre
+                          </Button>
+                        )}
+                        {alreadyRequested ? (
+                          <Button size="sm" variant="outline" className="flex-1 text-xs border-border font-inter gap-1.5 h-8 opacity-60" disabled>
+                            <MessageCircle className="w-3 h-3" /> Envoyé
+                          </Button>
+                        ) : (
+                          <Link to={`/messages?to=${profile.email}&name=${encodeURIComponent(profile.full_name)}`} className="flex-1">
+                            <Button size="sm" className="w-full text-xs font-inter gap-1.5 h-8"
+                              style={isSupreme
+                                ? { background: 'rgba(217,119,6,0.15)', color: '#f59e0b', border: '1px solid rgba(217,119,6,0.35)' }
+                                : { background: 'rgba(56,200,180,0.1)', color: 'hsl(var(--accent))', border: '1px solid rgba(56,200,180,0.2)' }}>
+                              <MessageCircle className="w-3 h-3" /> Contacter
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {filtered.length === 0 && (
+                <div className="text-center py-20 text-muted-foreground font-inter text-sm col-span-full">Aucun profil trouvé</div>
+              )}
             </div>
           )}
         </div>
+
+        {/* Modals */}
+        {reportTarget && (
+          <ReportModal
+            open={!!reportTarget}
+            onClose={() => setReportTarget(null)}
+            user={user}
+            targetType="user"
+            targetId={reportTarget.id}
+            targetEmail={reportTarget.email}
+            targetName={reportTarget.full_name}
+          />
+        )}
+        {viewEmployee && (
+          <EmployeeProfileModal employee={viewEmployee} onClose={() => setViewEmployee(null)} />
         )}
       </div>
 
-      {/* Report Modal */}
-      {reportTarget && (
-        <ReportModal
-          open={!!reportTarget}
-          onClose={() => setReportTarget(null)}
-          user={user}
-          targetType="user"
-          targetId={reportTarget.id}
-          targetEmail={reportTarget.email}
-          targetName={reportTarget.full_name}
-        />
-      )}
-
-      {viewEmployee && (
-        <EmployeeProfileModal employee={viewEmployee} onClose={() => setViewEmployee(null)} />
-      )}
+      {/* Right sidebar */}
+      <aside className="hidden xl:flex flex-col w-[300px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-4 px-3" style={{ scrollbarWidth: 'none' }}>
+        <HomeRightSidebar />
+      </aside>
     </div>
   );
 }

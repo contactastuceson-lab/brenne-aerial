@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Image, X, Loader2, Globe, Users, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { extractHashtags, extractMentions } from '@/lib/hashtags';
+import { compressImage } from '@/lib/imageUtils';
 import GifPicker from '@/components/post/GifPicker';
 import PollCreator from '@/components/post/PollCreator';
 
@@ -55,8 +56,9 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
     if (poll) { toast.error("Impossible d'ajouter des médias avec un sondage"); return; }
     setUploading(true);
     try {
+      const compressed = await Promise.all(files.slice(0, 4 - mediaUrls.length).map(compressImage));
       const uploads = await Promise.all(
-        files.slice(0, 4 - mediaUrls.length).map(f => base44.integrations.Core.UploadFile({ file: f }))
+        compressed.map(f => base44.integrations.Core.UploadFile({ file: f }))
       );
       setMediaUrls(prev => [...prev, ...uploads.map(u => u.file_url)].slice(0, 4));
     } catch {

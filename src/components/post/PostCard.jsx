@@ -83,45 +83,46 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
     ? formatDistanceToNow(new Date(post.created_date), { addSuffix: true, locale: fr })
     : '';
 
+  const likedByRef = useRef(post.liked_by || []);
+  const likesCountRef = useRef(post.likes_count || 0);
+
   const handleLike = useCallback(async (e) => {
     e.stopPropagation();
     if (!currentUser) { navigate('/login'); return; }
     if (likeLoading) return;
     setLikeLoading(true);
     const wasLiked = liked;
+    const prevLikedBy = likedByRef.current;
+    const prevCount = likesCountRef.current;
+
+    // Optimistic update
+    const newLikedBy = wasLiked
+      ? prevLikedBy.filter(id => id !== currentUser.id)
+      : [...prevLikedBy, currentUser.id];
+    const newCount = wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1;
+
     setLiked(!wasLiked);
-    setLikesCount(c => wasLiked ? c - 1 : c + 1);
+    setLikesCount(newCount);
+    likedByRef.current = newLikedBy;
+    likesCountRef.current = newCount;
+
     try {
-      const likedBy = post.liked_by || [];
-      if (wasLiked) {
-        await base44.entities.Post.update(post.id, {
-          liked_by: likedBy.filter(id => id !== currentUser.id),
-          likes_count: Math.max(0, (post.likes_count || 0) - 1),
-        });
-      } else {
-        await base44.entities.Post.update(post.id, {
-          liked_by: [...likedBy, currentUser.id],
-          likes_count: (post.likes_count || 0) + 1,
-        });
-        // Notification LIKE vers l'auteur du post
-        if (post.author_id && post.author_id !== currentUser.id) {
-          const users = await base44.entities.User.filter({ id: post.author_id }).catch(() => []);
-          if (users[0]?.email) {
-            notify({
-              type: 'LIKE',
-              sender: currentUser,
-              receiverEmail: users[0].email,
-              receiverId: post.author_id,
-              postId: post.id,
-              postExcerpt: post.content,
-              link: `/post/${post.id}`,
-            });
-          }
+      await base44.entities.Post.update(post.id, {
+        liked_by: newLikedBy,
+        likes_count: newCount,
+      });
+      if (!wasLiked && post.author_id && post.author_id !== currentUser.id) {
+        const users = await base44.entities.User.filter({ id: post.author_id }).catch(() => []);
+        if (users[0]?.email) {
+          notify({ type: 'LIKE', sender: currentUser, receiverEmail: users[0].email, receiverId: post.author_id, postId: post.id, postExcerpt: post.content, link: `/post/${post.id}` });
         }
       }
     } catch {
+      // Rollback
       setLiked(wasLiked);
-      setLikesCount(c => wasLiked ? c + 1 : c - 1);
+      setLikesCount(prevCount);
+      likedByRef.current = prevLikedBy;
+      likesCountRef.current = prevCount;
     } finally {
       setLikeLoading(false);
     }

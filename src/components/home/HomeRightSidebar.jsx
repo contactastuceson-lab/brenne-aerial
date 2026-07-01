@@ -269,7 +269,7 @@ export default function HomeRightSidebar() {
             <Link key={l} to={to} className="hover:text-muted-foreground/50 transition-colors">{l}</Link>
           ))}
         </div>
-        <p className="text-[10px] font-mono text-muted-foreground/15 mt-1.5">© 2026 Brenne Aerial</p>
+        <p className="text-[10px] font-mono text-muted-foreground/15 mt-1.5">© 2026 EZA by EZA Group</p>
       </div>
     </div>
   );

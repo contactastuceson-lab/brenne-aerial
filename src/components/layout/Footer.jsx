@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Youtube, Instagram, ArrowUpRight, Sparkles, Heart, Circle } from 'lucide-react';
+import { Mail, Youtube, Instagram, ArrowUpRight, Heart, Circle } from 'lucide-react';
 
 const PLATFORM = [
   { to: '/',          label: 'Accueil' },
@@ -36,13 +36,13 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3) 0%, hsl(var(--accent) / 0.2) 100%)', border: '1px solid hsl(var(--primary) / 0.3)' }}
-              >
-                <Sparkles className="w-4 h-4 text-primary" />
-              </div>
+              <img
+                src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/80278201e_1782606023373-Photoroom.png"
+                alt="EZA"
+                className="w-9 h-9 object-contain"
+              />
               <span className="font-grotesk font-bold text-base">
-                Brenne <span className="text-primary">Aerial</span>
+                EZA <span className="text-primary text-xs font-normal">by EZA Group</span>
               </span>
             </Link>
             <p className="font-inter text-sm text-muted-foreground leading-relaxed mb-5 max-w-[220px]">
@@ -107,7 +107,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/6">
           <p className="font-mono text-xs text-muted-foreground/40">
-            © {year} Brenne Aerial · Fait en France
+            © {year} EZA by EZA Group · Fait en France
           </p>
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />

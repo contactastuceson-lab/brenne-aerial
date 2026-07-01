@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell, User, LogOut, LayoutDashboard, Menu, X,
   Search, Home, Compass, MessageCircle, FileText,
-  PenSquare, Settings, Sparkles, ChevronDown, Users,
+  PenSquare, Settings, ChevronDown, Users,
   Calendar, Building2, Briefcase, BarChart3, Heart
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -89,16 +89,11 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link to="/" className="flex-shrink-0 flex items-center gap-2.5 mr-2">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, hsl(var(--primary)/0.25) 0%, hsl(var(--accent)/0.15) 100%)', border: '1px solid hsl(var(--primary)/0.3)' }}
-            >
-              <Sparkles className="w-4 h-4 text-primary" />
-            </div>
-            <span className="font-grotesk font-bold text-base hidden sm:block"
-              style={{ background: 'linear-gradient(135deg, #fff 0%, hsl(var(--primary)) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-            >
-              Brenne Aerial
-            </span>
+            <img
+              src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/80278201e_1782606023373-Photoroom.png"
+              alt="EZA"
+              className="h-9 w-9 object-contain"
+            />
           </Link>
 
           {/* Search */}

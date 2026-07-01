@@ -255,16 +255,16 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
 
         {/* Media */}
         {post.media_urls?.length > 0 && (
-          <div className={`grid gap-1 mb-3 rounded-2xl overflow-hidden ${post.media_urls.length === 1 ? 'grid-cols-1' : post.media_urls.length === 2 ? 'grid-cols-2' : 'grid-cols-2'}`}>
+          <div className={`grid gap-1 mb-3 rounded-2xl overflow-hidden ${post.media_urls.length >= 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
             {post.media_urls.slice(0, 4).map((url, i) => (
-              <div key={i} className={`relative overflow-hidden ${post.media_urls.length === 1 ? 'max-h-80' : 'max-h-48'}`}
+              <div key={i} className="relative overflow-hidden rounded-2xl bg-white/5"
                 onClick={e => e.stopPropagation()}>
                 {url.match(/\.(mp4|webm|ogg)$/i)
-                  ? <video src={url} controls className="w-full h-full object-cover rounded-lg" />
-                  : <img src={url} alt="" className="w-full h-full object-cover rounded-lg bg-white/5" loading="lazy" decoding="async" />
+                  ? <video src={url} controls className="w-full h-auto max-h-[512px] object-contain" />
+                  : <img src={url} alt="" className={`w-full h-auto ${post.media_urls.length >= 2 ? 'max-h-48 object-cover' : 'object-contain'}`} loading="lazy" decoding="async" />
                 }
                 {i === 3 && post.media_urls.length > 4 && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                     <span className="text-white font-bold text-lg">+{post.media_urls.length - 4}</span>
                   </div>
                 )}

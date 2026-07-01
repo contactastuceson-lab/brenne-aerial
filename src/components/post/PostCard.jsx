@@ -257,7 +257,7 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
         {/* Media */}
         {post.media_urls?.length > 0 && (
           <div onClick={e => e.stopPropagation()}>
-            <LazyMedia urls={post.media_urls} className="mb-3" />
+            <LazyMedia urls={post.media_urls} post={post} className="mb-3" />
           </div>
         )}
 

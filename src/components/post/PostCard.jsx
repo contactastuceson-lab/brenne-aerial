@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, Eye, Trash2, Pencil, X, Check, AlertTriangle } from 'lucide-react';
@@ -273,7 +273,7 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
         {/* Media */}
         {post.media_urls?.length > 0 && (
           <div onClick={e => e.stopPropagation()}>
-            <LazyMedia urls={post.media_urls} post={post} className="mb-3" />
+            <LazyMedia urls={post.media_urls} post={post} className="mb-3" currentUser={currentUser} />
           </div>
         )}
 

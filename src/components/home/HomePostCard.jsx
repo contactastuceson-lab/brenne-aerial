@@ -174,7 +174,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
         )}
 
         {/* Media */}
-        {post.media_urls?.length > 0 && <LazyMedia urls={post.media_urls} post={post} className="mt-2 mb-1" />}
+        {post.media_urls?.length > 0 && <LazyMedia urls={post.media_urls} post={post} className="mt-2 mb-1" currentUser={currentUser} />}
 
         {/* Tags */}
         {post.tags?.length > 0 && (

@@ -41,7 +41,7 @@ function makeMinimalPost(url) {
   return { id: null, media_urls: [url], content: '', likes_count: 0, replies_count: 0 };
 }
 
-export default function LazyMedia({ urls = [], className = '', post = null }) {
+export default function LazyMedia({ urls = [], className = '', post = null, currentUser = null }) {
   const [videoPlayer, setVideoPlayer] = useState(null); // { post, url }
   if (!urls.length) return null;
   const single = urls.length === 1;
@@ -97,6 +97,7 @@ export default function LazyMedia({ urls = [], className = '', post = null }) {
           initialPost={videoPlayer.post}
           initialUrl={videoPlayer.url}
           onClose={() => setVideoPlayer(null)}
+          currentUser={currentUser}
         />
       )}
     </>

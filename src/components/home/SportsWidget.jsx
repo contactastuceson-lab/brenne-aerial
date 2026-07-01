@@ -6,45 +6,72 @@ import { fr } from 'date-fns/locale';
 function formatMatchDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
-  if (isToday(d)) return "Aujourd'hui";
+  if (isToday(d)) return "Auj.";
   return format(d, 'd MMM', { locale: fr });
+}
+
+function StatusBadge({ status }) {
+  const isLive = status === 'LIVE' || status === 'IN_PLAY' || status === 'PAUSED';
+  const isScheduled = status === 'SCHEDULED' || status === 'TIMED';
+  if (isLive) return (
+    <span className="flex items-center gap-1 text-[10px] font-bold text-red-400 uppercase tracking-wide">
+      <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse inline-block" />
+      Live
+    </span>
+  );
+  if (isScheduled) return (
+    <span className="text-[10px] text-primary/70 font-medium">À venir</span>
+  );
+  return <span className="text-[10px] text-muted-foreground/40">Terminé</span>;
 }
 
 function MatchRow({ match }) {
   const homeWon = match.homeScore !== null && match.homeScore > match.awayScore;
   const awayWon = match.awayScore !== null && match.awayScore > match.homeScore;
   const hasScore = match.homeScore !== null && match.awayScore !== null;
-  const dateLabel = hasScore ? `Fin · ${formatMatchDate(match.date)}` : formatMatchDate(match.date);
 
   return (
-    <div className="py-2 border-b border-border/20 last:border-0">
-      {/* Home team */}
-      <div className="flex items-center gap-2">
-        <span className="w-6 font-mono text-[10px] text-muted-foreground/50 flex-shrink-0">{match.homeCountry}</span>
-        <span className={`flex-1 text-xs truncate ${homeWon ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
-          {match.homeTeam}
-        </span>
-        {hasScore && (
-          <span className={`font-mono font-bold text-xs w-4 text-right flex-shrink-0 ${homeWon ? 'text-foreground' : 'text-muted-foreground'}`}>
-            {match.homeScore}
-          </span>
-        )}
-        <span className="text-[10px] text-muted-foreground/40 text-right w-20 flex-shrink-0 leading-tight row-span-2">
-          {dateLabel}
+    <div className="flex items-center gap-2 py-2.5 border-b border-border/20 last:border-0">
+      {/* Date */}
+      <div className="w-8 flex-shrink-0 text-center">
+        <span className="text-[10px] text-muted-foreground/40 font-mono">
+          {formatMatchDate(match.date)}
         </span>
       </div>
-      {/* Away team */}
-      <div className="flex items-center gap-2 mt-1">
-        <span className="w-6 font-mono text-[10px] text-muted-foreground/50 flex-shrink-0">{match.awayCountry}</span>
-        <span className={`flex-1 text-xs truncate ${awayWon ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
-          {match.awayTeam}
-        </span>
-        {hasScore && (
-          <span className={`font-mono font-bold text-xs w-4 text-right flex-shrink-0 ${awayWon ? 'text-foreground' : 'text-muted-foreground'}`}>
-            {match.awayScore}
+
+      {/* Teams */}
+      <div className="flex-1 min-w-0">
+        {/* Home */}
+        <div className="flex items-center gap-1.5 mb-0.5">
+          <span className="font-mono text-[9px] text-muted-foreground/40 w-5 flex-shrink-0">{match.homeCountry}</span>
+          <span className={`text-[12px] truncate leading-tight ${homeWon ? 'font-bold text-foreground' : 'text-muted-foreground/70'}`}>
+            {match.homeTeam}
           </span>
+        </div>
+        {/* Away */}
+        <div className="flex items-center gap-1.5">
+          <span className="font-mono text-[9px] text-muted-foreground/40 w-5 flex-shrink-0">{match.awayCountry}</span>
+          <span className={`text-[12px] truncate leading-tight ${awayWon ? 'font-bold text-foreground' : 'text-muted-foreground/70'}`}>
+            {match.awayTeam}
+          </span>
+        </div>
+      </div>
+
+      {/* Score or status */}
+      <div className="flex-shrink-0 text-center w-10">
+        {hasScore ? (
+          <div className="bg-muted/60 rounded-md px-1.5 py-1 flex flex-col items-center leading-tight">
+            <span className={`font-mono font-bold text-[13px] leading-none ${homeWon ? 'text-foreground' : 'text-muted-foreground/60'}`}>
+              {match.homeScore}
+            </span>
+            <span className="font-mono font-bold text-[13px] leading-none mt-0.5 text-muted-foreground/30">—</span>
+            <span className={`font-mono font-bold text-[13px] leading-none mt-0.5 ${awayWon ? 'text-foreground' : 'text-muted-foreground/60'}`}>
+              {match.awayScore}
+            </span>
+          </div>
+        ) : (
+          <StatusBadge status={match.status} />
         )}
-        <span className="w-20 flex-shrink-0" />
       </div>
     </div>
   );
@@ -64,11 +91,15 @@ export default function SportsWidget() {
   if (isLoading) {
     return (
       <div className="mb-5 rounded-2xl bg-card border border-border p-4">
-        <div className="h-5 w-28 bg-muted animate-pulse rounded mb-4" />
+        <div className="h-4 w-24 bg-muted animate-pulse rounded mb-3" />
         {[1, 2, 3].map(i => (
-          <div key={i} className="mb-3 space-y-1.5">
-            <div className="h-3 w-full bg-muted animate-pulse rounded" />
-            <div className="h-3 w-3/4 bg-muted animate-pulse rounded" />
+          <div key={i} className="flex items-center gap-3 mb-3">
+            <div className="w-8 h-8 bg-muted animate-pulse rounded" />
+            <div className="flex-1 space-y-1.5">
+              <div className="h-2.5 w-3/4 bg-muted animate-pulse rounded" />
+              <div className="h-2.5 w-1/2 bg-muted animate-pulse rounded" />
+            </div>
+            <div className="w-10 h-8 bg-muted animate-pulse rounded" />
           </div>
         ))}
       </div>
@@ -77,22 +108,38 @@ export default function SportsWidget() {
 
   if (!matches.length) return null;
 
-  const league = matches[0]?.league || 'Football';
+  // Group by league
+  const leagues = [...new Set(matches.map(m => m.league))];
 
   return (
     <div className="mb-5 rounded-2xl overflow-hidden bg-card border border-border">
-      <div className="px-4 pt-4 pb-2">
-        <h2 className="font-grotesk font-bold text-xl text-foreground">⚽ {league}</h2>
+      {/* Header */}
+      <div className="px-4 pt-3.5 pb-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-base">⚽</span>
+          <h2 className="font-grotesk font-bold text-sm text-foreground">Résultats</h2>
+        </div>
+        {leagues.length === 1 && (
+          <span className="text-[10px] font-medium text-muted-foreground/50 bg-muted/50 px-2 py-0.5 rounded-full">
+            {leagues[0]}
+          </span>
+        )}
       </div>
 
-      <div className="px-3 pb-1">
-        {matches.map(m => <MatchRow key={m.id} match={m} />)}
-      </div>
-
-      <div className="px-3 pb-3 pt-2">
-        <button className="w-full py-2 rounded-xl text-xs font-grotesk font-semibold text-primary border border-primary/30 hover:bg-primary/10 transition-colors">
-          Afficher plus →
-        </button>
+      {/* Matches */}
+      <div className="px-3 pb-2">
+        {leagues.map(league => (
+          <div key={league}>
+            {leagues.length > 1 && (
+              <p className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-widest px-1 pt-1 pb-1">
+                {league}
+              </p>
+            )}
+            {matches.filter(m => m.league === league).map(m => (
+              <MatchRow key={m.id} match={m} />
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );

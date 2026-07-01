@@ -180,7 +180,7 @@ export default function HomeFeed({ user }) {
   }, [posts, urlTag, filter]);
 
   return (
-    <main className="w-full max-w-[600px] min-w-0 border-x border-zinc-800/60">
+    <main className="w-full max-w-[680px] min-w-0 border-x border-zinc-800/60">
 
       {/* Guest hero */}
       {user === null && <GuestHero />}

@@ -51,39 +51,6 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
   const hasPoll = poll && poll.options.filter(o => o.text.trim()).length >= 2;
   const canPost = content.trim().length > 0 && !posting && remaining >= 0;
 
-  const uploadWithProgress = (file) => new Promise((resolve, reject) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    // On passe par le SDK pour récupérer l'URL d'upload signée,
-    // mais on utilise XHR pour suivre la progression
-    const xhr = new XMLHttpRequest();
-
-    // Récupérer le token d'auth depuis le localStorage (pattern Base44)
-    const token = localStorage.getItem('base44_token') || localStorage.getItem('token') || '';
-
-    xhr.upload.addEventListener('progress', (e) => {
-      if (e.lengthComputable) {
-        setUploadProgress(Math.round((e.loaded / e.total) * 100));
-      }
-    });
-
-    xhr.addEventListener('load', () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try { resolve(JSON.parse(xhr.responseText)); }
-        catch { reject(new Error('Invalid response')); }
-      } else {
-        reject(new Error(`Upload failed: ${xhr.status}`));
-      }
-    });
-
-    xhr.addEventListener('error', () => reject(new Error('Network error')));
-
-    xhr.open('POST', 'https://api.base44.com/api/apps/integrations/Core/UploadFile');
-    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-    xhr.send(formData);
-  });
-
   const handleMediaUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -91,19 +58,25 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
     setUploadProgress(0);
     try {
       const toUpload = files.slice(0, 4 - mediaUrls.length);
-      // Compresser les images d'abord
-      const compressed = await Promise.all(toUpload.map(compressImage));
-      // Uploader un par un pour avoir une progression globale cohérente
       const urls = [];
-      for (let i = 0; i < compressed.length; i++) {
-        setUploadProgress(Math.round((i / compressed.length) * 100));
-        let result;
-        try {
-          result = await uploadWithProgress(compressed[i]);
-        } catch {
-          // Fallback SDK si XHR échoue
-          result = await base44.integrations.Core.UploadFile({ file: compressed[i] });
-        }
+      for (let i = 0; i < toUpload.length; i++) {
+        // Progression simulée : monte jusqu'à 90% pendant la compression + upload
+        const baseProgress = Math.round((i / toUpload.length) * 100);
+        setUploadProgress(baseProgress + 5);
+
+        const compressed = await compressImage(toUpload[i]);
+
+        // Simule progression pendant l'upload (monte de baseProgress+10 à baseProgress+90)
+        let sim = baseProgress + 10;
+        const interval = setInterval(() => {
+          sim = Math.min(sim + 4, baseProgress + 88);
+          setUploadProgress(sim);
+        }, 150);
+
+        const result = await base44.integrations.Core.UploadFile({ file: compressed });
+        clearInterval(interval);
+
+        setUploadProgress(Math.round(((i + 1) / toUpload.length) * 100));
         if (result?.file_url) urls.push(result.file_url);
       }
       setMediaUrls(prev => [...prev, ...urls].slice(0, 4));

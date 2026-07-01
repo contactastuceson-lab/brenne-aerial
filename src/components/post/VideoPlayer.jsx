@@ -29,21 +29,29 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
   // Follow state
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [authorEmail, setAuthorEmail] = useState(null);
+  const followRecordId = useRef(null);
 
   const isOwn = currentUser?.id === post.author_id;
 
-  // Check if already following
+  // Fetch author email + check follow status
   useEffect(() => {
-    if (!currentUser || isOwn) return;
-    base44.entities.Follow.filter({ follower_email: currentUser.email, following_email: post.author_avatar ? undefined : undefined })
-      .then(() => {}).catch(() => {});
-    // We check by fetching follow records
-    base44.entities.Follow.filter({ follower_email: currentUser.email })
+    if (!currentUser || isOwn || !post.author_id) return;
+    base44.entities.User.filter({ id: post.author_id })
+      .then(users => {
+        const email = users[0]?.email;
+        if (!email) return;
+        setAuthorEmail(email);
+        return base44.entities.Follow.filter({ follower_email: currentUser.email, following_email: email });
+      })
       .then(follows => {
-        // We need the profile email — use author_id lookup
-        setIsFollowing(follows.some(f => f.following_name === post.author_name || f.following_email === post.author_email));
-      }).catch(() => {});
-  }, [currentUser, post.author_id]);
+        if (follows?.length > 0) {
+          setIsFollowing(true);
+          followRecordId.current = follows[0].id;
+        }
+      })
+      .catch(() => {});
+  }, [currentUser?.id, post.author_id]);
 
   // Play/pause selon isActive
   useEffect(() => {
@@ -117,33 +125,29 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
 
   const handleFollow = async () => {
     if (!currentUser) { toast.error('Connectez-vous pour vous abonner'); return; }
-    if (followLoading || isOwn) return;
+    if (followLoading || isOwn || !authorEmail) return;
     setFollowLoading(true);
     try {
       if (isFollowing) {
-        const follows = await base44.entities.Follow.filter({ follower_email: currentUser.email });
-        const record = follows.find(f => f.following_name === post.author_name);
-        if (record) await base44.entities.Follow.delete(record.id);
+        if (followRecordId.current) await base44.entities.Follow.delete(followRecordId.current);
+        followRecordId.current = null;
         setIsFollowing(false);
         toast.success('Abonnement annulé');
       } else {
-        await base44.entities.Follow.create({
+        const record = await base44.entities.Follow.create({
           follower_email: currentUser.email,
-          follower_name: currentUser.full_name,
+          follower_name: currentUser.full_name || currentUser.display_name,
           follower_avatar: currentUser.avatar_url,
-          following_name: post.author_name || post.author_display_name,
+          following_email: authorEmail,
+          following_name: post.author_display_name || post.author_name || post.author_username,
         });
+        followRecordId.current = record.id;
         setIsFollowing(true);
         toast.success('Abonnement effectué !');
-        if (post.author_id && post.author_id !== currentUser.id) {
-          const users = await base44.entities.User.filter({ id: post.author_id }).catch(() => []);
-          if (users[0]?.email) {
-            notify({ type: 'FOLLOW', sender: currentUser, receiverEmail: users[0].email, receiverId: post.author_id, link: `/@${currentUser.username || ''}` });
-          }
-        }
+        notify({ type: 'FOLLOW', sender: currentUser, receiverEmail: authorEmail, receiverId: post.author_id, link: `/@${currentUser.username || ''}` });
       }
     } catch {
-      toast.error('Erreur');
+      toast.error('Erreur lors de l\'abonnement');
     } finally {
       setFollowLoading(false);
     }

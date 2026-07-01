@@ -9,7 +9,7 @@ import VerificationIcons from '@/components/ui/VerificationIcon';
 import ReactMarkdown from 'react-markdown';
 import { extractHashtags, extractMentions } from '@/lib/hashtags';
 import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
-import usePublicUser from '@/hooks/usePublicUser';
+
 
 const TRUNCATE_LIMIT = 280;
 
@@ -72,8 +72,7 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
   const isLong = currentContent.length > TRUNCATE_LIMIT;
   const displayContent = isLong && !expanded ? currentContent.slice(0, TRUNCATE_LIMIT) + '…' : currentContent;
 
-  const liveUser = usePublicUser(post.author_id);
-  const authorName = liveUser?.display_name || liveUser?.full_name || post.author_display_name || post.author_name || post.author_username || 'Utilisateur';
+  const authorName = post.author_display_name || post.author_name || post.author_username || 'Utilisateur';
   const authorUsername = post.author_username;
   const profileLink = authorUsername ? `/@${authorUsername}` : null;
   const initial = (authorName[0] || 'U').toUpperCase();
@@ -130,16 +129,16 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
         {profileLink ? (
           <Link to={profileLink} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center hover:opacity-80 transition-opacity">
-              {(liveUser?.avatar_url || post.author_avatar)
-                ? <img src={liveUser?.avatar_url || post.author_avatar} alt={authorName} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+              {post.author_avatar
+                ? <img src={post.author_avatar} alt={authorName} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 : <span className="font-grotesk font-bold text-primary text-sm">{initial}</span>
               }
             </div>
           </Link>
         ) : (
           <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center">
-            {(liveUser?.avatar_url || post.author_avatar)
-              ? <img src={liveUser?.avatar_url || post.author_avatar} alt={authorName} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+            {post.author_avatar
+              ? <img src={post.author_avatar} alt={authorName} className="w-full h-full object-cover" loading="lazy" decoding="async" />
               : <span className="font-grotesk font-bold text-primary text-sm">{initial}</span>
             }
           </div>
@@ -161,9 +160,9 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
           {post.author_id && (
             <span onClick={e => e.stopPropagation()}>
               <VerificationIcons
-                verifications={liveUser?.verifications || post.author_verifications || []}
+                verifications={post.author_verifications || []}
                 size="sm"
-                user={liveUser || { id: post.author_id }}
+                user={{ id: post.author_id }}
               />
             </span>
           )}

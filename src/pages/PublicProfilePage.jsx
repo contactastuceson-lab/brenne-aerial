@@ -16,6 +16,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 import PostCard from '@/components/post/PostCard';
+import { notify } from '@/lib/notificationHelper';
 
 const BADGE_CONFIG = {
   'Fondateur': { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -264,6 +265,13 @@ export default function PublicProfilePage() {
       });
       setIsFollowing(true);
       toast.success('Abonnement effectué !');
+      notify({
+        type: 'FOLLOW',
+        sender: currentUser,
+        receiverEmail: user.email,
+        receiverId: user.id,
+        link: `/@${currentUser.username || currentUser.email}`,
+      });
     } catch {
       toast.error('Erreur lors de l\'abonnement');
     } finally {

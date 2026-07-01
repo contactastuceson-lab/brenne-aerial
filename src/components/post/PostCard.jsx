@@ -13,6 +13,7 @@ import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
 import usePublicUser from '@/hooks/usePublicUser';
 import PollDisplay from '@/components/post/PollDisplay';
 import LazyMedia from '@/components/post/LazyMedia';
+import { notify } from '@/lib/notificationHelper';
 
 const TRUNCATE_LIMIT = 280;
 
@@ -102,6 +103,21 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
           liked_by: [...likedBy, currentUser.id],
           likes_count: (post.likes_count || 0) + 1,
         });
+        // Notification LIKE vers l'auteur du post
+        if (post.author_id && post.author_id !== currentUser.id) {
+          const users = await base44.entities.User.filter({ id: post.author_id }).catch(() => []);
+          if (users[0]?.email) {
+            notify({
+              type: 'LIKE',
+              sender: currentUser,
+              receiverEmail: users[0].email,
+              receiverId: post.author_id,
+              postId: post.id,
+              postExcerpt: post.content,
+              link: `/post/${post.id}`,
+            });
+          }
+        }
       }
     } catch {
       setLiked(wasLiked);

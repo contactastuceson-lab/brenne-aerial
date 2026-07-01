@@ -3,7 +3,8 @@
   "type": "object",
   "properties": {
     "user_email": {
-      "type": "string"
+      "type": "string",
+      "description": "Email du destinataire"
     },
     "title": {
       "type": "string"
@@ -21,7 +22,12 @@
         "appointment",
         "system",
         "badge",
-        "blog"
+        "blog",
+        "LIKE",
+        "REPLY",
+        "FOLLOW",
+        "VERIFICATION",
+        "MENTION"
       ]
     },
     "is_read": {
@@ -30,11 +36,38 @@
     },
     "link": {
       "type": "string"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "ID de l'utilisateur qui a fait l'action"
+    },
+    "sender_name": {
+      "type": "string",
+      "description": "Nom de l'exp\u00e9diteur (snapshot)"
+    },
+    "sender_avatar": {
+      "type": "string",
+      "description": "Avatar de l'exp\u00e9diteur (snapshot)"
+    },
+    "sender_username": {
+      "type": "string",
+      "description": "Username de l'exp\u00e9diteur"
+    },
+    "post_id": {
+      "type": "string",
+      "description": "ID du post concern\u00e9 (like, reply)"
+    },
+    "post_excerpt": {
+      "type": "string",
+      "description": "Aper\u00e7u court du post concern\u00e9"
+    },
+    "receiver_id": {
+      "type": "string",
+      "description": "ID du destinataire"
     }
   },
   "required": [
     "user_email",
-    "title",
     "type"
   ]
 }

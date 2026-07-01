@@ -1,5 +1,62 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import VideoPlayer from '@/components/post/VideoPlayer';
+
+function VideoThumb({ url, onClick }) {
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [thumbReady, setThumbReady] = useState(false);
+
+  const captureFrame = useCallback(() => {
+    const v = videoRef.current;
+    const c = canvasRef.current;
+    if (!v || !c || v.readyState < 2) return;
+    c.width = v.videoWidth || 640;
+    c.height = v.videoHeight || 360;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(v, 0, 0, c.width, c.height);
+    setThumbReady(true);
+    v.src = ''; // free memory
+  }, []);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.preload = 'auto';
+    v.muted = true;
+    v.src = url;
+    const onLoaded = () => { v.currentTime = 0.1; };
+    const onSeeked = () => captureFrame();
+    v.addEventListener('loadeddata', onLoaded);
+    v.addEventListener('seeked', onSeeked);
+    v.load();
+    return () => {
+      v.removeEventListener('loadeddata', onLoaded);
+      v.removeEventListener('seeked', onSeeked);
+    };
+  }, [url, captureFrame]);
+
+  return (
+    <div className="relative cursor-pointer group w-full" onClick={onClick}>
+      {/* Hidden video for frame capture */}
+      <video ref={videoRef} className="hidden" crossOrigin="anonymous" />
+      {/* Thumbnail canvas */}
+      <canvas
+        ref={canvasRef}
+        className={`w-full h-auto max-h-[512px] object-contain rounded-2xl transition-opacity duration-200 ${thumbReady ? 'opacity-100' : 'opacity-0'}`}
+      />
+      {/* Fallback dark bg while loading */}
+      {!thumbReady && <div className="w-full bg-white/5 rounded-2xl" style={{ aspectRatio: '16/9' }} />}
+      {/* Play overlay */}
+      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/35 transition-colors rounded-2xl">
+        <div className="w-14 h-14 rounded-full bg-black/55 flex items-center justify-center">
+          <svg className="w-7 h-7 text-white fill-white ml-1" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function LazyImage({ src, alt, className }) {
   const ref = useRef(null);
@@ -56,26 +113,7 @@ export default function LazyMedia({ urls = [], className = '', post = null, curr
         {urls.slice(0, 4).filter(Boolean).map((url, i) => (
           <div key={i} className="relative overflow-hidden rounded-2xl bg-white/5">
             {url.match(/\.(mp4|webm|ogg)$/i) ? (
-              <div
-                className="relative cursor-pointer group"
-                onClick={() => openVideo(url)}
-              >
-                <video
-                  src={url}
-                  preload="metadata"
-                  muted
-                  playsInline
-                  className="w-full h-auto max-h-[512px] object-contain pointer-events-none"
-                />
-                {/* Play overlay */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
-                  <div className="w-14 h-14 rounded-full bg-black/50 flex items-center justify-center">
-                    <svg className="w-7 h-7 text-white fill-white ml-1" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
+              <VideoThumb url={url} onClick={() => openVideo(url)} />
             ) : (
               <LazyImage
                 src={url}

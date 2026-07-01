@@ -223,7 +223,11 @@ export default function HomeRightSidebar() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const suggestedUsers = allUsers.slice(0, 3);
+  const suggestedUsers = useMemo(() => {
+    if (!allUsers.length) return [];
+    const shuffled = [...allUsers].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 3);
+  }, [allUsers.length]);
 
   const { data: recentDiscussions = [] } = useQuery({
     queryKey: ['sidebar-recent-discussions-tags'],

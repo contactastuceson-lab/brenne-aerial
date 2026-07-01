@@ -6,6 +6,7 @@ import { extractHashtags, extractMentions } from '@/lib/hashtags';
 import { compressImage } from '@/lib/imageUtils';
 import GifPicker from '@/components/post/GifPicker';
 import PollCreator from '@/components/post/PollCreator';
+import MentionAutocomplete, { useMentionAutocomplete } from '@/components/post/MentionAutocomplete';
 
 const MAX_CHARS = 280;
 
@@ -45,6 +46,8 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
   const [poll, setPoll] = useState(null);
   const fileRef = useRef(null);
   const textareaRef = useRef(null);
+
+  const { suggestions, mentionQuery, selectSuggestion } = useMentionAutocomplete(content, textareaRef, setContent);
 
   const uploading = uploadProgress !== null;
   const remaining = MAX_CHARS - content.length;
@@ -149,6 +152,11 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
   };
 
   const handleKeyDown = (e) => {
+    // Si autocomplétion ouverte, Escape la ferme
+    if (suggestions.length > 0 && e.key === 'Escape') {
+      e.preventDefault();
+      return;
+    }
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handlePost();
   };
 
@@ -182,18 +190,23 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
         </div>
 
         <div className="flex-1 min-w-0 flex flex-col">
-          {/* Textarea */}
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={e => setContent(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onKeyDown={handleKeyDown}
-            placeholder={replyTo ? 'Votre réponse...' : 'Quoi de neuf ?'}
-            maxLength={MAX_CHARS + 50}
-            className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/35 resize-none outline-none leading-relaxed py-2 min-h-[52px]"
-            style={{ height: focused ? 'auto' : 52, minHeight: focused ? 80 : 52 }}
-          />
+          {/* Textarea + mention autocomplete */}
+          <div className="relative">
+            <textarea
+              ref={textareaRef}
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onKeyDown={handleKeyDown}
+              placeholder={replyTo ? 'Votre réponse...' : 'Quoi de neuf ?'}
+              maxLength={MAX_CHARS + 50}
+              className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/35 resize-none outline-none leading-relaxed py-2 min-h-[52px]"
+              style={{ height: focused ? 'auto' : 52, minHeight: focused ? 80 : 52 }}
+            />
+            {mentionQuery !== null && (
+              <MentionAutocomplete suggestions={suggestions} onSelect={selectSuggestion} />
+            )}
+          </div>
 
           {/* Visibility chip — shown when focused */}
           {focused && (

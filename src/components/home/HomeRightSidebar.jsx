@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { extractHashtags } from '@/lib/hashtags';
+import SportsWidget from '@/components/home/SportsWidget';
 
 const TRENDING = [
   { tag: 'communauté',    count: 284, rise: '+18%' },
@@ -260,6 +261,7 @@ export default function HomeRightSidebar() {
   return (
     <>
       <SearchBar allUsers={allUsers} allTags={trendingTags} />
+      <SportsWidget />
       <SuggestedUsers users={suggestedUsers} />
       <TrendingSection trendingTags={trendingTags} />
 

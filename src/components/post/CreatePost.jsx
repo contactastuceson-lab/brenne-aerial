@@ -217,11 +217,11 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading || mediaUrls.length >= 4 || !!poll}
                 title="Photo / Vidéo"
-                className="p-2 rounded-full text-primary hover:bg-primary/10 transition-colors disabled:opacity-30"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-foreground/70 bg-white/5 border border-white/8 hover:bg-white/10 hover:text-foreground hover:border-white/15 transition-all disabled:opacity-30"
               >
                 {uploading
-                  ? <Loader2 className="w-[18px] h-[18px] animate-spin" />
-                  : <Image className="w-[18px] h-[18px]" />
+                  ? <Loader2 className="w-[17px] h-[17px] animate-spin" />
+                  : <Image className="w-[17px] h-[17px]" strokeWidth={1.75} />
                 }
               </button>
               <input ref={fileRef} type="file" accept="image/*,video/*,image/gif" multiple className="hidden" onChange={handleMediaUpload} />
@@ -232,9 +232,13 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
                   onClick={() => setShowGif(v => !v)}
                   disabled={mediaUrls.length >= 4 || !!poll}
                   title="GIF"
-                  className={`p-2 rounded-full transition-colors disabled:opacity-30 ${showGif ? 'text-primary bg-primary/15' : 'text-primary hover:bg-primary/10'}`}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center transition-all disabled:opacity-30 ${
+                    showGif
+                      ? 'text-primary bg-primary/15 border border-primary/30'
+                      : 'text-foreground/70 bg-white/5 border border-white/8 hover:bg-white/10 hover:text-foreground hover:border-white/15'
+                  }`}
                 >
-                  <GifIcon className="w-[18px] h-[18px]" />
+                  <GifIcon className="w-[17px] h-[17px]" />
                 </button>
                 {showGif && <GifPicker onSelect={handleGifSelect} onClose={() => setShowGif(false)} />}
               </div>
@@ -243,9 +247,13 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
               <button
                 onClick={togglePoll}
                 title="Sondage"
-                className={`p-2 rounded-full transition-colors ${poll ? 'text-primary bg-primary/15' : 'text-primary hover:bg-primary/10'}`}
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                  poll
+                    ? 'text-primary bg-primary/15 border border-primary/30'
+                    : 'text-foreground/70 bg-white/5 border border-white/8 hover:bg-white/10 hover:text-foreground hover:border-white/15'
+                }`}
               >
-                <BarChart3 className="w-[18px] h-[18px]" />
+                <BarChart3 className="w-[17px] h-[17px]" strokeWidth={1.75} />
               </button>
             </div>
 

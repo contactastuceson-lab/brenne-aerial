@@ -30,35 +30,41 @@ function NavItem({ icon: Icon, label, to, active, badge, premium }) {
   if (premium) {
     return (
       <Link to={to}
-        className={`group flex items-center gap-4 px-3 py-3 rounded-full transition-all duration-150 relative w-full ${
-          active
-            ? 'text-cyan-300 font-bold bg-cyan-400/10'
-            : 'text-cyan-400 hover:bg-cyan-400/10'
-        }`}
-        style={{ textShadow: active ? '0 0 12px rgba(34,211,238,0.5)' : undefined }}
+        className="group flex items-center gap-3 px-1 xl:px-2 py-1.5 rounded-2xl transition-all duration-150 relative w-full"
       >
-        <div className="relative flex-shrink-0">
-          <Icon style={{ width: 22, height: 22, strokeWidth: active ? 2.5 : 1.75 }} />
+        <div
+          className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all border ${
+            active
+              ? 'bg-cyan-400/20 border-cyan-400/40 text-cyan-300'
+              : 'bg-white/5 border-white/8 text-cyan-400 group-hover:bg-cyan-400/10 group-hover:border-cyan-400/25'
+          }`}
+          style={{ boxShadow: active ? '0 0 12px rgba(34,211,238,0.2)' : undefined }}
+        >
+          <Icon style={{ width: 19, height: 19, strokeWidth: active ? 2.25 : 1.75 }} />
         </div>
-        <span className="font-grotesk font-bold text-[17px] hidden xl:block">{label}</span>
+        <span className="font-grotesk font-bold text-[16px] text-cyan-400 hidden xl:block">{label}</span>
       </Link>
     );
   }
   return (
     <Link to={to}
-      className={`group flex items-center gap-4 px-3 py-3 rounded-full transition-all duration-150 relative w-full ${
-        active ? 'text-foreground font-bold' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-      }`}
+      className="group flex items-center gap-3 px-1 xl:px-2 py-1.5 rounded-2xl transition-all duration-150 relative w-full"
     >
-      <div className="relative flex-shrink-0">
-        <Icon style={{ width: 22, height: 22, strokeWidth: active ? 2.5 : 1.75 }} />
+      <div
+        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all border relative ${
+          active
+            ? 'bg-white/10 border-white/20 text-foreground'
+            : 'bg-white/5 border-white/8 text-muted-foreground group-hover:bg-white/8 group-hover:border-white/14 group-hover:text-foreground'
+        }`}
+      >
+        <Icon style={{ width: 19, height: 19, strokeWidth: active ? 2.25 : 1.75 }} />
         {badge > 0 && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
             {badge > 9 ? '9+' : badge}
           </span>
         )}
       </div>
-      <span className="font-inter text-[17px] hidden xl:block">{label}</span>
+      <span className={`font-inter text-[16px] hidden xl:block ${active ? 'font-bold text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>{label}</span>
     </Link>
   );
 }

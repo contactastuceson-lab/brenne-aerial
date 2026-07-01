@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Compass, MessageCircle, Bell, Bookmark, Calendar,
   Users, BarChart3, Briefcase, FileText, Award,
-  Heart, Star, MoreHorizontal
+  Heart, Star, MoreHorizontal, Sparkles
 } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { hasAdminAccess } from '@/lib/roles';
@@ -23,9 +23,27 @@ const NAV = [
   { icon: Heart,         label: 'Parrainage',     to: '/parrainage' },
   { icon: Star,          label: 'Partenaires',    to: '/partenaires' },
   { icon: Briefcase,     label: 'Business',       to: '/business', businessOnly: true },
+  { icon: Sparkles,      label: 'Premium',        to: '/premium', premium: true },
 ];
 
-function NavItem({ icon: Icon, label, to, active, badge }) {
+function NavItem({ icon: Icon, label, to, active, badge, premium }) {
+  if (premium) {
+    return (
+      <Link to={to}
+        className={`group flex items-center gap-4 px-3 py-3 rounded-full transition-all duration-150 relative w-full ${
+          active
+            ? 'text-cyan-300 font-bold bg-cyan-400/10'
+            : 'text-cyan-400 hover:bg-cyan-400/10'
+        }`}
+        style={{ textShadow: active ? '0 0 12px rgba(34,211,238,0.5)' : undefined }}
+      >
+        <div className="relative flex-shrink-0">
+          <Icon style={{ width: 22, height: 22, strokeWidth: active ? 2.5 : 1.75 }} />
+        </div>
+        <span className="font-grotesk font-bold text-[17px] hidden xl:block">{label}</span>
+      </Link>
+    );
+  }
   return (
     <Link to={to}
       className={`group flex items-center gap-4 px-3 py-3 rounded-full transition-all duration-150 relative w-full ${
@@ -81,6 +99,7 @@ export default function HomeLeftSidebar({ user }) {
             <NavItem key={item.to} {...item}
               active={isActive(item.to)}
               badge={item.badge && notifs.length > 0 ? notifs.length : 0}
+              premium={item.premium}
             />
           ))}
 

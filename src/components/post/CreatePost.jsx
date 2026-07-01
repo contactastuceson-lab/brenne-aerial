@@ -7,6 +7,7 @@ import { compressImage } from '@/lib/imageUtils';
 import GifPicker from '@/components/post/GifPicker';
 import PollCreator from '@/components/post/PollCreator';
 import MentionAutocomplete, { useMentionAutocomplete } from '@/components/post/MentionAutocomplete';
+import { notify } from '@/lib/notificationHelper';
 
 const MAX_CHARS = 280;
 
@@ -138,7 +139,27 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
         const endsAt = new Date(Date.now() + poll.duration_hours * 3600 * 1000).toISOString();
         postData.poll = { ...poll, ends_at: endsAt };
       }
-      await base44.entities.Post.create(postData);
+      const created = await base44.entities.Post.create(postData);
+
+      // Envoyer une notification MENTION pour chaque @username mentionné
+      if (mentions.length > 0) {
+        const allUsers = await base44.entities.User.list('-created_date', 200).catch(() => []);
+        for (const username of mentions) {
+          const target = allUsers.find(u => u.username?.toLowerCase() === username.toLowerCase());
+          if (target && target.id !== user.id && target.email) {
+            notify({
+              type: 'MENTION',
+              sender: user,
+              receiverEmail: target.email,
+              receiverId: target.id,
+              postId: created?.id,
+              postExcerpt: content,
+              link: `/post/${created?.id}`,
+            });
+          }
+        }
+      }
+
       setContent('');
       setMediaUrls([]);
       setPoll(null);

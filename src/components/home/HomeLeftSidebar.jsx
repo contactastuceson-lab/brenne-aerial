@@ -13,7 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 const NAV = [
   { icon: Home,          label: 'Accueil',       to: '/' },
   { icon: Compass,       label: 'Explorer',       to: '/discover' },
-  { icon: Bell,          label: 'Notifications',  to: '/dashboard?tab=notifications' },
+  { icon: Bell,          label: 'Notifications',  to: '/notifications' },
   { icon: MessageCircle, label: 'Messages',       to: '/messages', badge: true },
   { icon: FileText,      label: 'Forum',          to: '/forum' },
   { icon: Calendar,      label: 'Événements',     to: '/planning' },

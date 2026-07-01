@@ -7,7 +7,7 @@ import {
   Lock, LogIn, ChevronDown, ChevronUp, Award,
   CheckCircle, Clock, XCircle, AlertCircle, Plus, ArrowRight,
   Rocket, MapPin, Calendar, Shield, Zap, User, Users, Settings, Flag,
-  CreditCard, ExternalLink, Loader2
+  CreditCard, ExternalLink, Loader2, UserCircle, Briefcase
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
@@ -42,87 +42,76 @@ const SERVICE_LABELS = {
   captation_entreprise: 'Captation entreprise', retour_temps_reel: 'Retour temps réel', autre: 'Autre',
 };
 
-const NAV = [
-  { id: 'overview',      label: 'Vue d\'ensemble',  icon: Zap },
-  { id: 'files',         label: 'Mes fichiers',      icon: FolderOpen },
-  { id: 'quotes',        label: 'Mes devis',          icon: FileText },
-  { id: 'certs',         label: 'Certifications',     icon: Shield },
-  { id: 'billing',       label: 'Facturation',         icon: CreditCard },
-  { id: 'badges',        label: 'Badges',             icon: Award },
-  { id: 'reports',       label: 'Mes signalements',   icon: Flag },
-  { id: 'my-affils',     label: 'Mes affiliations',   icon: Users },
+/* ─── Main tabs ─────────────────────────────────────── */
+const MAIN_TABS = [
+  { id: 'social', label: 'Mon Compte', icon: UserCircle },
+  { id: 'business', label: 'Business', icon: Briefcase },
 ];
 
-const ORGANIZATION_NAV = [
-  ...NAV,
-  { id: 'affiliations', label: 'Gérer affiliations', icon: Users },
+/* ─── Sub-tabs ──────────────────────────────────────── */
+const SOCIAL_SUB = [
+  { id: 'badges',     label: 'Badges',           icon: Award },
+  { id: 'certs',      label: 'Certifications',   icon: Shield },
+  { id: 'my-affils',  label: 'Mes affiliations', icon: Users },
+  { id: 'reports',    label: 'Signalements',     icon: Flag },
+  { id: 'billing',    label: 'Facturation',      icon: CreditCard },
 ];
 
-const REPORT_STATUS = {
-  pending:   { label: 'En attente',  color: 'text-amber-400',  bg: 'bg-amber-400/10',  border: 'border-amber-400/20',  icon: Clock },
-  reviewing: { label: 'En examen',   color: 'text-blue-400',   bg: 'bg-blue-400/10',   border: 'border-blue-400/20',   icon: AlertCircle },
-  resolved:  { label: 'Résolu',      color: 'text-green-400',  bg: 'bg-green-400/10',  border: 'border-green-400/20',  icon: CheckCircle },
-  dismissed: { label: 'Rejeté',      color: 'text-red-400',    bg: 'bg-red-400/10',    border: 'border-red-400/20',    icon: XCircle },
-};
+const BUSINESS_SUB = [
+  { id: 'overview',  label: 'Vue d\'ensemble', icon: Zap },
+  { id: 'quotes',    label: 'Mes devis',        icon: FileText },
+  { id: 'files',     label: 'Mes fichiers',     icon: FolderOpen },
+];
 
 /* ─── sub-components ────────────────────────────────── */
-function StatCard({ icon: Icon, label, value, color, bg }) {
+function Section({ title, children, action }) {
   return (
-    <motion.div whileHover={{ y: -2 }} className="p-4 rounded-2xl bg-card border border-border flex items-center gap-4">
-      <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
-        <Icon className={`w-5 h-5 ${color}`} />
+    <div className="py-5 border-b border-zinc-800/50 last:border-0">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-grotesk font-semibold text-sm text-foreground">{title}</h3>
+        {action}
       </div>
-      <div>
-        <p className="font-grotesk font-bold text-xl leading-none">{value}</p>
-        <p className="font-inter text-xs text-muted-foreground mt-0.5">{label}</p>
-      </div>
-    </motion.div>
+      {children}
+    </div>
   );
 }
 
 function MissionFolder({ mission, files }) {
   const [open, setOpen] = useState(true);
   return (
-    <motion.div layout className="rounded-2xl border border-border overflow-hidden bg-card">
+    <div className="rounded-xl border border-zinc-800/50 overflow-hidden">
       <button onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center gap-4 px-5 py-4 hover:bg-secondary/40 transition-colors group">
-        <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-          <FolderOpen className="w-4 h-4 text-primary" />
-        </div>
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/3 transition-colors group">
+        <FolderOpen className="w-4 h-4 text-primary flex-shrink-0" />
         <div className="flex-1 text-left min-w-0">
-          <p className="font-grotesk font-semibold text-sm truncate">{mission}</p>
+          <p className="font-inter font-medium text-sm truncate">{mission}</p>
           <p className="font-inter text-xs text-muted-foreground">{files.length} fichier{files.length > 1 ? 's' : ''}</p>
         </div>
         {files[0]?.mission_date && (
-          <span className="font-mono text-[11px] text-muted-foreground px-2 py-0.5 rounded-lg bg-secondary/50 flex-shrink-0">
+          <span className="font-mono text-[11px] text-muted-foreground flex-shrink-0">
             {format(new Date(files[0].mission_date), 'd MMM yyyy', { locale: fr })}
           </span>
         )}
-        <div className="w-6 h-6 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
-          {open ? <ChevronUp className="w-3 h-3 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 text-muted-foreground" />}
-        </div>
+        {open ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
       </button>
-
       <AnimatePresence>
         {open && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-            <div className="border-t border-border divide-y divide-border/60">
+            <div className="border-t border-zinc-800/50 divide-y divide-zinc-800/30">
               {files.map(file => {
                 const Icon = FILE_ICONS[file.file_type] || File;
                 return (
-                  <div key={file.id} className="flex items-center gap-3 px-5 py-3 bg-background/60 hover:bg-card/80 transition-colors">
-                    <div className={`w-8 h-8 rounded-lg ${FILE_BG[file.file_type] || 'bg-muted/10'} flex items-center justify-center flex-shrink-0`}>
-                      <Icon className={`w-4 h-4 ${FILE_COLORS[file.file_type] || 'text-muted-foreground'}`} />
-                    </div>
+                  <div key={file.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/2 transition-colors">
+                    <Icon className={`w-4 h-4 flex-shrink-0 ${FILE_COLORS[file.file_type] || 'text-muted-foreground'}`} />
                     <div className="flex-1 min-w-0">
-                      <p className="font-inter text-sm font-medium truncate">{file.file_name}</p>
+                      <p className="font-inter text-sm truncate">{file.file_name}</p>
                       {file.description && <p className="font-inter text-xs text-muted-foreground truncate">{file.description}</p>}
                     </div>
                     {file.file_size_mb && (
                       <span className="font-mono text-[11px] text-muted-foreground flex-shrink-0">{file.file_size_mb} Mo</span>
                     )}
                     <a href={file.file_url} target="_blank" rel="noopener noreferrer">
-                      <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs px-3 border-border hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all flex-shrink-0">
+                      <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs px-3 border-zinc-700 hover:border-cyan-400/40 hover:text-cyan-400 transition-all flex-shrink-0">
                         <Download className="w-3 h-3" /> Télécharger
                       </Button>
                     </a>
@@ -133,31 +122,28 @@ function MissionFolder({ mission, files }) {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
 
-function QuoteCard({ q, onExpand }) {
+function QuoteCard({ q, onExpand, expanded }) {
   const s = QUOTE_STATUS[q.status] || QUOTE_STATUS.pending;
   const StatusIcon = s.icon;
   return (
-    <motion.button onClick={onExpand} whileHover={{ y: -1 }} className={`w-full text-left p-5 rounded-2xl bg-card border ${s.border} relative overflow-hidden transition-colors hover:bg-card/80`}>
-      <div className="flex items-start justify-between gap-3">
+    <div className="border-b border-zinc-800/40 last:border-0">
+      <button onClick={onExpand} className="w-full flex items-start gap-4 py-4 hover:bg-white/2 transition-colors px-1 text-left">
+        <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${s.color.replace('text-', 'bg-')}`} />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className={`inline-flex items-center gap-1.5 text-[11px] font-inter font-medium px-2 py-0.5 rounded-full ${s.bg} ${s.color} border ${s.border}`}>
-              <StatusIcon className="w-3 h-3" />
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className={`inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full ${s.bg} ${s.color} border ${s.border}`}>
+              <StatusIcon className="w-2.5 h-2.5" />
               {s.label}
             </span>
-            {q.prix_final && (
-              <span className="text-[11px] font-mono text-primary font-semibold">{q.prix_final}€</span>
-            )}
+            {q.prix_final && <span className="text-[11px] font-mono text-cyan-400 font-semibold">{q.prix_final}€</span>}
           </div>
-          <p className="font-grotesk font-bold text-base leading-tight">
-            {SERVICE_LABELS[q.service_type] || q.service_type?.replace(/_/g, ' ')}
-          </p>
+          <p className="font-inter font-medium text-sm">{SERVICE_LABELS[q.service_type] || q.service_type?.replace(/_/g, ' ')}</p>
           {q.location && (
-            <p className="font-inter text-xs text-muted-foreground mt-1 flex items-center gap-1">
+            <p className="font-inter text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
               <MapPin className="w-3 h-3" /> {q.location}
             </p>
           )}
@@ -166,39 +152,38 @@ function QuoteCard({ q, onExpand }) {
           <p className="font-mono text-[11px] text-muted-foreground">
             {q.created_date ? format(new Date(q.created_date), 'd MMM yy', { locale: fr }) : ''}
           </p>
-          {q.date_souhaitee && (
-            <p className="font-mono text-[11px] text-primary mt-1 flex items-center gap-1 justify-end">
-              <Calendar className="w-3 h-3" /> {q.date_souhaitee}
-            </p>
-          )}
           {q.prix_estime && !q.prix_final && (
-            <p className="font-mono text-xs text-muted-foreground mt-1">~{q.prix_estime}€</p>
+            <p className="font-mono text-xs text-muted-foreground mt-0.5">~{q.prix_estime}€</p>
           )}
         </div>
-      </div>
-    </motion.button>
+      </button>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="px-4 pb-4">
+            <QuoteTracking quote={q} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
 function EmptyState({ icon: Icon, title, desc, cta, to }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-      <div className="w-16 h-16 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center">
-        <Icon className="w-8 h-8 text-primary/30" />
-      </div>
+    <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
+      <Icon className="w-7 h-7 text-muted-foreground/30" />
       <div>
-        <p className="font-grotesk font-bold text-base">{title}</p>
-        <p className="font-inter text-sm text-muted-foreground mt-1 max-w-xs">{desc}</p>
+        <p className="font-inter font-medium text-sm">{title}</p>
+        <p className="font-inter text-xs text-muted-foreground mt-1 max-w-xs">{desc}</p>
       </div>
       {cta && to && (
         <Link to={to}>
-          <Button className="bg-primary text-primary-foreground gap-2 rounded-xl font-grotesk font-semibold">
-            <Plus className="w-4 h-4" /> {cta}
+          <Button size="sm" variant="outline" className="border-zinc-700 text-cyan-400 hover:border-cyan-400/40 hover:bg-cyan-400/5 gap-1.5 mt-1">
+            <Plus className="w-3.5 h-3.5" /> {cta}
           </Button>
         </Link>
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -210,26 +195,29 @@ export default function EspaceClientPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [expandedQuote, setExpandedQuote] = useState(null);
   const [billingLoading, setBillingLoading] = useState(false);
-  const activeTab = searchParams.get('tab') || 'overview';
+
+  const mainTab = searchParams.get('main') || 'social';
+  const subTab = searchParams.get('tab') || (mainTab === 'social' ? 'badges' : 'overview');
   const canManageAffiliations = canManageUserAffiliations(user);
+
+  const setMainTab = (t) => {
+    const defaultSub = t === 'social' ? 'badges' : 'overview';
+    setSearchParams({ main: t, tab: defaultSub }, { replace: true });
+  };
+  const setSubTab = (t) => setSearchParams({ main: mainTab, tab: t }, { replace: true });
 
   const openBillingPortal = async () => {
     setBillingLoading(true);
     try {
       const res = await base44.functions.invoke('getStripePortalUrl', {});
-      if (res.data?.url) {
-        window.open(res.data.url, '_blank');
-      } else {
-        alert(res.data?.error || 'Impossible d\'accéder au portail de facturation.');
-      }
+      if (res.data?.url) window.open(res.data.url, '_blank');
+      else alert(res.data?.error || 'Impossible d\'accéder au portail.');
     } catch (e) {
       alert('Erreur : ' + e.message);
     } finally {
       setBillingLoading(false);
     }
   };
-
-  const setTab = (t) => setSearchParams({ tab: t }, { replace: true });
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(async (authed) => {
@@ -243,26 +231,21 @@ export default function EspaceClientPage() {
     queryFn: () => base44.entities.ClientFile.filter({ client_email: user.email }, '-mission_date'),
     enabled: !!user?.email,
   });
-
   const { data: myQuotes = [] } = useQuery({
     queryKey: ['my-quotes', user?.email],
     queryFn: () => base44.entities.Quote.filter({ client_email: user.email }, '-created_date', 20),
     enabled: !!user?.email,
   });
-
   const { data: myCertifications = [] } = useQuery({
     queryKey: ['my-certifications', user?.email],
     queryFn: () => base44.entities.CertificationRequest.filter({ user_email: user.email }, '-created_date', 5),
     enabled: !!user?.email,
   });
-
   const { data: myReports = [] } = useQuery({
     queryKey: ['my-reports', user?.email],
     queryFn: () => base44.entities.Report.filter({ reporter_email: user.email }, '-created_date', 30),
     enabled: !!user?.email,
   });
-
-
 
   const missions = files.reduce((acc, f) => {
     if (!acc[f.mission_name]) acc[f.mission_name] = [];
@@ -278,135 +261,102 @@ export default function EspaceClientPage() {
 
   if (!authChecked) return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   if (!user) return (
-    <div className="pt-16 min-h-screen grid-bg flex items-center justify-center px-5">
-      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-        className="text-center space-y-8 max-w-sm">
-        <div className="relative mx-auto w-24 h-24">
-          <div className="w-24 h-24 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <Lock className="w-11 h-11 text-primary" />
-          </div>
-          <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary animate-pulse" />
+    <div className="min-h-screen flex items-center justify-center px-5">
+      <div className="text-center space-y-6 max-w-sm">
+        <div className="w-16 h-16 rounded-2xl bg-white/4 border border-zinc-800 flex items-center justify-center mx-auto">
+          <Lock className="w-7 h-7 text-primary" />
         </div>
         <div className="space-y-2">
-          <h2 className="font-grotesk font-bold text-3xl">Espace Client</h2>
+          <h2 className="font-grotesk font-bold text-2xl">Espace Client</h2>
           <p className="font-inter text-sm text-muted-foreground leading-relaxed">
-            Connectez-vous pour accéder à vos missions, devis, certifications et bien plus.
+            Connectez-vous pour accéder à vos certifications, badges, affiliations et missions.
           </p>
         </div>
         <Button onClick={() => base44.auth.redirectToLogin('/espace-client')}
-          className="bg-primary text-primary-foreground gap-2 font-grotesk font-semibold w-full rounded-xl h-11 text-base sky-glow">
+          className="bg-primary text-primary-foreground gap-2 font-grotesk font-semibold w-full rounded-xl h-11">
           <LogIn className="w-4 h-4" /> Se connecter
         </Button>
-      </motion.div>
+      </div>
     </div>
   );
 
+  const socialSubs = canManageAffiliations
+    ? [...SOCIAL_SUB, { id: 'affiliations', label: 'Gérer affiliations', icon: Users }]
+    : SOCIAL_SUB;
+
   return (
-    <div className="pt-16 min-h-screen bg-background">
-      {/* ── Hero banner ── */}
-      <div className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 grid-bg opacity-40" />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-        <div className="relative max-w-6xl mx-auto px-5 lg:px-10 py-8 lg:py-10">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            {/* Avatar */}
-            <div className="relative">
-              <div className="w-16 h-16 rounded-2xl bg-primary/20 border-2 border-primary/40 flex items-center justify-center overflow-hidden sky-glow">
-                {user.avatar_url
-                  ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                  : <span className="font-grotesk font-black text-primary text-2xl">{user.full_name?.[0]?.toUpperCase() || 'U'}</span>
-                }
-              </div>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-green-400 border-2 border-background" />
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <p className="font-inter text-xs text-primary font-medium tracking-widest uppercase mb-0.5">Espace Client</p>
-              <h1 className="font-grotesk font-black text-2xl lg:text-3xl gradient-text">
-                Bonjour, {user.full_name?.split(' ')[0]} 👋
-              </h1>
-              <p className="font-mono text-xs text-muted-foreground mt-0.5">{user.email}</p>
-              {user.badges?.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {user.badges.map(b => <BadgeChip key={b} badge={b} />)}
-                </div>
-              )}
-            </div>
-
-            {/* CTA */}
-            <div className="flex gap-2 flex-shrink-0">
-              <Link to="/profile">
-                <Button size="sm" variant="outline" className="border-border gap-1.5 font-inter">
-                  <User className="w-3.5 h-3.5" /> Mon profil
-                </Button>
-              </Link>
-              <Link to="/quote">
-                <Button size="sm" className="bg-primary text-primary-foreground gap-1.5 font-grotesk font-semibold">
-                  <Plus className="w-3.5 h-3.5" /> Nouveau devis
-                </Button>
-              </Link>
-            </div>
+    <div className="min-h-screen bg-black">
+      {/* ── Header compact ── */}
+      <div className="border-b border-zinc-800/60 px-4 lg:px-8 py-5">
+        <div className="max-w-3xl mx-auto flex items-center gap-4">
+          <div className="w-11 h-11 rounded-full overflow-hidden border border-zinc-700 flex-shrink-0 bg-primary/10 flex items-center justify-center">
+            {user.avatar_url
+              ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+              : <span className="font-grotesk font-bold text-primary">{user.full_name?.[0]?.toUpperCase() || 'U'}</span>
+            }
           </div>
-
-          {/* Quick stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-            <StatCard icon={FolderOpen}  label="Missions"     value={Object.keys(missions).length}  color="text-primary"    bg="bg-primary/10" />
-            <StatCard icon={FileText}    label="Devis actifs" value={activeQuotes.length}            color="text-amber-400"  bg="bg-amber-400/10" />
-            <StatCard icon={CheckCircle} label="Terminés"     value={completedQuotes.length}         color="text-green-400"  bg="bg-green-400/10" />
-            <StatCard icon={Award}       label="Badges"       value={user.badges?.length || 0}       color="text-purple-400" bg="bg-purple-400/10" />
+          <div className="flex-1 min-w-0">
+            <p className="font-grotesk font-semibold text-base leading-tight">{user.full_name}</p>
+            <p className="font-mono text-xs text-muted-foreground">{user.email}</p>
           </div>
+          <Link to="/profile">
+            <Button size="sm" variant="outline" className="border-zinc-700 text-xs gap-1.5 hover:border-zinc-600">
+              <Settings className="w-3.5 h-3.5" /> Profil
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* ── Main tabs ── */}
+      <div className="border-b border-zinc-800/60 px-4 lg:px-8">
+        <div className="max-w-3xl mx-auto flex gap-0">
+          {MAIN_TABS.map(t => (
+            <button key={t.id} onClick={() => setMainTab(t.id)}
+              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-inter font-medium border-b-2 transition-all ${
+                mainTab === t.id
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}>
+              <t.icon className="w-4 h-4" />
+              {t.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* ── Layout ── */}
-      <div className="max-w-6xl mx-auto px-5 lg:px-10 py-8 flex flex-col lg:flex-row gap-6">
+      <div className="max-w-3xl mx-auto px-4 lg:px-8 py-6 flex flex-col lg:flex-row gap-6">
 
-        {/* Sidebar nav — desktop */}
-        <aside className="hidden lg:flex flex-col gap-1 w-52 flex-shrink-0">
-          {(canManageAffiliations ? ORGANIZATION_NAV : NAV).map(n => (
-            <button key={n.id} onClick={() => setTab(n.id)}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-inter transition-all text-left ${
-                activeTab === n.id
-                  ? 'bg-primary/10 text-primary border border-primary/20 font-medium'
-                  : 'text-muted-foreground hover:bg-card hover:text-foreground'
+        {/* Sub-nav — desktop */}
+        <aside className="hidden lg:flex flex-col gap-0.5 w-44 flex-shrink-0">
+          {(mainTab === 'social' ? socialSubs : BUSINESS_SUB).map(n => (
+            <button key={n.id} onClick={() => setSubTab(n.id)}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-inter transition-all text-left ${
+                subTab === n.id
+                  ? 'bg-white/6 text-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/3'
               }`}>
-              <n.icon className="w-4 h-4 flex-shrink-0" />
+              <n.icon className="w-3.5 h-3.5 flex-shrink-0" />
               {n.label}
             </button>
           ))}
-
-          <div className="mt-4 pt-4 border-t border-border">
-            <Link to="/quote">
-              <button className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-inter text-muted-foreground hover:bg-card hover:text-foreground transition-all w-full text-left">
-                <Plus className="w-4 h-4 flex-shrink-0" />
-                Nouveau devis
-              </button>
-            </Link>
-            <Link to="/profile">
-              <button className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-inter text-muted-foreground hover:bg-card hover:text-foreground transition-all w-full text-left">
-                <Settings className="w-4 h-4 flex-shrink-0" />
-                Mon compte
-              </button>
-            </Link>
-          </div>
         </aside>
 
-        {/* Mobile nav */}
+        {/* Mobile sub-nav */}
         <div className="lg:hidden flex gap-1 overflow-x-auto pb-1 -mx-1 px-1">
-          {(canManageAffiliations ? ORGANIZATION_NAV : NAV).map(n => (
-            <button key={n.id} onClick={() => setTab(n.id)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-inter whitespace-nowrap flex-shrink-0 transition-all ${
-                activeTab === n.id
-                  ? 'bg-primary/10 text-primary border border-primary/20 font-medium'
-                  : 'text-muted-foreground hover:bg-card border border-transparent'
+          {(mainTab === 'social' ? socialSubs : BUSINESS_SUB).map(n => (
+            <button key={n.id} onClick={() => setSubTab(n.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-inter whitespace-nowrap flex-shrink-0 transition-all border ${
+                subTab === n.id
+                  ? 'bg-white/6 text-foreground border-zinc-700'
+                  : 'text-muted-foreground border-transparent hover:border-zinc-800'
               }`}>
-              <n.icon className="w-3.5 h-3.5" />
+              <n.icon className="w-3 h-3" />
               {n.label}
             </button>
           ))}
@@ -415,268 +365,221 @@ export default function EspaceClientPage() {
         {/* Content */}
         <main className="flex-1 min-w-0">
           <AnimatePresence mode="wait">
-            <motion.div key={activeTab} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.18 }}>
+            <motion.div key={subTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
 
-              {/* OVERVIEW */}
-              {activeTab === 'overview' && (
-                <div className="space-y-6">
-                  <h2 className="font-grotesk font-bold text-lg">Vue d'ensemble</h2>
-
-                  {activeQuotes.length > 0 && (
-                    <div>
-                      <p className="font-inter text-xs text-muted-foreground uppercase tracking-wider font-medium mb-3">Devis en cours</p>
-                      <div className="space-y-3">
-                        {activeQuotes.slice(0, 3).map(q => <QuoteCard key={q.id} q={q} />)}
-                        {activeQuotes.length > 3 && (
-                          <button onClick={() => setTab('quotes')} className="text-xs text-primary font-inter hover:underline flex items-center gap-1">
-                            Voir tous les devis <ArrowRight className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {Object.keys(missions).length > 0 && (
-                    <div>
-                      <p className="font-inter text-xs text-muted-foreground uppercase tracking-wider font-medium mb-3">Dernières missions</p>
-                      <div className="space-y-2">
-                        {Object.entries(missions).slice(0, 2).map(([mission, mFiles]) => (
-                          <MissionFolder key={mission} mission={mission} files={mFiles} />
-                        ))}
-                        {Object.keys(missions).length > 2 && (
-                          <button onClick={() => setTab('files')} className="text-xs text-primary font-inter hover:underline flex items-center gap-1 mt-1">
-                            Voir tous les fichiers <ArrowRight className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {activeQuotes.length === 0 && Object.keys(missions).length === 0 && (
-                    <div className="p-8 rounded-2xl bg-card border border-dashed border-border text-center space-y-4">
-                      <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center mx-auto">
-                        <Rocket className="w-6 h-6 text-primary/40" />
-                      </div>
-                      <div>
-                        <p className="font-grotesk font-bold">Démarrez votre première mission</p>
-                        <p className="font-inter text-sm text-muted-foreground mt-1">Demandez un devis et votre pilote prendra contact avec vous.</p>
-                      </div>
-                      <Link to="/quote">
-                        <Button className="bg-primary text-primary-foreground gap-2 rounded-xl font-grotesk">
-                          <Plus className="w-4 h-4" /> Demander un devis
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-
-                  {myCertifications.length > 0 && (
-                    <div>
-                      <p className="font-inter text-xs text-muted-foreground uppercase tracking-wider font-medium mb-3">Certification</p>
-                      <div className="bg-card border border-border rounded-2xl p-5">
-                        <CertificationTracking request={myCertifications[0]} />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* FILES */}
-              {activeTab === 'files' && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-grotesk font-bold text-lg">Mes fichiers</h2>
-                    <span className="font-mono text-xs text-muted-foreground">{files.length} fichier{files.length > 1 ? 's' : ''}</span>
-                  </div>
-                  {filesLoading ? (
-                    <div className="flex justify-center py-16">
-                      <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  ) : Object.keys(missions).length === 0 ? (
-                    <EmptyState icon={FolderOpen} title="Aucun fichier disponible"
-                      desc="Vos fichiers de missions apparaîtront ici dès que votre pilote les aura déposés."
-                      cta="Commander une mission" to="/quote" />
+              {/* ── BADGES ── */}
+              {subTab === 'badges' && (
+                <Section title="Mes badges">
+                  {!user.badges?.length ? (
+                    <EmptyState icon={Award} title="Aucun badge pour l'instant"
+                      desc="Les badges s'obtiennent en participant à la communauté." />
                   ) : (
-                    Object.entries(missions).map(([mission, mFiles]) => (
-                      <MissionFolder key={mission} mission={mission} files={mFiles} />
-                    ))
-                  )}
-                </div>
-              )}
-
-              {/* QUOTES */}
-              {activeTab === 'quotes' && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-grotesk font-bold text-lg">Mes devis</h2>
-                    <Link to="/quote">
-                      <Button size="sm" className="bg-primary text-primary-foreground gap-1.5 rounded-xl">
-                        <Plus className="w-3.5 h-3.5" /> Nouveau
-                      </Button>
-                    </Link>
-                  </div>
-                  {myQuotes.length === 0 ? (
-                    <EmptyState icon={FileText} title="Aucun devis pour le moment"
-                      desc="Faites votre première demande et recevez un devis personnalisé sous 24h."
-                      cta="Demander un devis" to="/quote" />
-                  ) : (
-                    <div className="space-y-2">
-                      {myQuotes.map(q => (
-                        <div key={q.id}>
-                          <QuoteCard q={q} onExpand={() => setExpandedQuote(expandedQuote === q.id ? null : q.id)} />
-                          <AnimatePresence>
-                            {expandedQuote === q.id && (
-                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-card border border-border border-t-0 rounded-b-2xl p-6">
-                                <QuoteTracking quote={q} />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      ))}
+                    <div className="flex flex-wrap gap-3">
+                      {user.badges.map(b => <BadgeChip key={b} badge={b} size="lg" />)}
                     </div>
                   )}
-                </div>
+                </Section>
               )}
 
-              {/* CERTIFICATIONS */}
-              {activeTab === 'certs' && (
-                <div className="space-y-4">
-                  <h2 className="font-grotesk font-bold text-lg">Certifications</h2>
+              {/* ── CERTIFICATIONS ── */}
+              {subTab === 'certs' && (
+                <Section title="Certifications" action={
+                  <Link to="/profile">
+                    <Button size="sm" variant="outline" className="border-zinc-700 text-cyan-400 hover:border-cyan-400/40 hover:bg-cyan-400/5 gap-1.5 text-xs">
+                      <Plus className="w-3 h-3" /> Demander
+                    </Button>
+                  </Link>
+                }>
                   {myCertifications.length === 0 ? (
                     <EmptyState icon={Shield} title="Aucune certification"
-                      desc="Obtenez une certification officielle pour mettre en valeur vos compétences drone."
-                      cta="Demander une certification" to="/profile" />
+                      desc="Obtenez une certification officielle pour valoriser vos compétences." />
                   ) : (
-                    <div className="bg-card border border-border rounded-2xl p-6">
-                      <CertificationTracking request={myCertifications[0]} />
-                    </div>
+                    <CertificationTracking request={myCertifications[0]} />
                   )}
-                </div>
+                </Section>
               )}
 
-              {/* BILLING */}
-              {activeTab === 'billing' && (
-                <div className="space-y-4">
-                  <h2 className="font-grotesk font-bold text-lg">Facturation & Abonnements</h2>
-
-                  {/* Certifications actives */}
-                  <div className="space-y-2">
-                    {myCertifications.filter(c => c.payment_status === 'completed').map(cert => (
-                      <div key={cert.id} className="p-5 rounded-2xl bg-card border border-border flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-                          <Shield className="w-5 h-5 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-grotesk font-bold text-sm">
-                            Abonnement Certification — {cert.responses?.badge_requested || 'Badge'}
-                          </p>
-                          <p className="font-mono text-xs text-muted-foreground mt-0.5">
-                            Statut : {cert.status === 'approved' ? '✓ Approuvé' : cert.status === 'pending' ? '⏳ En attente' : '✕ Refusé'}
-                            {' · '}
-                            Paiement : {cert.payment_status === 'completed' ? '✓ Actif' : cert.payment_status === 'refunded' ? '↩ Remboursé' : cert.payment_status}
-                          </p>
-                          {cert.stripe_subscription_id && (
-                            <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
-                              Sub: {cert.stripe_subscription_id}
-                            </p>
-                          )}
-                        </div>
-                        <span className={`text-xs font-inter px-2 py-0.5 rounded-full border ${
-                          cert.status === 'approved' ? 'bg-green-400/10 text-green-400 border-green-400/20' :
-                          cert.status === 'rejected' ? 'bg-red-400/10 text-red-400 border-red-400/20' :
-                          'bg-amber-400/10 text-amber-400 border-amber-400/20'
-                        }`}>
-                          {cert.status === 'approved' ? 'Actif' : cert.status === 'rejected' ? 'Annulé' : 'En cours'}
-                        </span>
-                      </div>
-                    ))}
-
-                    {myCertifications.filter(c => c.payment_status === 'completed').length === 0 && (
-                      <div className="p-6 rounded-2xl bg-card border border-border text-center">
-                        <CreditCard className="w-8 h-8 text-muted-foreground/40 mx-auto mb-3" />
-                        <p className="font-grotesk font-bold text-sm">Aucun abonnement actif</p>
-                        <p className="font-inter text-xs text-muted-foreground mt-1">Vous n'avez pas encore d'abonnement de certification.</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Portail Stripe */}
-                  <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-400/5 to-primary/5 border border-blue-400/20">
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-blue-400/10 border border-blue-400/20 flex items-center justify-center flex-shrink-0">
-                        <CreditCard className="w-5 h-5 text-blue-400" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-grotesk font-bold text-sm">Portail de facturation Stripe</p>
-                        <p className="font-inter text-xs text-muted-foreground mt-1 leading-relaxed">
-                          Gérez vos abonnements, consultez vos factures, mettez à jour votre moyen de paiement ou annulez un abonnement depuis le portail sécurisé Stripe.
-                        </p>
-                        <Button
-                          onClick={openBillingPortal}
-                          disabled={billingLoading}
-                          className="mt-3 gap-2 bg-blue-500 hover:bg-blue-600 text-white text-xs h-8"
-                        >
-                          {billingLoading
-                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Chargement...</>
-                            : <><ExternalLink className="w-3.5 h-3.5" /> Gérer mes abonnements</>
-                          }
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {/* ── MES AFFILIATIONS ── */}
+              {subTab === 'my-affils' && (
+                <Section title="Mes affiliations">
+                  <MyAffiliationsTab user={user} />
+                </Section>
               )}
 
-              {/* MES AFFILIATIONS (côté affilié — tous les utilisateurs) */}
-              {activeTab === 'my-affils' && (
-                <MyAffiliationsTab user={user} />
+              {/* ── GÉRER AFFILIATIONS ── */}
+              {subTab === 'affiliations' && (
+                <Section title="Gérer les affiliations">
+                  <OrganizationAffiliationsTab user={user} />
+                </Section>
               )}
 
-              {/* GÉRER AFFILIATIONS (côté organisation — comptes official/supreme) */}
-              {activeTab === 'affiliations' && (
-                <OrganizationAffiliationsTab user={user} />
-              )}
-
-              {/* BADGES */}
-              {activeTab === 'badges' && (
-               <div className="space-y-4">
-                 <h2 className="font-grotesk font-bold text-lg">Mes badges</h2>
-                 {!user.badges?.length ? (
-                   <EmptyState icon={Award} title="Aucun badge pour l'instant"
-                     desc="Les badges s'obtiennent en participant à la communauté et en réalisant des missions." />
-                 ) : (
-                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                     {user.badges.map(b => (
-                       <div key={b} className="p-4 rounded-2xl bg-card border border-border flex flex-col items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
-                         <BadgeChip badge={b} size="lg" />
-                       </div>
-                     ))}
-                   </div>
-                 )}
-               </div>
-              )}
-
-              {/* REPORTS */}
-              {activeTab === 'reports' && (
-                <div className="space-y-4">
-                  <h2 className="font-grotesk font-bold text-lg">Mes signalements</h2>
+              {/* ── SIGNALEMENTS ── */}
+              {subTab === 'reports' && (
+                <Section title="Mes signalements">
                   {myReports.length === 0 ? (
                     <EmptyState icon={Flag} title="Aucun signalement"
-                      desc="Vous pouvez signaler un utilisateur ou du contenu inapproprié pour aider notre modération." />
+                      desc="Vos signalements envoyés à la modération apparaîtront ici." />
                   ) : (
                     <div className="space-y-4">
                       {myReports.map(r => (
-                        <div key={r.id} className="bg-card border border-border rounded-2xl p-6">
+                        <div key={r.id} className="border border-zinc-800/50 rounded-xl p-4">
                           <ReportTracking report={r} />
                         </div>
                       ))}
                     </div>
                   )}
+                </Section>
+              )}
+
+              {/* ── FACTURATION ── */}
+              {subTab === 'billing' && (
+                <div>
+                  <Section title="Abonnements">
+                    {myCertifications.filter(c => c.payment_status === 'completed').length === 0 ? (
+                      <EmptyState icon={CreditCard} title="Aucun abonnement actif"
+                        desc="Vos abonnements de certification apparaîtront ici." />
+                    ) : (
+                      <div className="space-y-2">
+                        {myCertifications.filter(c => c.payment_status === 'completed').map(cert => (
+                          <div key={cert.id} className="flex items-center gap-3 py-3 border-b border-zinc-800/40 last:border-0">
+                            <Shield className="w-4 h-4 text-primary flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-inter text-sm font-medium">
+                                Certification — {cert.responses?.badge_requested || 'Badge'}
+                              </p>
+                              <p className="font-mono text-[11px] text-muted-foreground mt-0.5">
+                                {cert.status === 'approved' ? '✓ Approuvé' : cert.status === 'pending' ? '⏳ En attente' : '✕ Refusé'}
+                              </p>
+                            </div>
+                            <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full border ${
+                              cert.status === 'approved' ? 'bg-green-400/10 text-green-400 border-green-400/20' :
+                              'bg-amber-400/10 text-amber-400 border-amber-400/20'
+                            }`}>
+                              {cert.status === 'approved' ? 'Actif' : 'En cours'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </Section>
+
+                  <Section title="Portail Stripe">
+                    <p className="font-inter text-sm text-muted-foreground mb-4 leading-relaxed">
+                      Gérez vos abonnements, consultez vos factures et mettez à jour votre moyen de paiement.
+                    </p>
+                    <Button onClick={openBillingPortal} disabled={billingLoading}
+                      variant="outline" className="border-zinc-700 text-cyan-400 hover:border-cyan-400/40 hover:bg-cyan-400/5 gap-2">
+                      {billingLoading
+                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Chargement…</>
+                        : <><ExternalLink className="w-3.5 h-3.5" /> Gérer mes abonnements</>
+                      }
+                    </Button>
+                  </Section>
                 </div>
               )}
 
-              </motion.div>
-              </AnimatePresence>
-              </main>
+              {/* ── OVERVIEW (Business) ── */}
+              {subTab === 'overview' && (
+                <div>
+                  {/* Stats mini */}
+                  <div className="grid grid-cols-3 gap-3 mb-6">
+                    {[
+                      { label: 'Missions', value: Object.keys(missions).length, color: 'text-primary' },
+                      { label: 'Devis actifs', value: activeQuotes.length, color: 'text-amber-400' },
+                      { label: 'Terminés', value: completedQuotes.length, color: 'text-green-400' },
+                    ].map(s => (
+                      <div key={s.label} className="rounded-xl border border-zinc-800/50 p-3 text-center">
+                        <p className={`font-grotesk font-bold text-2xl ${s.color}`}>{s.value}</p>
+                        <p className="font-inter text-xs text-muted-foreground mt-0.5">{s.label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {activeQuotes.length > 0 && (
+                    <Section title="Devis en cours" action={
+                      <button onClick={() => setSubTab('quotes')} className="text-xs text-cyan-400 hover:underline flex items-center gap-1">
+                        Voir tout <ArrowRight className="w-3 h-3" />
+                      </button>
+                    }>
+                      {activeQuotes.slice(0, 3).map(q => (
+                        <QuoteCard key={q.id} q={q}
+                          expanded={expandedQuote === q.id}
+                          onExpand={() => setExpandedQuote(expandedQuote === q.id ? null : q.id)} />
+                      ))}
+                    </Section>
+                  )}
+
+                  {Object.keys(missions).length > 0 && (
+                    <Section title="Dernières missions" action={
+                      <button onClick={() => setSubTab('files')} className="text-xs text-cyan-400 hover:underline flex items-center gap-1">
+                        Voir tout <ArrowRight className="w-3 h-3" />
+                      </button>
+                    }>
+                      <div className="space-y-2">
+                        {Object.entries(missions).slice(0, 2).map(([mission, mFiles]) => (
+                          <MissionFolder key={mission} mission={mission} files={mFiles} />
+                        ))}
+                      </div>
+                    </Section>
+                  )}
+
+                  {activeQuotes.length === 0 && Object.keys(missions).length === 0 && (
+                    <EmptyState icon={Rocket} title="Aucune mission pour l'instant"
+                      desc="Demandez un devis pour démarrer votre première mission."
+                      cta="Demander un devis" to="/quote" />
+                  )}
+                </div>
+              )}
+
+              {/* ── DEVIS (Business) ── */}
+              {subTab === 'quotes' && (
+                <Section title="Mes devis" action={
+                  <Link to="/quote">
+                    <Button size="sm" variant="outline" className="border-zinc-700 text-cyan-400 hover:border-cyan-400/40 hover:bg-cyan-400/5 gap-1.5 text-xs">
+                      <Plus className="w-3 h-3" /> Nouveau
+                    </Button>
+                  </Link>
+                }>
+                  {myQuotes.length === 0 ? (
+                    <EmptyState icon={FileText} title="Aucun devis"
+                      desc="Faites votre première demande et recevez un devis sous 24h."
+                      cta="Demander un devis" to="/quote" />
+                  ) : (
+                    myQuotes.map(q => (
+                      <QuoteCard key={q.id} q={q}
+                        expanded={expandedQuote === q.id}
+                        onExpand={() => setExpandedQuote(expandedQuote === q.id ? null : q.id)} />
+                    ))
+                  )}
+                </Section>
+              )}
+
+              {/* ── FICHIERS (Business) ── */}
+              {subTab === 'files' && (
+                <Section title="Mes fichiers" action={
+                  <span className="font-mono text-xs text-muted-foreground">{files.length} fichier{files.length !== 1 ? 's' : ''}</span>
+                }>
+                  {filesLoading ? (
+                    <div className="flex justify-center py-10">
+                      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  ) : Object.keys(missions).length === 0 ? (
+                    <EmptyState icon={FolderOpen} title="Aucun fichier"
+                      desc="Vos fichiers de missions apparaîtront ici dès que votre pilote les aura déposés."
+                      cta="Commander une mission" to="/quote" />
+                  ) : (
+                    <div className="space-y-2">
+                      {Object.entries(missions).map(([mission, mFiles]) => (
+                        <MissionFolder key={mission} mission={mission} files={mFiles} />
+                      ))}
+                    </div>
+                  )}
+                </Section>
+              )}
+
+            </motion.div>
+          </AnimatePresence>
+        </main>
       </div>
     </div>
   );

@@ -38,7 +38,7 @@
       "items": {
         "type": "string"
       },
-      "description": "URLs des m\u00e9dias attach\u00e9s (images, vid\u00e9os)"
+      "description": "URLs des m\u00e9dias attach\u00e9s (images, vid\u00e9os, GIFs)"
     },
     "hashtags": {
       "type": "array",
@@ -101,6 +101,51 @@
     "migrated_from_discussion": {
       "type": "string",
       "description": "ID de la discussion d'origine si migr\u00e9"
+    },
+    "poll": {
+      "type": "object",
+      "description": "Sondage attach\u00e9 au post",
+      "properties": {
+        "question": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "votes": {
+                "type": "number",
+                "default": 0
+              },
+              "voted_by": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "duration_hours": {
+          "type": "number",
+          "default": 24
+        },
+        "ends_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "total_votes": {
+          "type": "number",
+          "default": 0
+        }
+      }
     }
   },
   "required": [

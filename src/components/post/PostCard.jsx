@@ -11,6 +11,7 @@ import ReactMarkdown from 'react-markdown';
 import { extractHashtags, extractMentions } from '@/lib/hashtags';
 import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
 import usePublicUser from '@/hooks/usePublicUser';
+import PollDisplay from '@/components/post/PollDisplay';
 
 const TRUNCATE_LIMIT = 280;
 
@@ -248,6 +249,9 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
             )}
           </>
         )}
+
+        {/* Poll */}
+        {post.poll && <PollDisplay post={post} currentUser={currentUser} />}
 
         {/* Media */}
         {post.media_urls?.length > 0 && (

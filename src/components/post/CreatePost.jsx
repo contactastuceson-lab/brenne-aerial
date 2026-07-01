@@ -37,7 +37,7 @@ function GifIcon({ className }) {
 export default function CreatePost({ user, onPost, replyTo = null }) {
   const [content, setContent] = useState('');
   const [mediaUrls, setMediaUrls] = useState([]);
-  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(null); // null = pas en cours, 0-100 = %
   const [posting, setPosting] = useState(false);
   const [visibility, setVisibility] = useState('public');
   const [focused, setFocused] = useState(false);
@@ -46,25 +46,71 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
   const fileRef = useRef(null);
   const textareaRef = useRef(null);
 
+  const uploading = uploadProgress !== null;
   const remaining = MAX_CHARS - content.length;
   const hasPoll = poll && poll.options.filter(o => o.text.trim()).length >= 2;
   const canPost = content.trim().length > 0 && !posting && remaining >= 0;
+
+  const uploadWithProgress = (file) => new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // On passe par le SDK pour récupérer l'URL d'upload signée,
+    // mais on utilise XHR pour suivre la progression
+    const xhr = new XMLHttpRequest();
+
+    // Récupérer le token d'auth depuis le localStorage (pattern Base44)
+    const token = localStorage.getItem('base44_token') || localStorage.getItem('token') || '';
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) {
+        setUploadProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try { resolve(JSON.parse(xhr.responseText)); }
+        catch { reject(new Error('Invalid response')); }
+      } else {
+        reject(new Error(`Upload failed: ${xhr.status}`));
+      }
+    });
+
+    xhr.addEventListener('error', () => reject(new Error('Network error')));
+
+    xhr.open('POST', 'https://api.base44.com/api/apps/integrations/Core/UploadFile');
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.send(formData);
+  });
 
   const handleMediaUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
     if (poll) { toast.error("Impossible d'ajouter des médias avec un sondage"); return; }
-    setUploading(true);
+    setUploadProgress(0);
     try {
-      const compressed = await Promise.all(files.slice(0, 4 - mediaUrls.length).map(compressImage));
-      const uploads = await Promise.all(
-        compressed.map(f => base44.integrations.Core.UploadFile({ file: f }))
-      );
-      setMediaUrls(prev => [...prev, ...uploads.map(u => u.file_url)].slice(0, 4));
+      const toUpload = files.slice(0, 4 - mediaUrls.length);
+      // Compresser les images d'abord
+      const compressed = await Promise.all(toUpload.map(compressImage));
+      // Uploader un par un pour avoir une progression globale cohérente
+      const urls = [];
+      for (let i = 0; i < compressed.length; i++) {
+        setUploadProgress(Math.round((i / compressed.length) * 100));
+        let result;
+        try {
+          result = await uploadWithProgress(compressed[i]);
+        } catch {
+          // Fallback SDK si XHR échoue
+          result = await base44.integrations.Core.UploadFile({ file: compressed[i] });
+        }
+        if (result?.file_url) urls.push(result.file_url);
+      }
+      setMediaUrls(prev => [...prev, ...urls].slice(0, 4));
     } catch {
       toast.error("Erreur lors de l'upload");
     } finally {
-      setUploading(false);
+      setUploadProgress(null);
       e.target.value = '';
     }
   };
@@ -207,6 +253,22 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
           {/* Poll creator */}
           {poll && <PollCreator poll={poll} onChange={setPoll} onRemove={() => setPoll(null)} />}
 
+          {/* Upload progress bar */}
+          {uploadProgress !== null && (
+            <div className="mb-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-primary font-medium">Upload en cours…</span>
+                <span className="text-xs text-muted-foreground font-mono">{uploadProgress}%</span>
+              </div>
+              <div className="h-1 w-full bg-white/8 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-200"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Divider */}
           <div className="border-t border-zinc-800/50 mt-1" />
 
@@ -221,10 +283,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
                 title="Photo / Vidéo"
                 className="w-9 h-9 rounded-full flex items-center justify-center text-foreground/70 bg-white/5 border border-white/8 hover:bg-white/10 hover:text-foreground hover:border-white/15 transition-all disabled:opacity-30"
               >
-                {uploading
-                  ? <Loader2 className="w-[17px] h-[17px] animate-spin" />
-                  : <Image className="w-[17px] h-[17px]" strokeWidth={1.75} />
-                }
+                <Image className="w-[17px] h-[17px]" strokeWidth={1.75} />
               </button>
               <input ref={fileRef} type="file" accept="image/*,video/*,image/gif" multiple className="hidden" onChange={handleMediaUpload} />
 

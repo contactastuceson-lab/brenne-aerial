@@ -185,9 +185,9 @@ export default function HomeFeed({ user }) {
       {/* Guest hero */}
       {user === null && <GuestHero />}
 
-      {/* Create post */}
+      {/* Create post — desktop only */}
       {user && (
-        <div className="border-b border-zinc-800/60">
+        <div className="hidden md:block border-b border-zinc-800/60">
           <CreatePost user={user} onPost={() => { setNewCount(0); refetch(); }} />
         </div>
       )}

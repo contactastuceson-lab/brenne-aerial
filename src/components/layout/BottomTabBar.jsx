@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home, Compass, MessageCircle, MoreHorizontal, X,
   Bell, User, LogOut, LayoutDashboard, Bookmark,
   Users, FileText, Calendar, Settings, Heart, Shield,
-  Building2, Star, Award
+  Building2, Star, Award, Plus
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -36,6 +36,7 @@ const MORE_ITEMS = [
 
 export default function BottomTabBar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [showMore, setShowMore] = useState(false);
 
   const { data: user = null } = useQuery({
@@ -196,6 +197,18 @@ export default function BottomTabBar() {
         style={{ background: 'rgba(4,10,20,0.92)', backdropFilter: 'blur(20px)' }}
       >
         <div className="flex items-center px-1 h-16 gap-0.5">
+          {/* Create post button — centered, visible only when logged in */}
+          {user && (
+            <button
+              onClick={() => { setShowMore(false); navigate('/create-post'); }}
+              className="flex flex-col items-center gap-1 flex-1 py-2"
+            >
+              <div className="w-9 h-9 flex items-center justify-center rounded-2xl bg-primary transition-all active:scale-90">
+                <Plus className="w-5 h-5 text-primary-foreground" strokeWidth={2.5} />
+              </div>
+              <span className="font-inter text-[10px] text-muted-foreground">Publier</span>
+            </button>
+          )}
           {MAIN_TABS.map((tab) => {
             const Icon = tab.icon;
             const active = tab.isMore ? showMore : isActive(tab.to);

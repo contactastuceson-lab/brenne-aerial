@@ -16,7 +16,7 @@ function notify(userId) {
 async function fetchUser(userId) {
   if (pending[userId]) return pending[userId];
   const { base44 } = await import('@/api/base44Client');
-  pending[userId] = base44.entities.User.get(userId)
+  pending[userId] = base44.asServiceRole.entities.User.get(userId)
     .then(u => {
       cache[userId] = { data: u, ts: Date.now() };
       notify(userId);

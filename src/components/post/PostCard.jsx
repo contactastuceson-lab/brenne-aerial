@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, Eye, Trash2, Pencil, X, Check } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, Eye, Trash2, Pencil, X, Check, AlertTriangle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -24,6 +25,7 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
   const [editContent, setEditContent] = useState(post.content || '');
   const [editLoading, setEditLoading] = useState(false);
   const [deleted, setDeleted] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const menuRef = useRef(null);
 
   const isOwner = currentUser && currentUser.id === post.author_id;
@@ -35,18 +37,15 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
     return () => document.removeEventListener('mousedown', handleClick);
   }, [menuOpen]);
 
-  const handleDelete = useCallback(async (e) => {
-    e.stopPropagation();
-    setMenuOpen(false);
-    if (!confirm('Supprimer ce post ?')) return;
+  const handleDeleteConfirm = useCallback(async () => {
+    setConfirmDelete(false);
     try {
       await base44.entities.Post.delete(post.id);
       setDeleted(true);
       toast.success('Post supprimé');
       onDeleted?.(post.id);
     } catch (err) {
-      console.error('Delete error:', err);
-      toast.error('Erreur lors de la suppression: ' + (err?.message || err));
+      toast.error('Erreur lors de la suppression');
     }
   }, [post.id, onDeleted]);
 
@@ -191,7 +190,7 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
                     <Pencil className="w-3.5 h-3.5 text-primary" /> Modifier
                   </button>
                   <button
-                    onClick={handleDelete}
+                    onClick={e => { e.stopPropagation(); setMenuOpen(false); setConfirmDelete(true); }}
                     className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Supprimer
@@ -269,6 +268,56 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
             ))}
           </div>
         )}
+
+        {/* Delete confirmation dialog */}
+        <AnimatePresence>
+          {confirmDelete && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+              onClick={e => { e.stopPropagation(); setConfirmDelete(false); }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, y: 12 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                className="w-full max-w-sm rounded-2xl overflow-hidden"
+                style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Top stripe */}
+                <div className="h-1 w-full bg-gradient-to-r from-destructive via-red-400 to-destructive/60" />
+                <div className="px-6 py-6 flex flex-col items-center text-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+                    <Trash2 className="w-6 h-6 text-destructive" />
+                  </div>
+                  <div>
+                    <h3 className="font-grotesk font-bold text-[17px] text-foreground mb-1">Supprimer ce post ?</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">Cette action est irréversible. Le post sera définitivement supprimé.</p>
+                  </div>
+                  <div className="flex gap-3 w-full pt-1">
+                    <button
+                      onClick={() => setConfirmDelete(false)}
+                      className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-white/6 transition-colors"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      onClick={handleDeleteConfirm}
+                      className="flex-1 py-2.5 rounded-xl bg-destructive text-white text-sm font-bold hover:bg-destructive/85 transition-colors"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Actions */}
         <div className="flex items-center gap-5 mt-2" onClick={e => e.stopPropagation()}>

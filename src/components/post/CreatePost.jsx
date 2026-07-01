@@ -66,12 +66,15 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
 
         const compressed = await compressImage(toUpload[i]);
 
-        // Simule progression pendant l'upload (monte de baseProgress+10 à baseProgress+90)
-        let sim = baseProgress + 10;
+        // Simulation de progression — plus rapide pour les vidéos
+        const isVideo = toUpload[i].type.startsWith('video/');
+        const step = isVideo ? 1 : 4;
+        const delay = isVideo ? 80 : 150;
+        let sim = baseProgress + 5;
         const interval = setInterval(() => {
-          sim = Math.min(sim + 4, baseProgress + 88);
+          sim = Math.min(sim + step, baseProgress + 88);
           setUploadProgress(sim);
-        }, 150);
+        }, delay);
 
         const result = await base44.integrations.Core.UploadFile({ file: compressed });
         clearInterval(interval);

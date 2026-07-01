@@ -256,7 +256,7 @@ export default function HomeRightSidebar() {
   }, [recentDiscussions, recentSocialPosts]);
 
   return (
-    <>
+    <div className="flex flex-col w-full">
       <SearchBar allUsers={allUsers} allTags={trendingTags} />
       <SportsWidget />
       <SuggestedUsers users={suggestedUsers} />
@@ -271,6 +271,6 @@ export default function HomeRightSidebar() {
         </div>
         <p className="text-[10px] font-mono text-muted-foreground/15 mt-1.5">© 2026 Brenne Aerial</p>
       </div>
-    </>
+    </div>
   );
 }

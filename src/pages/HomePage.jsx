@@ -23,8 +23,8 @@ export default function HomePage() {
         <HomeFeed user={user} />
       </div>
 
-      {/* Sidebar droite — sticky, ne scroll pas avec le feed */}
-      <div className="hidden xl:flex flex-col w-[300px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-4 px-3" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      {/* Sidebar droite — sticky, scrollable indépendamment */}
+      <div className="hidden xl:flex flex-col w-[300px] flex-shrink-0 sticky top-0 h-screen overflow-y-scroll py-4 px-3" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
         <HomeRightSidebar />
       </div>
     </div>

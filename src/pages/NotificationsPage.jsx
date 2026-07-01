@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Bell, Heart, MessageCircle, UserPlus, CheckCircle, AtSign, CheckCheck, Trash2 } from 'lucide-react';
-import HomeLeftSidebar from '@/components/home/HomeLeftSidebar';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 
 const TYPE_CONFIG = {
@@ -130,16 +129,7 @@ export default function NotificationsPage() {
   const unreadCount = notifs.filter(n => !n.is_read).length;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-[1200px] mx-auto flex gap-0">
-
-        {/* Left sidebar */}
-        <div className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
-          <div className="sticky top-0 h-screen overflow-y-auto">
-            <HomeLeftSidebar user={user} />
-          </div>
-        </div>
-
+    <div className="flex min-h-screen">
         {/* Center feed */}
         <main className="flex-1 min-w-0 border-x border-border/40">
 
@@ -219,12 +209,9 @@ export default function NotificationsPage() {
         </main>
 
         {/* Right sidebar */}
-        <div className="hidden xl:block w-80 flex-shrink-0">
-          <div className="sticky top-0 h-screen overflow-y-auto">
-            <HomeRightSidebar user={user} />
-          </div>
+        <div className="hidden xl:flex flex-col w-[300px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-4 px-3" style={{ scrollbarWidth: 'none' }}>
+          <HomeRightSidebar />
         </div>
-      </div>
     </div>
   );
 }

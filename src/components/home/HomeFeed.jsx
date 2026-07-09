@@ -4,15 +4,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PostCard from '@/components/post/PostCard';
 import CreatePost from '@/components/post/CreatePost';
-import { RefreshCw, Rss, Sparkles, Flame, Clock, ArrowUp, Users, TrendingUp, Zap, ArrowRight, Hash, X } from 'lucide-react';
+import { RefreshCw, Rss, Sparkles, ArrowUp, Users, TrendingUp, Zap, ArrowRight, Hash, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { extractHashtags } from '@/lib/hashtags';
 
 const FILTERS = [
-  { id: 'foryou',   label: 'Pour vous',  icon: Sparkles },
-  { id: 'recent',   label: 'Récents',    icon: Clock },
-  { id: 'popular',  label: 'Populaires', icon: Flame },
-  { id: 'medias',   label: 'Médias',     icon: null },
+  { id: 'foryou',  label: 'Pour vous' },
+  { id: 'recent',  label: 'Récents' },
+  { id: 'popular', label: 'Populaires' },
+  { id: 'medias',  label: 'Médias' },
 ];
 
 function GuestHero() {
@@ -193,21 +193,21 @@ export default function HomeFeed({ user }) {
       )}
 
       {/* Filter bar */}
-      <div className="flex items-center border-b border-border/40 sticky top-0 bg-background/95 backdrop-blur z-10">
-        <div className="flex items-center overflow-x-auto scrollbar-hide flex-1">
+      <div className="flex items-center border-b border-zinc-800/60 sticky top-0 bg-background/95 backdrop-blur-md z-10">
+        <div className="flex items-center flex-1">
           {FILTERS.map((f) => (
             <button key={f.id} onClick={() => handleFilter(f.id)}
-              className={`flex-shrink-0 px-5 py-4 text-sm font-inter font-medium transition-all duration-150 whitespace-nowrap border-b-2 -mb-px ${
+              className={`flex-1 flex justify-center items-center py-4 text-[15px] font-inter font-medium transition-all duration-150 whitespace-nowrap border-b-2 -mb-px relative ${
                 filter === f.id
                   ? 'border-primary text-foreground font-bold'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/3'
+                  : 'border-transparent text-muted-foreground/60 hover:text-foreground hover:bg-white/3'
               }`}>
               {f.label}
             </button>
           ))}
         </div>
         <button onClick={handleRefresh} disabled={isFetching}
-          className="flex-shrink-0 p-4 text-muted-foreground hover:text-foreground transition-all">
+          className="flex-shrink-0 px-4 py-4 text-muted-foreground/50 hover:text-foreground transition-all">
           <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
         </button>
       </div>

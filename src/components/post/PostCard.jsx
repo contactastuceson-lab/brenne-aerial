@@ -264,54 +264,34 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
         )}
 
         {/* Action bar — X style */}
-        <div className="flex items-center mt-2 -ml-1.5" style={{ gap: 0 }} onClick={e => e.stopPropagation()}>
-
-          {/* Reply */}
+        <div className="flex items-center justify-between mt-1 -mx-2" onClick={e => e.stopPropagation()}>
           <ActionBtn
-            icon={<MessageCircle className="w-[18px] h-[18px]" />}
+            icon={<MessageCircle className="w-[17px] h-[17px]" />}
             count={post.replies_count}
-            hoverColor="text-primary"
-            hoverBg="bg-primary/10"
+            color="blue"
             onClick={(e) => { e.stopPropagation(); onReply ? onReply(post) : openPost(); }}
           />
-
-          {/* Repost placeholder */}
           <ActionBtn
-            icon={<Repeat2 className="w-[18px] h-[18px]" />}
-            count={null}
-            hoverColor="text-emerald-400"
-            hoverBg="bg-emerald-400/10"
-            onClick={(e) => { e.stopPropagation(); toast('Bientôt disponible'); }}
+            icon={<Repeat2 className="w-[17px] h-[17px]" />}
+            color="green"
+            onClick={(e) => { e.stopPropagation(); }}
           />
-
-          {/* Like */}
           <ActionBtn
-            icon={<Heart className={`w-[18px] h-[18px] ${liked ? 'fill-current' : ''}`} />}
+            icon={<Heart className={`w-[17px] h-[17px] ${liked ? 'fill-current' : ''}`} />}
             count={likesCount}
             active={liked}
-            activeColor="text-rose-500"
-            hoverColor="text-rose-500"
-            hoverBg="bg-rose-500/10"
+            color="rose"
             onClick={handleLike}
           />
-
-          {/* Views */}
-          {post.views_count > 0 && (
-            <div className="flex items-center gap-1 px-2 py-2 text-muted-foreground/30">
-              <Eye className="w-[17px] h-[17px]" />
-              <span className="text-[13px] font-mono">{post.views_count}</span>
-            </div>
-          )}
-
-          {/* Share */}
-          <div className="ml-auto">
-            <ActionBtn
-              icon={<Upload className="w-[18px] h-[18px]" />}
-              hoverColor="text-primary"
-              hoverBg="bg-primary/10"
-              onClick={handleShare}
-            />
+          <div className="flex items-center gap-1 text-muted-foreground/30 px-2">
+            <Eye className="w-[16px] h-[16px]" />
+            {post.views_count > 0 && <span className="text-[13px] font-mono">{post.views_count}</span>}
           </div>
+          <ActionBtn
+            icon={<Upload className="w-[17px] h-[17px]" />}
+            color="blue"
+            onClick={handleShare}
+          />
         </div>
       </div>
 
@@ -356,18 +336,24 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
   );
 }
 
-// Action button X-style: icon + count, hover ring
-function ActionBtn({ icon, count, onClick, active = false, activeColor = '', hoverColor, hoverBg }) {
+// Action button X-style
+function ActionBtn({ icon, count, onClick, active = false, color = 'blue' }) {
+  const colorMap = {
+    blue:  { text: 'text-primary',    bg: 'hover:bg-primary/10',    hover: 'group-hover/a:text-primary' },
+    green: { text: 'text-emerald-400', bg: 'hover:bg-emerald-400/10', hover: 'group-hover/a:text-emerald-400' },
+    rose:  { text: 'text-rose-500',   bg: 'hover:bg-rose-500/10',   hover: 'group-hover/a:text-rose-500' },
+  };
+  const c = colorMap[color] || colorMap.blue;
   return (
     <button
       onClick={onClick}
-      className={`group/a flex items-center gap-1 px-2 py-2 rounded-full transition-all ${active ? activeColor : 'text-muted-foreground/40'}`}
+      className={`group/a flex items-center gap-1 transition-all ${active ? c.text : 'text-muted-foreground/40'}`}
     >
-      <span className={`p-1.5 rounded-full transition-colors group-hover/a:${hoverBg} group-hover/a:${hoverColor}`}>
-        <span className={`block group-hover/a:${hoverColor} transition-colors`}>{icon}</span>
+      <span className={`p-2 rounded-full transition-colors ${c.bg} ${c.hover}`}>
+        {icon}
       </span>
       {count > 0 && (
-        <span className={`text-[13px] font-inter transition-colors group-hover/a:${hoverColor} ${active ? activeColor : ''}`}>
+        <span className={`text-[13px] font-inter -ml-1 ${c.hover} ${active ? c.text : ''}`}>
           {count}
         </span>
       )}

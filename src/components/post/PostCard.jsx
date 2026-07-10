@@ -46,8 +46,20 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
   const [deleted, setDeleted] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const menuRef = useRef(null);
+  // Ces refs sont la source de vérité pour le like — toujours synchronisées avec le post réel
   const likedByRef = useRef(post.liked_by || []);
   const likesCountRef = useRef(post.likes_count || 0);
+
+  // Sync avec le post externe (rechargement feed) seulement si pas de like en cours
+  useEffect(() => {
+    if (likeLoading) return;
+    const serverLikedBy = post.liked_by || [];
+    const serverCount = post.likes_count || 0;
+    likedByRef.current = serverLikedBy;
+    likesCountRef.current = serverCount;
+    setLiked(currentUser ? serverLikedBy.includes(currentUser.id) : false);
+    setLikesCount(serverCount);
+  }, [post.liked_by, post.likes_count]); // eslint-disable-line
 
   const isOwner = currentUser && currentUser.id === post.author_id;
   const liveUser = usePublicUser(post.author_id);

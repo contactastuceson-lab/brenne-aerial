@@ -194,7 +194,7 @@ export default function BottomTabBar() {
 
       {/* Tab bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/8 pb-safe"
-        style={{ background: 'rgba(4,10,20,0.92)', backdropFilter: 'blur(20px)' }}
+        style={{ background: 'rgba(4,10,20,0.95)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
       >
         <div className="flex items-center px-1 h-16 gap-0.5">
           {/* Create post button — centered, visible only when logged in */}
@@ -203,7 +203,7 @@ export default function BottomTabBar() {
               onClick={() => { setShowMore(false); navigate('/create-post'); }}
               className="flex flex-col items-center gap-1 flex-1 py-2"
             >
-              <div className="w-9 h-9 flex items-center justify-center rounded-2xl bg-primary transition-all active:scale-90">
+              <div className="w-9 h-9 flex items-center justify-center rounded-2xl bg-primary active:scale-90" style={{ transition: 'transform 0.1s ease' }}>
                 <Plus className="w-5 h-5 text-primary-foreground" strokeWidth={2.5} />
               </div>
               <span className="font-inter text-[10px] text-muted-foreground">Publier</span>
@@ -218,30 +218,30 @@ export default function BottomTabBar() {
                 <button key="more" onClick={() => setShowMore(v => !v)}
                   className="flex flex-col items-center gap-1 flex-1 py-2 rounded-2xl transition-all"
                 >
-                  <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${active ? 'bg-primary/20' : ''}`}>
-                    {active ? <X className={`w-5 h-5 text-primary`} /> : <Icon className={`w-5 h-5 text-muted-foreground`} />}
-                  </div>
-                  <span className={`font-inter text-[10px] ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
-                    {active ? 'Fermer' : tab.label}
-                  </span>
+                  <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-colors duration-150 ${active ? 'bg-primary/20' : ''}`}>
+                      {active ? <X className={`w-5 h-5 text-primary`} /> : <Icon className={`w-5 h-5 text-muted-foreground`} />}
+                    </div>
+                    <span className={`font-inter text-[10px] ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                      {active ? 'Fermer' : tab.label}
+                    </span>
                 </button>
               );
             }
 
             return (
               <Link key={tab.to} to={tab.to} onClick={() => setShowMore(false)}
-                className="flex flex-col items-center gap-1 flex-1 py-2 rounded-2xl transition-all relative"
+                className="flex flex-col items-center gap-1 flex-1 py-2 rounded-2xl relative active:opacity-60 transition-opacity duration-100"
               >
                 {tab.to === '/messages' && unreadCount > 0 && user && (
                   <span className="absolute top-1.5 right-[calc(50%-10px)] w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-mono flex items-center justify-center z-10 border border-background">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
-                <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${active ? 'bg-primary/20' : ''}`}>
+                <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-colors duration-150 ${active ? 'bg-primary/20' : ''}`}>
                   <Icon className={`w-5 h-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
                 </div>
                 {active && (
-                  <motion.div layoutId="activeTab" className="absolute -bottom-0.5 w-4 h-0.5 rounded-full bg-primary" />
+                  <div className="absolute -bottom-0.5 w-4 h-0.5 rounded-full bg-primary" />
                 )}
                 <span className={`font-inter text-[10px] ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                   {tab.label}

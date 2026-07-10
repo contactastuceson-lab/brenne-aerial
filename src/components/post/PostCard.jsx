@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, MessageCircle, MoreHorizontal, Eye, Trash2, Pencil, X, Check, Repeat2, Upload } from 'lucide-react';
@@ -34,7 +34,7 @@ function Avatar({ src, name, size = 10, profileLink }) {
   return <div className={cls}>{inner}</div>;
 }
 
-export default function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEdited, isThread = false }) {
+function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEdited, isThread = false }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [liked, setLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
@@ -74,6 +74,8 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
     e.stopPropagation();
     if (!currentUser) { navigate('/login'); return; }
     if (likeLoading) return;
+    // Haptic feedback natif (iOS/Android)
+    if (navigator.vibrate) navigator.vibrate(8);
     setLikeLoading(true);
     const wasLiked = liked;
     const prevLikedBy = likedByRef.current;
@@ -145,7 +147,8 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
 
   return (
     <article
-      className="flex gap-3 px-4 pt-3 pb-0 border-b border-zinc-800/50 hover:bg-white/[0.015] transition-colors cursor-pointer group"
+      className="flex gap-3 px-4 pt-3 pb-0 border-b border-zinc-800/50 hover:bg-white/[0.015] active:bg-white/[0.025] cursor-pointer group"
+      style={{ transition: 'background-color 0.1s ease' }}
       onClick={openPost}
     >
       {/* Left column: avatar + thread line */}
@@ -345,8 +348,10 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
   );
 }
 
+export default memo(PostCard);
+
 // Action button X-style
-function ActionBtn({ icon, count, onClick, active = false, color = 'blue' }) {
+const ActionBtn = memo(function ActionBtn({ icon, count, onClick, active = false, color = 'blue' }) {
   const colorMap = {
     blue:  { text: 'text-primary',    bg: 'hover:bg-primary/10',    hover: 'group-hover/a:text-primary' },
     green: { text: 'text-emerald-400', bg: 'hover:bg-emerald-400/10', hover: 'group-hover/a:text-emerald-400' },
@@ -356,9 +361,10 @@ function ActionBtn({ icon, count, onClick, active = false, color = 'blue' }) {
   return (
     <button
       onClick={onClick}
-      className={`group/a flex items-center gap-1 transition-all ${active ? c.text : 'text-muted-foreground/40'}`}
+      className={`group/a flex items-center gap-1 active:scale-90 ${active ? c.text : 'text-muted-foreground/40'}`}
+      style={{ transition: 'transform 0.1s ease' }}
     >
-      <span className={`p-2 rounded-full transition-colors ${c.bg} ${c.hover}`}>
+      <span className={`p-2 rounded-full transition-colors duration-150 ${c.bg} ${c.hover}`}>
         {icon}
       </span>
       {count > 0 && (
@@ -368,4 +374,4 @@ function ActionBtn({ icon, count, onClick, active = false, color = 'blue' }) {
       )}
     </button>
   );
-}
+});

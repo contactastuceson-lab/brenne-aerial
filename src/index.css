@@ -88,15 +88,48 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    /* Native feel: no tap flash on mobile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   body {
     @apply bg-background text-foreground font-inter;
+    /* iOS overscroll bounce + smooth scroll */
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Smooth font rendering */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeSpeed;
   }
 }
 
 /* Safe area for bottom tab bar */
 main {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Native scroll momentum */
+.overflow-y-auto, .overflow-y-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* PostCard perf: limit paint area */
+article {
+  contain: layout style;
+}
+
+/* Faster button press feedback */
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* GPU acceleration for fixed/sticky elements */
+.sticky, [class*="fixed"] {
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Custom scrollbar */

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -134,8 +134,8 @@ export default function HomeFeed({ user }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleRefresh = () => { setNewCount(0); refetch(); };
-  const handleFilter = (f) => { setFilter(f); setNewCount(0); };
+  const handleRefresh = useCallback(() => { setNewCount(0); refetch(); }, [refetch]);
+  const handleFilter = useCallback((f) => { setFilter(f); setNewCount(0); }, []);
 
   const filteredPosts = useMemo(() => {
     let result = posts;

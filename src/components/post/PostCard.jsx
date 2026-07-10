@@ -152,41 +152,42 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
       {/* Right column: content */}
       <div className="flex-1 min-w-0 pb-3">
 
-        {/* Header: name · @username · time · menu */}
-        <div className="flex items-center gap-1 mb-0.5 w-full overflow-hidden">
-          {/* Name + badge — shrinks first */}
-          <div className="flex items-center gap-1 min-w-0 shrink">
-            {profileLink ? (
-              <Link to={profileLink} onClick={e => e.stopPropagation()}
-                className="font-grotesk font-bold text-[15px] text-foreground hover:underline truncate leading-tight max-w-[120px] sm:max-w-none">
-                {authorName}
-              </Link>
-            ) : (
-              <span className="font-grotesk font-bold text-[15px] text-foreground truncate leading-tight max-w-[120px] sm:max-w-none">{authorName}</span>
-            )}
-            {post.author_id && (
-              <span onClick={e => e.stopPropagation()} className="flex-shrink-0">
-                <VerificationIcons
-                  verifications={liveUser?.verifications || post.author_verifications || []}
-                  size="sm"
-                  user={liveUser || { id: post.author_id }}
-                />
+        {/* Header: 2 lignes sur mobile, 1 ligne sur desktop */}
+        <div className="flex items-start justify-between gap-1 mb-0.5 w-full">
+          <div className="min-w-0 flex-1">
+            {/* Ligne 1 : nom + badges */}
+            <div className="flex items-center gap-1 flex-wrap">
+              {profileLink ? (
+                <Link to={profileLink} onClick={e => e.stopPropagation()}
+                  className="font-grotesk font-bold text-[15px] text-foreground hover:underline leading-tight truncate">
+                  {authorName}
+                </Link>
+              ) : (
+                <span className="font-grotesk font-bold text-[15px] text-foreground leading-tight truncate">{authorName}</span>
+              )}
+              {post.author_id && (
+                <span onClick={e => e.stopPropagation()} className="flex-shrink-0">
+                  <VerificationIcons
+                    verifications={liveUser?.verifications || post.author_verifications || []}
+                    size="sm"
+                    user={liveUser || { id: post.author_id }}
+                  />
+                </span>
+              )}
+            </div>
+            {/* Ligne 2 : @username · temps */}
+            <div className="flex items-center gap-1">
+              <span className="font-inter text-[13px] text-muted-foreground/50 truncate">
+                @{authorUsername || authorName}
               </span>
-            )}
-          </div>
-
-          {/* @username · time — fixed, no shrink */}
-          <div className="flex items-center gap-1 flex-shrink-0 ml-1 overflow-hidden">
-            <span className="font-inter text-[13px] text-muted-foreground/50 truncate max-w-[90px] sm:max-w-none">
-              @{authorUsername || authorName}
-            </span>
-            <span className="text-muted-foreground/30 text-xs">·</span>
-            <span className="text-[13px] text-muted-foreground/45 whitespace-nowrap">{timeAgo}</span>
+              <span className="text-muted-foreground/30 text-xs flex-shrink-0">·</span>
+              <span className="text-[13px] text-muted-foreground/45 whitespace-nowrap flex-shrink-0">{timeAgo}</span>
+            </div>
           </div>
 
           {/* Menu */}
           {isOwner && (
-            <div className="relative ml-auto flex-shrink-0" ref={menuRef} onClick={e => e.stopPropagation()}>
+            <div className="relative flex-shrink-0" ref={menuRef} onClick={e => e.stopPropagation()}>
               <button
                 onClick={e => { e.stopPropagation(); setMenuOpen(o => !o); }}
                 className="p-1.5 rounded-full text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-foreground hover:bg-white/8 transition-all"

@@ -153,31 +153,36 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
       <div className="flex-1 min-w-0 pb-3">
 
         {/* Header: name · @username · time · menu */}
-        <div className="flex items-center gap-1.5 mb-0.5 min-w-0">
-          {profileLink ? (
-            <Link to={profileLink} onClick={e => e.stopPropagation()}
-              className="font-grotesk font-bold text-[15px] text-foreground hover:underline truncate leading-tight">
-              {authorName}
-            </Link>
-          ) : (
-            <span className="font-grotesk font-bold text-[15px] text-foreground truncate leading-tight">{authorName}</span>
-          )}
+        <div className="flex items-center gap-1 mb-0.5 w-full overflow-hidden">
+          {/* Name + badge — shrinks first */}
+          <div className="flex items-center gap-1 min-w-0 shrink">
+            {profileLink ? (
+              <Link to={profileLink} onClick={e => e.stopPropagation()}
+                className="font-grotesk font-bold text-[15px] text-foreground hover:underline truncate leading-tight max-w-[120px] sm:max-w-none">
+                {authorName}
+              </Link>
+            ) : (
+              <span className="font-grotesk font-bold text-[15px] text-foreground truncate leading-tight max-w-[120px] sm:max-w-none">{authorName}</span>
+            )}
+            {post.author_id && (
+              <span onClick={e => e.stopPropagation()} className="flex-shrink-0">
+                <VerificationIcons
+                  verifications={liveUser?.verifications || post.author_verifications || []}
+                  size="sm"
+                  user={liveUser || { id: post.author_id }}
+                />
+              </span>
+            )}
+          </div>
 
-          {post.author_id && (
-            <span onClick={e => e.stopPropagation()} className="flex-shrink-0">
-              <VerificationIcons
-                verifications={liveUser?.verifications || post.author_verifications || []}
-                size="sm"
-                user={liveUser || { id: post.author_id }}
-              />
+          {/* @username · time — fixed, no shrink */}
+          <div className="flex items-center gap-1 flex-shrink-0 ml-1 overflow-hidden">
+            <span className="font-inter text-[13px] text-muted-foreground/50 truncate max-w-[90px] sm:max-w-none">
+              @{authorUsername || authorName}
             </span>
-          )}
-
-          <span className="font-inter text-[14px] text-muted-foreground/50 truncate flex-shrink-0">
-            @{authorUsername || authorName}
-          </span>
-          <span className="text-muted-foreground/30 text-sm flex-shrink-0">·</span>
-          <span className="text-[14px] text-muted-foreground/45 flex-shrink-0 whitespace-nowrap">{timeAgo}</span>
+            <span className="text-muted-foreground/30 text-xs">·</span>
+            <span className="text-[13px] text-muted-foreground/45 whitespace-nowrap">{timeAgo}</span>
+          </div>
 
           {/* Menu */}
           {isOwner && (

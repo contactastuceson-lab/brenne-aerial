@@ -34,20 +34,16 @@ function AffiliationChip({ affiliation, size, organizationUser }) {
       <SheetTrigger asChild>
         <button
           title={`Affilié à ${affiliation.organizationName}`}
-          className="inline-flex items-center justify-center rounded-md p-0.5 bg-gradient-to-br from-primary/40 via-primary/30 to-primary/20 shadow-sm transition duration-200 ease-out hover:scale-[1.08] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex items-center justify-center rounded-[4px] overflow-hidden transition duration-150 hover:scale-110 focus-visible:outline-none"
+          style={{ width: s, height: s }}
         >
-          <div
-            className="relative flex items-center justify-center rounded-md bg-background border border-border overflow-hidden"
-            style={{ width: s, height: s }}
-          >
-            {affiliation.organizationAvatarUrl ? (
-              <img src={affiliation.organizationAvatarUrl} alt={affiliation.organizationName || 'Organisation'} className="h-full w-full object-cover" />
-            ) : (
-              <span className="font-semibold text-primary" style={{ fontSize: iconSize }}>
-                {(affiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}
-              </span>
-            )}
-          </div>
+          {affiliation.organizationAvatarUrl ? (
+            <img src={affiliation.organizationAvatarUrl} alt={affiliation.organizationName || 'Organisation'} className="h-full w-full object-cover" />
+          ) : (
+            <span className="w-full h-full flex items-center justify-center bg-primary/20 font-bold text-primary" style={{ fontSize: iconSize }}>
+              {(affiliation.organizationName || 'ORG').slice(0, 1).toUpperCase()}
+            </span>
+          )}
         </button>
       </SheetTrigger>
       <SheetContent
@@ -108,22 +104,22 @@ function MultiAffiliationChip({ affiliations, size }) {
       <SheetTrigger asChild>
         <button
           title={`${affiliations.length} affiliations officielles`}
-          className="inline-flex items-center gap-0.5 rounded-md p-0.5 bg-gradient-to-br from-primary/40 via-primary/30 to-primary/20 shadow-sm transition duration-200 ease-out hover:scale-[1.05] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex items-center gap-0.5 transition duration-150 hover:scale-105 focus-visible:outline-none"
         >
           <div
-            className="relative flex items-center justify-center rounded-md bg-background border border-border overflow-hidden"
+            className="relative flex items-center justify-center rounded-[4px] overflow-hidden"
             style={{ width: s, height: s }}
           >
             {affiliations[0].organizationAvatarUrl ? (
               <img src={affiliations[0].organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
             ) : (
-              <span className="font-semibold text-primary" style={{ fontSize: iconSize }}>
+              <span className="w-full h-full flex items-center justify-center bg-primary/20 font-bold text-primary" style={{ fontSize: iconSize }}>
                 {(affiliations[0].organizationName || 'ORG').slice(0, 1).toUpperCase()}
               </span>
             )}
           </div>
           <span
-            className="font-mono font-bold text-primary bg-background border border-border rounded-md flex items-center justify-center"
+            className="font-mono font-bold text-primary rounded-[4px] bg-secondary flex items-center justify-center"
             style={{ fontSize: iconSize - 1, width: s, height: s }}
           >
             +{extra}

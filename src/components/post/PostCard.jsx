@@ -164,21 +164,21 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
       {/* Right column: content */}
       <div className="flex-1 min-w-0 pb-3">
 
-        {/* Header: 2 lignes sur mobile, 1 ligne sur desktop */}
+        {/* Header: style X — nom bold + badge inline · @username · temps */}
         <div className="flex items-start justify-between gap-1 mb-0.5 w-full">
           <div className="min-w-0 flex-1">
-            {/* Ligne 1 : nom + badges */}
-            <div className="flex items-center gap-1 flex-wrap">
+            {/* Ligne unique : nom + badge + @username · temps */}
+            <div className="flex items-center gap-0 flex-wrap leading-snug">
               {profileLink ? (
                 <Link to={profileLink} onClick={e => e.stopPropagation()}
-                  className="font-grotesk font-bold text-[15px] text-foreground hover:underline leading-tight truncate">
+                  className="font-inter font-bold text-[15px] text-foreground hover:underline mr-0.5">
                   {authorName}
                 </Link>
               ) : (
-                <span className="font-grotesk font-bold text-[15px] text-foreground leading-tight truncate">{authorName}</span>
+                <span className="font-inter font-bold text-[15px] text-foreground mr-0.5">{authorName}</span>
               )}
               {post.author_id && (
-                <span onClick={e => e.stopPropagation()} className="flex-shrink-0">
+                <span onClick={e => e.stopPropagation()} className="flex-shrink-0 mr-1.5 scale-[0.82] origin-left" style={{display:'inline-flex',alignItems:'center'}}>
                   <VerificationIcons
                     verifications={liveUser?.verifications || post.author_verifications || []}
                     size="sm"
@@ -186,14 +186,9 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
                   />
                 </span>
               )}
-            </div>
-            {/* Ligne 2 : @username · temps */}
-            <div className="flex items-center gap-1">
-              <span className="font-inter text-[13px] text-muted-foreground/50 truncate">
-                @{authorUsername || authorName}
-              </span>
-              <span className="text-muted-foreground/30 text-xs flex-shrink-0">·</span>
-              <span className="text-[13px] text-muted-foreground/45 whitespace-nowrap flex-shrink-0">{timeAgo}</span>
+              <span className="font-inter text-[14px] text-muted-foreground/55 truncate">@{authorUsername || authorName}</span>
+              <span className="text-muted-foreground/35 text-[13px] mx-1 flex-shrink-0">·</span>
+              <span className="font-inter text-[14px] text-muted-foreground/55 whitespace-nowrap flex-shrink-0">{timeAgo}</span>
             </div>
           </div>
 

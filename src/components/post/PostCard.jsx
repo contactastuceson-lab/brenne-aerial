@@ -1,8 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Eye, Trash2, Pencil, X, Check, Repeat2, Upload } from 'lucide-react';
+import { Heart, MessageCircle, MoreHorizontal, Eye, Trash2, Pencil, X, Check, Repeat2, Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -35,6 +36,7 @@ function Avatar({ src, name, size = 10, profileLink }) {
 
 export default function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEdited, isThread = false }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [liked, setLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
   const [likeLoading, setLikeLoading] = useState(false);
@@ -46,20 +48,9 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
   const [deleted, setDeleted] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const menuRef = useRef(null);
-  // Ces refs sont la source de vérité pour le like — toujours synchronisées avec le post réel
+  // Refs pour éviter les race conditions — source de vérité locale
   const likedByRef = useRef(post.liked_by || []);
   const likesCountRef = useRef(post.likes_count || 0);
-
-  // Sync avec le post externe (rechargement feed) seulement si pas de like en cours
-  useEffect(() => {
-    if (likeLoading) return;
-    const serverLikedBy = post.liked_by || [];
-    const serverCount = post.likes_count || 0;
-    likedByRef.current = serverLikedBy;
-    likesCountRef.current = serverCount;
-    setLiked(currentUser ? serverLikedBy.includes(currentUser.id) : false);
-    setLikesCount(serverCount);
-  }, [post.liked_by, post.likes_count]); // eslint-disable-line
 
   const isOwner = currentUser && currentUser.id === post.author_id;
   const liveUser = usePublicUser(post.author_id);
@@ -95,6 +86,11 @@ export default function PostCard({ post, currentUser, onReply, compact = false, 
     likesCountRef.current = newCount;
     try {
       await base44.entities.Post.update(post.id, { liked_by: newLikedBy, likes_count: newCount });
+      // Met à jour le cache TanStack Query pour éviter que le refetch écrase l'état local
+      queryClient.setQueriesData({ queryKey: ['home-feed-posts'] }, (old) => {
+        if (!Array.isArray(old)) return old;
+        return old.map(p => p.id === post.id ? { ...p, liked_by: newLikedBy, likes_count: newCount } : p);
+      });
       if (!wasLiked && post.author_id && post.author_id !== currentUser.id) {
         const users = await base44.entities.User.filter({ id: post.author_id }).catch(() => []);
         if (users[0]?.email) notify({ type: 'LIKE', sender: currentUser, receiverEmail: users[0].email, receiverId: post.author_id, postId: post.id, postExcerpt: post.content, link: `/post/${post.id}` });

@@ -1,16 +1,16 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import LazyMedia from '@/components/post/LazyMedia';
 import {
   Heart, MessageCircle, Repeat2, Bookmark, Share2, Eye,
   Flag, UserPlus, Link as LinkIcon, ChevronDown, ChevronUp,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import PostAuthorHeader from '@/components/shared/PostAuthorHeader';
 import usePublicUser from '@/hooks/usePublicUser';
-import { extractHashtags } from '@/lib/hashtags';
-import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 function AvatarColumn({ authorId, authorAvatar, authorDisplayName, profileLink }) {
   const liveUser = usePublicUser(authorId);
@@ -60,26 +60,54 @@ function HashtagText({ text }) {
 }
 
 export default function HomePostCard({ post, currentUser, index = 0 }) {
-  const [liked, setLiked]       = useState(false);
-  const [likes, setLikes]       = useState(Math.floor(Math.random() * 12));
+  const [liked, setLiked]       = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
+  const [likes, setLikes]       = useState(post.likes_count || 0);
+  const [likeLoading, setLikeLoading] = useState(false);
   const [saved, setSaved]       = useState(false);
   const [reposted, setReposted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
 
+  // Refs pour éviter les race conditions
+  const likedByRef = useRef(post.liked_by || []);
+  const likesCountRef = useRef(post.likes_count || 0);
+
   const profileLink = post.author_username ? `/@${post.author_username}` : null;
   const isLong = post.content?.length > 400;
   const displayContent = isLong && collapsed ? post.content.slice(0, 400) + '…' : post.content;
 
-  const handleLike = () => {
-    setLiked(v => !v);
-    setLikes(v => liked ? Math.max(0, v - 1) : v + 1);
-  };
+  const handleLike = useCallback(async (e) => {
+    e?.stopPropagation();
+    if (!currentUser) return;
+    if (likeLoading) return;
+    setLikeLoading(true);
+    const wasLiked = liked;
+    const prevLikedBy = likedByRef.current;
+    const prevCount = likesCountRef.current;
+    const newLikedBy = wasLiked
+      ? prevLikedBy.filter(id => id !== currentUser.id)
+      : [...prevLikedBy, currentUser.id];
+    const newCount = wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1;
+    setLiked(!wasLiked);
+    setLikes(newCount);
+    likedByRef.current = newLikedBy;
+    likesCountRef.current = newCount;
+    try {
+      await base44.entities.Post.update(post.id, { liked_by: newLikedBy, likes_count: newCount });
+    } catch {
+      setLiked(wasLiked);
+      setLikes(prevCount);
+      likedByRef.current = prevLikedBy;
+      likesCountRef.current = prevCount;
+    } finally {
+      setLikeLoading(false);
+    }
+  }, [liked, likeLoading, currentUser, post.id]);
 
   const handleShare = () => {
-    const url = `${window.location.origin}/forum/${post.id}`;
-    if (navigator.share) navigator.share({ title: post.title, url });
-    else { navigator.clipboard?.writeText(url); import('sonner').then(({ toast }) => toast.success('Lien copié !')); }
+    const url = `${window.location.origin}/post/${post.id}`;
+    if (navigator.share) navigator.share({ url });
+    else { navigator.clipboard?.writeText(url); toast.success('Lien copié !'); }
   };
 
   return (
@@ -198,7 +226,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
           >
             <Repeat2 className="w-4 h-4" />
           </button>
-          <button onClick={handleLike}
+          <button onClick={handleLike} disabled={likeLoading}
             className={`flex items-center gap-1.5 p-2 rounded-full transition-all text-sm ${liked ? 'text-rose-400' : 'text-muted-foreground/60 hover:text-rose-400 hover:bg-rose-400/10'}`}
           >
             <Heart className={`w-4 h-4 ${liked ? 'fill-rose-400' : ''}`} />

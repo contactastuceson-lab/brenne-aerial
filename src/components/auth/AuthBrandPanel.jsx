@@ -18,7 +18,7 @@ export default function AuthBrandPanel({ mode = 'login' }) {
         <p className="mt-6 max-w-sm font-inter text-base leading-relaxed text-muted-foreground">{isRegister ? 'Partagez vos idées, créez des liens et suivez les conversations qui vous inspirent.' : 'Connectez-vous pour publier, échanger et explorer tout ce qui anime eza.'}</p>
         <div className="mt-10 space-y-4">{[[MessageCircle, 'Partagez librement'], [Users, 'Découvrez des communautés'], [Sparkles, 'Faites rayonner votre profil']].map(([Icon, label]) => <div key={label} className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/20 bg-primary/10"><Icon className="h-4 w-4 text-primary" /></span><span className="font-inter text-sm text-foreground/85">{label}</span></div>)}</div>
       </div>
-      <p className="relative font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">eza · des personnes, des idées, des liens</p>
+      <div className="relative"><div className="mb-6 grid grid-cols-3 gap-3 border-y border-border/70 py-5">{[['Communauté', 'Partagez vos idées'], ['Échanges', 'Restez connecté'], ['Profils', 'Affirmez-vous']].map(([title, text]) => <div key={title}><p className="font-grotesk text-sm font-bold text-primary">{title}</p><p className="mt-1 font-inter text-xs leading-relaxed text-muted-foreground">{text}</p></div>)}</div><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">eza · des personnes, des idées, des liens</p></div>
     </aside>
   );
 }

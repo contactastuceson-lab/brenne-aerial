@@ -409,20 +409,20 @@ export default function PublicProfilePage() {
               </div>
             </div>
 
-            {/* Name + username */}
-            <h1
-              className="font-grotesk font-bold text-2xl sm:text-3xl mb-1"
-              style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-            >
-              {user.display_name || user.full_name}
-            </h1>
-
-            <div className="flex items-center gap-2 mb-3">
-              {user.username && (
-                <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
-              )}
+            {/* Name + verification badge + username */}
+            <div className="flex items-center gap-1.5 mb-1 min-w-0">
+              <h1
+                className="min-w-0 truncate font-grotesk font-bold text-2xl sm:text-3xl"
+                style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+              >
+                {user.display_name || user.full_name}
+              </h1>
               <VerificationIcons verifications={user.verifications} size="md" user={user} />
             </div>
+
+            {user.username && (
+              <p className="font-mono text-sm text-muted-foreground mb-3">@{user.username}</p>
+            )}
 
             {/* Role chip */}
             {user.role && roleCfg && (

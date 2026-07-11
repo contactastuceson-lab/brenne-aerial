@@ -7,6 +7,7 @@ import CreatePost from '@/components/post/CreatePost';
 import { RefreshCw, Rss, Sparkles, ArrowUp, Users, TrendingUp, Zap, ArrowRight, Hash, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { extractHashtags } from '@/lib/hashtags';
+import MobileFeedHeader from '@/components/home/MobileFeedHeader';
 
 const FILTERS = [
   { id: 'foryou',  label: 'Pour vous' },
@@ -180,7 +181,8 @@ export default function HomeFeed({ user }) {
   }, [posts, urlTag, filter]);
 
   return (
-    <main className="w-full max-w-[680px] min-w-0 border-r border-zinc-800/60">
+    <main className="w-full max-w-[680px] min-w-0 md:border-r md:border-zinc-800/60">
+      <MobileFeedHeader user={user} />
 
       {/* Guest hero */}
       {user === null && <GuestHero />}

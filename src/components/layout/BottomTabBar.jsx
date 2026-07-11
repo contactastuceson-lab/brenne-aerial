@@ -193,7 +193,7 @@ export default function BottomTabBar() {
       </AnimatePresence>
 
       {/* Tab bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/8 pb-safe"
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/8 pb-[env(safe-area-inset-bottom)]"
         style={{ background: 'rgba(4,10,20,0.95)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
       >
         <div className="flex items-center px-1 h-16 gap-0.5">
@@ -251,7 +251,7 @@ export default function BottomTabBar() {
           })}
         </div>
       </div>
-      <div className="h-16" />
+      <div className="h-[calc(4rem+env(safe-area-inset-bottom))]" />
     </>
   );
 }

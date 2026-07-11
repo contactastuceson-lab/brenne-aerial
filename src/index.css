@@ -106,9 +106,27 @@
   }
 }
 
-/* Safe area for bottom tab bar */
+/* Safe areas and app-like viewport behavior */
 main {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (max-width: 767px) {
+  html, body, #root {
+    min-height: 100dvh;
+  }
+
+  button, a, input, textarea, select {
+    -webkit-touch-callout: none;
+  }
+
+  button:active, a:active {
+    transform: scale(0.97);
+  }
+
+  input, textarea, select {
+    font-size: 16px;
+  }
 }
 
 /* Native scroll momentum */

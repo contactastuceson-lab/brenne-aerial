@@ -25,12 +25,13 @@ const TWITTER_SEAL = "M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91
 
 // ── Affiliation avatar chip (single org) ────────────────
 function AffiliationChip({ affiliation, size, organizationUser }) {
+  const [open, setOpen] = useState(false);
   const s = size === 'sm' ? 20 : 24;
   const iconSize = size === 'sm' ? 10 : 12;
   const orgUsername = organizationUser?.username ? `@${organizationUser.username}` : null;
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <button
           title={`Affilié à ${affiliation.organizationName}`}
@@ -49,6 +50,7 @@ function AffiliationChip({ affiliation, size, organizationUser }) {
       <SheetContent
         side="bottom"
         hideClose
+        onPointerDownOutside={() => setOpen(false)}
         className="fixed inset-x-0 bottom-0 w-full h-auto min-h-[22vh] max-h-[70vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden p-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
       >
         <div className="w-full bg-gradient-to-r from-primary/60 via-primary/40 to-amber-400/20 p-2">
@@ -98,9 +100,10 @@ function MultiAffiliationChip({ affiliations, size }) {
   const iconSize = size === 'sm' ? 10 : 12;
   const extra = affiliations.length - 1;
   const [selectedAff, setSelectedAff] = useState(null);
+  const [open, setOpen] = useState(false);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={(nextOpen) => { setOpen(nextOpen); if (!nextOpen) setSelectedAff(null); }}>
       <SheetTrigger asChild>
         <button
           title={`${affiliations.length} affiliations officielles`}
@@ -129,6 +132,7 @@ function MultiAffiliationChip({ affiliations, size }) {
       <SheetContent
         side="bottom"
         hideClose
+        onPointerDownOutside={() => setOpen(false)}
         className="fixed inset-x-0 bottom-0 w-full h-auto max-h-[80vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden p-0 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
       >
         {/* Header */}

@@ -147,7 +147,7 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border max-w-2xl w-[95vw] max-h-[85vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="bg-card border-border w-screen h-screen max-w-none max-h-none sm:w-[680px] sm:h-auto sm:max-h-[90vh] sm:rounded-xl rounded-none overflow-y-auto p-4 sm:p-6 fixed inset-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 translate-x-0 translate-y-0">
         <DialogHeader>
           <DialogTitle className="font-grotesk font-bold">Modifier le profil — {user.full_name}</DialogTitle>
         </DialogHeader>

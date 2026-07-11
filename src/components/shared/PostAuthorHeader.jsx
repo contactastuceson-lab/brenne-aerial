@@ -112,12 +112,12 @@ export default function PostAuthorHeader({
             {profileLink ? (
               <Link
                 to={profileLink}
-                className="min-w-0 max-w-[7rem] sm:max-w-[13rem] truncate font-grotesk font-bold text-sm text-foreground hover:text-primary transition-colors leading-tight"
+                className="flex-shrink-0 font-grotesk font-bold text-sm text-foreground hover:text-primary transition-colors leading-tight"
               >
                 {displayName}
               </Link>
             ) : (
-              <span className="min-w-0 max-w-[7rem] sm:max-w-[13rem] truncate font-grotesk font-bold text-sm text-foreground leading-tight">{displayName}</span>
+              <span className="flex-shrink-0 font-grotesk font-bold text-sm text-foreground leading-tight">{displayName}</span>
             )}
 
             {/* Badges de vérification — toujours live */}

@@ -41,13 +41,13 @@ Deno.serve(async (req) => {
   <div class="container">
     <div class="header">
       <h1>❤️ Merci pour votre don</h1>
-      <p>Brenne Aerial</p>
+      <p>eza</p>
     </div>
     <div class="content">
       <h2 style="margin-top: 0; color: #1f2937;">Bonjour ${userName},</h2>
       
       <p style="font-size: 15px; color: #4b5563; line-height: 1.6; margin: 15px 0;">
-        Nous avons bien reçu votre don. Merci infiniment de votre soutien ! Votre contribution nous aide à continuer notre mission et à innover dans le domaine des solutions drone.
+        Nous avons bien reçu votre don. Merci infiniment de votre soutien ! Votre contribution nous aide à continuer notre mission et à innover dans le domaine des la communauté.
       </p>
 
       <!-- Récépissé du don -->
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
         </div>
         <div class="receipt-item">
           <span class="receipt-item-label">Bénéficiaire</span>
-          <span class="receipt-item-value">Brenne Aerial</span>
+          <span class="receipt-item-value">eza</span>
         </div>
         <div class="receipt-item">
           <span class="receipt-item-label">Date</span>
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
       <div class="thank-you">
         <p><strong>✨ Votre impact immédiat :</strong></p>
         <p style="margin: 10px 0 0 0; color: #4b5563; font-size: 14px;">
-          Vous êtes maintenant un bienfaiteur officiel de Brenne Aerial et recevrez un badge spécial sur votre profil !
+          Vous êtes maintenant un bienfaiteur officiel de eza et recevrez un badge spécial sur votre profil !
         </p>
       </div>
 
@@ -97,17 +97,17 @@ Deno.serve(async (req) => {
       </div>
 
       <p style="margin: 25px 0 0 0; color: #4b5563; font-size: 14px; text-align: center;">
-        Des questions ? Répondez directement à cet email ou contactez-nous à <strong>contact@brenne-aerial.fr</strong>
+        Des questions ? Répondez directement à cet email ou contactez-nous à <strong>contact@eza.social</strong>
       </p>
 
       <p style="margin-top: 30px; margin-bottom: 0; color: #1f2937; font-weight: 600;">
-        Avec toute notre gratitude,<br><strong style="color: #38aadc;">L'équipe Brenne Aerial</strong>
+        Avec toute notre gratitude,<br><strong style="color: #38aadc;">L'équipe eza</strong>
       </p>
     </div>
     <div class="footer">
-      <p>Brenne Aerial — Solutions drone professionnelles</p>
+      <p>eza — Solutions drone professionnelles</p>
       <p><a href="${Deno.env.get('APP_URL')}/donation">Faire un autre don →</a></p>
-      <p>© 2026 Brenne Aerial. Tous droits réservés.</p>
+      <p>© 2026 eza. Tous droits réservés.</p>
     </div>
   </div>
 </body>
@@ -116,7 +116,8 @@ Deno.serve(async (req) => {
 
     await base44.integrations.Core.SendEmail({
       to: userEmail,
-      subject: '❤️ Merci pour votre don à Brenne Aerial',
+      from_name: 'eza',
+      subject: '❤️ Merci pour votre don à eza',
       body: htmlContent,
     });
 

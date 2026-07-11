@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       users.map(u =>
         base44.integrations.Core.SendEmail({
           to: u.email,
-          from_name: 'Brenne Aerial',
+          from_name: 'eza',
           subject: `📢 ${announcement.title || 'Nouvelle annonce'}`,
           body: `
 <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a1628; color: #e8edf5; border-radius: 12px; overflow: hidden;">
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     ${announcement.link_url ? `<a href="${announcement.link_url}" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #1a6fa8, #0e5a8a); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 13px;">${announcement.link_label || 'En savoir plus'}</a>` : ''}
   </div>
   <div style="padding: 16px 36px; background: #060e1a; text-align: center;">
-    <p style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.2);">Brenne Aerial • ${new Date().toLocaleDateString('fr-FR')}</p>
+    <p style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.2);">eza • ${new Date().toLocaleDateString('fr-FR')}</p>
   </div>
 </div>`,
         })
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     // Also send web push to all subscribers
     const title = `📢 ${announcement.title || 'Nouvelle annonce'}`;
     const body = announcement.content.slice(0, 120) + (announcement.content.length > 120 ? '…' : '');
-    const url = announcement.link_url || 'https://brenneaerial.fr';
+    const url = announcement.link_url || Deno.env.get('APP_URL') || 'https://eza.social';
     await base44.asServiceRole.functions.invoke('sendBroadcastPush', { title, body, url }).catch(() => {});
 
     return Response.json({ success: true, sentTo: users.length });

@@ -1,22 +1,22 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const APP_URL = 'https://brenneaerial.fr';
+const APP_URL = Deno.env.get('APP_URL') || 'https://eza.social';
 
 const BADGE_TEMPLATES = {
   // ── VÉRIFICATIONS ──────────────────────────────────────────────────────────
   verified: {
-    subject: '✅ Vous êtes maintenant Vérifié sur Brenne Aerial',
+    subject: '✅ Vous êtes maintenant Vérifié sur eza',
     accentColor: '#38aadc',
     emoji: '✅',
     headline: 'Compte Vérifié',
     subline: 'Votre identité a été confirmée par notre équipe.',
-    message: `Bonne nouvelle ! Votre compte vient d'être vérifié manuellement par l'équipe Brenne Aerial. Ce badge bleu confirme que vous êtes bien la personne que vous prétendez être sur la plateforme.`,
+    message: `Bonne nouvelle ! Votre compte vient d'être vérifié manuellement par l'équipe eza. Ce badge bleu confirme que vous êtes bien la personne que vous prétendez être sur la plateforme.`,
     highlight: 'Votre badge ✅ Vérifié est désormais visible sur votre profil et dans la communauté.',
     cta: 'Voir mon profil',
     tone: 'standard',
   },
   pro: {
-    subject: '💎 Badge Pro activé — Brenne Aerial',
+    subject: '💎 Badge Pro activé — eza',
     accentColor: '#10b981',
     emoji: '💎',
     headline: 'Badge Pro',
@@ -27,29 +27,29 @@ const BADGE_TEMPLATES = {
     tone: 'standard',
   },
   certified: {
-    subject: '🏅 Certification officielle obtenue — Brenne Aerial',
+    subject: '🏅 Certification officielle obtenue — eza',
     accentColor: '#f59e0b',
     emoji: '🏅',
     headline: 'Badge Certifié',
     subline: 'Votre expertise est officiellement reconnue.',
-    message: `Votre dossier a été étudié avec soin. Vos références, votre audience et votre parcours ont convaincu notre équipe : vous êtes désormais officiellement Certifié sur Brenne Aerial. Une distinction réservée aux profils d'exception.`,
+    message: `Votre dossier a été étudié avec soin. Vos références, votre audience et votre parcours ont convaincu notre équipe : vous êtes désormais officiellement Certifié sur eza. Une distinction réservée aux profils d'exception.`,
     highlight: 'Badge 🏅 Certifié affiché sur votre profil — seulement pour les meilleurs.',
     cta: 'Voir mon profil certifié',
     tone: 'premium',
   },
   official: {
-    subject: '🏢 Badge Officiel — Votre entité est reconnue sur Brenne Aerial',
+    subject: '🏢 Badge Officiel — Votre entité est reconnue sur eza',
     accentColor: '#a855f7',
     emoji: '🏢',
     headline: 'Badge Officiel',
     subline: 'Votre organisation est officiellement référencée.',
-    message: `Votre entité, marque ou organisation a été vérifiée et acceptée par l'équipe Brenne Aerial. Le badge Officiel garantit à la communauté l'authenticité et la légitimité de votre présence sur la plateforme.`,
+    message: `Votre entité, marque ou organisation a été vérifiée et acceptée par l'équipe eza. Le badge Officiel garantit à la communauté l'authenticité et la légitimité de votre présence sur la plateforme.`,
     highlight: 'Badge 🏢 Officiel activé — visible par toute la communauté.',
     cta: 'Voir le profil officiel',
     tone: 'premium',
   },
   supreme: {
-    subject: '👑 Vous avez été élevé au rang Suprême — Brenne Aerial',
+    subject: '👑 Vous avez été élevé au rang Suprême — eza',
     accentColor: '#f59e0b',
     emoji: '👑',
     headline: 'SUPRÊME',
@@ -66,25 +66,25 @@ const BADGE_TEMPLATES = {
     accentColor: '#f59e0b',
     emoji: '⭐',
     headline: 'Badge Fondateur',
-    subline: 'Vous faites partie de l\'histoire de Brenne Aerial.',
-    message: `Ce badge est une marque de reconnaissance pour celles et ceux qui ont cru en Brenne Aerial dès ses débuts. Vous faites partie des membres qui ont contribué à bâtir cette communauté. Merci d'être là.`,
+    subline: 'Vous faites partie de l\'histoire de eza.',
+    message: `Ce badge est une marque de reconnaissance pour celles et ceux qui ont cru en eza dès ses débuts. Vous faites partie des membres qui ont contribué à bâtir cette communauté. Merci d'être là.`,
     highlight: 'Badge ⭐ Fondateur — une distinction rare et permanente.',
     cta: 'Voir mon profil',
     tone: 'premium',
   },
   'Collaborateur': {
-    subject: '🤝 Vous êtes désormais Collaborateur officiel — Brenne Aerial',
+    subject: '🤝 Vous êtes désormais Collaborateur officiel — eza',
     accentColor: '#38aadc',
     emoji: '🤝',
     headline: 'Badge Collaborateur',
-    subline: 'Vous collaborez officiellement avec Brenne Aerial.',
-    message: `Notre équipe vous a attribué le badge Collaborateur. Cela signifie que vous travaillez ou avez contribué de manière significative avec Brenne Aerial. Nous sommes ravis de cette collaboration.`,
+    subline: 'Vous collaborez officiellement avec eza.',
+    message: `Notre équipe vous a attribué le badge Collaborateur. Cela signifie que vous travaillez ou avez contribué de manière significative avec eza. Nous sommes ravis de cette collaboration.`,
     highlight: 'Badge Collaborateur visible sur votre profil.',
     cta: 'Voir mon profil',
     tone: 'standard',
   },
   'VIP': {
-    subject: '🌟 Statut VIP activé sur Brenne Aerial',
+    subject: '🌟 Statut VIP activé sur eza',
     accentColor: '#a855f7',
     emoji: '🌟',
     headline: 'Badge VIP',
@@ -95,45 +95,45 @@ const BADGE_TEMPLATES = {
     tone: 'premium',
   },
   'Admin': {
-    subject: '🛡️ Droits Administrateur attribués — Brenne Aerial',
+    subject: '🛡️ Droits Administrateur attribués — eza',
     accentColor: '#ef4444',
     emoji: '🛡️',
     headline: 'Badge Admin',
     subline: 'Vous disposez des droits administrateur.',
-    message: `Les accès administrateur vous ont été confiés sur la plateforme Brenne Aerial. Cette responsabilité implique la gestion et la modération de la communauté. Merci pour votre engagement.`,
+    message: `Les accès administrateur vous ont été confiés sur la plateforme eza. Cette responsabilité implique la gestion et la modération de la communauté. Merci pour votre engagement.`,
     highlight: 'Accès admin activé sur votre compte.',
     cta: 'Voir mon profil',
     tone: 'standard',
   },
   'Pilote': {
-    subject: '✈️ Badge Pilote attribué — Brenne Aerial',
+    subject: '✈️ Badge Pilote attribué — eza',
     accentColor: '#38aadc',
     emoji: '✈️',
     headline: 'Badge Pilote',
     subline: 'Votre statut de pilote est reconnu sur la plateforme.',
-    message: `Le badge Pilote a été attribué à votre compte. Il distingue les membres pratiquant le pilotage de drone de manière sérieuse et reconnue au sein de la communauté Brenne Aerial.`,
+    message: `Le badge Pilote a été attribué à votre compte. Il distingue les membres pratiquant le pilotage de drone de manière sérieuse et reconnue au sein de la communauté eza.`,
     highlight: 'Badge ✈️ Pilote affiché sur votre profil.',
     cta: 'Voir mon profil',
     tone: 'standard',
   },
   'Officiel': {
-    subject: '✔️ Badge Officiel attribué — Brenne Aerial',
+    subject: '✔️ Badge Officiel attribué — eza',
     accentColor: '#a855f7',
     emoji: '✔️',
     headline: 'Badge Officiel',
     subline: 'Votre compte a été reconnu comme officiel.',
-    message: `Votre compte a été désigné comme officiel par l'équipe Brenne Aerial. Ce badge garantit à la communauté l'authenticité de votre profil.`,
+    message: `Votre compte a été désigné comme officiel par l'équipe eza. Ce badge garantit à la communauté l'authenticité de votre profil.`,
     highlight: 'Badge Officiel activé sur votre profil.',
     cta: 'Voir mon profil',
     tone: 'standard',
   },
   'Vérifié': {
-    subject: '✅ Badge Vérifié attribué — Brenne Aerial',
+    subject: '✅ Badge Vérifié attribué — eza',
     accentColor: '#38aadc',
     emoji: '✅',
     headline: 'Badge Vérifié',
     subline: 'Votre compte a été vérifié par notre équipe.',
-    message: `Votre compte vient d'être vérifié par l'équipe Brenne Aerial. Ce badge confirme l'authenticité de votre profil au sein de la communauté.`,
+    message: `Votre compte vient d'être vérifié par l'équipe eza. Ce badge confirme l'authenticité de votre profil au sein de la communauté.`,
     highlight: 'Badge ✅ Vérifié visible sur votre profil.',
     cta: 'Voir mon profil',
     tone: 'standard',
@@ -143,19 +143,19 @@ const BADGE_TEMPLATES = {
     accentColor: '#ec4899',
     emoji: '🧪',
     headline: 'Badge Beta Testeur',
-    subline: 'Vous aidez à façonner l\'avenir de Brenne Aerial.',
-    message: `Vous faites partie des premiers à tester les nouvelles fonctionnalités de Brenne Aerial avant tout le monde. Votre retour est précieux et contribue directement à améliorer l'expérience de toute la communauté.`,
+    subline: 'Vous aidez à façonner l\'avenir de eza.',
+    message: `Vous faites partie des premiers à tester les nouvelles fonctionnalités de eza avant tout le monde. Votre retour est précieux et contribue directement à améliorer l'expérience de toute la communauté.`,
     highlight: 'Badge 🧪 Beta Testeur — merci pour votre précieuse contribution.',
     cta: 'Voir mon profil',
     tone: 'standard',
   },
   'Partenaire': {
-    subject: '🤝 Partenariat officiel Brenne Aerial confirmé',
+    subject: '🤝 Partenariat officiel eza confirmé',
     accentColor: '#f97316',
     emoji: '🤝',
     headline: 'Badge Partenaire',
-    subline: 'Vous êtes partenaire officiel de Brenne Aerial.',
-    message: `Votre partenariat avec Brenne Aerial a été officialisé. Ce badge marque le début d'une collaboration reconnue sur la plateforme. Nous sommes ravis de vous compter parmi nos partenaires.`,
+    subline: 'Vous êtes partenaire officiel de eza.',
+    message: `Votre partenariat avec eza a été officialisé. Ce badge marque le début d'une collaboration reconnue sur la plateforme. Nous sommes ravis de vous compter parmi nos partenaires.`,
     highlight: 'Badge Partenaire visible sur votre profil et dans la communauté.',
     cta: 'Voir mon profil',
     tone: 'standard',
@@ -191,10 +191,10 @@ function buildEmail(tpl, userName) {
       À <strong style="color:#fde68a;">${name}</strong>,
     </p>
     <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 18px;">
-      Ce message ne vous parvient pas par hasard. Il est le résultat d'une décision personnelle, réfléchie, et rarissime — prise directement par la <strong style="color:#fde68a;">Direction de Brenne Aerial (PDG ou PDG-Adjoint)</strong>.
+      Ce message ne vous parvient pas par hasard. Il est le résultat d'une décision personnelle, réfléchie, et rarissime — prise directement par la <strong style="color:#fde68a;">Direction de eza (PDG ou PDG-Adjoint)</strong>.
     </p>
     <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 18px;">
-      Le rang <strong style="color:#fde68a;">Suprême</strong> n'existe pas dans nos catalogues. Il ne s'achète pas. Il ne se demande pas. Il ne se gagne pas par le nombre de posts ou de followers. Il est attribué, à titre exceptionnel, à des individus qui ont laissé une empreinte réelle et profonde sur la communauté Brenne Aerial.
+      Le rang <strong style="color:#fde68a;">Suprême</strong> n'existe pas dans nos catalogues. Il ne s'achète pas. Il ne se demande pas. Il ne se gagne pas par le nombre de posts ou de followers. Il est attribué, à titre exceptionnel, à des individus qui ont laissé une empreinte réelle et profonde sur la communauté eza.
     </p>
     <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 18px;">
       Seuls le PDG et le PDG-Adjoint possèdent la clé de cette distinction. Aucun administrateur, aucun modérateur, aucun collaborateur ne peut l'attribuer. C'est une décision qui appartient à la direction — et cette décision, aujourd'hui, vous concerne.
@@ -220,10 +220,10 @@ function buildEmail(tpl, userName) {
   <div style="padding:0 40px 8px;background:#060408;">
     <p style="color:#d97706;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin:0 0 16px;">Ce que cela signifie</p>
     <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 16px;">
-      En portant le badge Suprême, vous rejoignez un cercle d'une extrême exclusivité. Vous êtes désormais l'un des rares membres à bénéficier du rang le plus élevé que Brenne Aerial puisse offrir. Ce badge est affiché en premier sur votre profil, visible par l'ensemble de la communauté, et identifié comme la distinction ultime de la plateforme.
+      En portant le badge Suprême, vous rejoignez un cercle d'une extrême exclusivité. Vous êtes désormais l'un des rares membres à bénéficier du rang le plus élevé que eza puisse offrir. Ce badge est affiché en premier sur votre profil, visible par l'ensemble de la communauté, et identifié comme la distinction ultime de la plateforme.
     </p>
     <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 16px;">
-      Il témoigne non seulement de votre valeur en tant que membre, mais aussi de la confiance directe que le PDG de Brenne Aerial vous accorde. C'est une marque d'estime sincère et personnelle.
+      Il témoigne non seulement de votre valeur en tant que membre, mais aussi de la confiance directe que le PDG de eza vous accorde. C'est une marque d'estime sincère et personnelle.
     </p>
   </div>
 
@@ -235,10 +235,10 @@ function buildEmail(tpl, userName) {
   <!-- Closing words -->
   <div style="padding:0 40px 40px;background:#060408;">
     <p style="color:#c4a47c;font-size:14px;line-height:1.9;margin:0 0 16px;">
-      Portez ce rang avec la discrétion et la fierté qu'il mérite. Vous faites désormais partie d'une histoire — celle de Brenne Aerial — à un niveau que très peu atteindront jamais.
+      Portez ce rang avec la discrétion et la fierté qu'il mérite. Vous faites désormais partie d'une histoire — celle de eza — à un niveau que très peu atteindront jamais.
     </p>
     <p style="color:#92400e;font-size:13px;font-style:italic;margin:0 0 36px;">
-      — La Direction de Brenne Aerial (PDG &amp; PDG-Adjoint)
+      — La Direction de eza (PDG &amp; PDG-Adjoint)
     </p>
 
     <!-- CTA -->
@@ -296,7 +296,7 @@ function buildEmail(tpl, userName) {
 
   <!-- Footer -->
   <div style="padding:18px 36px;border-top:1px solid #1a2d4a;text-align:center;background:#040b17;">
-    <p style="color:#374151;font-size:11px;margin:0;">Brenne Aerial · Communauté de créateurs</p>
+    <p style="color:#374151;font-size:11px;margin:0;">eza · Communauté de créateurs</p>
     <p style="color:#374151;font-size:11px;margin:4px 0 0;"><a href="${profileUrl}" style="color:#4b5563;text-decoration:underline;">Voir mon profil</a></p>
   </div>
 </div>
@@ -342,7 +342,7 @@ function buildEmail(tpl, userName) {
 
   <!-- Footer -->
   <div style="padding:16px 32px;border-top:1px solid #1a2d4a;text-align:center;background:#040b17;">
-    <p style="color:#374151;font-size:11px;margin:0;">Brenne Aerial · <a href="${profileUrl}" style="color:#4b5563;text-decoration:underline;">Voir mon profil</a></p>
+    <p style="color:#374151;font-size:11px;margin:0;">eza · <a href="${profileUrl}" style="color:#4b5563;text-decoration:underline;">Voir mon profil</a></p>
   </div>
 </div>
 </body>
@@ -364,6 +364,7 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: userEmail,
+      from_name: 'eza',
       subject: tpl.subject,
       body: html,
     });

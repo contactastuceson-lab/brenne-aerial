@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const APP_URL = 'https://brenneaerial.fr';
+const APP_URL = Deno.env.get('APP_URL') || 'https://eza.social';
 const SUPREME_EMAILS = ['contact.astuceson@gmail.com'];
 
 function isSupreme(user) {
@@ -44,7 +44,7 @@ function buildNormalMessageEmail({ senderName, senderEmail, preview, recipientNa
 
         <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#e8edf5;">Vous avez un nouveau message</h1>
         <p style="margin:0 0 24px;font-size:14px;color:#6a8aaa;line-height:1.5;">
-          ${recipientName ? `Bonjour <strong style="color:#a0c0d8;">${recipientName}</strong>,` : 'Bonjour,'} <strong style="color:#a0c0d8;">${senderName}</strong> vous a envoyé un message sur Brenne Aerial.
+          ${recipientName ? `Bonjour <strong style="color:#a0c0d8;">${recipientName}</strong>,` : 'Bonjour,'} <strong style="color:#a0c0d8;">${senderName}</strong> vous a envoyé un message sur eza.
         </p>
 
         <div style="background:rgba(10,22,40,0.7);border:1px solid rgba(56,170,220,0.15);border-left:3px solid #38aadc;border-radius:10px;padding:20px 22px;margin-bottom:32px;">
@@ -62,7 +62,7 @@ function buildNormalMessageEmail({ senderName, senderEmail, preview, recipientNa
   </td></tr>
 
   <tr><td style="padding-top:28px;text-align:center;">
-    <p style="font-size:12px;color:#2a4060;margin:0;">Brenne Aerial · <a href="${APP_URL}" style="color:#38aadc;text-decoration:none;">brenneaerial.fr</a></p>
+    <p style="font-size:12px;color:#2a4060;margin:0;">eza · <a href="${APP_URL}" style="color:#38aadc;text-decoration:none;">eza.social</a></p>
     <p style="font-size:11px;color:#1e3050;margin:6px 0 0;">Vous recevez cet email car quelqu'un vous a envoyé un message sur notre plateforme.</p>
   </td></tr>
 
@@ -136,7 +136,7 @@ function buildSupremeMessageEmail({ senderName, senderEmail, preview, recipientN
           Nouveau message reçu
         </h1>
         <p style="margin:0 0 26px;font-size:14px;color:#a07030;line-height:1.6;">
-          ${recipientName ? `Bonjour <strong style="color:#fbbf24;">${recipientName}</strong>,` : 'Bonjour,'} vous avez reçu un message de <strong style="color:#fbbf24;">${senderName}</strong> sur la plateforme Brenne Aerial.
+          ${recipientName ? `Bonjour <strong style="color:#fbbf24;">${recipientName}</strong>,` : 'Bonjour,'} vous avez reçu un message de <strong style="color:#fbbf24;">${senderName}</strong> sur la plateforme eza.
         </p>
 
         <!-- Preview doré -->
@@ -179,7 +179,7 @@ function buildSupremeMessageEmail({ senderName, senderEmail, preview, recipientN
   <tr><td style="padding-top:32px;text-align:center;">
     <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(217,119,6,0.2),transparent);margin-bottom:20px;"></div>
     <p style="font-size:12px;color:#5a3010;margin:0 0 4px;">
-      <strong style="color:#92400e;">Brenne Aerial</strong> · <a href="${APP_URL}" style="color:#b45309;text-decoration:none;">brenneaerial.fr</a>
+      <strong style="color:#92400e;">eza</strong> · <a href="${APP_URL}" style="color:#b45309;text-decoration:none;">eza.social</a>
     </p>
     <p style="font-size:11px;color:#3d2008;margin:0;">Notification réservée aux membres du Rang Suprême ✦</p>
   </td></tr>
@@ -218,7 +218,7 @@ function buildOfficialMessageEmail({ preview, recipientName }) {
             </td>
             <td style="vertical-align:middle;padding-left:18px;">
               <div style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#38aadc;opacity:0.8;margin-bottom:4px;">Communication Officielle</div>
-              <div style="font-size:18px;font-weight:800;color:#e8edf5;">Brenne Aerial</div>
+              <div style="font-size:18px;font-weight:800;color:#e8edf5;">eza</div>
             </td>
             <td style="vertical-align:middle;text-align:right;">
               <span style="background:linear-gradient(135deg,rgba(56,170,220,0.2),rgba(29,216,180,0.15));border:1px solid rgba(56,170,220,0.4);border-radius:20px;padding:6px 16px;font-size:11px;font-weight:700;color:#38aadc;letter-spacing:1.5px;text-transform:uppercase;">✦ OFFICIEL</span>
@@ -230,7 +230,7 @@ function buildOfficialMessageEmail({ preview, recipientName }) {
 
         <h1 style="margin:0 0 10px;font-size:26px;font-weight:900;color:#e8edf5;">Message de la direction</h1>
         <p style="margin:0 0 26px;font-size:14px;color:#5a7a9a;line-height:1.6;">
-          ${recipientName ? `Bonjour <strong style="color:#a0c0d8;">${recipientName}</strong>,` : 'Bonjour,'} vous avez reçu un message officiel de l'équipe Brenne Aerial.
+          ${recipientName ? `Bonjour <strong style="color:#a0c0d8;">${recipientName}</strong>,` : 'Bonjour,'} vous avez reçu un message officiel de l'équipe eza.
         </p>
 
         <div style="background:linear-gradient(135deg,rgba(14,40,80,0.6),rgba(10,26,56,0.5));border:1px solid rgba(56,170,220,0.2);border-left:4px solid #38aadc;border-radius:10px;padding:22px 24px;margin-bottom:10px;">
@@ -252,8 +252,8 @@ function buildOfficialMessageEmail({ preview, recipientName }) {
 
   <tr><td style="padding-top:32px;text-align:center;">
     <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(56,170,220,0.15),transparent);margin-bottom:20px;"></div>
-    <p style="font-size:12px;color:#1e3050;margin:0 0 6px;"><strong style="color:#2a4a7a;">Brenne Aerial</strong> · Communication officielle</p>
-    <p style="font-size:11px;color:#182840;margin:0;"><a href="${APP_URL}" style="color:#2a5080;text-decoration:none;">brenneaerial.fr</a> · Envoyé par notre équipe de direction.</p>
+    <p style="font-size:12px;color:#1e3050;margin:0 0 6px;"><strong style="color:#2a4a7a;">eza</strong> · Communication officielle</p>
+    <p style="font-size:11px;color:#182840;margin:0;"><a href="${APP_URL}" style="color:#2a5080;text-decoration:none;">eza.social</a> · Envoyé par notre équipe de direction.</p>
   </td></tr>
 
 </table>
@@ -318,7 +318,7 @@ Deno.serve(async (req) => {
     let subject, body;
 
     if (isOfficial) {
-      subject = `📢 Message officiel de Brenne Aerial`;
+      subject = `📢 Message officiel de eza`;
       body = buildOfficialMessageEmail({ preview, recipientName });
     } else if (recipientIsSupreme) {
       subject = `👑 Nouveau message — ${senderName}`;
@@ -330,6 +330,7 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: recipientEmail,
+      from_name: 'eza',
       subject,
       body,
     });

@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
   <div class="container">
     <div class="header">
       <h1>✓ Demande reçue</h1>
-      <p style="margin: 10px 0 0 0; opacity: 0.9;">Brenne Aerial</p>
+      <p style="margin: 10px 0 0 0; opacity: 0.9;">eza</p>
     </div>
     <div class="content">
       <h2 style="margin-top: 0;">Bonjour ${certRequest.display_name || certRequest.user_name},</h2>
@@ -70,13 +70,13 @@ Deno.serve(async (req) => {
         </ol>
       </div>
 
-      <p>Des questions ? Contactez-nous à <strong><a href="mailto:contact@brenneaerial.fr" style="color:#38aadc;">contact@brenneaerial.fr</a></strong> ou via notre <a href="https://support.brenneaerial.org/support" style="color:#38aadc;">support en ligne</a>.</p>
+      <p>Des questions ? Contactez-nous à <strong><a href="mailto:contact@eza.social" style="color:#38aadc;">contact@eza.social</a></strong> ou via notre <a href="https://support.brenneaerial.org/support" style="color:#38aadc;">support en ligne</a>.</p>
 
-      <p style="margin-top: 30px; margin-bottom: 0;">Cordialement,<br><strong>L'équipe Brenne Aerial</strong></p>
+      <p style="margin-top: 30px; margin-bottom: 0;">Cordialement,<br><strong>L'équipe eza</strong></p>
     </div>
     <div class="footer">
-      <p>Brenne Aerial - Solutions drone professionnelles</p>
-      <p>© 2026 Brenne Aerial. Tous droits réservés.</p>
+      <p>eza - Réseau social et communautés</p>
+      <p>© 2026 eza. Tous droits réservés.</p>
     </div>
   </div>
 </body>
@@ -85,7 +85,8 @@ Deno.serve(async (req) => {
 
     const res = await base44.integrations.Core.SendEmail({
       to: certRequest.user_email,
-      subject: '✓ Votre demande de certification a été reçue - Brenne Aerial',
+      from_name: 'eza',
+      subject: '✓ Votre demande de certification a été reçue - eza',
       body: htmlContent,
     });
 

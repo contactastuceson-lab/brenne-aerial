@@ -1,25 +1,25 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const LOGO_URL = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/6de51adde_1775602844308.png';
+const LOGO_URL = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/80278201e_1782606023373-Photoroom.png';
 
 // Theme configs per sender type
 const THEMES = {
-  gold:      { topBorder:'#d4a017', accent:'#e6b422', accentLight:'#2a1f00', headerBg:'linear-gradient(135deg,#1a1200,#0f0c00,#0d1218)', badgeBg:'#2a1f00', badgeColor:'#e6b422', badgeBorder:'#d4a01760', btnBg:'#d4a017', btnColor:'#0a0800', signature:'— Fondateur & PDG de Brenne Aerial', icon:'👔' },
-  gold2:     { topBorder:'#f59e0b', accent:'#fbbf24', accentLight:'#1c1500', headerBg:'linear-gradient(135deg,#1c1500,#120f00,#0d1218)', badgeBg:'#1c1500', badgeColor:'#fcd34d', badgeBorder:'#f59e0b60', btnBg:'#f59e0b', btnColor:'#0a0800', signature:'— Direction Générale · Brenne Aerial', icon:'🤝' },
-  platinum:  { topBorder:'#94a3b8', accent:'#cbd5e1', accentLight:'#111827', headerBg:'linear-gradient(135deg,#111827,#0f172a,#0d1218)', badgeBg:'#111827', badgeColor:'#e2e8f0', badgeBorder:'#94a3b860', btnBg:'#64748b', btnColor:'#ffffff', signature:'— Conseil d\'Administration · Brenne Aerial', icon:'🏛️' },
-  navy:      { topBorder:'#3b82f6', accent:'#60a5fa', accentLight:'#030d1f', headerBg:'linear-gradient(135deg,#030d1f,#050f25,#0d1218)', badgeBg:'#030d1f', badgeColor:'#93c5fd', badgeBorder:'#3b82f660', btnBg:'#3b82f6', btnColor:'#ffffff', signature:'— Direction Générale · Brenne Aerial', icon:'📋' },
-  blue:      { topBorder:'#38aadc', accent:'#38aadc', accentLight:'#020d18', headerBg:'linear-gradient(135deg,#020d18,#060e18,#0d1218)', badgeBg:'#061624', badgeColor:'#7dd3fc', badgeBorder:'#38aadc60', btnBg:'#38aadc', btnColor:'#03080f', signature:'— Service Client · Brenne Aerial', icon:'🎧' },
-  green:     { topBorder:'#22c55e', accent:'#22c55e', accentLight:'#011209', headerBg:'linear-gradient(135deg,#011209,#061a0e,#0d1218)', badgeBg:'#061a0e', badgeColor:'#86efac', badgeBorder:'#22c55e60', btnBg:'#22c55e', btnColor:'#011209', signature:'— Pôle Commercial · Brenne Aerial', icon:'💼' },
-  purple:    { topBorder:'#a855f7', accent:'#a855f7', accentLight:'#0d0118', headerBg:'linear-gradient(135deg,#0d0118,#120620,#0d1218)', badgeBg:'#120620', badgeColor:'#d8b4fe', badgeBorder:'#a855f760', btnBg:'#a855f7', btnColor:'#0d0118', signature:'— Pôle Opérations · Brenne Aerial', icon:'🚁' },
-  orange:    { topBorder:'#f97316', accent:'#fb923c', accentLight:'#1c0a00', headerBg:'linear-gradient(135deg,#1c0a00,#180800,#0d1218)', badgeBg:'#1c0a00', badgeColor:'#fdba74', badgeBorder:'#f9731660', btnBg:'#f97316', btnColor:'#0a0400', signature:'— Pôle Technique · Brenne Aerial', icon:'🔧' },
-  red:       { topBorder:'#ef4444', accent:'#f87171', accentLight:'#1c0000', headerBg:'linear-gradient(135deg,#1c0000,#180000,#0d1218)', badgeBg:'#1c0000', badgeColor:'#fca5a5', badgeBorder:'#ef444460', btnBg:'#dc2626', btnColor:'#ffffff', signature:'— Pôle Sécurité & Conformité · Brenne Aerial', icon:'🛡️' },
-  cyan:      { topBorder:'#06b6d4', accent:'#22d3ee', accentLight:'#001418', headerBg:'linear-gradient(135deg,#001418,#001a20,#0d1218)', badgeBg:'#001418', badgeColor:'#67e8f9', badgeBorder:'#06b6d460', btnBg:'#06b6d4', btnColor:'#001010', signature:'— Équipe Pilotes · Brenne Aerial', icon:'🎮' },
-  pink:      { topBorder:'#ec4899', accent:'#f472b6', accentLight:'#1a0010', headerBg:'linear-gradient(135deg,#1a0010,#150008,#0d1218)', badgeBg:'#1a0010', badgeColor:'#f9a8d4', badgeBorder:'#ec489960', btnBg:'#ec4899', btnColor:'#0a0008', signature:'— Marketing & Communication · Brenne Aerial', icon:'📣' },
-  teal:      { topBorder:'#14b8a6', accent:'#2dd4bf', accentLight:'#001412', headerBg:'linear-gradient(135deg,#001412,#001a18,#0d1218)', badgeBg:'#001412', badgeColor:'#5eead4', badgeBorder:'#14b8a660', btnBg:'#14b8a6', btnColor:'#001010', signature:'— Service Facturation · Brenne Aerial', icon:'🧾' },
-  indigo:    { topBorder:'#6366f1', accent:'#818cf8', accentLight:'#080018', headerBg:'linear-gradient(135deg,#080018,#0a0020,#0d1218)', badgeBg:'#080018', badgeColor:'#a5b4fc', badgeBorder:'#6366f160', btnBg:'#6366f1', btnColor:'#ffffff', signature:'— Ressources Humaines · Brenne Aerial', icon:'👥' },
-  violet:    { topBorder:'#7c3aed', accent:'#8b5cf6', accentLight:'#0c0018', headerBg:'linear-gradient(135deg,#0c0018,#0e0020,#0d1218)', badgeBg:'#0c0018', badgeColor:'#c4b5fd', badgeBorder:'#7c3aed60', btnBg:'#7c3aed', btnColor:'#ffffff', signature:'— Pôle Data & IA · Brenne Aerial', icon:'📊' },
-  slate:     { topBorder:'#475569', accent:'#64748b', accentLight:'#0a0e14', headerBg:'linear-gradient(135deg,#0a0e14,#0d1118,#0d1218)', badgeBg:'#0a0e14', badgeColor:'#94a3b8', badgeBorder:'#47556960', btnBg:'#475569', btnColor:'#ffffff', signature:'— Système Automatique · Brenne Aerial', icon:'⚙️' },
-  emergency: { topBorder:'#dc2626', accent:'#ef4444', accentLight:'#1c0000', headerBg:'linear-gradient(135deg,#1c0000,#200000,#0d1218)', badgeBg:'#200000', badgeColor:'#fca5a5', badgeBorder:'#dc262680', btnBg:'#dc2626', btnColor:'#ffffff', signature:'— Cellule de Crise · Brenne Aerial', icon:'🚨' },
+  gold:      { topBorder:'#d4a017', accent:'#e6b422', accentLight:'#2a1f00', headerBg:'linear-gradient(135deg,#1a1200,#0f0c00,#0d1218)', badgeBg:'#2a1f00', badgeColor:'#e6b422', badgeBorder:'#d4a01760', btnBg:'#d4a017', btnColor:'#0a0800', signature:'— Fondateur & PDG de eza', icon:'👔' },
+  gold2:     { topBorder:'#f59e0b', accent:'#fbbf24', accentLight:'#1c1500', headerBg:'linear-gradient(135deg,#1c1500,#120f00,#0d1218)', badgeBg:'#1c1500', badgeColor:'#fcd34d', badgeBorder:'#f59e0b60', btnBg:'#f59e0b', btnColor:'#0a0800', signature:'— Direction Générale · eza', icon:'🤝' },
+  platinum:  { topBorder:'#94a3b8', accent:'#cbd5e1', accentLight:'#111827', headerBg:'linear-gradient(135deg,#111827,#0f172a,#0d1218)', badgeBg:'#111827', badgeColor:'#e2e8f0', badgeBorder:'#94a3b860', btnBg:'#64748b', btnColor:'#ffffff', signature:'— Conseil d\'Administration · eza', icon:'🏛️' },
+  navy:      { topBorder:'#3b82f6', accent:'#60a5fa', accentLight:'#030d1f', headerBg:'linear-gradient(135deg,#030d1f,#050f25,#0d1218)', badgeBg:'#030d1f', badgeColor:'#93c5fd', badgeBorder:'#3b82f660', btnBg:'#3b82f6', btnColor:'#ffffff', signature:'— Direction Générale · eza', icon:'📋' },
+  blue:      { topBorder:'#38aadc', accent:'#38aadc', accentLight:'#020d18', headerBg:'linear-gradient(135deg,#020d18,#060e18,#0d1218)', badgeBg:'#061624', badgeColor:'#7dd3fc', badgeBorder:'#38aadc60', btnBg:'#38aadc', btnColor:'#03080f', signature:'— Service Client · eza', icon:'🎧' },
+  green:     { topBorder:'#22c55e', accent:'#22c55e', accentLight:'#011209', headerBg:'linear-gradient(135deg,#011209,#061a0e,#0d1218)', badgeBg:'#061a0e', badgeColor:'#86efac', badgeBorder:'#22c55e60', btnBg:'#22c55e', btnColor:'#011209', signature:'— Pôle Commercial · eza', icon:'💼' },
+  purple:    { topBorder:'#a855f7', accent:'#a855f7', accentLight:'#0d0118', headerBg:'linear-gradient(135deg,#0d0118,#120620,#0d1218)', badgeBg:'#120620', badgeColor:'#d8b4fe', badgeBorder:'#a855f760', btnBg:'#a855f7', btnColor:'#0d0118', signature:'— Pôle Opérations · eza', icon:'🚁' },
+  orange:    { topBorder:'#f97316', accent:'#fb923c', accentLight:'#1c0a00', headerBg:'linear-gradient(135deg,#1c0a00,#180800,#0d1218)', badgeBg:'#1c0a00', badgeColor:'#fdba74', badgeBorder:'#f9731660', btnBg:'#f97316', btnColor:'#0a0400', signature:'— Pôle Technique · eza', icon:'🔧' },
+  red:       { topBorder:'#ef4444', accent:'#f87171', accentLight:'#1c0000', headerBg:'linear-gradient(135deg,#1c0000,#180000,#0d1218)', badgeBg:'#1c0000', badgeColor:'#fca5a5', badgeBorder:'#ef444460', btnBg:'#dc2626', btnColor:'#ffffff', signature:'— Pôle Sécurité & Conformité · eza', icon:'🛡️' },
+  cyan:      { topBorder:'#06b6d4', accent:'#22d3ee', accentLight:'#001418', headerBg:'linear-gradient(135deg,#001418,#001a20,#0d1218)', badgeBg:'#001418', badgeColor:'#67e8f9', badgeBorder:'#06b6d460', btnBg:'#06b6d4', btnColor:'#001010', signature:'— Équipe Pilotes · eza', icon:'🎮' },
+  pink:      { topBorder:'#ec4899', accent:'#f472b6', accentLight:'#1a0010', headerBg:'linear-gradient(135deg,#1a0010,#150008,#0d1218)', badgeBg:'#1a0010', badgeColor:'#f9a8d4', badgeBorder:'#ec489960', btnBg:'#ec4899', btnColor:'#0a0008', signature:'— Marketing & Communication · eza', icon:'📣' },
+  teal:      { topBorder:'#14b8a6', accent:'#2dd4bf', accentLight:'#001412', headerBg:'linear-gradient(135deg,#001412,#001a18,#0d1218)', badgeBg:'#001412', badgeColor:'#5eead4', badgeBorder:'#14b8a660', btnBg:'#14b8a6', btnColor:'#001010', signature:'— Service Facturation · eza', icon:'🧾' },
+  indigo:    { topBorder:'#6366f1', accent:'#818cf8', accentLight:'#080018', headerBg:'linear-gradient(135deg,#080018,#0a0020,#0d1218)', badgeBg:'#080018', badgeColor:'#a5b4fc', badgeBorder:'#6366f160', btnBg:'#6366f1', btnColor:'#ffffff', signature:'— Ressources Humaines · eza', icon:'👥' },
+  violet:    { topBorder:'#7c3aed', accent:'#8b5cf6', accentLight:'#0c0018', headerBg:'linear-gradient(135deg,#0c0018,#0e0020,#0d1218)', badgeBg:'#0c0018', badgeColor:'#c4b5fd', badgeBorder:'#7c3aed60', btnBg:'#7c3aed', btnColor:'#ffffff', signature:'— Pôle Data & IA · eza', icon:'📊' },
+  slate:     { topBorder:'#475569', accent:'#64748b', accentLight:'#0a0e14', headerBg:'linear-gradient(135deg,#0a0e14,#0d1118,#0d1218)', badgeBg:'#0a0e14', badgeColor:'#94a3b8', badgeBorder:'#47556960', btnBg:'#475569', btnColor:'#ffffff', signature:'— Système Automatique · eza', icon:'⚙️' },
+  emergency: { topBorder:'#dc2626', accent:'#ef4444', accentLight:'#1c0000', headerBg:'linear-gradient(135deg,#1c0000,#200000,#0d1218)', badgeBg:'#200000', badgeColor:'#fca5a5', badgeBorder:'#dc262680', btnBg:'#dc2626', btnColor:'#ffffff', signature:'— Cellule de Crise · eza', icon:'🚨' },
 };
 
 function buildEmail(userName, subject, message, senderName, senderRole, senderTheme = 'blue', attachments = []) {
@@ -101,12 +101,12 @@ function buildEmail(userName, subject, message, senderName, senderRole, senderTh
           <table cellpadding="0" cellspacing="0" width="100%">
             <tr>
               <td style="vertical-align:middle;">
-                <img src="${LOGO_URL}" width="48" height="48" alt="Brenne Aerial"
+                <img src="${LOGO_URL}" width="48" height="48" alt="eza"
                   style="display:block;border-radius:12px;border:2px solid ${t.topBorder}40;" />
               </td>
               <td style="vertical-align:middle;padding-left:14px;">
-                <p style="margin:0;font-size:15px;font-weight:800;color:#ffffff;letter-spacing:0.02em;">Brenne Aerial</p>
-                <p style="margin:3px 0 0;font-size:10px;color:${t.accent};letter-spacing:0.12em;text-transform:uppercase;font-weight:600;">Premium Drone Services</p>
+                <p style="margin:0;font-size:15px;font-weight:800;color:#ffffff;letter-spacing:0.02em;">eza</p>
+                <p style="margin:3px 0 0;font-size:10px;color:${t.accent};letter-spacing:0.12em;text-transform:uppercase;font-weight:600;">Le réseau social qui rapproche les communautés</p>
               </td>
               <td align="right" style="vertical-align:middle;">
                 <div style="display:inline-block;padding:5px 12px;background:${t.badgeBg};border:1px solid ${t.badgeBorder};border-radius:20px;">
@@ -140,7 +140,7 @@ function buildEmail(userName, subject, message, senderName, senderRole, senderTh
 
           <!-- CTA BUTTON -->
           <div style="text-align:center;margin:32px 0 8px;">
-            <a href="https://brenneaerial.fr/dashboard"
+            <a href="${Deno.env.get('APP_URL') || 'https://eza.social'}/dashboard"
               style="display:inline-block;background:${t.btnBg};color:${t.btnColor};font-weight:800;font-size:14px;padding:15px 36px;border-radius:10px;text-decoration:none;letter-spacing:0.02em;">
               Accéder à mon espace →
             </a>
@@ -166,16 +166,16 @@ function buildEmail(userName, subject, message, senderName, senderRole, senderTh
         <!-- FOOTER -->
         <tr><td align="center" style="background:#040810;padding:24px 40px;border-left:1px solid ${t.topBorder}10;border-right:1px solid ${t.topBorder}10;">
           <p style="margin:0 0 8px;font-size:11px;color:#2d4a6a;letter-spacing:0.04em;">
-            © ${new Date().getFullYear()} Brenne Aerial · Premium Drone Services
+            © ${new Date().getFullYear()} eza · Le réseau social qui rapproche les communautés
           </p>
           <p style="margin:0 0 8px;font-size:11px;color:#1e3040;">
             Brenne, Indre (36) · France ·
             <a href="mailto:contact@brenneaerial.fr" style="color:${t.accent};text-decoration:none;">contact@brenneaerial.fr</a>
           </p>
           <p style="margin:0;font-size:10px;color:#1a2a3a;">
-            <a href="https://brenneaerial.fr/legal/privacy" style="color:#2d4a6a;text-decoration:none;">Politique de confidentialité</a>
+            <a href="${Deno.env.get('APP_URL') || 'https://eza.social'}/legal/privacy" style="color:#2d4a6a;text-decoration:none;">Politique de confidentialité</a>
             &nbsp;·&nbsp;
-            <a href="https://brenneaerial.fr" style="color:#2d4a6a;text-decoration:none;">brenneaerial.fr</a>
+            <a href="${Deno.env.get('APP_URL') || 'https://eza.social'}" style="color:#2d4a6a;text-decoration:none;">brenneaerial.fr</a>
           </p>
         </td></tr>
 

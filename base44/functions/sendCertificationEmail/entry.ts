@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
   <div class="container">
     <div class="header">
       <h1>${isApproved ? '✓ Certification approuvée' : '✗ Demande examinée'}</h1>
-      <p style="margin: 10px 0 0 0; opacity: 0.9;">Brenne Aerial</p>
+      <p style="margin: 10px 0 0 0; opacity: 0.9;">eza</p>
     </div>
     <div class="content">
       <h2 style="margin-top: 0;">Bonjour ${certRequest.display_name || certRequest.user_name},</h2>
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       </div>
 
       <p>
-        Merci d'avoir soumis votre demande de certification auprès de Brenne Aerial.
+        Merci d'avoir soumis votre demande de certification auprès de eza.
       </p>
 
       ${isApproved ? `
@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
           Excellente nouvelle ! Votre demande de certification a été <strong>approuvée</strong>.
         </p>
         <p>Vous pouvez désormais afficher le badge "Officiel" sur votre profil. Cela valorise votre expertise et renforce la confiance avec les clients potentiels.</p>
-        <p><a href="https://brenne-aerial.fr/profile" class="btn">Voir mon profil</a></p>
+        <p><a href="https://eza.social/profile" class="btn">Voir mon profil</a></p>
       ` : `
         <p style="font-size: 16px; font-weight: bold; color: #721c24;">
           Votre demande de certification a été <strong>refusée</strong>.
@@ -81,14 +81,14 @@ Deno.serve(async (req) => {
       </div>
 
       ${!isApproved ? `
-        <p>Vous pouvez soumettre une nouvelle demande ultérieurement. Si vous avez des questions, contactez-nous à <strong><a href="mailto:contact@brenneaerial.fr" style="color:#38aadc;">contact@brenneaerial.fr</a></strong> ou via notre <a href="https://support.brenneaerial.org/support" style="color:#38aadc;">support en ligne</a>.</p>
+        <p>Vous pouvez soumettre une nouvelle demande ultérieurement. Si vous avez des questions, contactez-nous à <strong><a href="mailto:contact@eza.social" style="color:#38aadc;">contact@eza.social</a></strong> ou via notre <a href="https://support.brenneaerial.org/support" style="color:#38aadc;">support en ligne</a>.</p>
       ` : ''}
 
-      <p style="margin-top: 30px; margin-bottom: 0;">Cordialement,<br><strong>L'équipe Brenne Aerial</strong></p>
+      <p style="margin-top: 30px; margin-bottom: 0;">Cordialement,<br><strong>L'équipe eza</strong></p>
     </div>
     <div class="footer">
-      <p>Brenne Aerial - Solutions drone professionnelles</p>
-      <p>© 2026 Brenne Aerial. Tous droits réservés.</p>
+      <p>eza - Réseau social et communautés</p>
+      <p>© 2026 eza. Tous droits réservés.</p>
     </div>
   </div>
 </body>
@@ -97,6 +97,7 @@ Deno.serve(async (req) => {
 
     const res = await base44.integrations.Core.SendEmail({
       to: certRequest.user_email,
+      from_name: 'eza',
       subject: subject,
       body: htmlContent,
     });

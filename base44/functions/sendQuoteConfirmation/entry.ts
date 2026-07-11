@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const APP_URL = Deno.env.get('APP_URL') || 'https://brenneaerial.fr';
+const APP_URL = Deno.env.get('APP_URL') || 'https://eza.social';
 
 const SERVICE_LABELS = {
   video_evenement: 'Vidéo événement',
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     const APP_URL_VAL = Deno.env.get('APP_URL') || 'https://brenneaerial.fr';
 
     const html = `<!DOCTYPE html>
-<html lang="fr"><head><meta charset="UTF-8"><title>Brenne Aerial</title></head>
+<html lang="fr"><head><meta charset="UTF-8"><title>eza</title></head>
 <body style="margin:0;padding:0;background:#06080f;font-family:'Segoe UI',Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#06080f;padding:40px 16px;">
 <tr><td align="center">
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
     <a href="${APP_URL_VAL}/dashboard" style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#fff;text-decoration:none;border-radius:10px;background:linear-gradient(135deg,#1a6aaa,#38aadc);">Suivre ma demande →</a>
   </td></tr>
   <tr><td style="padding-top:24px;text-align:center;">
-    <p style="font-size:12px;color:#2e4a6a;margin:0;"><strong style="color:#38aadc;">Brenne Aerial</strong> · <a href="${APP_URL_VAL}" style="color:#38aadc;text-decoration:none;">brenneaerial.fr</a></p>
+    <p style="font-size:12px;color:#2e4a6a;margin:0;"><strong style="color:#38aadc;">eza</strong> · <a href="${APP_URL_VAL}" style="color:#38aadc;text-decoration:none;">brenneaerial.fr</a></p>
   </td></tr>
 </table>
 </td></tr>

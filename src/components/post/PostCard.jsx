@@ -4,8 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, MessageCircle, MoreHorizontal, Eye, Trash2, Pencil, X, Check, Repeat2, Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
@@ -16,6 +15,7 @@ import { notify } from '@/lib/notificationHelper';
 import { isActionBlocked, RESTRICTED_TOAST } from '@/lib/accountStatus';
 import { extractHashtags } from '@/lib/hashtags';
 import { parseEntityDate } from '@/lib/entityDate';
+import { formatPostTime } from '@/lib/postTime';
 
 const TRUNCATE_LIMIT = 560;
 
@@ -61,9 +61,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
   const profileLink = authorUsername ? `/@${authorUsername}` : null;
   const avatarSrc = liveUser?.avatar_url || post.author_avatar;
 
-  const timeAgo = post.created_date
-    ? formatDistanceToNow(parseEntityDate(post.created_date), { addSuffix: false, locale: fr })
-    : '';
+  const timeAgo = post.created_date ? formatPostTime(parseEntityDate(post.created_date)) : '';
 
   useEffect(() => {
     if (!menuOpen) return;

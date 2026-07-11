@@ -5,12 +5,12 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Crown, Globe, Users, Lock, MoreHorizontal } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import AffiliationBadges from '@/components/shared/AffiliationBadges';
 import usePublicUser from '@/hooks/usePublicUser';
 import { parseEntityDate } from '@/lib/entityDate';
+import { formatPostTime } from '@/lib/postTime';
 
 const CATEGORY_CONFIG = {
   general:   { dot: 'bg-blue-400',    label: 'Général' },
@@ -70,7 +70,7 @@ export default function PostAuthorHeader({
     if (!createdDate) return '';
     try {
       const date = parseEntityDate(createdDate);
-      return date ? formatDistanceToNow(date, { addSuffix: true, locale: fr }) : '';
+      return date ? formatPostTime(date) : '';
     } catch {
       return '';
     }

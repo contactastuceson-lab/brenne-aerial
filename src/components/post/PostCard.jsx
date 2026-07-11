@@ -22,7 +22,7 @@ const TRUNCATE_LIMIT = 560;
 // Avatar compact
 function Avatar({ src, name, size = 10, profileLink }) {
   const initial = (name?.[0] || 'U').toUpperCase();
-  const cls = `w-${size} h-${size} rounded-full overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center flex-shrink-0`;
+  const cls = `w-${size} h-${size} rounded-lg overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center flex-shrink-0`;
   const inner = src
     ? <img src={src} alt={name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
     : <span className="font-grotesk font-bold text-primary text-sm">{initial}</span>;
@@ -170,7 +170,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
         <div className="flex items-start justify-between gap-1 mb-0.5 w-full">
           <div className="min-w-0 flex-1">
             {/* Ligne unique : nom + badge + @username · temps */}
-            <div className="flex items-center gap-0 flex-wrap leading-snug">
+            <div className="flex items-center gap-0 min-w-0 leading-snug">
               {profileLink ? (
                 <Link to={profileLink} onClick={e => e.stopPropagation()}
                   className="font-inter font-bold text-[15px] text-foreground hover:underline mr-0.5">
@@ -188,7 +188,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
                   />
                 </span>
               )}
-              <span className="font-inter text-[14px] text-muted-foreground/55 truncate">@{authorUsername || authorName}</span>
+              <span className="min-w-0 max-w-[11rem] sm:max-w-[16rem] font-inter text-[14px] text-muted-foreground/55 truncate">@{authorUsername || authorName}</span>
               <span className="text-muted-foreground/35 text-[13px] mx-1 flex-shrink-0">·</span>
               <span className="font-inter text-[14px] text-muted-foreground/55 whitespace-nowrap flex-shrink-0">{timeAgo}</span>
             </div>

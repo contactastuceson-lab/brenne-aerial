@@ -107,8 +107,8 @@ export default function PostAuthorHeader({
 
         {/* Info */}
         <div className="min-w-0 flex-1">
-          {/* Ligne 1 : Nom + vérification + affiliation */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Ligne 1 : Nom + badges + @pseudo */}
+          <div className="flex items-center gap-1.5 min-w-0">
             {profileLink ? (
               <Link
                 to={profileLink}
@@ -128,20 +128,15 @@ export default function PostAuthorHeader({
                 user={authorId ? { id: authorId } : null}
               />
             )}
+{resolvedUsername && (
+  <span className="min-w-0 max-w-[11rem] sm:max-w-[16rem] truncate font-mono text-xs text-muted-foreground/55">@{resolvedUsername}</span>
+)}
+</div>
 
-
-          </div>
-
-          {/* Ligne 2 : @pseudo · temps · catégorie · visibilité */}
-          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-            {resolvedUsername && (
-              <span className="font-mono text-xs text-muted-foreground/55">@{resolvedUsername}</span>
-            )}
+{/* Ligne 2 : temps · catégorie · visibilité */}
+<div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
             {timeAgo && (
-              <>
-                <span className="text-muted-foreground/30 text-xs">·</span>
-                <span className="font-mono text-xs text-muted-foreground/55">{timeAgo}</span>
-              </>
+              <span className="font-mono text-xs text-muted-foreground/55">{timeAgo}</span>
             )}
             {cat && (
               <>

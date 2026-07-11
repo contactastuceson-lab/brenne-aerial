@@ -135,7 +135,7 @@ export default function HomeLeftSidebar({ user }) {
             <Link to="/profile"
               className="flex items-center gap-3 px-3 py-3 rounded-full hover:bg-white/5 transition-all group"
             >
-              <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-border/40"
+              <div className="w-10 h-10 rounded-lg flex-shrink-0 overflow-hidden border border-border/40"
                 style={{ background: 'hsl(var(--primary)/0.15)' }}
               >
                 {user.avatar_url

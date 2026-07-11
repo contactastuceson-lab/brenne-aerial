@@ -103,7 +103,7 @@ export default function BottomTabBar() {
                       className="flex items-center gap-3 p-3.5 rounded-2xl border border-white/8 hover:bg-white/5 transition-colors"
                       style={{ background: 'rgba(255,255,255,0.04)' }}
                     >
-                      <div className="w-11 h-11 rounded-full overflow-hidden border border-primary/25 flex-shrink-0"
+                      <div className="w-11 h-11 rounded-xl overflow-hidden border border-primary/25 flex-shrink-0"
                         style={{ background: 'hsl(var(--primary)/0.15)' }}
                       >
                         {user.avatar_url

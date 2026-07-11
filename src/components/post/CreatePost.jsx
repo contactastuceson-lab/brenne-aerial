@@ -217,7 +217,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
 
       <div className="flex gap-3">
         {/* Avatar */}
-        <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+        <div className="w-10 h-10 rounded-lg overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
           {user?.avatar_url
             ? <img src={user.avatar_url} alt={name} className="w-full h-full object-cover" />
             : <span className="font-grotesk font-bold text-primary text-sm">{initial}</span>

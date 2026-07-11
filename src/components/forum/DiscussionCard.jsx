@@ -28,6 +28,7 @@ export default function DiscussionCard({ discussion }) {
 
   const authorAvatar = liveAuthor?.avatar_url || discussion.author_avatar;
   const authorName = liveAuthor?.display_name || liveAuthor?.full_name || discussion.author_display_name || discussion.author_name;
+  const authorUsername = liveAuthor?.username || discussion.author_username;
   const authorVerifications = liveAuthor?.verifications ?? discussion.author_verifications;
   const authorIsSupreme = liveAuthor?.is_supreme ?? discussion.author_is_supreme;
 
@@ -65,9 +66,9 @@ export default function DiscussionCard({ discussion }) {
         <div className="flex items-center justify-between gap-2 text-xs text-slate-500 min-w-0">
           <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
             {authorAvatar ? (
-              <img src={authorAvatar} alt="" className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+              <img src={authorAvatar} alt="" className="w-5 h-5 rounded-md object-cover flex-shrink-0" />
             ) : (
-              <div className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0">
+              <div className="w-5 h-5 rounded-md bg-slate-700 flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0">
                 {authorName?.[0]?.toUpperCase() || '?'}
               </div>
             )}
@@ -77,6 +78,7 @@ export default function DiscussionCard({ discussion }) {
               size="sm"
               user={{ id: discussion.author_id }}
             />
+            {authorUsername && <span className="min-w-0 max-w-[100px] truncate text-slate-500">@{authorUsername}</span>}
 
             <span className="hidden sm:inline text-slate-600 truncate">{formatDistanceToNow(parseEntityDate(discussion.created_date), { locale: fr, addSuffix: true })}</span>
           </div>

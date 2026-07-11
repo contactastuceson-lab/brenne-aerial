@@ -10,6 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import { parseEntityDate } from '@/lib/entityDate';
 
 const CATEGORY_CONFIG = {
   general:   { bg: 'bg-blue-400/10',    text: 'text-blue-400',    label: '💬 Général' },
@@ -52,7 +53,7 @@ export default function PostCard({ post, currentUser, index = 0 }) {
   const profileLink = authorUsername ? `/@${authorUsername}` : null;
 
   const timeAgo = post.created_date
-    ? formatDistanceToNow(new Date(post.created_date), { addSuffix: true, locale: fr })
+    ? formatDistanceToNow(parseEntityDate(post.created_date), { addSuffix: true, locale: fr })
     : '';
 
   const isLong = post.content?.length > 300;

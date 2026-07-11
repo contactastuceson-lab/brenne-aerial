@@ -18,6 +18,7 @@ import { fr } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { isRestricted, RESTRICTED_TOAST } from '@/lib/accountStatus';
+import { parseEntityDate } from '@/lib/entityDate';
 
 function getConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join('_');
@@ -569,7 +570,7 @@ export default function MessageThread({ user, conv, onBack }) {
                   </div>
                   <div className={`flex items-center gap-2 px-1 ${isMine ? 'flex-row-reverse' : ''}`}>
                     <span className="font-mono text-[9px] text-muted-foreground">
-                      {msg.created_date ? format(new Date(msg.created_date), 'HH:mm', { locale: fr }) : ''}
+                      {msg.created_date ? format(parseEntityDate(msg.created_date), 'HH:mm', { locale: fr }) : ''}
                     </span>
                     {/* Quick actions on hover */}
                     <div className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity`}>

@@ -10,6 +10,7 @@ import { fr } from 'date-fns/locale';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import AffiliationBadges from '@/components/shared/AffiliationBadges';
 import usePublicUser from '@/hooks/usePublicUser';
+import { parseEntityDate } from '@/lib/entityDate';
 
 const CATEGORY_CONFIG = {
   general:   { dot: 'bg-blue-400',    label: 'Général' },
@@ -68,7 +69,8 @@ export default function PostAuthorHeader({
   const timeAgo = useMemo(() => {
     if (!createdDate) return '';
     try {
-      return formatDistanceToNow(new Date(createdDate), { addSuffix: true, locale: fr });
+      const date = parseEntityDate(createdDate);
+      return date ? formatDistanceToNow(date, { addSuffix: true, locale: fr }) : '';
     } catch {
       return '';
     }

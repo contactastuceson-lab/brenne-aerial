@@ -5,6 +5,7 @@ import { MessageCircle, Eye, Pin, Lock, Star } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import AffiliationBadges from '@/components/shared/AffiliationBadges';
 import usePublicUser from '@/hooks/usePublicUser';
+import { parseEntityDate } from '@/lib/entityDate';
 
 // Strip markdown to plain text for preview
 function stripMarkdown(text = '') {
@@ -77,7 +78,7 @@ export default function DiscussionCard({ discussion }) {
               user={{ id: discussion.author_id }}
             />
 
-            <span className="hidden sm:inline text-slate-600 truncate">{formatDistanceToNow(new Date(discussion.created_date), { locale: fr, addSuffix: true })}</span>
+            <span className="hidden sm:inline text-slate-600 truncate">{formatDistanceToNow(parseEntityDate(discussion.created_date), { locale: fr, addSuffix: true })}</span>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
             <div className="flex items-center gap-1"><MessageCircle size={13} />{discussion.replies_count || 0}</div>

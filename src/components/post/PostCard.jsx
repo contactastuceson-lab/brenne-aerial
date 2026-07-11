@@ -15,6 +15,7 @@ import LazyMedia from '@/components/post/LazyMedia';
 import { notify } from '@/lib/notificationHelper';
 import { isActionBlocked, RESTRICTED_TOAST } from '@/lib/accountStatus';
 import { extractHashtags } from '@/lib/hashtags';
+import { parseEntityDate } from '@/lib/entityDate';
 
 const TRUNCATE_LIMIT = 560;
 
@@ -61,7 +62,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
   const avatarSrc = liveUser?.avatar_url || post.author_avatar;
 
   const timeAgo = post.created_date
-    ? formatDistanceToNow(new Date(post.created_date), { addSuffix: false, locale: fr })
+    ? formatDistanceToNow(parseEntityDate(post.created_date), { addSuffix: false, locale: fr })
     : '';
 
   useEffect(() => {

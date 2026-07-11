@@ -10,10 +10,12 @@ const cache = {};           // { [userId]: { data, ts } }
 const listeners = {};       // { [userId]: Set<fn> }
 const pending = {};         // { [userId]: Promise }
 const TTL = 5 * 60 * 1000; // 5 min
+const LIVE_REFRESH_MS = 30 * 1000;
 
 // Shared batch of user IDs to resolve
 let batchQueue = new Set();
 let batchTimer = null;
+let refreshTimer = null;
 
 function notify(userId) {
   listeners[userId]?.forEach(fn => fn(cache[userId]?.data ?? null));
@@ -60,6 +62,22 @@ function fetchUser(userId) {
   scheduleBatch(userId);
 }
 
+function ensureLiveRefresh() {
+  if (refreshTimer) return;
+  refreshTimer = setInterval(() => {
+    const userIds = Object.keys(listeners).filter(userId => listeners[userId]?.size && !pending[userId]);
+    if (!userIds.length) return;
+    userIds.forEach(userId => { pending[userId] = true; });
+    fetchBatch(userIds);
+  }, LIVE_REFRESH_MS);
+}
+
+function stopLiveRefreshIfUnused() {
+  if (Object.keys(listeners).length || !refreshTimer) return;
+  clearInterval(refreshTimer);
+  refreshTimer = null;
+}
+
 export function getOrFetchUser(userId) {
   if (!userId) return;
   const entry = cache[userId];
@@ -80,15 +98,14 @@ export default function usePublicUser(userId) {
     if (!listeners[userId]) listeners[userId] = new Set();
     listeners[userId].add(setUser);
 
-    // Fetch if stale or missing
-    const entry = cache[userId];
-    if (!entry || Date.now() - entry.ts > TTL) {
-      fetchUser(userId);
-    }
+    // Refresh immediately on display, then keep active profiles in sync.
+    fetchUser(userId);
+    ensureLiveRefresh();
 
     return () => {
       listeners[userId]?.delete(setUser);
       if (listeners[userId]?.size === 0) delete listeners[userId];
+      stopLiveRefreshIfUnused();
     };
   }, [userId]);
 

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import OnboardingModal from '@/components/shared/OnboardingModal';
 import EmailVerificationModal from '@/components/shared/EmailVerificationModal';
 import { Outlet, useLocation } from 'react-router-dom';
-import AppHeader from './AppHeader';
 import BottomTabBar from './BottomTabBar';
 import RouteTransition from './RouteTransition';
 import Navbar from './Navbar';
@@ -130,11 +129,6 @@ export default function PublicLayout() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AnnouncementBanner user={user} />
-
-      {/* Mobile + tablette : AppHeader visible jusqu'à lg (où la sidebar prend le relais) */}
-      <div className="md:hidden">
-        <AppHeader />
-      </div>
 
       <div className="flex-1 flex flex-col">
         <RouteTransition />

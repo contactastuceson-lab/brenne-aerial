@@ -20,6 +20,7 @@ const MAIN_TABS = [
 ];
 
 const MORE_ITEMS = [
+  { to: '/notifications',        icon: Bell,         label: 'Notifications',  color: 'text-primary' },
   { to: '/profile',              icon: User,         label: 'Mon profil',      color: 'text-primary' },
   { to: '/discover',             icon: Compass,      label: 'Explorer',        color: 'text-cyan-400' },
   { to: '/forum',                icon: FileText,     label: 'Forum',           color: 'text-blue-400' },
@@ -193,8 +194,8 @@ export default function BottomTabBar() {
       </AnimatePresence>
 
       {/* Tab bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/8 pb-[env(safe-area-inset-bottom)]"
-        style={{ background: 'rgba(4,10,20,0.95)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/8 pb-[env(safe-area-inset-bottom)] shadow-[0_-12px_36px_rgba(0,0,0,0.28)]"
+        style={{ background: 'rgba(4,10,20,0.96)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
       >
         <div className="flex items-center px-1 h-16 gap-0.5">
           {/* Create post button — centered, visible only when logged in */}
@@ -216,7 +217,7 @@ export default function BottomTabBar() {
             if (tab.isMore) {
               return (
                 <button key="more" onClick={() => setShowMore(v => !v)}
-                  className="flex flex-col items-center gap-1 flex-1 py-2 rounded-2xl transition-all"
+                  className="native-press flex flex-col items-center gap-1 flex-1 py-2 rounded-2xl transition-all"
                 >
                   <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-colors duration-150 ${active ? 'bg-primary/20' : ''}`}>
                       {active ? <X className={`w-5 h-5 text-primary`} /> : <Icon className={`w-5 h-5 text-muted-foreground`} />}
@@ -230,7 +231,7 @@ export default function BottomTabBar() {
 
             return (
               <Link key={tab.to} to={tab.to} onClick={() => setShowMore(false)}
-                className="flex flex-col items-center gap-1 flex-1 py-2 rounded-2xl relative active:opacity-60 transition-opacity duration-100"
+                className="native-press flex flex-col items-center gap-1 flex-1 py-2 rounded-2xl relative active:opacity-60 transition-opacity duration-100"
               >
                 {tab.to === '/messages' && unreadCount > 0 && user && (
                   <span className="absolute top-1.5 right-[calc(50%-10px)] w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-mono flex items-center justify-center z-10 border border-background">

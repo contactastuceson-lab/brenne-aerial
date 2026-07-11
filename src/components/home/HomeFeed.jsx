@@ -192,7 +192,7 @@ export default function HomeFeed({ user }) {
       )}
 
       {/* Filter bar */}
-      <div className="flex items-center border-b border-zinc-800/60 sticky top-14 md:top-0 bg-background/95 backdrop-blur-md z-10">
+      <div className="flex items-center border-b border-zinc-800/60 sticky top-0 bg-background/95 backdrop-blur-md z-10">
         <div className="flex items-center flex-1">
           {FILTERS.map((f) => (
             <button key={f.id} onClick={() => handleFilter(f.id)}

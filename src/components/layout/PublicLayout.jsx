@@ -4,6 +4,7 @@ import EmailVerificationModal from '@/components/shared/EmailVerificationModal';
 import { Outlet, useLocation } from 'react-router-dom';
 import AppHeader from './AppHeader';
 import BottomTabBar from './BottomTabBar';
+import RouteTransition from './RouteTransition';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import AnnouncementBanner from '@/components/shared/AnnouncementBanner';
@@ -136,7 +137,7 @@ export default function PublicLayout() {
       </div>
 
       <div className="flex-1 flex flex-col">
-        <Outlet />
+        <RouteTransition />
       </div>
       <AnnouncementPopup user={user} />
 

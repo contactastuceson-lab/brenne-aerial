@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import HomeLeftSidebar from '@/components/home/HomeLeftSidebar';
-import BottomTabBar from '@/components/layout/BottomTabBar';
 import { base44 } from '@/api/base44Client';
 import { ShieldAlert, X } from 'lucide-react';
 import { isRestricted, isSuspended, RESTRICTION_LABELS } from '@/lib/accountStatus';
@@ -137,9 +136,6 @@ export default function SidebarLayout() {
         <RestrictedBanner user={user} />
         <Outlet />
       </main>
-      <div className="md:hidden">
-        <BottomTabBar />
-      </div>
     </div>
   );
 }

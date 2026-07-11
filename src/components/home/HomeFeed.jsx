@@ -7,7 +7,6 @@ import CreatePost from '@/components/post/CreatePost';
 import { RefreshCw, Rss, Sparkles, ArrowUp, Users, TrendingUp, Zap, ArrowRight, Hash, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { extractHashtags } from '@/lib/hashtags';
-import MobileFeedHeader from '@/components/home/MobileFeedHeader';
 
 const FILTERS = [
   { id: 'foryou',  label: 'Pour vous' },
@@ -182,8 +181,6 @@ export default function HomeFeed({ user }) {
 
   return (
     <main className="w-full max-w-[680px] min-w-0 md:border-r md:border-zinc-800/60">
-      <MobileFeedHeader user={user} />
-
       {/* Guest hero */}
       {user === null && <GuestHero />}
 
@@ -195,7 +192,7 @@ export default function HomeFeed({ user }) {
       )}
 
       {/* Filter bar */}
-      <div className="flex items-center border-b border-zinc-800/60 sticky top-0 bg-background/95 backdrop-blur-md z-10">
+      <div className="flex items-center border-b border-zinc-800/60 sticky top-14 md:top-0 bg-background/95 backdrop-blur-md z-10">
         <div className="flex items-center flex-1">
           {FILTERS.map((f) => (
             <button key={f.id} onClick={() => handleFilter(f.id)}

@@ -93,7 +93,7 @@ export default function AppHeader() {
 
         {/* Droite : icône notifications avec badge */}
         <div className="flex-shrink-0">
-          <Link to="/dashboard?tab=notifications" className="relative p-2 rounded-full hover:bg-white/8 transition-colors flex items-center justify-center">
+          <Link to="/notifications" className="relative p-2 rounded-full hover:bg-white/8 transition-colors flex items-center justify-center native-press">
             <Bell className="w-5 h-5 text-muted-foreground" />
             {unreadCount > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">

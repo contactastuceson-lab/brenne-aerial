@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
+import { isRestricted, RESTRICTED_TOAST } from '@/lib/accountStatus';
 
 function getConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join('_');
@@ -276,6 +277,7 @@ export default function MessageThread({ user, conv, onBack }) {
   const handleSend = () => {
     if (!text.trim()) return;
     if (isLockedForMe || isBlockedByAdmin) return;
+    if (isRestricted(user)) { toast.error(RESTRICTED_TOAST); return; }
     // Admins bypass the request system — send directly
     if (isCurrentUserAdmin) { sendMessage.mutate(); return; }
     if (!hasAnyRequest && !isOpen) sendRequest.mutate();
@@ -605,6 +607,13 @@ export default function MessageThread({ user, conv, onBack }) {
       {/* ── Input ── */}
       <div className={`px-4 py-3 flex-shrink-0 ${isOfficialConversation ? '' : 'border-t border-border bg-card'}`}
         style={isOfficialConversation ? { borderTop: '1px solid rgba(56,170,220,0.15)', background: 'linear-gradient(180deg, hsl(214 50% 5%) 0%, hsl(205 90% 6%) 100%)' } : {}}>
+        {/* Compte restreint */}
+        {isRestricted(user) && !isOfficialConversation && (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500/10 border border-orange-500/20">
+            <ShieldAlert className="w-4 h-4 text-orange-400 flex-shrink-0" />
+            <span className="font-inter text-xs text-orange-300">Votre compte est <strong>restreint</strong>. Vous ne pouvez pas envoyer de messages.</span>
+          </div>
+        )}
         {/* Admin lock / block banners */}
         {isLockedForMe && !isOfficialConversation && (
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-400/10 border border-orange-400/20">
@@ -619,7 +628,7 @@ export default function MessageThread({ user, conv, onBack }) {
           </div>
         )}
 
-        {isOfficialConversation ? (
+        {isRestricted(user) && !isOfficialConversation ? null : isOfficialConversation ? (
           <div className="flex flex-col items-center gap-3 py-2">
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl w-full"
               style={{ background: 'rgba(56,170,220,0.06)', border: '1px solid rgba(56,170,220,0.15)' }}>
@@ -719,7 +728,7 @@ export default function MessageThread({ user, conv, onBack }) {
           </div>
         ) : (
           <div className="text-center py-2 font-inter text-xs text-muted-foreground">Cette conversation est fermée.</div>
-        )}
+        ) }
       </div>
 
       {/* Context menu for messages (right-click) */}

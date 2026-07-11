@@ -8,6 +8,7 @@ import GifPicker from '@/components/post/GifPicker';
 import PollCreator from '@/components/post/PollCreator';
 import MentionAutocomplete, { useMentionAutocomplete } from '@/components/post/MentionAutocomplete';
 import { notify } from '@/lib/notificationHelper';
+import { isRestricted, RESTRICTED_TOAST } from '@/lib/accountStatus';
 
 const MAX_CHARS = 280;
 
@@ -110,6 +111,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
 
   const handlePost = async () => {
     if (!canPost) return;
+    if (isRestricted(user)) { toast.error(RESTRICTED_TOAST); return; }
     setPosting(true);
     try {
       const hashtags = extractHashtags(content);
@@ -183,6 +185,15 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
 
   const name = user?.display_name || user?.full_name || 'Vous';
   const initial = (name[0] || 'U').toUpperCase();
+
+  if (isRestricted(user)) {
+    return (
+      <div className="px-4 py-3 flex items-center gap-3 text-sm text-orange-300 bg-orange-500/8 border-b border-orange-500/15">
+        <span className="text-base">⚠️</span>
+        <span className="font-inter">Votre compte est <strong>restreint</strong> — publication désactivée.</span>
+      </div>
+    );
+  }
 
   // Progress ring
   const progress = Math.min(content.length / MAX_CHARS, 1);

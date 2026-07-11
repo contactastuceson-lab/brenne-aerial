@@ -252,7 +252,7 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
 
         return (
           <BadgePopup key={key} badgeKey={key} badgeInfo={customBadgeInfo}>
-            <span className="inline-flex items-center flex-shrink-0">
+            <span className="inline-flex items-center leading-none flex-shrink-0">
               <VerificationMark type={key} />
             </span>
           </BadgePopup>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CheckCircle, BadgeCheck, Building2, Gem, Crown, Star, Shield, Plane, Users, Award, Zap, UserCheck, Heart } from 'lucide-react';
+import { X, Check, CheckCircle, Star, Shield, Plane, Users, Award, Zap, UserCheck, Heart } from 'lucide-react';
 
 const BADGE_INFO = {
   verified:  {
@@ -19,7 +19,7 @@ const BADGE_INFO = {
   },
   certified: {
     label: 'Certifié',
-    icon: BadgeCheck,
+    icon: Check,
     bg: '#f59e0b',
     issuer: 'Brenne Aerial - Certification Pro',
     criteria: [
@@ -33,7 +33,7 @@ const BADGE_INFO = {
   },
   official:  {
     label: 'Officiel',
-    icon: Building2,
+    icon: Check,
     bg: '#a855f7',
     issuer: 'Brenne Aerial - Partenaires',
     criteria: ['Organisation vérifiée', 'Compte géré par l’entité officielle'],
@@ -43,7 +43,7 @@ const BADGE_INFO = {
   },
   pro: {
     label: 'Pro',
-    icon: Gem,
+    icon: Check,
     bg: '#10b981',
     issuer: 'Brenne Aerial - Pro',
     criteria: ['Preuve d’activité professionnelle', 'Services fournis'],
@@ -53,15 +53,16 @@ const BADGE_INFO = {
   },
   supreme: {
     label: 'Suprême',
-    icon: Crown,
-    gradient: true,
-    issuer: 'Comité Brenne Aerial',
+    icon: Check,
+    bg: '#f59e0b',
+    issuer: 'Équipe eza',
     criteria: ['Attribution sur invitation', 'Contribution exceptionnelle'],
     short: 'Badge prestigieux sur invitation.',
     description: "Badge rare attribué aux membres ayant contribué de manière exceptionnelle à la communauté.",
     helpLink: '#'
   },
-  Fondateur: { label: 'Fondateur', icon: Star, bg: '#eab308', short: 'Membre fondateur.', description: 'Membre fondateur de la communauté Brenne Aerial.' },
+  government: { label: 'Gouvernement et multilatéral', icon: Check, bg: '#71717a', issuer: 'Équipe eza', short: 'Institution vérifiée.', description: 'Compte officiel d’une institution gouvernementale ou multilatérale vérifiée.' },
+  Fondateur: { label: 'Fondateur', icon: Star, bg: '#eab308', short: 'Membre fondateur.', description: 'Membre fondateur de la communauté eza.' },
   Collaborateur: { label: 'Collaborateur', icon: UserCheck, bg: '#3b82f6', short: 'Contributeur actif.', description: 'Collaborateur actif de Brenne Aerial.' },
   VIP: { label: 'VIP', icon: Award, bg: '#a855f7', short: 'Accès privilégié.', description: 'Membre VIP bénéficiant d’un accès privilégié.' },
   Admin: { label: 'Admin', icon: Shield, bg: '#ef4444', short: 'Administrateur.', description: 'Administrateur de la plateforme.' },
@@ -116,11 +117,11 @@ function Popup({ info, anchorRect, onClose }) {
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
 
-  const Icon = info.icon;
+  const Icon = info.icon || Check;
   const criteria = /** @type {string[]} */ (info.criteria || []);
   // Special modal variant for verification-like badges (Vérifié / Certifié / Pro / Suprême / Officiel): slide up from bottom to center
   const labelNorm = (info.label || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
-  const verificationKeywords = ['verif', 'certif', 'pro', 'suprem', 'supr', 'offic', 'official'];
+  const verificationKeywords = ['verif', 'certif', 'pro', 'suprem', 'supr', 'offic', 'official', 'gouvern', 'multilat'];
   const isVerificationModal = verificationKeywords.some(k => labelNorm.includes(k));
 
   if (isVerificationModal) {
@@ -142,7 +143,7 @@ function Popup({ info, anchorRect, onClose }) {
                 className="flex h-9 w-9 items-center justify-center rounded-md border border-white/20 bg-background/10 shadow-sm"
                 style={info.gradient ? { background: 'linear-gradient(135deg,#f59e0b,#fde68a,#b45309)' } : { background: info.bg }}
               >
-                <Icon className={`h-5 w-5 ${info.gradient ? 'text-yellow-900' : 'text-white'}`} strokeWidth={2.5} />
+                <Icon className="h-5 w-5 text-[#050d1a]" strokeWidth={3.5} />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/90">Vérification</p>
@@ -200,7 +201,7 @@ function Popup({ info, anchorRect, onClose }) {
               : { background: info.bg }
             }
           >
-            <Icon className={`w-6 h-6 ${info.gradient ? 'text-yellow-900' : 'text-white'}`} strokeWidth={2.5} />
+            <Icon className="w-6 h-6 text-[#050d1a]" strokeWidth={3.5} />
           </span>
           <p className="font-grotesk font-bold text-sm" style={info.gradient ? { color: '#fde68a' } : { color: info.bg }}>
             {info.label}

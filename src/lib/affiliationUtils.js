@@ -1,19 +1,21 @@
 export const AFFILIATION_ELIGIBLE_BADGES = ['official', 'supreme', 'officiel', 'suprême'];
-export const AFFILIATION_BADGE_HIERARCHY = ['verified', 'certified', 'pro', 'official', 'supreme'];
+export const AFFILIATION_BADGE_HIERARCHY = ['verified', 'certified', 'pro', 'official', 'government', 'supreme'];
 export const AFFILIATION_BADGE_LEVEL = {
   verified: 1,
   certified: 2,
   pro: 3,
   official: 4,
   supreme: 5,
+  government: 5,
 };
 
 const normalizeBadge = (value) => String(value || '').toLowerCase();
-const AFFILIATION_VERIFICATION_ORDER = ['verified', 'certified', 'pro', 'official', 'supreme'];
+const AFFILIATION_VERIFICATION_ORDER = ['verified', 'certified', 'pro', 'official', 'government', 'supreme'];
 const canonicalVerificationBadge = (value) => {
   const normalized = normalizeBadge(value);
   if (['supreme', 'suprême'].includes(normalized)) return 'supreme';
   if (['official', 'officiel'].includes(normalized)) return 'official';
+  if (['government', 'gouvernement', 'gouvernemental', 'multilateral', 'multilatéral'].includes(normalized)) return 'government';
   if (normalized === 'pro') return 'pro';
   if (['certified', 'certifié'].includes(normalized)) return 'certified';
   if (['verified', 'vérifié', 'verifie', 'verif'].includes(normalized)) return 'verified';

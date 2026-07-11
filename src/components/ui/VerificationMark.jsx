@@ -11,7 +11,7 @@ export default function VerificationMark({ type = 'verified', className = '' }) 
   const isRosette = ['verified', 'pro', 'official'].includes(type);
   const isSupreme = type === 'supreme';
   const fill = isSupreme ? `url(#${gradientId})` : (COLORS[type] || COLORS.verified);
-  return <svg viewBox="0 0 24 24" aria-label={type} className={className} style={{ width: '0.95em', height: '0.95em', verticalAlign: 'text-bottom', marginLeft: '4px' }}>
+  return <svg viewBox="0 0 24 24" aria-label={type} className={className} style={{ width: '1.1em', height: '1.1em', verticalAlign: 'text-bottom', marginLeft: '2px' }}>
     <defs>
       {isSupreme && <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FDE047" /><stop offset="50%" stopColor="#EAB308" /><stop offset="100%" stopColor="#A16207" /></linearGradient>}
       {!isRosette && <mask id={maskId}><rect width="24" height="24" fill="white" /><path d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" fill="black" /></mask>}

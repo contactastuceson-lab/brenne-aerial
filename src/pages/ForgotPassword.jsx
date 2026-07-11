@@ -1,0 +1,12 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft, CheckCircle2, Loader2, Mail } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { Input } from '@/components/ui/input';
+import AuthBrandPanel from '@/components/auth/AuthBrandPanel';
+
+export default function ForgotPassword() {
+  const [email, setEmail] = useState(''); const [loading, setLoading] = useState(false); const [sent, setSent] = useState(false);
+  const submit = async event => { event.preventDefault(); setLoading(true); try { await base44.auth.resetPasswordRequest(email); } finally { setLoading(false); setSent(true); } };
+  return <div className="flex min-h-screen bg-background"><AuthBrandPanel /><main className="flex flex-1 items-center justify-center px-6 py-12"><div className="w-full max-w-md">{sent ? <><span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-400/10"><CheckCircle2 className="h-7 w-7 text-green-400" /></span><h1 className="mt-6 font-grotesk text-3xl font-black">Vérifiez votre boîte mail</h1><p className="mt-3 font-inter text-sm leading-relaxed text-muted-foreground">Si un compte eza correspond à cette adresse, un lien de réinitialisation vient de vous être envoyé.</p><Link to="/login" className="mt-8 inline-flex items-center gap-2 font-inter text-sm font-semibold text-primary hover:underline"><ArrowLeft className="h-4 w-4" /> Retour à la connexion</Link></> : <><Link to="/login" className="inline-flex items-center gap-2 font-inter text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Retour</Link><h1 className="mt-8 font-grotesk text-3xl font-black">Mot de passe oublié ?</h1><p className="mt-2 font-inter text-sm leading-relaxed text-muted-foreground">Entrez votre email : nous vous enverrons un lien sécurisé pour créer un nouveau mot de passe.</p><form onSubmit={submit} className="mt-8 space-y-4"><span className="relative block"><Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" /><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-11 pl-9" placeholder="vous@exemple.com" required /></span><button disabled={loading} className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary font-inter text-sm font-bold text-primary-foreground disabled:opacity-60">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Envoyer le lien de réinitialisation'}</button></form></>}</div></main></div>;
+}

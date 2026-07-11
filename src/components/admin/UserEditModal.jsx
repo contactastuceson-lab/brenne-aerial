@@ -9,6 +9,7 @@ import { Loader2, Save, Upload, X, CheckCircle, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { ROLE_CONFIG, getUserLevel, getAssignableRoles, PDG_EMAILS, PDG_ADJOINT_EMAILS } from '@/lib/roles';
+import { RESTRICTION_LABELS } from '@/lib/accountStatus';
 
 const STATUS_OPTIONS = [
   { value: 'active', label: '✅ Actif', color: 'text-green-400' },
@@ -32,6 +33,7 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
     role: 'user',
     account_status: 'active',
     verified_status: 'no',
+    restrictions: [],
     suspension_reason: '',
     suspension_until: '',
     closed_by: '',
@@ -60,6 +62,7 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
         role: user.role || 'user',
         account_status: user.account_status || 'active',
         verified_status: user.verified_status || 'no',
+        restrictions: user.restrictions || [],
         suspension_reason: user.suspension_reason || '',
         suspension_until: user.suspension_until || '',
         closed_by: user.closed_by || '',
@@ -315,6 +318,57 @@ export default function UserEditModal({ user, open, onClose, onSave, isLoading, 
                   <Input type="date" value={form.suspension_until} onChange={e => setForm(p => ({ ...p, suspension_until: e.target.value }))} className="bg-card border-border" />
                 </div>
               </>
+            )}
+
+            {/* Granular restrictions — only for "restricted" status */}
+            {form.account_status === 'restricted' && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-inter text-xs font-medium text-orange-400">Actions bloquées</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setForm(p => ({ ...p, restrictions: Object.keys(RESTRICTION_LABELS) }))}
+                      className="text-[10px] font-inter text-muted-foreground hover:text-foreground underline"
+                    >
+                      Tout bloquer
+                    </button>
+                    <span className="text-muted-foreground/30 text-[10px]">|</span>
+                    <button
+                      type="button"
+                      onClick={() => setForm(p => ({ ...p, restrictions: [] }))}
+                      className="text-[10px] font-inter text-muted-foreground hover:text-foreground underline"
+                    >
+                      Tout décocher
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[10px] font-inter text-muted-foreground">Si aucune case cochée → tout est bloqué par défaut.</p>
+                <div className="grid grid-cols-2 gap-1.5 bg-orange-500/5 rounded-xl p-3 border border-orange-500/15">
+                  {Object.entries(RESTRICTION_LABELS).map(([key, cfg]) => {
+                    const checked = form.restrictions.includes(key);
+                    return (
+                      <label key={key} className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={e => {
+                            const newR = e.target.checked
+                              ? [...form.restrictions, key]
+                              : form.restrictions.filter(r => r !== key);
+                            setForm(p => ({ ...p, restrictions: newR }));
+                          }}
+                          className="w-3.5 h-3.5 rounded accent-orange-400 cursor-pointer"
+                        />
+                        <span className="font-inter text-xs text-foreground/80 group-hover:text-foreground flex items-center gap-1">
+                          <span>{cfg.emoji}</span>
+                          <span>{cfg.label}</span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
             )}
             {form.account_status === 'closed' && (
               <div className="space-y-3">

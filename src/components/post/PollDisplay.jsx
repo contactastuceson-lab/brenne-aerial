@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { BarChart3, Clock, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { isActionBlocked, RESTRICTED_TOAST } from '@/lib/accountStatus';
+import { toast } from 'sonner';
 
 export default function PollDisplay({ post, currentUser }) {
   const poll = post.poll;
@@ -18,6 +20,7 @@ export default function PollDisplay({ post, currentUser }) {
 
   const handleVote = async (optionId) => {
     if (!currentUser || voting || hasVoted || isExpired) return;
+    if (isActionBlocked(currentUser, 'poll')) { toast.error(RESTRICTED_TOAST); return; }
     setVoting(true);
     try {
       const updatedOptions = localPoll.options.map(o => {

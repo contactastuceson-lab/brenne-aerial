@@ -8,7 +8,7 @@ import GifPicker from '@/components/post/GifPicker';
 import PollCreator from '@/components/post/PollCreator';
 import MentionAutocomplete, { useMentionAutocomplete } from '@/components/post/MentionAutocomplete';
 import { notify } from '@/lib/notificationHelper';
-import { isRestricted, RESTRICTED_TOAST } from '@/lib/accountStatus';
+import { isRestricted, isActionBlocked, RESTRICTED_TOAST } from '@/lib/accountStatus';
 
 const MAX_CHARS = 280;
 
@@ -59,6 +59,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
   const handleMediaUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
+    if (isActionBlocked(user, 'media')) { toast.error(RESTRICTED_TOAST); return; }
     if (poll) { toast.error("Impossible d'ajouter des médias avec un sondage"); return; }
     setUploadProgress(0);
     try {
@@ -97,6 +98,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
   };
 
   const handleGifSelect = (url) => {
+    if (isActionBlocked(user, 'media')) { toast.error(RESTRICTED_TOAST); return; }
     if (poll) { toast.error("Impossible d'ajouter des médias avec un sondage"); return; }
     setMediaUrls(prev => [...prev, url].slice(0, 4));
     setShowGif(false);
@@ -104,6 +106,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
 
   const togglePoll = () => {
     if (poll) { setPoll(null); return; }
+    if (isActionBlocked(user, 'poll')) { toast.error(RESTRICTED_TOAST); return; }
     if (mediaUrls.length > 0) { toast.error('Supprimez les médias avant d\'ajouter un sondage'); return; }
     setPoll(makePoll());
     setFocused(true);
@@ -111,7 +114,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
 
   const handlePost = async () => {
     if (!canPost) return;
-    if (isRestricted(user)) { toast.error(RESTRICTED_TOAST); return; }
+    if (isActionBlocked(user, 'post')) { toast.error(RESTRICTED_TOAST); return; }
     setPosting(true);
     try {
       const hashtags = extractHashtags(content);
@@ -186,7 +189,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
   const name = user?.display_name || user?.full_name || 'Vous';
   const initial = (name[0] || 'U').toUpperCase();
 
-  if (isRestricted(user)) {
+  if (isActionBlocked(user, 'post')) {
     return (
       <div className="px-4 py-3 flex items-center gap-3 text-sm text-orange-300 bg-orange-500/8 border-b border-orange-500/15">
         <span className="text-base">⚠️</span>

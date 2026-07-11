@@ -13,7 +13,7 @@ import usePublicUser from '@/hooks/usePublicUser';
 import PollDisplay from '@/components/post/PollDisplay';
 import LazyMedia from '@/components/post/LazyMedia';
 import { notify } from '@/lib/notificationHelper';
-import { isRestricted, RESTRICTED_TOAST } from '@/lib/accountStatus';
+import { isActionBlocked, RESTRICTED_TOAST } from '@/lib/accountStatus';
 import { extractHashtags } from '@/lib/hashtags';
 
 const TRUNCATE_LIMIT = 560;
@@ -74,7 +74,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
   const handleLike = useCallback(async (e) => {
     e.stopPropagation();
     if (!currentUser) { navigate('/login'); return; }
-    if (isRestricted(currentUser)) { toast.error(RESTRICTED_TOAST); return; }
+    if (isActionBlocked(currentUser, 'like')) { toast.error(RESTRICTED_TOAST); return; }
     if (likeLoading) return;
     // Haptic feedback natif (iOS/Android)
     if (navigator.vibrate) navigator.vibrate(8);
@@ -284,9 +284,9 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
             count={post.replies_count}
             color="blue"
             onClick={(e) => {
-              e.stopPropagation();
-              if (isRestricted(currentUser)) { toast.error(RESTRICTED_TOAST); return; }
-              onReply ? onReply(post) : openPost();
+            e.stopPropagation();
+            if (isActionBlocked(currentUser, 'reply')) { toast.error(RESTRICTED_TOAST); return; }
+            onReply ? onReply(post) : openPost();
             }}
           />
           <ActionBtn

@@ -8,6 +8,7 @@ import {
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { extractHashtags } from '@/lib/hashtags';
+import { isActionBlocked, RESTRICTED_TOAST } from '@/lib/accountStatus';
 
 const CATEGORIES = [
   { id: 'general',   label: 'Général',   icon: MessageSquare },
@@ -216,6 +217,7 @@ export default function HomeCreatePost({ user, onPost }) {
   const handlePost = async () => {
     const content = buildContent();
     if (!content.trim()) return;
+    if (isActionBlocked(user, 'post')) { toast.error(RESTRICTED_TOAST); return; }
     setPosting(true);
     try {
       const tags = extractHashtags(content);
@@ -245,6 +247,15 @@ export default function HomeCreatePost({ user, onPost }) {
 
   const hasContent = text.trim() || photos.length || videoUrl || location || linkUrl ||
     (activePanel === 'poll' && pollOptions.some(Boolean));
+
+  if (isActionBlocked(user, 'post')) {
+    return (
+      <div className="px-5 py-4 flex items-center gap-3 text-sm text-orange-300">
+        <span className="text-base">⚠️</span>
+        <span className="font-inter">Votre compte est <strong>restreint</strong> — publication désactivée.</span>
+      </div>
+    );
+  }
 
   return (
     <motion.div layout className="w-full">

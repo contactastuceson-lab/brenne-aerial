@@ -14,7 +14,7 @@ export default function VerificationMark({ type = 'verified', className = '' }) 
   return <svg viewBox="0 0 24 24" aria-label={type} className={className} style={{ width: '1.25em', height: '1.25em', verticalAlign: 'text-bottom' }}>
     <defs>
       {isSupreme && <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FDE047" /><stop offset="50%" stopColor="#EAB308" /><stop offset="100%" stopColor="#A16207" /></linearGradient>}
-      {!isRosette && <mask id={maskId}><rect width="24" height="24" fill="white" /><path d="M9.84 15.575l-3.64-3.51 1.4-1.35 2.14 2.065 5.22-5.03 1.4 1.35-6.52 6.285z" fill="black" /></mask>}
+      {!isRosette && <mask id={maskId}><rect width="24" height="24" fill="white" /><path d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" fill="black" /></mask>}
     </defs>
     <path mask={!isRosette ? `url(#${maskId})` : undefined} fill={fill} d={isRosette ? ROSETTE_PATH : CUT_PATH} />
   </svg>;

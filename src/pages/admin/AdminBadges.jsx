@@ -16,7 +16,7 @@ const VERIFICATION_TYPES = [
   { key: 'certified', label: 'Certifié', color: 'text-amber-400', bg: 'bg-amber-400/15', border: 'border-amber-400/40', desc: 'Certification officielle (jaune)' },
   { key: 'official', label: 'Officiel', color: 'text-purple-400', bg: 'bg-purple-400/15', border: 'border-purple-400/40', desc: 'Entité officielle (violet)' },
   { key: 'pro', label: 'Pro', color: 'text-emerald-400', bg: 'bg-emerald-400/15', border: 'border-emerald-400/40', desc: 'Professionnel validé (vert)' },
-  { key: 'government', label: 'Gouvernement et multilatéral', color: 'text-zinc-300', bg: 'bg-zinc-500/15', border: 'border-zinc-400/40', desc: 'Institution vérifiée (gris)' },
+  { key: 'government', label: 'Gouvernement', color: 'text-zinc-300', bg: 'bg-zinc-500/15', border: 'border-zinc-400/40', desc: 'Institution gouvernementale ou multilatérale vérifiée (gris)' },
   { key: 'supreme', label: 'Suprême', color: 'text-chart-5', bg: 'bg-chart-5/15', border: 'border-chart-5/40', desc: 'Compte Suprême eza (or)' },
 ];
 
@@ -206,8 +206,8 @@ export default function AdminBadges() {
                 <div className="border-t border-border bg-secondary/40 p-3 sm:p-4 space-y-4">
                   {/* Verifications grid - 2 cols on mobile */}
                   <div>
-                    <p className="font-inter text-xs font-semibold text-muted-foreground mb-2.5 uppercase tracking-wide">Certifications</p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <p className="font-inter text-xs font-semibold text-muted-foreground mb-2.5 uppercase tracking-wide">Vérifications — cliquez pour attribuer</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {VERIFICATION_TYPES.map(vt => {
                         const active = (u.verifications || []).includes(vt.key);
                         return (

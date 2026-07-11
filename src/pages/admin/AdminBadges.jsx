@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Search, CheckCircle, ShieldCheck, Award, Star, Zap, Shield, Users, Crown, BadgeCheck, Gem, Building2 } from 'lucide-react';
+import { Search, Check, Shield } from 'lucide-react';
 import VerificationChip from '@/components/ui/VerificationChip';
+import VerificationMark from '@/components/ui/VerificationMark';
 import { Input } from '@/components/ui/input';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { toast } from 'sonner';
 
 const ALL_BADGES = ['Fondateur', 'Collaborateur', 'VIP', 'Admin', 'Pilote', 'Officiel', 'Vérifié', 'Beta Testeur', 'Partenaire'];
-const BADGE_ICONS = { Fondateur: Crown, Collaborateur: Users, VIP: Star, Admin: Shield, Pilote: Zap, Officiel: CheckCircle, Vérifié: CheckCircle, 'Beta Testeur': Zap, Partenaire: Award };
+const BADGE_ICONS = { Fondateur: Check, Collaborateur: Check, VIP: Check, Admin: Check, Pilote: Check, Officiel: Check, Vérifié: Check, 'Beta Testeur': Check, Partenaire: Check };
 
 const VERIFICATION_TYPES = [
-  { key: 'verified',  label: 'Vérifié',  icon: CheckCircle, color: 'text-sky-400',     bg: 'bg-sky-400/15',     border: 'border-sky-400/40',    desc: 'Compte vérifié (bleu)' },
-  { key: 'certified', label: 'Certifié', icon: BadgeCheck,  color: 'text-amber-400',   bg: 'bg-amber-400/15',   border: 'border-amber-400/40',  desc: 'Certification officielle (or)' },
-  { key: 'official',  label: 'Officiel', icon: Building2,   color: 'text-purple-400',  bg: 'bg-purple-400/15',  border: 'border-purple-400/40', desc: 'Entité officielle (violet)' },
-  { key: 'pro',       label: 'Pro',      icon: Gem,         color: 'text-emerald-400', bg: 'bg-emerald-400/15', border: 'border-emerald-400/40', desc: 'Professionnel validé (vert)' },
-  { key: 'supreme',   label: 'Suprême',  icon: ShieldCheck, color: 'text-chart-5',     bg: 'bg-chart-5/15',     border: 'border-chart-5/40',    desc: 'Compte Suprême Brenne Aérial (or)' },
+  { key: 'verified', label: 'Vérifié', color: 'text-sky-400', bg: 'bg-sky-400/15', border: 'border-sky-400/40', desc: 'Compte vérifié (bleu)' },
+  { key: 'certified', label: 'Certifié', color: 'text-amber-400', bg: 'bg-amber-400/15', border: 'border-amber-400/40', desc: 'Certification officielle (jaune)' },
+  { key: 'official', label: 'Officiel', color: 'text-purple-400', bg: 'bg-purple-400/15', border: 'border-purple-400/40', desc: 'Entité officielle (violet)' },
+  { key: 'pro', label: 'Pro', color: 'text-emerald-400', bg: 'bg-emerald-400/15', border: 'border-emerald-400/40', desc: 'Professionnel validé (vert)' },
+  { key: 'government', label: 'Gouvernement et multilatéral', color: 'text-zinc-300', bg: 'bg-zinc-500/15', border: 'border-zinc-400/40', desc: 'Institution vérifiée (gris)' },
+  { key: 'supreme', label: 'Suprême', color: 'text-chart-5', bg: 'bg-chart-5/15', border: 'border-chart-5/40', desc: 'Compte Suprême eza (or)' },
 ];
 
 export default function AdminBadges() {
@@ -130,7 +132,7 @@ export default function AdminBadges() {
           <button
             onClick={() => setSelectedBadge('verified')}
             className={`px-3 py-1.5 rounded-full font-inter text-xs border transition-all flex items-center gap-1 ${selectedBadge === 'verified' ? 'bg-accent text-accent-foreground border-accent' : 'border-border text-muted-foreground hover:text-foreground'}`}
-          ><CheckCircle className="w-3 h-3" />Vérifiés</button>
+          ><VerificationMark type="verified" />Vérifiés</button>
           {ALL_BADGES.map(b => {
             const Icon = BADGE_ICONS[b] || Shield;
             return (
@@ -184,7 +186,7 @@ export default function AdminBadges() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-inter text-sm font-medium truncate">{u.display_name || u.full_name || '—'}</p>
-                      {u.verified_status === 'yes' && <CheckCircle className="w-3 h-3 text-accent flex-shrink-0" />}
+                      {u.verified_status === 'yes' && <VerificationMark type="verified" className="flex-shrink-0" />}
                     </div>
                     <p className="font-mono text-xs text-muted-foreground truncate">{u.email}</p>
                     {/* Badges preview */}
@@ -208,7 +210,6 @@ export default function AdminBadges() {
                     <div className="grid grid-cols-2 gap-2">
                       {VERIFICATION_TYPES.map(vt => {
                         const active = (u.verifications || []).includes(vt.key);
-                        const Icon = vt.icon;
                         return (
                           <button
                             key={vt.key}
@@ -217,7 +218,7 @@ export default function AdminBadges() {
                             title={vt.desc}
                             className={`flex flex-col items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 border transition-all ${active ? `${vt.bg} ${vt.border}` : 'bg-background border-border hover:border-primary/30'}`}
                           >
-                            <Icon className={`w-4 h-4 ${active ? vt.color : 'text-muted-foreground'}`} />
+                            <span style={{ fontSize: '1rem' }}><VerificationMark type={vt.key} /></span>
                             <span className={`font-inter text-[9px] font-semibold text-center leading-tight ${active ? vt.color : 'text-muted-foreground'}`}>{vt.label}</span>
                           </button>
                         );

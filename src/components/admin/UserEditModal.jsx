@@ -22,7 +22,7 @@ const STATUS_OPTIONS = [
 const VERIFICATION_OPTIONS = [
   { value: 'no', label: 'Non vérifié' },
   { value: 'yes', label: 'Vérifié' },
-  { value: 'supreme', label: 'Suprême (👑)' },
+  { value: 'supreme', label: 'Suprême (or)' },
 ];
 
 export default function UserEditModal({ user, open, onClose, onSave, isLoading, currentUser }) {

@@ -3,7 +3,8 @@ import { VERIFICATION_CONFIG } from './VerificationChip';
 import BadgePopup from './BadgePopup';
 import { getVisibleAffiliation, getOrganizationBadge, getHighestVerificationBadge } from '@/lib/affiliationUtils';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Check, ExternalLink, Building2 } from 'lucide-react';
+import { ExternalLink, Building2 } from 'lucide-react';
+import VerificationMark from '@/components/ui/VerificationMark';
 import { useOrganizationAffiliations, useCachedUser } from '@/hooks/useOrganizationAffiliations';
 
 function buildUserDescriptor(user) {
@@ -12,17 +13,6 @@ function buildUserDescriptor(user) {
   if (user.email) return { userEmail: user.email };
   return null;
 }
-
-const bgColorMap = {
-  'text-sky-400':     '#0ea5e9',
-  'text-amber-400':   '#f59e0b',
-  'text-purple-400':  '#a855f7',
-  'text-emerald-400': '#10b981',
-  'text-yellow-300':  '#f59e0b',
-  'text-zinc-300':    '#71717a',
-};
-
-const TWITTER_SEAL = "M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91C3.38 9.33 2.5 10.57 2.5 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.26 3.91.8c.66 1.31 1.9 2.19 3.33 2.19s2.68-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z";
 
 // ── Affiliation avatar chip (single org) ────────────────
 function AffiliationChip({ affiliation, size, organizationUser }) {
@@ -237,8 +227,6 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
 
   if (!verifications?.length && !visibleAffiliations.length && !loadingAffiliation) return null;
 
-  const s = size === 'sm' ? 20 : 24;
-  const iconSize = size === 'sm' ? 10 : 12;
   const organizationUsername = organizationUser?.username ? `@${organizationUser.username}` : null;
 
   return (
@@ -247,9 +235,6 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
       {displayedVerifications.map(key => {
         const cfg = VERIFICATION_CONFIG[key];
         if (!cfg) return null;
-        const fill = bgColorMap[cfg.color] || '#0ea5e9';
-        const isInstitutional = key === 'government' || cfg.shape === 'institutional';
-
         const isAffiliationCertified = key === 'certified' && primaryAffiliation && organizationBadge;
         const affiliationUsername = organizationUsername || primaryAffiliation?.organizationName || 'cette organisation';
         const customBadgeInfo = isAffiliationCertified ? {
@@ -267,14 +252,8 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
 
         return (
           <BadgePopup key={key} badgeKey={key} badgeInfo={customBadgeInfo}>
-            <span
-              className="inline-flex items-center justify-center flex-shrink-0 relative"
-              style={{ width: s, height: s }}
-            >
-              <svg viewBox="0 0 24 24" width={s} height={s} style={{ position: 'absolute', inset: 0 }}>
-                {isInstitutional ? <rect x="3" y="3" width="18" height="18" rx="4" fill={fill} /> : <path fill={fill} d={TWITTER_SEAL} />}
-              </svg>
-              <Check style={{ position: 'relative', zIndex: 1, width: iconSize, height: iconSize, color: '#050d1a', strokeWidth: 3.5, flexShrink: 0 }} />
+            <span className="inline-flex items-center flex-shrink-0">
+              <VerificationMark type={key} />
             </span>
           </BadgePopup>
         );

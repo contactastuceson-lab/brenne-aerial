@@ -245,10 +245,11 @@ export default function HomeCreatePost({ user, onPost }) {
     }
   };
 
-  const hasContent = text.trim() || photos.length || videoUrl || location || linkUrl ||
-    (activePanel === 'poll' && pollOptions.some(Boolean));
+  const postBlocked = isActionBlocked(user, 'post');
+  const hasContent = !postBlocked && (text.trim() || photos.length || videoUrl || location || linkUrl ||
+    (activePanel === 'poll' && pollOptions.some(Boolean)));
 
-  if (isActionBlocked(user, 'post')) {
+  if (postBlocked) {
     return (
       <div className="px-5 py-4 flex items-center gap-3 text-sm text-orange-300">
         <span className="text-base">⚠️</span>

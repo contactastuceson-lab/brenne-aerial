@@ -5,11 +5,17 @@ const CUT_PATH = 'M11.16 1.15a1.247 1.247 0 0 1 1.68 0l2.58 2.33c.27.24.62.37.98
 const COLORS = { verified: 'rgb(29, 155, 240)', pro: 'rgb(34, 197, 94)', official: 'rgb(168, 85, 247)', certified: 'rgb(250, 204, 21)', government: 'rgb(134, 142, 150)' };
 
 export default function VerificationMark({ type = 'verified', className = '' }) {
-  const gradientId = `goldGrad-${useId().replace(/:/g, '')}`;
+  const uniqueId = useId().replace(/:/g, '');
+  const gradientId = `goldGrad-${uniqueId}`;
+  const maskId = `checkMask-${uniqueId}`;
   const isRosette = ['verified', 'pro', 'official'].includes(type);
   const isSupreme = type === 'supreme';
-  return <svg viewBox="0 0 24 24" aria-label={type} className={className} style={{ width: '1.25em', height: '1.25em', verticalAlign: 'text-bottom', fill: isSupreme ? undefined : (COLORS[type] || COLORS.verified) }}>
-    {isSupreme && <defs><linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FDE047" /><stop offset="50%" stopColor="#EAB308" /><stop offset="100%" stopColor="#A16207" /></linearGradient></defs>}
-    <path fill={isSupreme ? `url(#${gradientId})` : undefined} d={isRosette ? ROSETTE_PATH : CUT_PATH} />
+  const fill = isSupreme ? `url(#${gradientId})` : (COLORS[type] || COLORS.verified);
+  return <svg viewBox="0 0 24 24" aria-label={type} className={className} style={{ width: '1.25em', height: '1.25em', verticalAlign: 'text-bottom' }}>
+    <defs>
+      {isSupreme && <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FDE047" /><stop offset="50%" stopColor="#EAB308" /><stop offset="100%" stopColor="#A16207" /></linearGradient>}
+      {!isRosette && <mask id={maskId}><rect width="24" height="24" fill="white" /><path d="M9.84 15.575l-3.64-3.51 1.4-1.35 2.14 2.065 5.22-5.03 1.4 1.35-6.52 6.285z" fill="black" /></mask>}
+    </defs>
+    <path mask={!isRosette ? `url(#${maskId})` : undefined} fill={fill} d={isRosette ? ROSETTE_PATH : CUT_PATH} />
   </svg>;
 }

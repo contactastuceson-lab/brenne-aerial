@@ -1,82 +1,82 @@
 import { motion } from 'framer-motion';
-import { Radio } from 'lucide-react';
+
+const logoUrl = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/9a141cf1e_1782606023373.png';
 
 export default function SplashScreen() {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-background overflow-hidden">
-      {/* Grid background */}
-      <div className="absolute inset-0 grid-bg opacity-40" />
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
+    <main className="fixed inset-0 z-50 flex min-h-dvh items-center justify-center overflow-hidden bg-background px-6">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,hsl(var(--primary)/0.18),transparent_28%),radial-gradient(circle_at_16%_85%,hsl(var(--accent)/0.12),transparent_26%)]" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
 
-      {/* Animated orbs */}
       <motion.div
-        className="absolute top-20 right-20 w-72 h-72 rounded-full bg-primary/10 blur-3xl"
-        animate={{ y: [0, 40, 0] }}
-        transition={{ duration: 6, repeat: Infinity }}
+        aria-hidden="true"
+        className="absolute h-80 w-80 rounded-full border border-primary/10"
+        animate={{ scale: [0.92, 1.08, 0.92], opacity: [0.35, 0.7, 0.35] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
-        className="absolute bottom-20 left-20 w-72 h-72 rounded-full bg-accent/10 blur-3xl"
-        animate={{ y: [0, -40, 0] }}
-        transition={{ duration: 8, repeat: Infinity, delay: 1 }}
+        aria-hidden="true"
+        className="absolute h-96 w-96 rounded-full border border-primary/5"
+        animate={{ scale: [1.03, 0.95, 1.03], opacity: [0.2, 0.5, 0.2] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* Content */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6 }}
-        className="relative z-10 flex flex-col items-center gap-6"
-      >
-        {/* Logo icon with animation */}
+      <div className="relative z-10 flex w-full max-w-sm flex-col items-center text-center">
         <motion.div
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          initial={{ opacity: 0, scale: 0.82, y: 18 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="relative"
         >
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 flex items-center justify-center shadow-2xl sky-glow">
-            <Radio className="w-12 h-12 text-primary" />
-          </div>
-          {/* Pulse ring */}
           <motion.div
-            className="absolute inset-0 rounded-3xl border-2 border-primary"
-            initial={{ scale: 0.8, opacity: 1 }}
-            animate={{ scale: 1.3, opacity: 0 }}
-            transition={{ duration: 2, repeat: Infinity }}
+            aria-hidden="true"
+            className="absolute -inset-5 rounded-full bg-primary/30 blur-2xl"
+            animate={{ opacity: [0.3, 0.75, 0.3] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
           />
+          <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-primary/40 bg-card p-1 shadow-[0_0_48px_hsl(var(--primary)/0.35)]">
+            <img
+              src={logoUrl}
+              alt="Logo EZA"
+              width="256"
+              height="256"
+              fetchPriority="high"
+              className="h-full w-full rounded-full object-cover"
+            />
+          </div>
         </motion.div>
 
-        {/* Text */}
-        <div className="text-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="font-grotesk font-black text-4xl gradient-text"
-          >
-            Brenne Aerial
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="font-inter text-sm text-muted-foreground mt-2 tracking-widest uppercase"
-          >
-            Services drone professionnels
-          </motion.p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.2 }}
+          className="mt-8"
+        >
+          <p className="font-inter text-xs font-semibold uppercase tracking-[0.34em] text-primary">EZA</p>
+          <h1 className="mt-3 font-grotesk text-3xl font-bold tracking-tight text-foreground">Votre espace, votre communauté.</h1>
+          <p className="mt-3 font-inter text-sm text-muted-foreground">Connexion à votre fil…</p>
+        </motion.div>
 
-        {/* Loading dots */}
-        <motion.div className="flex gap-2 mt-4">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              className="w-2.5 h-2.5 rounded-full bg-primary"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.15 }}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.45 }}
+          className="mt-8 flex items-center gap-2"
+          aria-label="Chargement en cours"
+          role="status"
+        >
+          {[0, 1, 2].map((index) => (
+            <motion.span
+              key={index}
+              className="h-2 w-2 rounded-full bg-primary"
+              animate={{ opacity: [0.25, 1, 0.25], y: [0, -4, 0] }}
+              transition={{ duration: 1.05, delay: index * 0.14, repeat: Infinity, ease: 'easeInOut' }}
             />
           ))}
         </motion.div>
-      </motion.div>
-    </div>
+      </div>
+
+      <p className="absolute bottom-8 font-inter text-xs text-muted-foreground/60">EZA · Rapprocher les voix</p>
+    </main>
   );
 }

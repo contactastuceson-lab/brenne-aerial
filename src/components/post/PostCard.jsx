@@ -173,11 +173,11 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
             <div className="flex items-center gap-0 min-w-0 leading-snug">
               {profileLink ? (
                 <Link to={profileLink} onClick={e => e.stopPropagation()}
-                  className="font-inter font-bold text-[15px] text-foreground hover:underline mr-0.5">
+                  className="min-w-0 max-w-[7rem] sm:max-w-[13rem] truncate font-inter font-bold text-[15px] text-foreground hover:underline mr-0.5">
                   {authorName}
                 </Link>
               ) : (
-                <span className="font-inter font-bold text-[15px] text-foreground mr-0.5">{authorName}</span>
+                <span className="min-w-0 max-w-[7rem] sm:max-w-[13rem] truncate font-inter font-bold text-[15px] text-foreground mr-0.5">{authorName}</span>
               )}
               {post.author_id && (
                 <span onClick={e => e.stopPropagation()} className="flex-shrink-0 mr-1.5 scale-[0.82] origin-left" style={{display:'inline-flex',alignItems:'center'}}>

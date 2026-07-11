@@ -112,21 +112,23 @@ export default function PostAuthorHeader({
             {profileLink ? (
               <Link
                 to={profileLink}
-                className="font-grotesk font-bold text-sm text-foreground hover:text-primary transition-colors leading-tight"
+                className="min-w-0 max-w-[7rem] sm:max-w-[13rem] truncate font-grotesk font-bold text-sm text-foreground hover:text-primary transition-colors leading-tight"
               >
                 {displayName}
               </Link>
             ) : (
-              <span className="font-grotesk font-bold text-sm text-foreground leading-tight">{displayName}</span>
+              <span className="min-w-0 max-w-[7rem] sm:max-w-[13rem] truncate font-grotesk font-bold text-sm text-foreground leading-tight">{displayName}</span>
             )}
 
             {/* Badges de vérification — toujours live */}
             {(resolvedVerifications?.length > 0 || resolvedIsSupreme) && (
-              <VerificationIcons
-                verifications={resolvedIsSupreme ? ['supreme', ...(resolvedVerifications || [])] : resolvedVerifications}
+              <span className="flex-shrink-0">
+                <VerificationIcons
+                  verifications={resolvedIsSupreme ? ['supreme', ...(resolvedVerifications || [])] : resolvedVerifications}
                 size="sm"
-                user={authorId ? { id: authorId } : null}
-              />
+                  user={authorId ? { id: authorId } : null}
+                />
+              </span>
             )}
 {resolvedUsername && (
   <span className="min-w-0 max-w-[11rem] sm:max-w-[16rem] truncate font-mono text-xs text-muted-foreground/55">@{resolvedUsername}</span>

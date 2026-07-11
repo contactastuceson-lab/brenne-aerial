@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Home, Compass, MessageCircle, MoreHorizontal, X,
+  Home, Compass, MessageCircle, MoreHorizontal, X, Search,
   Bell, User, LogOut, LayoutDashboard, Bookmark,
   Users, FileText, Calendar, Settings, Heart, Shield,
   Building2, Star, Award, Plus
@@ -15,7 +15,7 @@ const MAIN_TABS = [
   { to: '/',         icon: Home,          label: 'Accueil' },
   { to: '/discover', icon: Compass,       label: 'Explorer' },
   { to: '/messages', icon: MessageCircle, label: 'Messages' },
-  { to: '/forum',    icon: FileText,      label: 'Forum' },
+  { to: '/search',   icon: Search,        label: 'Rechercher' },
   { to: null,        icon: MoreHorizontal,label: 'Plus',   isMore: true },
 ];
 

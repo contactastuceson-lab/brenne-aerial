@@ -102,6 +102,7 @@ import PostDetailPage from "@/pages/PostDetailPage";
 import PremiumPage from "@/pages/PremiumPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import CreatePostPage from "@/pages/CreatePostPage";
+import SearchPage from "@/pages/SearchPage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -184,6 +185,7 @@ const AuthenticatedApp = () => {
           <Route path="/premium" element={<PremiumPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/create-post" element={<CreatePostPage />} />
+          <Route path="/search" element={<SearchPage />} />
           {/* Profile catch-all route for /@username - must be last in public routes */}
           <Route path="/:pathUsername" element={<PublicProfilePage />} />
         </Route>

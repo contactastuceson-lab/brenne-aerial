@@ -2,8 +2,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function NavigationSkeleton() {
   return (
-    <main className="min-h-dvh bg-background">
-      <div className="mx-auto flex min-h-dvh w-full max-w-[1440px]">
+    <main className="min-h-[720px] bg-background" aria-busy="true" aria-label="Chargement de la page">
+      <div className="mx-auto flex min-h-[720px] w-full max-w-[1440px]">
         <aside className="hidden w-64 shrink-0 border-r border-border/50 p-5 md:block">
           <Skeleton className="mb-8 h-9 w-28" />
           <div className="space-y-4">

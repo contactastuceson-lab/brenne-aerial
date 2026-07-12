@@ -3,8 +3,7 @@ import { Toaster as Sonner } from "sonner";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClientInstance } from "@/lib/query-client";
 import { useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes, useLocation, useNavigationType } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import PageNotFound from "./lib/PageNotFound";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -18,7 +17,6 @@ import PreferencesApplier from "@/components/settings/PreferencesApplier";
 import NavigationSkeleton from "@/components/layout/NavigationSkeleton";
 import GoogleOneTap from "@/components/auth/GoogleOneTap";
 import PwaInstallPrompt from "@/components/PwaInstallPrompt";
-import PageTransition from "@/components/layout/PageTransition";
 
 // Layout
 import PublicLayout from "@/components/layout/PublicLayout";
@@ -120,9 +118,6 @@ function ExternalRedirect({ to }) {
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
-  const location = useLocation();
-  const navigationType = useNavigationType();
-  const direction = navigationType === 'POP' ? 'back' : 'forward';
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return <NavigationSkeleton />;
@@ -148,10 +143,7 @@ const AuthenticatedApp = () => {
       {/* Apply user preferences globally */}
       <PreferencesApplier user={user} />
       
-      <div className="relative min-h-dvh overflow-x-hidden">
-        <AnimatePresence initial={false} mode="popLayout" custom={direction}>
-          <PageTransition key={location.key} direction={direction}>
-            <Routes location={location}>
+      <Routes>
       {/* Auth pages (outside PublicLayout) */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -252,9 +244,6 @@ const AuthenticatedApp = () => {
 
       <Route path="*" element={<PageNotFound />} />
             </Routes>
-          </PageTransition>
-        </AnimatePresence>
-      </div>
     </>
   );
 };

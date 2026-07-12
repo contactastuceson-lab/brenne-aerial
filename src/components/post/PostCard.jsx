@@ -183,6 +183,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
                     verifications={liveUser?.verifications || post.author_verifications || []}
                     size="sm"
                     user={liveUser || { id: post.author_id }}
+                    onAffiliationOpen={() => { if (profileLink) navigate(profileLink); }}
                   />
                 </span>
               )}

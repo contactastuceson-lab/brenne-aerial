@@ -57,7 +57,7 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
         const config = VERIFICATION_CONFIG[displayedVerification];
         if (!config) return null;
         const icon = <span className="inline-flex items-center leading-none flex-shrink-0"><VerificationMark type={displayedVerification} /></span>;
-        return hasAffiliation ? (
+        return (hasAffiliation || onAffiliationOpen) ? (
           <button key={displayedVerification} type="button" onClick={(event) => { event.stopPropagation(); openAffiliation(); }} className="inline-flex cursor-pointer focus-visible:outline-none">{icon}</button>
         ) : (
           <BadgePopup key={displayedVerification} badgeKey={displayedVerification}>{icon}</BadgePopup>

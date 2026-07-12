@@ -8,7 +8,7 @@ export default function VerificationMark({ type = 'verified', className = '' }) 
   const uniqueId = useId().replace(/:/g, '');
   const goldGradientId = `goldGrad-${uniqueId}`;
   const goldMaskId = `checkMaskGold-${uniqueId}`;
-  const crystalBgId = `crystalBg-${uniqueId}`;
+  const supremeGoldId = `supremeGold-${uniqueId}`;
   const maskId = `checkMask-${uniqueId}`;
   const isRosette = ['verified', 'pro', 'official'].includes(type);
   const isCertified = type === 'certified';
@@ -18,11 +18,11 @@ export default function VerificationMark({ type = 'verified', className = '' }) 
   return <svg viewBox="0 0 24 24" aria-label={type} className={className} style={{ width: '1.1em', height: '1.1em', verticalAlign: 'text-bottom', marginLeft: '2px' }}>
     <defs>
       {isCertified && <><linearGradient id={goldGradientId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FDE047" /><stop offset="50%" stopColor="#EAB308" /><stop offset="100%" stopColor="#A16207" /></linearGradient><mask id={goldMaskId}><rect width="24" height="24" fill="white" /><path d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" fill="black" /></mask></>}
-      {isSupreme && <linearGradient id={crystalBgId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ffffff" /><stop offset="50%" stopColor="#e2e8f0" /><stop offset="100%" stopColor="#cbd5e1" /></linearGradient>}
+      {isSupreme && <linearGradient id={supremeGoldId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FDE047" /><stop offset="50%" stopColor="#EAB308" /><stop offset="100%" stopColor="#A16207" /></linearGradient>}
       {!isRosette && !isCertified && !isSupreme && <mask id={maskId}><rect width="24" height="24" fill="white" /><path d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" fill="black" /></mask>}
     </defs>
     {isCertified && <path mask={`url(#${goldMaskId})`} fill={`url(#${goldGradientId})`} d={CUT_PATH} />}
-    {isSupreme && <><path fill={`url(#${crystalBgId})`} d={CUT_PATH} /><path fill="#0f172a" d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" /></>}
+    {isSupreme && <><path fill={`url(#${supremeGoldId})`} d={CUT_PATH} /><path fill="#09090b" transform="scale(0.9) translate(1.3, 1.3)" d={CUT_PATH} /><path fill={`url(#${supremeGoldId})`} d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" /></>}
     {!isCertified && !isSupreme && <path mask={!isRosette ? `url(#${maskId})` : undefined} fill={fill} d={isRosette ? ROSETTE_PATH : CUT_PATH} />}
   </svg>;
 }

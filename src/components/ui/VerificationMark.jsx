@@ -9,7 +9,6 @@ export default function VerificationMark({ type = 'verified', className = '' }) 
   const goldGradientId = `goldGrad-${uniqueId}`;
   const goldMaskId = `checkMaskGold-${uniqueId}`;
   const crystalBgId = `crystalBg-${uniqueId}`;
-  const chromeCheckId = `chromeCheck-${uniqueId}`;
   const maskId = `checkMask-${uniqueId}`;
   const isRosette = ['verified', 'pro', 'official'].includes(type);
   const isCertified = type === 'certified';
@@ -19,11 +18,11 @@ export default function VerificationMark({ type = 'verified', className = '' }) 
   return <svg viewBox="0 0 24 24" aria-label={type} className={className} style={{ width: '1.1em', height: '1.1em', verticalAlign: 'text-bottom', marginLeft: '2px' }}>
     <defs>
       {isCertified && <><linearGradient id={goldGradientId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FDE047" /><stop offset="50%" stopColor="#EAB308" /><stop offset="100%" stopColor="#A16207" /></linearGradient><mask id={goldMaskId}><rect width="24" height="24" fill="white" /><path d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" fill="black" /></mask></>}
-      {isSupreme && <><linearGradient id={crystalBgId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="rgba(255,255,255,0.85)" /><stop offset="50%" stopColor="rgba(241,245,249,0.4)" /><stop offset="100%" stopColor="rgba(255,255,255,0.15)" /></linearGradient><linearGradient id={chromeCheckId} x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stopColor="#94a3b8" /><stop offset="50%" stopColor="#f8fafc" /><stop offset="100%" stopColor="#cbd5e1" /></linearGradient></>}
+      {isSupreme && <linearGradient id={crystalBgId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#ffffff" /><stop offset="50%" stopColor="#e2e8f0" /><stop offset="100%" stopColor="#cbd5e1" /></linearGradient>}
       {!isRosette && !isCertified && !isSupreme && <mask id={maskId}><rect width="24" height="24" fill="white" /><path d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" fill="black" /></mask>}
     </defs>
     {isCertified && <path mask={`url(#${goldMaskId})`} fill={`url(#${goldGradientId})`} d={CUT_PATH} />}
-    {isSupreme && <><path fill={`url(#${crystalBgId})`} d={CUT_PATH} /><path fill={`url(#${chromeCheckId})`} d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" /></>}
+    {isSupreme && <><path fill={`url(#${crystalBgId})`} d={CUT_PATH} /><path fill="#0f172a" d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" /></>}
     {!isCertified && !isSupreme && <path mask={!isRosette ? `url(#${maskId})` : undefined} fill={fill} d={isRosette ? ROSETTE_PATH : CUT_PATH} />}
   </svg>;
 }

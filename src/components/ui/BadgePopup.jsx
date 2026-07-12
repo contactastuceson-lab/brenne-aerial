@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Check, CheckCircle, Star, Shield, Plane, Users, Award, Zap, UserCheck, Heart } from 'lucide-react';
+import VerificationMark from '@/components/ui/VerificationMark';
 
 const BADGE_INFO = {
   verified:  {
@@ -93,7 +94,7 @@ const BADGE_INFO = {
  *   onClose: () => void,
  * }} props
  */
-function Popup({ info, anchorRect, onClose }) {
+function Popup({ info, badgeKey, anchorRect, onClose }) {
   const popupRef = useRef(/** @type {HTMLDivElement | null} */ (null));
   const pos = anchorRect
     ? { top: anchorRect.top + window.scrollY - 8, left: anchorRect.left + anchorRect.width / 2 }
@@ -139,11 +140,8 @@ function Popup({ info, anchorRect, onClose }) {
         >
           <div className="w-full bg-gradient-to-r from-primary/60 via-primary/40 to-amber-400/20 p-2">
             <div className="mx-auto flex max-w-6xl items-center gap-3 px-3">
-              <div
-                className="flex h-9 w-9 items-center justify-center rounded-md border border-white/20 bg-background/10 shadow-sm"
-                style={info.gradient ? { background: 'linear-gradient(135deg,#f59e0b,#fde68a,#b45309)' } : { background: info.bg }}
-              >
-                <Icon className="h-5 w-5 text-[#050d1a]" strokeWidth={3.5} />
+              <div className="flex h-9 w-9 items-center justify-center rounded-md border border-white/20 bg-background/10 shadow-sm">
+                <VerificationMark type={badgeKey} size="2em" marginLeft="0" />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/90">Vérification</p>
@@ -265,7 +263,7 @@ export default function BadgePopup({ badgeKey, badgeInfo = null, children }) {
       </span>
 
       {open && (
-        <Popup info={info} anchorRect={anchorRef.current?.getBoundingClientRect() ?? null} onClose={() => setOpen(false)} />
+        <Popup info={info} badgeKey={badgeKey} anchorRect={anchorRef.current?.getBoundingClientRect() ?? null} onClose={() => setOpen(false)} />
       )}
     </span>
   );

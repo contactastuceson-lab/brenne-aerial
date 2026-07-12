@@ -16,6 +16,7 @@ import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 import PreferencesApplier from "@/components/settings/PreferencesApplier";
 import SplashScreen from "@/components/SplashScreen";
 import GoogleOneTap from "@/components/auth/GoogleOneTap";
+import PwaInstallPrompt from "@/components/PwaInstallPrompt";
 
 // Layout
 import PublicLayout from "@/components/layout/PublicLayout";
@@ -138,6 +139,7 @@ const AuthenticatedApp = () => {
   return (
     <>
       <GoogleOneTap />
+      <PwaInstallPrompt />
       {/* Apply user preferences globally */}
       <PreferencesApplier user={user} />
       

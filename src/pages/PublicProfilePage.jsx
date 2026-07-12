@@ -423,7 +423,7 @@ export default function PublicProfilePage() {
               >
                 {user.display_name || user.full_name}
               </button>
-              <span className="inline-flex origin-left scale-[0.8] text-base">
+              <span className="inline-flex text-base">
                 <VerificationIcons verifications={user.verifications} size="sm" user={user} onAffiliationOpen={() => setAffiliationOpen(true)} />
               </span>
             </h1>

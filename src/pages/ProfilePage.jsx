@@ -197,12 +197,18 @@ export default function ProfilePage() {
         )}
 
         {/* Cover + Avatar */}
-        <div
+        <motion.div
           className="relative h-28 md:h-44 rounded-2xl overflow-hidden"
-          style={isSupreme
-            ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500)', border: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
-            : { background: 'linear-gradient(to bottom right, hsl(var(--primary)/0.2), hsl(var(--accent)/0.1), hsl(var(--secondary)))' }
-          }
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.24, ease: 'easeOut' }}
+          style={{
+            ...(isSupreme
+              ? { background: 'linear-gradient(135deg, #1a0c00, #2d1500)', border: '2px solid #d97706', boxShadow: '0 0 30px rgba(245,158,11,0.2)' }
+              : { background: 'linear-gradient(to bottom right, hsl(var(--primary)/0.2), hsl(var(--accent)/0.1), hsl(var(--secondary))' }),
+            willChange: 'transform, opacity'
+          }}
         >
           {user.cover_url ? (
             <img src={user.cover_url} alt="cover" className="w-full h-full object-cover" />
@@ -216,7 +222,7 @@ export default function ProfilePage() {
             </div>
             <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
           </label>
-        </div>
+        </motion.div>
 
         {/* Avatar — chevauchement cover avec bordure dorée */}
         <div className="relative px-4 -mt-7 md:-mt-10 mb-2">
@@ -244,7 +250,14 @@ export default function ProfilePage() {
         </div>
 
         {/* Infos profil + badges + statuts */}
-        <div className="px-4 mt-2 md:mt-4 mb-4 md:mb-6">
+        <motion.div
+          className="px-4 mt-2 md:mt-4 mb-4 md:mb-6"
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.22, ease: 'easeOut' }}
+          style={{ willChange: 'transform, opacity' }}
+        >
           <div className="flex items-start justify-between gap-2 md:gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -274,10 +287,17 @@ export default function ProfilePage() {
               </span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Badges + followers */}
-        <div className="px-4 mb-4 md:mb-6 flex flex-wrap items-center gap-2 md:gap-3">
+        <motion.div
+          className="px-4 mb-4 md:mb-6 flex flex-wrap items-center gap-2 md:gap-3"
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          style={{ willChange: 'transform, opacity' }}
+        >
           {user.badges?.length > 0 && user.badges.map(b => {
             const cfg = BADGE_CONFIG[b];
             if (!cfg) return <BadgeChip key={b} badge={b} />;
@@ -293,7 +313,7 @@ export default function ProfilePage() {
             <span className="font-grotesk font-semibold text-sm">{followers.length}</span>
             <span className="font-inter text-xs text-muted-foreground">abonné{followers.length > 1 ? 's' : ''}</span>
           </div>
-        </div>
+        </motion.div>
 
         {/* Main layout: sidebar + content */}
         <div className="md:flex md:gap-6">
@@ -352,7 +372,8 @@ export default function ProfilePage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.18 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                style={{ willChange: 'transform, opacity' }}
               >
                 {activeTab === 'profil' && (
                   <ProfileEditSection

@@ -174,9 +174,13 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
   if (liveUser === undefined) return <PostCardSkeleton />;
 
   return (
-    <article
+    <motion.article
       className="flex gap-3 px-4 pt-3 pb-0 border-b border-zinc-800/50 hover:bg-white/[0.015] active:bg-white/[0.025] cursor-pointer group"
-      style={{ transition: 'background-color 0.1s ease' }}
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{ duration: 0.22, ease: 'easeOut' }}
+      style={{ transition: 'background-color 0.1s ease', willChange: 'transform, opacity' }}
       onClick={openPost}
     >
       {/* Left column: avatar + thread line */}
@@ -374,7 +378,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
           </motion.div>
         )}
       </AnimatePresence>
-    </article>
+    </motion.article>
   );
 }
 

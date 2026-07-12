@@ -1,6 +1,7 @@
 import base44 from "@base44/vite-plugin"
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -16,6 +17,40 @@ export default defineConfig({
       visualEditAgent: true
     }),
     react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      manifest: {
+        name: 'EZA — by EZA Group',
+        short_name: 'EZA',
+        description: 'Plateforme communautaire exclusive EZA.',
+        display: 'standalone',
+        start_url: '/',
+        scope: '/',
+        theme_color: '#040a14',
+        background_color: '#040a14',
+        icons: [
+          { src: '/eza-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }
+        ]
+      },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+        navigateFallback: '/index.html',
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'pages' }
+          },
+          {
+            urlPattern: ({ request }) => request.destination === 'image',
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'images' }
+          }
+        ]
+      }
+    }),
   ],
   preview: {
     allowedHosts: ['brenne-aerial.onrender.com']

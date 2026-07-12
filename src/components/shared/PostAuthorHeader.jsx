@@ -122,7 +122,7 @@ export default function PostAuthorHeader({
 
             {/* Badges de vérification — toujours live */}
             {(resolvedVerifications?.length > 0 || resolvedIsSupreme) && (
-              <span className="flex-shrink-0 text-sm leading-none">
+              <span className="flex-shrink-0 text-xs leading-none">
                 <VerificationIcons
                   verifications={resolvedIsSupreme ? ['supreme', ...(resolvedVerifications || [])] : resolvedVerifications}
                 size="sm"

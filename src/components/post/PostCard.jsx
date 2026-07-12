@@ -178,7 +178,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
                 <span className="flex-shrink-0 font-inter font-bold text-[15px] text-foreground mr-0.5">{authorName}</span>
               )}
               {post.author_id && (
-                <span onClick={e => e.stopPropagation()} className="flex-shrink-0 mr-1.5 text-[15px] leading-none" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <span onClick={e => e.stopPropagation()} className="flex-shrink-0 mr-1.5 text-[15px] leading-none scale-[0.82] origin-left" style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <VerificationIcons
                     verifications={liveUser?.verifications || post.author_verifications || []}
                     size="sm"

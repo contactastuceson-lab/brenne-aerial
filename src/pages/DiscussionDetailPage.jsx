@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -16,14 +16,19 @@ import DiscordMarkdown from '@/components/forum/DiscordMarkdown';
 import usePublicUser from '@/hooks/usePublicUser';
 import ExternalLinkModal from '@/components/forum/ExternalLinkModal.jsx';
 import { applySeoMeta, getForumSeoData } from '@/lib/seo';
+import { handleIdentityClick } from '@/lib/identityClick';
 
 // Composant isolé pour chaque réponse — hook usePublicUser au niveau du composant
 function ReplyCard({ reply, discussion, id }) {
   const liveAuthor = usePublicUser(reply.author_id);
+  const navigate = useNavigate();
+  const location = useLocation();
   const avatar = liveAuthor?.avatar_url || reply.author_avatar;
   const name = liveAuthor?.display_name || liveAuthor?.full_name || reply.author_display_name || reply.author_name;
   const verifications = liveAuthor?.verifications ?? reply.author_verifications ?? [];
   const isSupreme = liveAuthor?.is_supreme ?? reply.author_is_supreme;
+  const identityUser = liveAuthor || { id: reply.author_id, username: reply.author_username, verifications };
+  const handleIdentity = (event) => handleIdentityClick({ event, navigate, pathname: location.pathname, user: identityUser });
 
   return (
     <div className={cn('p-4 rounded-lg border', reply.is_solution ? 'bg-green-900/20 border-green-500/40' : 'bg-slate-800/30 border-slate-700/50')}>
@@ -37,13 +42,13 @@ function ReplyCard({ reply, discussion, id }) {
                 {name?.[0]?.toUpperCase() || '?'}
               </div>
             )}
-            <p className={`font-semibold ${isSupreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
+            <button type="button" onClick={handleIdentity} className={`font-semibold hover:underline ${isSupreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
               {name}
-            </p>
+            </button>
             <VerificationIcons
               verifications={isSupreme ? ['supreme', ...(verifications || [])] : (verifications || [])}
               size="sm"
-              user={{ id: reply.author_id }}
+              user={identityUser}
             />
 
           </div>
@@ -70,10 +75,14 @@ function ReplyCard({ reply, discussion, id }) {
 // Composant pour l'en-tête de la discussion principale
 function DiscussionAuthorHeader({ discussion }) {
   const liveAuthor = usePublicUser(discussion.author_id);
+  const navigate = useNavigate();
+  const location = useLocation();
   const avatar = liveAuthor?.avatar_url || discussion.author_avatar;
   const name = liveAuthor?.display_name || liveAuthor?.full_name || discussion.author_display_name || discussion.author_name;
   const verifications = liveAuthor?.verifications ?? discussion.author_verifications ?? [];
   const isSupreme = liveAuthor?.is_supreme ?? discussion.author_is_supreme;
+  const identityUser = liveAuthor || { id: discussion.author_id, username: discussion.author_username, verifications };
+  const handleIdentity = (event) => handleIdentityClick({ event, navigate, pathname: location.pathname, user: identityUser });
 
   return (
     <div className="flex items-center gap-2">
@@ -84,13 +93,13 @@ function DiscussionAuthorHeader({ discussion }) {
           {name?.[0]?.toUpperCase() || '?'}
         </div>
       )}
-      <span className={`truncate max-w-[140px] ${isSupreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
+      <button type="button" onClick={handleIdentity} className={`truncate max-w-[140px] hover:underline ${isSupreme ? 'bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text bg-[200%] animate-shimmer' : 'text-white'}`}>
         {name}
-      </span>
+      </button>
       <VerificationIcons
         verifications={isSupreme ? ['supreme', ...(verifications || [])] : verifications}
         size="sm"
-        user={{ id: discussion.author_id }}
+        user={identityUser}
       />
 
     </div>

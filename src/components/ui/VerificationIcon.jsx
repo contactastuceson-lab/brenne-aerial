@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { VERIFICATION_CONFIG } from './VerificationChip';
 import { getHighestVerificationBadge } from '@/lib/affiliationUtils';
 import VerificationMark from '@/components/ui/VerificationMark';
 import AffiliationModal from '@/components/ui/AffiliationModal';
 import { useOrganizationAffiliations } from '@/hooks/useOrganizationAffiliations';
+import { handleIdentityClick } from '@/lib/identityClick';
 
 function buildUserDescriptor(user) {
   if (!user) return null;
@@ -38,6 +40,8 @@ function AffiliationChip({ affiliation, size, onOpen }) {
  */
 export default function VerificationIcons({ verifications = [], size = 'sm', user = null, onAffiliationOpen }) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
   const userDescriptor = buildUserDescriptor(user);
   const { affiliations, loading: loadingAffiliation } = useOrganizationAffiliations(userDescriptor);
   const visibleAffiliations = useMemo(
@@ -47,6 +51,13 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
   const displayedVerification = useMemo(() => getHighestVerificationBadge(verifications), [verifications]);
   const hasAffiliation = visibleAffiliations.length > 0;
   const openAffiliation = onAffiliationOpen || (() => setInternalOpen(true));
+  const handleClick = (event) => handleIdentityClick({
+    event,
+    navigate,
+    pathname: location.pathname,
+    user,
+    onProfileClick: openAffiliation,
+  });
 
   if (!verifications?.length && !hasAffiliation && !loadingAffiliation) return null;
 
@@ -57,10 +68,10 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
         if (!config) return null;
         const icon = <span className="inline-flex items-center leading-none flex-shrink-0"><VerificationMark type={displayedVerification} /></span>;
         return (
-          <button key={displayedVerification} type="button" onClick={(event) => { event.stopPropagation(); openAffiliation(); }} className="inline-flex cursor-pointer focus-visible:outline-none">{icon}</button>
+          <button key={displayedVerification} type="button" onClick={handleClick} className="inline-flex cursor-pointer focus-visible:outline-none">{icon}</button>
         );
       })()}
-      {hasAffiliation && <AffiliationChip affiliation={visibleAffiliations[0]} size={size} onOpen={openAffiliation} />}
+      {hasAffiliation && <AffiliationChip affiliation={visibleAffiliations[0]} size={size} onOpen={() => handleClick()} />}
       {!onAffiliationOpen && <AffiliationModal user={user} open={internalOpen} onOpenChange={setInternalOpen} />}
     </div>
   );

@@ -3,7 +3,7 @@
  * Utilisable sur toutes les publications (HomeFeed, ForumPage, DiscussionDetail, etc.)
  */
 import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Crown, Globe, Users, Lock, MoreHorizontal } from 'lucide-react';
 
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -11,6 +11,7 @@ import AffiliationBadges from '@/components/shared/AffiliationBadges';
 import usePublicUser from '@/hooks/usePublicUser';
 import { parseEntityDate } from '@/lib/entityDate';
 import { formatPostTime } from '@/lib/postTime';
+import { handleIdentityClick } from '@/lib/identityClick';
 
 const CATEGORY_CONFIG = {
   general:   { dot: 'bg-blue-400',    label: 'Général' },
@@ -55,6 +56,8 @@ export default function PostAuthorHeader({
 }) {
   // Résolution live du profil — écrase les données gravées dès que disponible
   const liveUser = usePublicUser(authorId);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const displayName = liveUser?.display_name || liveUser?.full_name || authorDisplayName || authorName || 'Utilisateur';
   const resolvedAvatar = liveUser?.avatar_url || authorAvatar;
@@ -65,6 +68,8 @@ export default function PostAuthorHeader({
   const avatarInitial = (displayName?.[0] || 'U').toUpperCase();
   const profileLink = resolvedUsername ? `/@${resolvedUsername}` : null;
   const cat = category ? CATEGORY_CONFIG[category] : null;
+  const identityUser = liveUser || { id: authorId, username: resolvedUsername, verifications: resolvedVerifications };
+  const handleIdentity = (event) => handleIdentityClick({ event, navigate, pathname: location.pathname, user: identityUser });
 
   const timeAgo = useMemo(() => {
     if (!createdDate) return '';
@@ -109,16 +114,13 @@ export default function PostAuthorHeader({
         <div className="min-w-0 flex-1">
           {/* Ligne 1 : Nom + badges + @pseudo */}
           <div className="flex items-center gap-1.5 min-w-0">
-            {profileLink ? (
-              <Link
-                to={profileLink}
-                className="flex-shrink-0 font-grotesk font-bold text-sm text-foreground hover:text-primary transition-colors leading-tight"
-              >
-                {displayName}
-              </Link>
-            ) : (
-              <span className="flex-shrink-0 font-grotesk font-bold text-sm text-foreground leading-tight">{displayName}</span>
-            )}
+            <button
+              type="button"
+              onClick={handleIdentity}
+              className="flex-shrink-0 font-grotesk font-bold text-sm text-foreground hover:text-primary transition-colors leading-tight"
+            >
+              {displayName}
+            </button>
 
             {/* Badges de vérification — toujours live */}
             {(resolvedVerifications?.length > 0 || resolvedIsSupreme) && (
@@ -126,7 +128,7 @@ export default function PostAuthorHeader({
                 <VerificationIcons
                   verifications={resolvedIsSupreme ? ['supreme', ...(resolvedVerifications || [])] : resolvedVerifications}
                 size="sm"
-                  user={authorId ? { id: authorId } : null}
+                  user={identityUser}
                 />
               </span>
             )}

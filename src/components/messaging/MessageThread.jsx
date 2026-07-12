@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft, Send, Lock, Check, X, Flag, Clock,
@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { isRestricted, RESTRICTED_TOAST } from '@/lib/accountStatus';
 import { parseEntityDate } from '@/lib/entityDate';
+import { handleIdentityClick } from '@/lib/identityClick';
 
 function getConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join('_');
@@ -26,6 +27,7 @@ function getConversationId(emailA, emailB) {
 
 export default function MessageThread({ user, conv, onBack }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [text, setText] = useState('');
   const [reportMsg, setReportMsg] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
@@ -42,6 +44,10 @@ export default function MessageThread({ user, conv, onBack }) {
   const [showProfile, setShowProfile] = useState(false);
   const [showBlockedAdminModal, setShowBlockedAdminModal] = useState(false);
   const convId = conv.convId || getConversationId(user.email, conv.email);
+  const handleConversationIdentity = (event) => {
+    const handled = handleIdentityClick({ event, navigate, pathname: location.pathname, user: conv });
+    if (!handled) setShowProfile(true);
+  };
 
   useEffect(() => {
     isInitialLoad.current = true;
@@ -344,7 +350,7 @@ export default function MessageThread({ user, conv, onBack }) {
 
           <div className="relative flex-shrink-0">
             <div className="w-10 h-10 rounded-full bg-secondary border border-border hover:ring-2 hover:ring-primary/40 cursor-pointer transition-all flex items-center justify-center overflow-hidden"
-              onClick={() => conv.username ? navigate(`/@${conv.username}`) : setShowProfile(true)}>
+              onClick={handleConversationIdentity}>
               {conv.avatar ? (
                 <img src={conv.avatar} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -358,7 +364,7 @@ export default function MessageThread({ user, conv, onBack }) {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <button onClick={() => conv.username ? navigate(`/@${conv.username}`) : setShowProfile(true)} className="font-grotesk font-semibold text-sm hover:text-primary transition-colors">{conv.name}</button>
+              <button onClick={handleConversationIdentity} className="font-grotesk font-semibold text-sm hover:text-primary transition-colors">{conv.name}</button>
               <VerificationIcons verifications={conv.verifications} user={conv} />
               {conv.badges?.slice(0, 2).map(b => <BadgeChip key={b} badge={b} size="sm" />)}
             </div>

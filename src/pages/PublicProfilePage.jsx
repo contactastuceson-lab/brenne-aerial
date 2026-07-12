@@ -418,8 +418,8 @@ export default function PublicProfilePage() {
             <h1 className="mb-1 flex flex-wrap items-center gap-1 font-grotesk text-2xl font-bold sm:text-3xl" style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}>
               <button
                 type="button"
-                onClick={() => hasPublicAffiliation && setAffiliationOpen(true)}
-                className={hasPublicAffiliation ? 'cursor-pointer hover:underline focus-visible:outline-none' : 'cursor-default'}
+                onClick={() => setAffiliationOpen(true)}
+                className="cursor-pointer hover:underline focus-visible:outline-none"
               >
                 {user.display_name || user.full_name}
               </button>

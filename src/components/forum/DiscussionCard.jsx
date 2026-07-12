@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MessageCircle, Eye, Pin, Lock, Star } from 'lucide-react';
@@ -6,6 +6,7 @@ import VerificationIcons from '@/components/ui/VerificationIcon';
 import AffiliationBadges from '@/components/shared/AffiliationBadges';
 import usePublicUser from '@/hooks/usePublicUser';
 import { parseEntityDate } from '@/lib/entityDate';
+import { handleIdentityClick } from '@/lib/identityClick';
 
 // Strip markdown to plain text for preview
 function stripMarkdown(text = '') {
@@ -20,6 +21,8 @@ function stripMarkdown(text = '') {
 
 export default function DiscussionCard({ discussion }) {
   const liveAuthor = usePublicUser(discussion.author_id);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const isOfficial = discussion.is_official;
   const isPinned = discussion.is_pinned;
@@ -31,6 +34,8 @@ export default function DiscussionCard({ discussion }) {
   const authorUsername = liveAuthor?.username || discussion.author_username;
   const authorVerifications = liveAuthor?.verifications ?? discussion.author_verifications;
   const authorIsSupreme = liveAuthor?.is_supreme ?? discussion.author_is_supreme;
+  const identityUser = liveAuthor || { id: discussion.author_id, username: authorUsername, verifications: authorVerifications };
+  const handleIdentity = (event) => handleIdentityClick({ event, navigate, pathname: location.pathname, user: identityUser });
 
   return (
     <Link to={`/forum/${discussion.id}`}>
@@ -72,11 +77,11 @@ export default function DiscussionCard({ discussion }) {
                 {authorName?.[0]?.toUpperCase() || '?'}
               </div>
             )}
-            <span className="truncate max-w-[100px]">{authorName}</span>
+            <span onClick={handleIdentity} className="truncate max-w-[100px] cursor-pointer hover:text-primary">{authorName}</span>
             <VerificationIcons
               verifications={authorIsSupreme ? ['supreme', ...(authorVerifications || [])] : authorVerifications}
               size="sm"
-              user={{ id: discussion.author_id }}
+              user={identityUser}
             />
             {authorUsername && <span className="min-w-0 max-w-[100px] truncate text-slate-500">@{authorUsername}</span>}
 

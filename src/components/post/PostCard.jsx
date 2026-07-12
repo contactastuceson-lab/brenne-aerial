@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect, memo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, MessageCircle, MoreHorizontal, Eye, Trash2, Pencil, X, Check, Repeat2, Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -16,28 +16,31 @@ import { isActionBlocked, RESTRICTED_TOAST } from '@/lib/accountStatus';
 import { extractHashtags } from '@/lib/hashtags';
 import { parseEntityDate } from '@/lib/entityDate';
 import { formatPostTime } from '@/lib/postTime';
+import { handleIdentityClick } from '@/lib/identityClick';
+import AffiliationModal from '@/components/ui/AffiliationModal';
 
 const TRUNCATE_LIMIT = 560;
 
 // Avatar compact
-function Avatar({ src, name, size = 10, profileLink }) {
+function Avatar({ src, name, size = 10, onIdentityClick }) {
   const initial = (name?.[0] || 'U').toUpperCase();
   const cls = `w-${size} h-${size} rounded-lg overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center flex-shrink-0`;
   const inner = src
     ? <img src={src} alt={name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
     : <span className="font-grotesk font-bold text-primary text-sm">{initial}</span>;
 
-  if (profileLink)
+  if (onIdentityClick)
     return (
-      <Link to={profileLink} onClick={e => e.stopPropagation()} className={`${cls} hover:opacity-80 transition-opacity`}>
+      <button type="button" onClick={onIdentityClick} className={`${cls} hover:opacity-80 transition-opacity`}>
         {inner}
-      </Link>
+      </button>
     );
   return <div className={cls}>{inner}</div>;
 }
 
 function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEdited, isThread = false }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [liked, setLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
@@ -49,6 +52,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
   const [editLoading, setEditLoading] = useState(false);
   const [deleted, setDeleted] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [identityModalOpen, setIdentityModalOpen] = useState(false);
   const menuRef = useRef(null);
   // Refs pour éviter les race conditions — source de vérité locale
   const likedByRef = useRef(post.liked_by || []);
@@ -60,6 +64,14 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
   const authorUsername = post.author_username;
   const profileLink = authorUsername ? `/@${authorUsername}` : null;
   const avatarSrc = liveUser?.avatar_url || post.author_avatar;
+  const identityUser = liveUser || { id: post.author_id, username: authorUsername, verifications: post.author_verifications || [] };
+  const handleIdentity = (event) => handleIdentityClick({
+    event,
+    navigate,
+    pathname: location.pathname,
+    user: identityUser,
+    onProfileClick: () => setIdentityModalOpen(true),
+  });
 
   const timeAgo = post.created_date ? formatPostTime(parseEntityDate(post.created_date)) : '';
 
@@ -154,7 +166,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
     >
       {/* Left column: avatar + thread line */}
       <div className="flex flex-col items-center flex-shrink-0" style={{ width: 40 }}>
-        <Avatar src={avatarSrc} name={authorName} size={10} profileLink={profileLink} />
+        <Avatar src={avatarSrc} name={authorName} size={10} onIdentityClick={handleIdentity} />
         {/* Thread line — shown when part of a thread (isThread) */}
         {isThread && (
           <div className="flex-1 w-0.5 bg-zinc-700/50 my-1 rounded-full" style={{ minHeight: 16 }} />
@@ -169,21 +181,16 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
           <div className="min-w-0 flex-1">
             {/* Ligne unique : nom + badge + @username · temps */}
             <div className="flex items-center gap-0 min-w-0 leading-snug">
-              {profileLink ? (
-                <Link to={profileLink} onClick={e => e.stopPropagation()}
-                  className="flex-shrink-0 font-inter font-bold text-[15px] text-foreground hover:underline mr-0.5">
-                  {authorName}
-                </Link>
-              ) : (
-                <span className="flex-shrink-0 font-inter font-bold text-[15px] text-foreground mr-0.5">{authorName}</span>
-              )}
+              <button type="button" onClick={handleIdentity}
+                className="flex-shrink-0 font-inter font-bold text-[15px] text-foreground hover:underline mr-0.5">
+                {authorName}
+              </button>
               {post.author_id && (
                 <span onClick={e => e.stopPropagation()} className="flex-shrink-0 mr-1.5 text-[15px] leading-none scale-[0.82] origin-left" style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <VerificationIcons
                     verifications={liveUser?.verifications || post.author_verifications || []}
                     size="sm"
-                    user={liveUser || { id: post.author_id }}
-                    onAffiliationOpen={() => { if (profileLink) navigate(profileLink); }}
+                    user={identityUser}
                   />
                 </span>
               )}
@@ -312,6 +319,8 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
           />
         </div>
       </div>
+
+      <AffiliationModal user={identityUser} open={identityModalOpen} onOpenChange={setIdentityModalOpen} />
 
       {/* Delete confirm */}
       <AnimatePresence>

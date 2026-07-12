@@ -1,10 +1,12 @@
 import React, { useMemo, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { format, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MessageCircle, CheckCircle, Star, Award, Zap, Shield, UserCheck, ShieldCheck } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import { handleIdentityClick } from '@/lib/identityClick';
 
 function getConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join('_');
@@ -30,6 +32,8 @@ function formatTime(date) {
 }
 
 export default function ConversationList({ user, selectedConvId, onSelectConv }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { data: allMessages = [], isLoading, refetch: refetchMessages } = useQuery({
     queryKey: ['all-chat-messages', user.email],
     queryFn: async () => {
@@ -84,6 +88,7 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
       const isOfficial = conv.messages.some(m => m.is_official);
       return {
         ...conv,
+        id: profile?.id,
         name: profile?.display_name || profile?.full_name || conv.name,
         avatar: isOfficial ? null : profile?.avatar_url,
         cover_url: profile?.cover_url,
@@ -169,7 +174,10 @@ export default function ConversationList({ user, selectedConvId, onSelectConv })
                 {/* Row 1 : name + time */}
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    <span className={`font-grotesk text-sm truncate ${hasUnread ? 'font-bold text-foreground' : 'font-semibold text-foreground/90'}`}>
+                    <span
+                      onClick={(event) => handleIdentityClick({ event, navigate, pathname: location.pathname, user: conv })}
+                      className={`font-grotesk text-sm truncate cursor-pointer hover:text-primary ${hasUnread ? 'font-bold text-foreground' : 'font-semibold text-foreground/90'}`}
+                    >
                       {conv.name}
                     </span>
                     <VerificationIcons verifications={conv.verifications} size="sm" user={conv} />

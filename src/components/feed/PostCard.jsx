@@ -5,12 +5,13 @@ import {
   Share2, Eye, Globe, Languages, Flag, UserPlus, Link as LinkIcon,
   ChevronDown, ChevronUp
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { parseEntityDate } from '@/lib/entityDate';
+import { handleIdentityClick } from '@/lib/identityClick';
 
 const CATEGORY_CONFIG = {
   general:   { bg: 'bg-blue-400/10',    text: 'text-blue-400',    label: '💬 Général' },
@@ -38,6 +39,8 @@ function ActionButton({ icon: Icon, label, count, active, activeColor, onClick }
 }
 
 export default function PostCard({ post, currentUser, index = 0 }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [liked, setLiked]   = useState(false);
   const [likes, setLikes]   = useState(0);
   const [saved, setSaved]   = useState(false);
@@ -51,6 +54,8 @@ export default function PostCard({ post, currentUser, index = 0 }) {
   const authorAvatar = post.author_avatar;
   const avatarInitial = (authorName?.[0] || 'U').toUpperCase();
   const profileLink = authorUsername ? `/@${authorUsername}` : null;
+  const identityUser = { id: post.author_id, username: authorUsername, verifications: post.author_verifications || [] };
+  const handleIdentity = (event) => handleIdentityClick({ event, navigate, pathname: location.pathname, user: identityUser });
 
   const timeAgo = post.created_date
     ? formatDistanceToNow(parseEntityDate(post.created_date), { addSuffix: true, locale: fr })
@@ -109,15 +114,11 @@ export default function PostCard({ post, currentUser, index = 0 }) {
           {/* Meta */}
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              {profileLink ? (
-                <Link to={profileLink} className="font-inter font-semibold text-sm text-foreground hover:text-primary transition-colors">
-                  {authorName}
-                </Link>
-              ) : (
-                <span className="font-inter font-semibold text-sm text-foreground">{authorName}</span>
-              )}
+              <button type="button" onClick={handleIdentity} className="font-inter font-semibold text-sm text-foreground hover:text-primary transition-colors">
+                {authorName}
+              </button>
               {post.author_verifications?.length > 0 && (
-                <VerificationIcons verifications={post.author_verifications} size="sm" />
+                <VerificationIcons verifications={post.author_verifications} size="sm" user={identityUser} />
               )}
               {authorUsername && (
                 <span className="font-mono text-xs text-muted-foreground hidden sm:inline">@{authorUsername}</span>

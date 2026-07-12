@@ -8,6 +8,7 @@
  *   max      – nombre max de badges affichés (défaut: 2)
  */
 import { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Building2, Star, Shield, Code2, Headset, Handshake,
   Newspaper, Video, ShieldAlert, Crown, Briefcase, Users,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useOrganizationAffiliations } from '@/hooks/useOrganizationAffiliations';
 import AffiliationModal from '@/components/ui/AffiliationModal';
+import { handleIdentityClick } from '@/lib/identityClick';
 
 // Configuration visuelle par rôle d'affiliation
 const ROLE_CONFIG = {
@@ -70,6 +72,8 @@ function SingleBadge({ affiliation, size, onOpen }) {
 
 export default function AffiliationBadges({ userId, size = 'sm', max = 2 }) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
   const { affiliations, loading } = useOrganizationAffiliations(
     userId ? { userId } : null
   );
@@ -87,7 +91,7 @@ export default function AffiliationBadges({ userId, size = 'sm', max = 2 }) {
   return (
     <span className="inline-flex items-center gap-1 flex-wrap">
       {shown.map((aff) => (
-        <SingleBadge key={aff.id} affiliation={aff} size={size} onOpen={() => setOpen(true)} />
+        <SingleBadge key={aff.id} affiliation={aff} size={size} onOpen={(event) => handleIdentityClick({ event, navigate, pathname: location.pathname, user: { id: userId }, onProfileClick: () => setOpen(true) })} />
       ))}
       <AffiliationModal user={{ id: userId }} open={open} onOpenChange={setOpen} />
       {extra > 0 && (

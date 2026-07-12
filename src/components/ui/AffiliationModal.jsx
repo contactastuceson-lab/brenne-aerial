@@ -11,7 +11,7 @@ function formatRole(role) {
 }
 
 function formatCertifiedDate(affiliation) {
-  const value = affiliation.updated_date || affiliation.created_date;
+  const value = affiliation.acceptedAt || affiliation.createdAt;
   if (!value) return '';
   const formatted = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(new Date(value));
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);

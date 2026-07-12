@@ -10,6 +10,7 @@ import AnnouncementPopup from '@/components/shared/AnnouncementPopup';
 import DonationFloatingButton from '@/components/DonationFloatingButton';
 import UpdatesFloatingButton from '@/components/shared/UpdatesFloatingButton';
 import CookieBanner from '@/components/shared/CookieBanner';
+import NavigationSkeleton from './NavigationSkeleton';
 
 import MaintenancePage from '@/pages/MaintenancePage';
 import SiteOfflinePage from '@/pages/SiteOfflinePage';
@@ -78,13 +79,7 @@ export default function PublicLayout() {
     };
   }, [user?.email]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return <NavigationSkeleton />;
 
   // Email verification — before onboarding
   if (user && !user.email_verified) {

@@ -15,7 +15,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 import PreferencesApplier from "@/components/settings/PreferencesApplier";
-import SplashScreen from "@/components/SplashScreen";
+import NavigationSkeleton from "@/components/layout/NavigationSkeleton";
 import GoogleOneTap from "@/components/auth/GoogleOneTap";
 import PwaInstallPrompt from "@/components/PwaInstallPrompt";
 import PageTransition from "@/components/layout/PageTransition";
@@ -125,7 +125,7 @@ const AuthenticatedApp = () => {
   const direction = navigationType === 'POP' ? 'back' : 'forward';
 
   if (isLoadingPublicSettings || isLoadingAuth) {
-    return <SplashScreen />;
+    return <NavigationSkeleton />;
   }
 
   if (authError?.type === "user_not_registered") return <UserNotRegisteredError />;

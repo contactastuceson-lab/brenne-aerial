@@ -76,7 +76,7 @@ function GuestHero() {
 
 function FeedSkeleton() {
   return (
-    <div className="space-y-0">
+    <div className="space-y-0" aria-label="Chargement du fil">
       {[1, 2, 3].map(i => (
         <div key={i} className="flex gap-3 px-4 py-4 border-b border-border/40 animate-pulse">
           <div className="w-10 h-10 rounded-full bg-white/8 flex-shrink-0" />

@@ -30,10 +30,13 @@ export default function GoogleOneTap() {
   const isHandlingCredential = useRef(false);
 
   useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!clientId || isAuthenticated || isLoadingAuth || isLoadingPublicSettings) return;
+    if (isAuthenticated || isLoadingAuth || isLoadingPublicSettings) return;
 
     const initializeOneTap = async () => {
+      const configResponse = await base44.functions.invoke('googleOneTapAuth', { action: 'config' });
+      const clientId = configResponse.data?.clientId;
+      if (!clientId) return;
+
       await loadGoogleIdentityScript();
       if (!window.google?.accounts?.id) return;
 

@@ -3,11 +3,19 @@ import { OAuth2Client } from 'npm:google-auth-library@9.15.1';
 
 Deno.serve(async (req) => {
   try {
-    const { credential } = await req.json();
+    const { action, credential } = await req.json();
     const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
 
-    if (!credential || !clientId) {
+    if (!clientId) {
       return Response.json({ error: 'Configuration Google incomplète' }, { status: 400 });
+    }
+
+    if (action === 'config') {
+      return Response.json({ clientId });
+    }
+
+    if (!credential) {
+      return Response.json({ error: 'Jeton Google manquant' }, { status: 400 });
     }
 
     const googleClient = new OAuth2Client(clientId);

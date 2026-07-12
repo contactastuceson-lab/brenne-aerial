@@ -31,7 +31,7 @@ export default defineConfig({
         theme_color: '#040a14',
         background_color: '#040a14',
         icons: [
-          { src: '/eza-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }
+          { src: '/eza-pwa-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }
         ]
       },
       workbox: {

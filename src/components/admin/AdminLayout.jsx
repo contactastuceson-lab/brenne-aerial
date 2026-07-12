@@ -12,6 +12,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
 import AdminRealtimeSync from '@/components/admin/AdminRealtimeSync';
+import PageTransition from '@/components/layout/PageTransition';
 
 // ─── Permission levels ─────────────────────────────────────────────────────
 // 100 = PDG (owner) + PDG-Adjoint (pdg_adjoint)
@@ -300,7 +301,7 @@ export default function AdminLayout() {
         )}
 
         <div className="p-3 sm:p-5 lg:p-8 max-w-full">
-          <Outlet context={{ user, userLevel }} />
+          <PageTransition context={{ user, userLevel }} />
         </div>
       </main>
 

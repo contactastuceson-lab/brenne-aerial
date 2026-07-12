@@ -15,6 +15,7 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 import PreferencesApplier from "@/components/settings/PreferencesApplier";
 import SplashScreen from "@/components/SplashScreen";
+import GoogleOneTap from "@/components/auth/GoogleOneTap";
 
 // Layout
 import PublicLayout from "@/components/layout/PublicLayout";
@@ -136,6 +137,7 @@ const AuthenticatedApp = () => {
 
   return (
     <>
+      <GoogleOneTap />
       {/* Apply user preferences globally */}
       <PreferencesApplier user={user} />
       

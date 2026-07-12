@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { VERIFICATION_CONFIG } from './VerificationChip';
-import BadgePopup from './BadgePopup';
 import { getHighestVerificationBadge } from '@/lib/affiliationUtils';
 import VerificationMark from '@/components/ui/VerificationMark';
 import AffiliationModal from '@/components/ui/AffiliationModal';
@@ -57,10 +56,8 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
         const config = VERIFICATION_CONFIG[displayedVerification];
         if (!config) return null;
         const icon = <span className="inline-flex items-center leading-none flex-shrink-0"><VerificationMark type={displayedVerification} /></span>;
-        return (hasAffiliation || onAffiliationOpen) ? (
+        return (
           <button key={displayedVerification} type="button" onClick={(event) => { event.stopPropagation(); openAffiliation(); }} className="inline-flex cursor-pointer focus-visible:outline-none">{icon}</button>
-        ) : (
-          <BadgePopup key={displayedVerification} badgeKey={displayedVerification}>{icon}</BadgePopup>
         );
       })()}
       {hasAffiliation && <AffiliationChip affiliation={visibleAffiliations[0]} size={size} onOpen={openAffiliation} />}

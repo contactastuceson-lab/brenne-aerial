@@ -3,7 +3,18 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation, useNavigationType, useOutlet } from 'react-router-dom';
 import ContentReveal from '@/components/motion/ContentReveal';
 
+const MAIN_TAB_ORDER = ['/', '/discover', '/messages', '/search'];
 const isDeepDestination = (pathname) => pathname.startsWith('/@') || /\/(post|blog|forum)\/[^/]+/.test(pathname) || pathname.split('/').filter(Boolean).length > 1;
+
+const getTransitionDirection = (fromPath, toPath) => {
+  const fromIndex = MAIN_TAB_ORDER.indexOf(fromPath);
+  const toIndex = MAIN_TAB_ORDER.indexOf(toPath);
+
+  if (fromIndex !== -1 && toIndex !== -1) return toIndex > fromIndex ? 1 : -1;
+  if (isDeepDestination(toPath)) return 1;
+  if (isDeepDestination(fromPath)) return -1;
+  return 1;
+};
 
 export default function PageTransition({ context }) {
   const location = useLocation();
@@ -19,8 +30,7 @@ export default function PageTransition({ context }) {
       if (!link || link.target === '_blank') return;
       const destination = new URL(link.href, window.location.origin);
       if (destination.origin !== window.location.origin || destination.pathname === location.pathname) return;
-      const bounds = link.getBoundingClientRect();
-      directionRef.current = isDeepDestination(destination.pathname) || bounds.left + bounds.width / 2 >= window.innerWidth / 2 ? 1 : -1;
+      directionRef.current = getTransitionDirection(location.pathname, destination.pathname);
     };
 
     document.addEventListener('pointerdown', captureNavigationDirection, true);

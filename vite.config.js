@@ -31,7 +31,7 @@ export default defineConfig({
         theme_color: '#040a14',
         background_color: '#040a14',
         icons: [
-          { src: '/eza-pwa-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }
+          { src: 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/53f8e6b37_1782606023373.png', sizes: '1024x1024', type: 'image/png', purpose: 'any' }
         ]
       },
       workbox: {

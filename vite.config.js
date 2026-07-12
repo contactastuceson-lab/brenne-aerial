@@ -19,7 +19,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      injectRegister: false,
       devOptions: { enabled: false },
       manifest: {
         name: 'EZA — by EZA Group',

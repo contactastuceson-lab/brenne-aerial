@@ -7,6 +7,7 @@ import CreatePost from '@/components/post/CreatePost';
 import { RefreshCw, Rss, Sparkles, ArrowUp, Users, TrendingUp, Zap, ArrowRight, Hash, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { extractHashtags } from '@/lib/hashtags';
+import { getOrFetchUser } from '@/hooks/usePublicUser';
 
 const FILTERS = [
   { id: 'foryou',  label: 'Pour vous' },
@@ -120,6 +121,10 @@ export default function HomeFeed({ user }) {
     },
     staleTime: 60000,
   });
+
+  useEffect(() => {
+    posts.forEach((post) => getOrFetchUser(post.author_id));
+  }, [posts]);
 
   useEffect(() => {
     const unsub = base44.entities.Post.subscribe((event) => {

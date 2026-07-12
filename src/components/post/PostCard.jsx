@@ -38,6 +38,20 @@ function Avatar({ src, name, size = 10, onIdentityClick }) {
   return <div className={cls}>{inner}</div>;
 }
 
+function PostCardSkeleton() {
+  return (
+    <article className="flex gap-3 border-b border-zinc-800/50 px-4 py-3" aria-busy="true" aria-label="Chargement de la publication">
+      <div className="h-10 w-10 flex-shrink-0 animate-pulse rounded-lg bg-zinc-800" />
+      <div className="flex-1 space-y-3 pt-1">
+        <div className="h-3.5 w-48 animate-pulse rounded bg-zinc-800" />
+        <div className="h-3.5 w-full animate-pulse rounded bg-zinc-800" />
+        <div className="h-3.5 w-4/5 animate-pulse rounded bg-zinc-800" />
+        <div className="h-7 w-44 animate-pulse rounded bg-zinc-800" />
+      </div>
+    </article>
+  );
+}
+
 function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEdited, isThread = false }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -157,6 +171,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
   const openPost = () => navigate(`/post/${post.id}`);
 
   if (deleted) return null;
+  if (liveUser === undefined) return <PostCardSkeleton />;
 
   return (
     <article

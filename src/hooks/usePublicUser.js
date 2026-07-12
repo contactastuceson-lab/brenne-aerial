@@ -86,13 +86,13 @@ export function getOrFetchUser(userId) {
 }
 
 export default function usePublicUser(userId) {
-  const [user, setUser] = useState(() => cache[userId]?.data ?? null);
+  const [user, setUser] = useState(() => cache[userId] ? cache[userId].data : undefined);
 
   useEffect(() => {
     if (!userId) return;
 
     // Sync from cache immediately
-    setUser(cache[userId]?.data ?? null);
+    setUser(cache[userId] ? cache[userId].data : undefined);
 
     // Subscribe to updates
     if (!listeners[userId]) listeners[userId] = new Set();

@@ -6,7 +6,14 @@
 
 import { useState, useEffect } from 'react';
 
-const cache = {};           // { [userId]: { data, ts } }
+const PROFILE_CACHE_KEY = 'eza-public-user-cache';
+const cache = (() => {
+  try {
+    return JSON.parse(localStorage.getItem(PROFILE_CACHE_KEY)) || {};
+  } catch {
+    return {};
+  }
+})();
 const listeners = {};       // { [userId]: Set<fn> }
 const pending = {};         // { [userId]: Promise }
 const TTL = 5 * 60 * 1000; // 5 min
@@ -19,6 +26,14 @@ let refreshTimer = null;
 
 function notify(userId) {
   listeners[userId]?.forEach(fn => fn(cache[userId]?.data ?? null));
+}
+
+function persistCache() {
+  try {
+    localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    // The in-memory cache remains available when device storage is unavailable.
+  }
 }
 
 async function fetchBatch(userIds) {
@@ -35,6 +50,7 @@ async function fetchBatch(userIds) {
       notify(userId);
       delete pending[userId];
     });
+    persistCache();
   } catch {
     userIds.forEach(userId => {
       cache[userId] = { data: null, ts: Date.now() };

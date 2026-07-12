@@ -9,12 +9,12 @@ export default function PageTransition() {
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={location.pathname}
-        layout
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        exit={{ x: '-30%' }}
-        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.25 }}
+        initial={{ x: 24, opacity: 0.98 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: -12, opacity: 0.98 }}
+        transition={{ type: 'tween', ease: 'easeOut', duration: 0.18 }}
         className="min-h-[720px] w-full"
+        style={{ willChange: 'transform, opacity' }}
       >
         {outlet}
       </motion.div>

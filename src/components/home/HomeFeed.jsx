@@ -8,6 +8,7 @@ import { RefreshCw, Rss, Sparkles, ArrowUp, Users, TrendingUp, Zap, ArrowRight, 
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { extractHashtags } from '@/lib/hashtags';
 import { getOrFetchUser } from '@/hooks/usePublicUser';
+import { readFeedCache, saveFeedCache } from '@/lib/feedCache';
 
 const FILTERS = [
   { id: 'foryou',  label: 'Pour vous' },
@@ -111,15 +112,20 @@ export default function HomeFeed({ user }) {
   const { data: posts = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['home-feed-posts', filter],
     queryFn: async () => {
-      if (filter === 'popular') return base44.entities.Post.list('-likes_count', 50);
-      if (filter === 'medias') {
-        const all = await base44.entities.Post.list('-created_date', 100);
-        return all.filter(p => p.media_urls?.length > 0);
-      }
-      // foryou + recent : on récupère les 100 derniers, le tri est fait en front
-      return base44.entities.Post.list('-created_date', 100);
+      const fetchedPosts = filter === 'popular'
+        ? await base44.entities.Post.list('-likes_count', 50)
+        : await base44.entities.Post.list('-created_date', 100);
+      const nextPosts = filter === 'medias'
+        ? fetchedPosts.filter((post) => post.media_urls?.length > 0)
+        : fetchedPosts;
+      saveFeedCache(filter, nextPosts);
+      return nextPosts;
     },
-    staleTime: 60000,
+    initialData: () => readFeedCache(filter)?.posts,
+    initialDataUpdatedAt: () => readFeedCache(filter)?.savedAt,
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {

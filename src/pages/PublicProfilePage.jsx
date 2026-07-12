@@ -415,7 +415,7 @@ export default function PublicProfilePage() {
             </div>
 
             {/* Name + username */}
-            <h1 className="mb-1 font-grotesk text-2xl font-bold sm:text-3xl" style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}>
+            <h1 className="mb-1 flex flex-wrap items-center gap-1 font-grotesk text-2xl font-bold sm:text-3xl" style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}>
               <button
                 type="button"
                 onClick={() => hasPublicAffiliation && setAffiliationOpen(true)}
@@ -423,13 +423,15 @@ export default function PublicProfilePage() {
               >
                 {user.display_name || user.full_name}
               </button>
+              <span className="inline-flex origin-left scale-[0.8] text-base">
+                <VerificationIcons verifications={user.verifications} size="sm" user={user} onAffiliationOpen={() => setAffiliationOpen(true)} />
+              </span>
             </h1>
 
             <div className="flex items-center gap-2 mb-3">
               {user.username && (
                 <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
               )}
-              <VerificationIcons verifications={user.verifications} size="md" user={user} onAffiliationOpen={() => setAffiliationOpen(true)} />
             </div>
 
             {/* Role chip */}

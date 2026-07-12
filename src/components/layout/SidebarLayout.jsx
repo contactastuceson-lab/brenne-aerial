@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import PageTransition from '@/components/layout/PageTransition';
+import MainSkeleton from '@/components/layout/MainSkeleton';
 import HomeLeftSidebar from '@/components/home/HomeLeftSidebar';
 import { base44 } from '@/api/base44Client';
 import { ShieldAlert, X } from 'lucide-react';
@@ -132,9 +133,11 @@ export default function SidebarLayout() {
   return (
     <div className="flex min-h-screen" style={{ background: 'hsl(var(--background))' }}>
       <HomeLeftSidebar user={user} />
-      <main className="flex-1 min-w-0 flex flex-col">
+      <main className="relative flex-1 min-w-0 overflow-x-hidden">
         <RestrictedBanner user={user} />
-        <Outlet />
+        <React.Suspense fallback={<MainSkeleton />}>
+          <PageTransition />
+        </React.Suspense>
       </main>
     </div>
   );

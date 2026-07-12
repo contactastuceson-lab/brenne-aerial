@@ -78,7 +78,11 @@ export default function AdminBadges() {
     const current = user.verifications || [];
     const adding = !current.includes(key);
     const next = adding ? [...current, key] : current.filter(v => v !== key);
-    updateUser.mutate({ id: user.id, data: { verifications: next } });
+    const data = {
+      verifications: next,
+      ...(key === 'supreme' ? { supreme_assigned_at: adding ? new Date().toISOString() : null } : {}),
+    };
+    updateUser.mutate({ id: user.id, data });
     const vt = VERIFICATION_TYPES.find(v => v.key === key);
     toast.success(adding ? `${vt?.label} activé` : `${vt?.label} retiré`);
     if (adding) {

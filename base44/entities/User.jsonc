@@ -62,7 +62,12 @@
       "items": {
         "type": "string"
       },
-      "description": "Liste des organisations ayant attribué le badge certifié par affiliation"
+      "description": "Liste des organisations ayant attribu\u00e9 le badge certifi\u00e9 par affiliation"
+    },
+    "supreme_assigned_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date d'attribution du statut Supr\u00eame"
     },
     "verified_status": {
       "type": "string",

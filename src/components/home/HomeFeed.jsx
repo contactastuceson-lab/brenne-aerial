@@ -123,7 +123,7 @@ export default function HomeFeed({ user }) {
 
   useEffect(() => {
     const unsub = base44.entities.Post.subscribe((event) => {
-      if (event.type === 'create') setNewCount(c => c + 1);
+      if (event.type === 'create' && !event.data?.reply_to_id) setNewCount(c => c + 1);
     });
     return unsub;
   }, []);
@@ -138,7 +138,8 @@ export default function HomeFeed({ user }) {
   const handleFilter = useCallback((f) => { setFilter(f); setNewCount(0); }, []);
 
   const filteredPosts = useMemo(() => {
-    let result = posts;
+    // Le fil principal ne montre que les publications racines ; les réponses restent dans la vue détaillée du post.
+    let result = posts.filter((post) => !post.reply_to_id);
 
     // Hashtag filter
     if (urlTag) {

@@ -21,7 +21,8 @@ export default function PageTransition({ context }) {
   const navigationType = useNavigationType();
   const outlet = useOutlet(context);
   const directionRef = useRef(1);
-  const direction = navigationType === 'POP' ? -1 : directionRef.current;
+  const tabDirection = location.state?.transitionDirection;
+  const direction = navigationType === 'POP' ? -1 : (tabDirection ?? directionRef.current);
 
   useEffect(() => {
     const captureNavigationDirection = (event) => {

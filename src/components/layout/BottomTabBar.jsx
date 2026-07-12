@@ -62,6 +62,7 @@ export default function BottomTabBar() {
   };
 
   const unreadCount = notifs.length;
+  const activeTabIndex = MAIN_TABS.findIndex((tab) => !tab.isMore && isActive(tab.to));
 
   return (
     <>
@@ -210,7 +211,7 @@ export default function BottomTabBar() {
               <span className="font-inter text-[10px] text-muted-foreground">Publier</span>
             </button>
           )}
-          {MAIN_TABS.map((tab) => {
+          {MAIN_TABS.map((tab, tabIndex) => {
             const Icon = tab.icon;
             const active = tab.isMore ? showMore : isActive(tab.to);
 
@@ -230,7 +231,9 @@ export default function BottomTabBar() {
             }
 
             return (
-              <Link key={tab.to} to={tab.to} onClick={() => setShowMore(false)}
+              <Link key={tab.to} to={tab.to}
+                state={{ transitionDirection: tabIndex > activeTabIndex ? 1 : -1 }}
+                onClick={() => setShowMore(false)}
                 className="native-press flex flex-col items-center gap-1 flex-1 py-2 rounded-2xl relative active:opacity-60 transition-opacity duration-100"
               >
                 {tab.to === '/messages' && unreadCount > 0 && user && (

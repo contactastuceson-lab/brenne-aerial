@@ -10,7 +10,7 @@ const getTransitionDirection = (fromPath, toPath) => {
   const fromIndex = MAIN_TAB_ORDER.indexOf(fromPath);
   const toIndex = MAIN_TAB_ORDER.indexOf(toPath);
 
-  if (fromIndex !== -1 && toIndex !== -1) return toIndex > fromIndex ? -1 : 1;
+  if (fromIndex !== -1 && toIndex !== -1) return toIndex > fromIndex ? 1 : -1;
   if (isDeepDestination(toPath)) return 1;
   if (isDeepDestination(fromPath)) return -1;
   return 1;

@@ -15,7 +15,6 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 import PreferencesApplier from "@/components/settings/PreferencesApplier";
 import NavigationSkeleton from "@/components/layout/NavigationSkeleton";
-import GoogleOneTap from "@/components/auth/GoogleOneTap";
 import PwaInstallPrompt from "@/components/PwaInstallPrompt";
 
 // Layout
@@ -138,7 +137,6 @@ const AuthenticatedApp = () => {
 
   return (
     <>
-      <GoogleOneTap />
       <PwaInstallPrompt />
       {/* Apply user preferences globally */}
       <PreferencesApplier user={user} />

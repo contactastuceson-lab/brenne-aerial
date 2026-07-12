@@ -7,6 +7,7 @@ import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import AffiliationModal from '@/components/ui/AffiliationModal';
 import { VERIFICATION_CONFIG } from '@/components/ui/VerificationChip';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { getHighestVerificationBadge } from '@/lib/affiliationUtils';
@@ -88,7 +89,11 @@ export default function PublicProfilePage() {
   const [followingCount, setFollowingCount] = useState(0);
   const [badgeCounts, setBadgeCounts] = useState({});
   const [allUsers, setAllUsers] = useState([]);
+  const [affiliationOpen, setAffiliationOpen] = useState(false);
 
+  const userAffiliationDescriptor = useMemo(() => user?.id ? { userId: user.id } : null, [user?.id]);
+  const { affiliations: userAffiliations } = useOrganizationAffiliations(userAffiliationDescriptor);
+  const hasPublicAffiliation = userAffiliations.some((item) => item.status === 'accepted' && item.visibility === 'public');
   const orgDescriptor = useMemo(() => user?.id ? { organizationId: user.id } : null, [user?.id]);
   const { affiliations: orgAffiliations } = useOrganizationAffiliations(orgDescriptor);
   const affiliatedAccounts = useMemo(
@@ -410,18 +415,21 @@ export default function PublicProfilePage() {
             </div>
 
             {/* Name + username */}
-            <h1
-              className="font-grotesk font-bold text-2xl sm:text-3xl mb-1"
-              style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-            >
-              {user.display_name || user.full_name}
+            <h1 className="mb-1 font-grotesk text-2xl font-bold sm:text-3xl" style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}>
+              <button
+                type="button"
+                onClick={() => hasPublicAffiliation && setAffiliationOpen(true)}
+                className={hasPublicAffiliation ? 'cursor-pointer hover:underline focus-visible:outline-none' : 'cursor-default'}
+              >
+                {user.display_name || user.full_name}
+              </button>
             </h1>
 
             <div className="flex items-center gap-2 mb-3">
               {user.username && (
                 <p className="font-mono text-sm text-muted-foreground">@{user.username}</p>
               )}
-              <VerificationIcons verifications={user.verifications} size="md" user={user} />
+              <VerificationIcons verifications={user.verifications} size="md" user={user} onAffiliationOpen={() => setAffiliationOpen(true)} />
             </div>
 
             {/* Role chip */}
@@ -589,6 +597,8 @@ export default function PublicProfilePage() {
           </div>
         </div>
       </div>
+
+      <AffiliationModal user={user} open={affiliationOpen} onOpenChange={setAffiliationOpen} />
 
       {/* Right sidebar — sticky, same as HomePage */}
       <div className="hidden xl:flex flex-col w-[300px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-4 px-3" style={{ scrollbarWidth: 'none' }}>

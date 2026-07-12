@@ -7,14 +7,14 @@
  *   size     – 'sm' | 'md'
  *   max      – nombre max de badges affichés (défaut: 2)
  */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Building2, Star, Shield, Code2, Headset, Handshake,
   Newspaper, Video, ShieldAlert, Crown, Briefcase, Users,
   UserCheck, Award, Zap
 } from 'lucide-react';
 import { useOrganizationAffiliations } from '@/hooks/useOrganizationAffiliations';
-import BadgePopup from '@/components/ui/BadgePopup';
+import AffiliationModal from '@/components/ui/AffiliationModal';
 
 // Configuration visuelle par rôle d'affiliation
 const ROLE_CONFIG = {
@@ -50,46 +50,26 @@ function getRoleConfig(role) {
   return ROLE_CONFIG[key] || ROLE_CONFIG.default;
 }
 
-function SingleBadge({ affiliation, size }) {
+function SingleBadge({ affiliation, size, onOpen }) {
   const cfg = getRoleConfig(affiliation.role);
   const Icon = cfg.icon;
   const isSmall = size === 'sm';
 
-  const badgeInfo = {
-    label: `${cfg.label} · ${affiliation.organizationName || 'Organisation'}`,
-    icon: Icon,
-    bg: cfg.color,
-    short: `${cfg.label} chez ${affiliation.organizationName || 'une organisation'}`,
-    description: `Ce membre est affilié à ${affiliation.organizationName || 'une organisation'} en tant que ${affiliation.role || 'affilié'}. Cette affiliation est officielle et vérifiée par la plateforme.`,
-    hideAction: true,
-    content: null,
-  };
-
   return (
-    <BadgePopup badgeKey={null} badgeInfo={badgeInfo}>
-      <span
-        className="inline-flex items-center gap-1 rounded-full font-inter font-semibold cursor-pointer transition-all hover:brightness-110"
-        style={{
-          fontSize: isSmall ? '10px' : '11px',
-          padding: isSmall ? '2px 6px' : '3px 8px',
-          color: cfg.color,
-          background: cfg.bg,
-          border: `1px solid ${cfg.border}`,
-          lineHeight: 1.4,
-        }}
-      >
-        <Icon style={{ width: isSmall ? 9 : 11, height: isSmall ? 9 : 11, flexShrink: 0 }} strokeWidth={2.5} />
-        <span className="truncate max-w-[80px]">
-          {affiliation.organizationName
-            ? `${affiliation.organizationName}`
-            : cfg.label}
-        </span>
-      </span>
-    </BadgePopup>
+    <button
+      type="button"
+      onClick={onOpen}
+      className="inline-flex items-center gap-1 rounded-full font-inter font-semibold transition-all hover:brightness-110"
+      style={{ fontSize: isSmall ? '10px' : '11px', padding: isSmall ? '2px 6px' : '3px 8px', color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, lineHeight: 1.4 }}
+    >
+      <Icon style={{ width: isSmall ? 9 : 11, height: isSmall ? 9 : 11, flexShrink: 0 }} strokeWidth={2.5} />
+      <span className="truncate max-w-[80px]">{affiliation.organizationName || cfg.label}</span>
+    </button>
   );
 }
 
 export default function AffiliationBadges({ userId, size = 'sm', max = 2 }) {
+  const [open, setOpen] = useState(false);
   const { affiliations, loading } = useOrganizationAffiliations(
     userId ? { userId } : null
   );
@@ -107,8 +87,9 @@ export default function AffiliationBadges({ userId, size = 'sm', max = 2 }) {
   return (
     <span className="inline-flex items-center gap-1 flex-wrap">
       {shown.map((aff) => (
-        <SingleBadge key={aff.id} affiliation={aff} size={size} />
+        <SingleBadge key={aff.id} affiliation={aff} size={size} onOpen={() => setOpen(true)} />
       ))}
+      <AffiliationModal user={{ id: userId }} open={open} onOpenChange={setOpen} />
       {extra > 0 && (
         <span
           className="inline-flex items-center rounded-full font-mono font-bold"

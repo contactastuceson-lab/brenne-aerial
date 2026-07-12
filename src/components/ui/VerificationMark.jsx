@@ -6,16 +6,24 @@ const COLORS = { verified: 'rgb(29, 155, 240)', pro: 'rgb(34, 197, 94)', officia
 
 export default function VerificationMark({ type = 'verified', className = '' }) {
   const uniqueId = useId().replace(/:/g, '');
-  const gradientId = `goldGrad-${uniqueId}`;
+  const goldGradientId = `goldGrad-${uniqueId}`;
+  const goldMaskId = `checkMaskGold-${uniqueId}`;
+  const crystalBgId = `crystalBg-${uniqueId}`;
+  const chromeCheckId = `chromeCheck-${uniqueId}`;
   const maskId = `checkMask-${uniqueId}`;
   const isRosette = ['verified', 'pro', 'official'].includes(type);
+  const isCertified = type === 'certified';
   const isSupreme = type === 'supreme';
-  const fill = isSupreme ? `url(#${gradientId})` : (COLORS[type] || COLORS.verified);
+  const fill = COLORS[type] || COLORS.verified;
+
   return <svg viewBox="0 0 24 24" aria-label={type} className={className} style={{ width: '1.1em', height: '1.1em', verticalAlign: 'text-bottom', marginLeft: '2px' }}>
     <defs>
-      {isSupreme && <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FDE047" /><stop offset="50%" stopColor="#EAB308" /><stop offset="100%" stopColor="#A16207" /></linearGradient>}
-      {!isRosette && <mask id={maskId}><rect width="24" height="24" fill="white" /><path d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" fill="black" /></mask>}
+      {isCertified && <><linearGradient id={goldGradientId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FDE047" /><stop offset="50%" stopColor="#EAB308" /><stop offset="100%" stopColor="#A16207" /></linearGradient><mask id={goldMaskId}><rect width="24" height="24" fill="white" /><path d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" fill="black" /></mask></>}
+      {isSupreme && <><linearGradient id={crystalBgId} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="rgba(255,255,255,0.85)" /><stop offset="50%" stopColor="rgba(241,245,249,0.4)" /><stop offset="100%" stopColor="rgba(255,255,255,0.15)" /></linearGradient><linearGradient id={chromeCheckId} x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stopColor="#94a3b8" /><stop offset="50%" stopColor="#f8fafc" /><stop offset="100%" stopColor="#cbd5e1" /></linearGradient></>}
+      {!isRosette && !isCertified && !isSupreme && <mask id={maskId}><rect width="24" height="24" fill="white" /><path d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" fill="black" /></mask>}
     </defs>
-    <path mask={!isRosette ? `url(#${maskId})` : undefined} fill={fill} d={isRosette ? ROSETTE_PATH : CUT_PATH} />
+    {isCertified && <path mask={`url(#${goldMaskId})`} fill={`url(#${goldGradientId})`} d={CUT_PATH} />}
+    {isSupreme && <><path fill={`url(#${crystalBgId})`} d={CUT_PATH} /><path fill={`url(#${chromeCheckId})`} d="M10.5 16.25l-4-4 1.41-1.42L10.5 13.42l6.59-6.59L18.5 8.25z" /></>}
+    {!isCertified && !isSupreme && <path mask={!isRosette ? `url(#${maskId})` : undefined} fill={fill} d={isRosette ? ROSETTE_PATH : CUT_PATH} />}
   </svg>;
 }

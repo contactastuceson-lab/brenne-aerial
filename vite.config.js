@@ -20,6 +20,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
+      devOptions: { enabled: false },
       manifest: {
         name: 'EZA — by EZA Group',
         short_name: 'EZA',

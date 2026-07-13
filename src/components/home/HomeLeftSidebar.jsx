@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Compass, MessageCircle, Bell, Bookmark, Calendar,
   Users, BarChart3, Briefcase, FileText, Award,
-  Heart, Star, MoreHorizontal, Sparkles
+  Heart, Star, MoreHorizontal, LogOut, Sparkles
 } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { hasAdminAccess } from '@/lib/roles';
@@ -71,6 +72,7 @@ function NavItem({ icon: Icon, label, to, active, badge, premium }) {
 
 export default function HomeLeftSidebar({ user }) {
   const location = useLocation();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const isActive = (to) => to === '/' ? location.pathname === '/' : location.pathname.startsWith(to.split('?')[0]);
 
   const { data: notifs = [] } = useQuery({
@@ -131,29 +133,28 @@ export default function HomeLeftSidebar({ user }) {
 
         {/* User profile bottom — épinglé, style X */}
         {user && (
-          <div className="mb-2 flex-shrink-0">
-            <Link to="/profile"
-              className="flex items-center gap-3 px-3 py-3 rounded-full hover:bg-white/5 transition-all group"
-            >
-              <div className="w-10 h-10 rounded-lg flex-shrink-0 overflow-hidden border border-border/40"
-                style={{ background: 'hsl(var(--primary)/0.15)' }}
-              >
-                {user.avatar_url
-                  ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                  : <div className="w-full h-full flex items-center justify-center">
-                      <span className="font-grotesk font-bold text-primary text-sm">{avatarInitial}</span>
-                    </div>
-                }
-              </div>
-              <div className="flex-1 min-w-0 hidden xl:block">
-                <div className="flex items-center gap-1.5">
-                  <p className="font-grotesk font-bold text-sm text-foreground truncate">{displayName}</p>
-                  <VerificationIcons verifications={user.verifications} size="sm" user={user} />
+          <div className="relative mb-2 flex-shrink-0">
+            <div className="flex items-center gap-1 px-3 py-3 rounded-full hover:bg-white/5 transition-all group">
+              <Link to="/profile" className="flex min-w-0 flex-1 items-center gap-3">
+                <div className="w-10 h-10 rounded-lg flex-shrink-0 overflow-hidden border border-border/40" style={{ background: 'hsl(var(--primary)/0.15)' }}>
+                  {user.avatar_url ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><span className="font-grotesk font-bold text-primary text-sm">{avatarInitial}</span></div>}
                 </div>
-                {user.username && <p className="font-mono text-xs text-muted-foreground/60 truncate">@{user.username}</p>}
+                <div className="flex-1 min-w-0 hidden xl:block">
+                  <div className="flex items-center gap-1.5"><p className="font-grotesk font-bold text-sm text-foreground truncate">{displayName}</p><VerificationIcons verifications={user.verifications} size="sm" user={user} /></div>
+                  {user.username && <p className="font-mono text-xs text-muted-foreground/60 truncate">@{user.username}</p>}
+                </div>
+              </Link>
+              <button type="button" onClick={() => setShowProfileMenu(value => !value)} className="hidden xl:flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground" aria-label="Options du compte">
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+            </div>
+            {showProfileMenu && (
+              <div className="absolute bottom-full right-0 z-30 mb-2 w-44 rounded-xl border border-border bg-popover p-1 shadow-xl">
+                <button type="button" onClick={() => base44.auth.logout('/')} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left font-inter text-sm text-destructive hover:bg-destructive/10">
+                  <LogOut className="h-4 w-4" /> Se déconnecter
+                </button>
               </div>
-              <MoreHorizontal className="w-4 h-4 text-muted-foreground hidden xl:block flex-shrink-0" />
-            </Link>
+            )}
           </div>
         )}
       </div>

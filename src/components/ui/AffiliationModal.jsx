@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { Calendar, ExternalLink } from 'lucide-react';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Calendar, ExternalLink, X } from 'lucide-react';
+import { Sheet, SheetClose, SheetContent } from '@/components/ui/sheet';
 import VerificationMark from '@/components/ui/VerificationMark';
 import { useCachedUser, useOrganizationAffiliations } from '@/hooks/useOrganizationAffiliations';
 import { getHighestVerificationBadge } from '@/lib/affiliationUtils';
@@ -72,9 +72,12 @@ export default function AffiliationModal({ user, open, onOpenChange }) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="fixed inset-x-0 bottom-0 w-full max-w-none rounded-t-3xl border-t border-border bg-card p-0 shadow-2xl">
+      <SheetContent side="bottom" hideClose className="fixed inset-x-0 bottom-0 w-full max-w-none rounded-t-3xl border-t border-border bg-card p-0 shadow-2xl">
         <div className="mx-auto w-full max-w-2xl px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-5">
           <div className="mb-5 h-1 w-10 rounded-full bg-muted mx-auto" />
+          <SheetClose type="button" aria-label="Fermer les informations de vérification" className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground hover:bg-secondary hover:text-foreground">
+            <X className="h-4 w-4" />
+          </SheetClose>
           <p className={`mb-5 text-left text-[10px] font-semibold uppercase tracking-[0.22em] ${isSupreme ? 'text-chart-5' : 'text-muted-foreground'}`}>{isSupreme ? 'Statut Suprême' : 'Statut du compte'}</p>
           <div className="flex flex-col gap-3 text-left">
             <div className={`flex items-start gap-3 ${isSupreme ? 'rounded-2xl border border-chart-5/30 bg-chart-5/10 p-4 sky-glow' : ''}`}>

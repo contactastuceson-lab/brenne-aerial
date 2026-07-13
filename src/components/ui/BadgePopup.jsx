@@ -118,6 +118,14 @@ function Popup({ info, badgeKey, anchorRect, onClose }) {
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
 
+  useEffect(() => {
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [onClose]);
+
   const Icon = info.icon || Check;
   const criteria = /** @type {string[]} */ (info.criteria || []);
   // Special modal variant for verification-like badges (Vérifié / Certifié / Pro / Suprême / Officiel): slide up from bottom to center
@@ -138,7 +146,10 @@ function Popup({ info, badgeKey, anchorRect, onClose }) {
           style={entered ? endStyle : startStyle}
           className="absolute inset-x-0 bottom-0 w-full h-[24vh] max-h-[28vh] flex flex-col bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden"
         >
-          <div className="w-full bg-gradient-to-r from-primary/60 via-primary/40 to-amber-400/20 p-2">
+          <div className="relative w-full bg-gradient-to-r from-primary/60 via-primary/40 to-amber-400/20 p-2">
+            <button type="button" onClick={onClose} aria-label="Fermer les informations de vérification" className="absolute right-3 top-3 rounded-full p-1 text-white/80 hover:bg-black/20 hover:text-white transition-colors">
+              <X className="h-4 w-4" />
+            </button>
             <div className="mx-auto flex max-w-6xl items-center gap-3 px-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-md border border-white/20 bg-background/10 shadow-sm">
                 <VerificationMark type={badgeKey} size="2em" marginLeft="0" />

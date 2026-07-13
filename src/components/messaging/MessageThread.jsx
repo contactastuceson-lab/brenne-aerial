@@ -12,6 +12,7 @@ import BadgeChip from '@/components/ui/BadgeChip';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import MessageComposer from '@/components/messaging/MessageComposer';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -668,71 +669,27 @@ export default function MessageThread({ user, conv, onBack }) {
         ) : !isOpen && !hasAnyRequest ? (
           isCurrentUserAdmin ? (
             // Admins bypass the request system
-            <div className="flex gap-2">
-              <Input
-                value={text}
-                onChange={e => setText(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSend()}
-                placeholder="Votre message..."
-                className="bg-secondary border-border font-inter text-sm"
-              />
-              <Button onClick={handleSend} disabled={!text.trim() || sendMessage.isPending} className="bg-primary text-primary-foreground flex-shrink-0 px-4">
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
+            <MessageComposer text={text} onChange={setText} onSend={handleSend} isSending={sendMessage.isPending} placeholder="Votre message..." />
           ) : (
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-muted-foreground font-inter text-xs bg-secondary/50 rounded-lg px-3 py-2">
                 <Lock className="w-3 h-3 text-primary/60 flex-shrink-0" />
                 <span>Premier message = demande de contact. La personne devra l'accepter.</span>
               </div>
-              <div className="flex gap-2">
-                <Input
-                  value={text}
-                  onChange={e => setText(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSend()}
-                  placeholder="Votre message de présentation..."
-                  className="bg-secondary border-border font-inter text-sm"
-                />
-                <Button onClick={handleSend} disabled={!text.trim() || sendRequest.isPending} className="bg-primary text-primary-foreground flex-shrink-0 px-4">
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
+              <MessageComposer text={text} onChange={setText} onSend={handleSend} isSending={sendRequest.isPending} placeholder="Votre message de présentation..." />
             </div>
           )
         ) : myPendingRequest && !isOpen ? (
           isCurrentUserAdmin ? (
             // Admins can still write even if a request is pending
-            <div className="flex gap-2">
-              <Input
-                value={text}
-                onChange={e => setText(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSend()}
-                placeholder="Votre message..."
-                className="bg-secondary border-border font-inter text-sm"
-              />
-              <Button onClick={handleSend} disabled={!text.trim() || sendMessage.isPending} className="bg-primary text-primary-foreground flex-shrink-0 px-4">
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
+            <MessageComposer text={text} onChange={setText} onSend={handleSend} isSending={sendMessage.isPending} placeholder="Votre message..." />
           ) : (
             <div className="text-center py-2 font-inter text-xs text-muted-foreground flex items-center justify-center gap-2">
               <Clock className="w-3 h-3 text-amber-400" /> En attente d'acceptation...
             </div>
           )
         ) : isOpen ? (
-          <div className="flex gap-2">
-            <Input
-              value={text}
-              onChange={e => setText(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSend()}
-              placeholder="Votre message..."
-              className="bg-secondary border-border font-inter text-sm"
-            />
-            <Button onClick={handleSend} disabled={!text.trim() || sendMessage.isPending} className="bg-primary text-primary-foreground flex-shrink-0 px-4">
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
+          <MessageComposer text={text} onChange={setText} onSend={handleSend} isSending={sendMessage.isPending} placeholder="Votre message..." />
         ) : (
           <div className="text-center py-2 font-inter text-xs text-muted-foreground">Cette conversation est fermée.</div>
         ) }

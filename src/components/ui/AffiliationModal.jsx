@@ -72,7 +72,7 @@ export default function AffiliationModal({ user, open, onOpenChange }) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" hideClose className="fixed inset-x-0 bottom-0 w-full max-w-none rounded-t-3xl border-t border-border bg-card p-0 shadow-2xl">
+      <SheetContent side="bottom" hideClose onClick={(event) => event.stopPropagation()} className="fixed inset-x-0 bottom-0 w-full max-w-none rounded-t-3xl border-t border-border bg-card p-0 shadow-2xl">
         <div className="mx-auto w-full max-w-2xl px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-5">
           <div className="mb-5 h-1 w-10 rounded-full bg-muted mx-auto" />
           <SheetClose type="button" aria-label="Fermer les informations de vérification" className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground hover:bg-secondary hover:text-foreground">

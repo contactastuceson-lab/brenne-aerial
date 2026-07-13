@@ -299,6 +299,14 @@ export default function CertificationRequest({ onClose, user }) {
   const [pendingRequest, setPendingRequest] = useState(null);
 
   useEffect(() => {
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [onClose]);
+
+  useEffect(() => {
     base44.entities.AppSettings.filter({ key: 'certifications_enabled' }).then(s => {
       if (s.length > 0) setCertEnabled(s[0].value === 'true');
     }).catch(() => {});
@@ -374,7 +382,7 @@ export default function CertificationRequest({ onClose, user }) {
   const isLastStep = formStep === totalSteps - 1;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -398,7 +406,7 @@ export default function CertificationRequest({ onClose, user }) {
               )}
             </div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button type="button" onClick={onClose} aria-label="Fermer la demande de vérification" className="rounded-lg p-1 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>

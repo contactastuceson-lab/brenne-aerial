@@ -72,7 +72,7 @@ export default function AffiliationModal({ user, open, onOpenChange }) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" hideClose className="fixed inset-x-0 bottom-0 w-full max-w-none rounded-t-3xl border-t border-border bg-card p-0 shadow-2xl">
+      <SheetContent side="bottom" className="fixed inset-x-0 bottom-0 w-full max-w-none rounded-t-3xl border-t border-border bg-card p-0 shadow-2xl">
         <div className="mx-auto w-full max-w-2xl px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-5">
           <div className="mb-5 h-1 w-10 rounded-full bg-muted mx-auto" />
           <p className={`mb-5 text-left text-[10px] font-semibold uppercase tracking-[0.22em] ${isSupreme ? 'text-chart-5' : 'text-muted-foreground'}`}>{isSupreme ? 'Statut Suprême' : 'Statut du compte'}</p>

@@ -24,7 +24,9 @@ const MORE_ITEMS = [
   { to: '/profile',              icon: User,         label: 'Mon profil',      color: 'text-primary' },
   { to: '/discover',             icon: Compass,      label: 'Explorer',        color: 'text-cyan-400' },
   { to: '/forum',                icon: FileText,     label: 'Forum',           color: 'text-blue-400' },
+  { to: '/business',             icon: Building2,    label: 'Business',        color: 'text-cyan-400' },
   { to: '/ecosysteme',           icon: Star,         label: 'Écosystème',      color: 'text-orange-400' },
+  { to: '/enor',                 icon: Award,        label: 'Enor',            color: 'text-amber-300' },
   { to: '/donation',             icon: Heart,        label: 'Soutenir',        color: 'text-red-400' },
   { to: '/legal/privacy',        icon: Shield,       label: 'Confidentialité', color: 'text-slate-400' },
 ];

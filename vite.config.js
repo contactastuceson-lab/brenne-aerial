@@ -41,8 +41,8 @@ export default defineConfig({
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === 'navigate',
-            handler: 'NetworkFirst',
-            options: { cacheName: 'pages', networkTimeoutSeconds: 3 }
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'pages' }
           },
           {
             urlPattern: ({ request }) => request.destination === 'image',

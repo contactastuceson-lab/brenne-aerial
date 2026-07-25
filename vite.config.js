@@ -39,10 +39,11 @@ export default defineConfig({
         skipWaiting: true,
         clientsClaim: true,
         navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: ({ request }) => request.mode === 'navigate',
+            urlPattern: ({ request }) => request.mode === 'navigate' && !new URL(request.url).pathname.startsWith('/api/'),
             handler: 'NetworkFirst',
             options: { cacheName: 'pages', networkTimeoutSeconds: 3 }
           },

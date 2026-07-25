@@ -70,7 +70,7 @@ export default function MaintenancePage({ message: propMessage }) {
 
       {/* Corner decorations */}
       <div className="absolute top-6 left-6 font-mono text-[10px] text-primary/40 tracking-widest">
-        BRENNE_AERIAL — SYS_MAINTENANCE
+        EZA — SYS_MAINTENANCE
       </div>
       <div className="absolute top-6 right-6 font-mono text-[10px] text-primary/40 tabular-nums">
         {time.toLocaleTimeString('fr-FR')}
@@ -124,7 +124,7 @@ export default function MaintenancePage({ message: propMessage }) {
         </div>
 
         {/* Title */}
-        <p className="font-mono text-xs text-primary tracking-widest uppercase mb-3">— Brenne Aerial</p>
+        <p className="font-mono text-xs text-primary tracking-widest uppercase mb-3">— EZA</p>
         <h1 className="font-grotesk font-bold text-4xl sm:text-5xl mb-2 leading-tight">
           Maintenance<br />
           <span className="gradient-text sky-glow-text">en cours{dots}</span>
@@ -189,7 +189,7 @@ export default function MaintenancePage({ message: propMessage }) {
 
         {/* Status button */}
         <a
-          href="https://status.brenneaerial.fr"
+          href="https://status.eza.group"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 text-primary font-grotesk font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-primary/20 transition-colors mb-4"
@@ -202,7 +202,7 @@ export default function MaintenancePage({ message: propMessage }) {
         <div className="flex items-center gap-2 text-muted-foreground/60">
           <Zap className="w-3.5 h-3.5 text-primary/50" />
           <span className="font-inter text-xs">
-            Urgence ? <a href="mailto:contact@brenneaerial.fr" className="text-primary hover:underline">contact@brenneaerial.fr</a>
+            Urgence ? <a href="mailto:contact@eza.group" className="text-primary hover:underline">contact@eza.group</a>
           </span>
         </div>
       </motion.div>

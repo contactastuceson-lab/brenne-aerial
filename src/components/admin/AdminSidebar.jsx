@@ -12,14 +12,6 @@ const navSections = [
     ]
   },
   {
-    label: 'Commercial',
-    items: [
-      { key: 'quotes', icon: FileText, path: '/admin/quotes', label: 'Devis' },
-      { key: 'appointments', icon: Calendar, path: '/admin/appointments', label: 'Planning' },
-      { key: 'client_files', icon: FileCode, path: '/admin/client-files', label: 'Fichiers Clients' },
-    ]
-  },
-  {
     label: 'Communauté',
     items: [
       { key: 'users', icon: Users, path: '/admin/users', label: 'Utilisateurs' },
@@ -36,12 +28,7 @@ const navSections = [
   {
     label: 'Contenu du site',
     items: [
-      { key: 'portfolio', icon: Image, path: '/admin/portfolio', label: 'Portfolio' },
-      { key: 'map', icon: Map, path: '/admin/map', label: 'Carte Interactive' },
       { key: 'blog', icon: FileText, path: '/admin/blog', label: 'Blog' },
-      { key: 'partners', icon: Briefcase, path: '/admin/partners', label: 'Partenaires' },
-      { key: 'drones', icon: Zap, path: '/admin/drones', label: 'Drones' },
-      { key: 'before_after', icon: Image, path: '/admin/before-after', label: 'Avant/Après' },
       { key: 'pages', icon: FileText, path: '/admin/pages', label: 'Pages' },
     ]
   },
@@ -122,7 +109,7 @@ export default function AdminSidebar() {
       <div className="px-4 mb-8">
         <Link to="/" className="flex items-center gap-2 text-sidebar-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" />
-          <span className="hidden lg:inline font-syne font-bold text-sm">ENOR<span className="text-primary">.</span></span>
+          <span className="hidden lg:inline font-syne font-bold text-sm">EZA<span className="text-primary">.</span></span>
         </Link>
       </div>
 

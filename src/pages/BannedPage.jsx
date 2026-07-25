@@ -166,7 +166,7 @@ export default function BannedPage({ status, reason, until, isSupreme = false })
             <LogOut className="w-4 h-4" /> Se déconnecter
           </Button>
           <p className="font-inter text-xs" style={{ color: '#7a6030' }}>
-            Une erreur ? Contactez-nous à <a href="mailto:contact@brenneaerial.fr" style={{ color: '#d97706' }}>contact@brenneaerial.fr</a>
+            Une erreur ? Contactez-nous à <a href="mailto:contact@eza.group" style={{ color: '#d97706' }}>contact@eza.group</a>
           </p>
         </div>
       </div>
@@ -195,7 +195,7 @@ export default function BannedPage({ status, reason, until, isSupreme = false })
           <LogOut className="w-4 h-4" /> Se déconnecter
         </Button>
         <p className="font-inter text-xs text-muted-foreground">
-          Une erreur ? Contactez-nous à <a href="mailto:contact@brenneaerial.fr" className="text-primary hover:underline">contact@brenneaerial.fr</a>
+          Une erreur ? Contactez-nous à <a href="mailto:contact@eza.group" className="text-primary hover:underline">contact@eza.group</a>
         </p>
       </div>
     </div>

@@ -17,12 +17,6 @@ const NAV = [
   { icon: Bell,          label: 'Notifications',  to: '/notifications' },
   { icon: MessageCircle, label: 'Messages',       to: '/messages', badge: true },
   { icon: FileText,      label: 'Forum',          to: '/forum' },
-  { icon: Calendar,      label: 'Événements',     to: '/planning' },
-  { icon: Bookmark,      label: 'Enregistrés',   to: '/espace-client?tab=files' },
-  { icon: Award,         label: 'Badges',         to: '/espace-client?tab=badges' },
-  { icon: Users,         label: 'Affiliations',   to: '/espace-client?tab=my-affils' },
-  { icon: Heart,         label: 'Parrainage',     to: '/parrainage' },
-  { icon: Star,          label: 'Partenaires',    to: '/partenaires' },
   { icon: Briefcase,     label: 'Business',       to: '/business', businessOnly: true },
   { icon: Sparkles,      label: 'Premium',        to: '/premium', premium: true },
 ];

@@ -24,12 +24,6 @@ const MORE_ITEMS = [
   { to: '/profile',              icon: User,         label: 'Mon profil',      color: 'text-primary' },
   { to: '/discover',             icon: Compass,      label: 'Explorer',        color: 'text-cyan-400' },
   { to: '/forum',                icon: FileText,     label: 'Forum',           color: 'text-blue-400' },
-  { to: '/planning',             icon: Calendar,     label: 'Événements',      color: 'text-purple-400' },
-  { to: '/espace-client',        icon: Bookmark,     label: 'Mes fichiers',    color: 'text-amber-400' },
-  { to: '/espace-client?tab=badges', icon: Award,    label: 'Mes badges',      color: 'text-yellow-400' },
-  { to: '/espace-client?tab=my-affils', icon: Building2, label: 'Affiliations', color: 'text-emerald-400' },
-  { to: '/partenaires',          icon: Users,        label: 'Partenaires',     color: 'text-pink-400' },
-  { to: '/parrainage',           icon: Heart,        label: 'Parrainage',      color: 'text-rose-400' },
   { to: '/ecosysteme',           icon: Star,         label: 'Écosystème',      color: 'text-orange-400' },
   { to: '/donation',             icon: Heart,        label: 'Soutenir',        color: 'text-red-400' },
   { to: '/legal/privacy',        icon: Shield,       label: 'Confidentialité', color: 'text-slate-400' },
@@ -142,7 +136,6 @@ export default function BottomTabBar() {
                   <div className="grid grid-cols-3 gap-2 mb-4">
                     {[
                       { to: '/profile', icon: User, label: 'Profil', color: 'text-primary' },
-                      { to: '/espace-client', icon: Bookmark, label: 'Mes fichiers', color: 'text-amber-400', badge: unreadCount },
                       ...(hasAdminAccess(user) ? [{ to: '/admin', icon: LayoutDashboard, label: 'Admin', color: 'text-purple-400' }] : []),
                     ].map(item => {
                       const Icon = item.icon;

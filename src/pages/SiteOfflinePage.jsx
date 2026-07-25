@@ -22,7 +22,7 @@ export default function SiteOfflinePage() {
       </h1>
 
       <p style={{ fontSize: 14, color: '#777', margin: 0, marginBottom: 32, textAlign: 'center', maxWidth: 420 }}>
-        Le site <strong>brenneaerial.fr</strong> est actuellement hors ligne ou en cours de maintenance.
+        Le site <strong>eza.group</strong> est actuellement hors ligne ou en cours de maintenance.
         Veuillez réessayer ultérieurement.
       </p>
 
@@ -41,7 +41,7 @@ export default function SiteOfflinePage() {
       </div>
 
       <p style={{ marginTop: 48, fontSize: 12, color: '#aaa' }}>
-        © Brenne Aerial — Si vous êtes l'administrateur, connectez-vous pour rétablir le service.
+        © EZA — Si vous êtes l'administrateur, connectez-vous pour rétablir le service.
       </p>
     </div>
   );

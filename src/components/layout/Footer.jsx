@@ -11,11 +11,8 @@ const PLATFORM = [
 ];
 
 const COMMUNITY = [
-  { to: '/partenaires',  label: 'Partenaires' },
-  { to: '/parrainage',   label: 'Parrainage' },
   { to: '/ecosysteme',   label: 'Écosystème' },
   { to: '/donation',     label: 'Soutenir le projet' },
-  { to: '/contact',      label: 'Contact' },
 ];
 
 const LEGAL = [
@@ -57,7 +54,7 @@ export default function Footer() {
                 className="w-8 h-8 rounded-xl border border-white/8 flex items-center justify-center text-muted-foreground hover:text-pink-400 hover:border-pink-400/30 hover:bg-pink-400/8 transition-all">
                 <Instagram className="w-3.5 h-3.5" />
               </a>
-              <a href="mailto:contact@brenneaerial.fr"
+              <a href="mailto:contact@eza.group"
                 className="w-8 h-8 rounded-xl border border-white/8 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-primary/8 transition-all">
                 <Mail className="w-3.5 h-3.5" />
               </a>

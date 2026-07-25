@@ -25,12 +25,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 // Public pages
 import HomePage from "@/pages/HomePage";
 import AboutPage from "@/pages/AboutPage";
-import ServicesPage from "@/pages/ServicesPage";
-import PortfolioPage from "@/pages/PortfolioPage";
-import QuotePage from "@/pages/QuotePage";
-import PlanningPage from "@/pages/PlanningPage";
 import BlogPage from "@/pages/BlogPage";
-import ContactPage from "@/pages/ContactPage";
 import DashboardPage from "@/pages/DashboardPage";
 import DiscoverPage from "@/pages/DiscoverPage";
 import MessagesPage from "@/pages/MessagesPage";
@@ -40,9 +35,6 @@ import CookiePage from "@/pages/legal/CookiePage";
 
 // Admin pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminQuotes from "@/pages/admin/AdminQuotes";
-import AdminAppointments from "@/pages/admin/AdminAppointments";
-import AdminPortfolio from "@/pages/admin/AdminPortfolio";
 import AdminBlog from "@/pages/admin/AdminBlog";
 import AdminMessaging from "@/pages/admin/AdminMessaging";
 import AdminUsers from "@/pages/admin/AdminUsers";
@@ -63,13 +55,6 @@ import AdminEmployees from "@/pages/admin/AdminEmployees";
 import AdminSiteConfig from "@/pages/admin/AdminSiteConfig";
 import AdminPDGSpace from "@/pages/admin/AdminPDGSpace";
 import AdminDataManager from "@/pages/admin/AdminDataManager";
-import AdminMapProjects from "@/pages/admin/AdminMapProjects";
-import AdminClientFiles from "@/pages/admin/AdminClientFiles";
-import AdminPartners from "@/pages/admin/AdminPartners";
-import AdminDroneMaintenance from "@/pages/admin/AdminDroneMaintenance.jsx";
-
-import AdminBeforeAfter from "@/pages/admin/AdminBeforeAfter.jsx";
-import AdminBlockedDays from "@/pages/admin/AdminBlockedDays";
 import AdminBilling from "@/pages/admin/AdminBilling";
 import AdminStats from "@/pages/admin/AdminStats";
 import AdminAnalytics from "@/pages/admin/AdminAnalytics";
@@ -77,16 +62,6 @@ import AdminUpdates from "@/pages/admin/AdminUpdates";
 import AdminSessions from "@/pages/admin/AdminSessions";
 import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import AdminForum from "@/pages/admin/AdminForum";
-import ToitureCheckupPage from "@/pages/ToitureCheckupPage";
-
-import EspaceClientPage from "@/pages/EspaceClientPage";
-import PartenairesPage from "@/pages/PartenairesPage";
-import ParrainagePage from "@/pages/ParrainagePage";
-import ParrainageRejoindre from "@/pages/ParrainageRejoindre";
-import GaragePage from "@/pages/GaragePage";
-import QuoteCalculatorPage from "@/pages/QuoteCalculatorPage";
-import ReglementationPage from "@/pages/ReglementationPage";
-import ComparateurPage from "@/pages/ComparateurPage";
 import BlogArticlePage from "@/pages/BlogArticlePage";
 import { Navigate } from "react-router-dom";
 import UptimePage from "@/pages/UptimePage";
@@ -125,10 +100,8 @@ const AuthenticatedApp = () => {
   if (authError?.type === "user_not_registered") return <UserNotRegisteredError />;
   if (authError?.type === "auth_required") {
     // Allow public routes to render without auth (like TikTok/Instagram public profiles)
-    const publicPaths = ['/', '/about', '/services', '/portfolio', '/blog', '/contact', '/quote',
-      '/planning', '/discover', '/forum', '/partenaires', '/parrainage', '/garage', '/calculateur',
-      '/reglementation', '/comparateur', '/toiture-checkup', '/uptime', '/enor', '/legal',
-      '/status', '/donation', '/user'];
+    const publicPaths = ['/', '/about', '/blog', '/discover', '/forum',
+      '/uptime', '/enor', '/legal', '/status', '/donation', '/user'];
     const currentPath = window.location.pathname;
     const isPublicPath = publicPaths.some(p => currentPath === p || currentPath.startsWith(p + '/'))
       || /^\/@?[a-zA-Z0-9_.-]+$/.test(currentPath); // public profile /@username or /username
@@ -153,12 +126,7 @@ const AuthenticatedApp = () => {
         <Route element={<SidebarLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/portfolio" element={<PortfolioPage />} />
-          <Route path="/quote" element={<QuotePage />} />
-          <Route path="/planning" element={<PlanningPage />} />
           <Route path="/blog" element={<BlogPage />} />
-          <Route path="/contact" element={<ContactPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/messages" element={<MessagesPage />} />
@@ -166,22 +134,13 @@ const AuthenticatedApp = () => {
           <Route path="/certification-success" element={<CertificationSuccessPage />} />
           <Route path="/donation" element={<DonationPage />} />
           <Route path="/donation-success" element={<DonationSuccessPage />} />
-          <Route path="/status" element={<ExternalRedirect to="https://status.brenneaerial.fr" />} />
+          <Route path="/status" element={<ExternalRedirect to="https://status.eza.group" />} />
           <Route path="/uptime" element={<UptimePage />} />
           <Route path="/account-deletion" element={<AccountDeletionPage />} />
           <Route path="/legal/privacy" element={<PrivacyPage />} />
           <Route path="/legal/terms" element={<TermsPage />} />
           <Route path="/legal/cookies" element={<CookiePage />} />
-          <Route path="/garage" element={<GaragePage />} />
-          <Route path="/calculateur" element={<QuoteCalculatorPage />} />
-          <Route path="/reglementation" element={<ReglementationPage />} />
-          <Route path="/comparateur" element={<ComparateurPage />} />
           <Route path="/blog/:id" element={<BlogArticlePage />} />
-          <Route path="/toiture-checkup" element={<ToitureCheckupPage />} />
-          <Route path="/espace-client" element={<EspaceClientPage />} />
-          <Route path="/partenaires" element={<PartenairesPage />} />
-          <Route path="/parrainage" element={<ParrainagePage />} />
-          <Route path="/parrainage/rejoindre" element={<ParrainageRejoindre />} />
           <Route path="/forum" element={<ForumPage />} />
           <Route path="/forum/:id" element={<DiscussionDetailPage />} />
           <Route path="/enor" element={<EnorBiographyPage />} />
@@ -200,9 +159,6 @@ const AuthenticatedApp = () => {
       {/* Admin */}
       <Route element={<AdminLayout />}>
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/quotes" element={<AdminQuotes />} />
-        <Route path="/admin/appointments" element={<AdminAppointments />} />
-        <Route path="/admin/portfolio" element={<AdminPortfolio />} />
         <Route path="/admin/blog" element={<AdminBlog />} />
         <Route path="/admin/messaging" element={<AdminMessaging />} />
         <Route path="/admin/users" element={<AdminUsers />} />
@@ -224,12 +180,6 @@ const AuthenticatedApp = () => {
         <Route path="/admin/site-config" element={<AdminSiteConfig />} />
         <Route path="/admin/pdg" element={<AdminPDGSpace />} />
         <Route path="/admin/data-manager" element={<AdminDataManager />} />
-        <Route path="/admin/map" element={<AdminMapProjects />} />
-        <Route path="/admin/client-files" element={<AdminClientFiles />} />
-        <Route path="/admin/partners" element={<AdminPartners />} />
-        <Route path="/admin/drones" element={<AdminDroneMaintenance />} />
-        <Route path="/admin/before-after" element={<AdminBeforeAfter />} />
-        <Route path="/admin/blocked-days" element={<AdminBlockedDays />} />
         <Route path="/admin/sessions" element={<AdminSessions />} />
         <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
         <Route path="/admin/forum" element={<AdminForum />} />

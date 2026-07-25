@@ -10,15 +10,10 @@ const ROUTE_TITLES = {
   '/discover': 'Explorer',
   '/messages': 'Messages',
   '/forum': 'Forum',
-  '/planning': 'Événements',
   '/profile': 'Profil',
   '/dashboard': 'Tableau de bord',
-  '/espace-client': 'Espace client',
-  '/parrainage': 'Parrainage',
-  '/partenaires': 'Partenaires',
   '/blog': 'Blog',
   '/about': 'À propos',
-  '/contact': 'Contact',
   '/business': 'Business',
 };
 

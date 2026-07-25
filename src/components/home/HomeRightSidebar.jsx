@@ -265,7 +265,7 @@ export default function HomeRightSidebar() {
       {/* Footer */}
       <div className="px-2 pb-6 mt-2">
         <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-muted-foreground/25">
-          {[['À propos', '/about'], ['Blog', '/blog'], ['Forum', '/forum'], ['Contact', '/contact'], ['Confidentialité', '/legal/privacy'], ['CGU', '/legal/terms']].map(([l, to]) => (
+          {[['À propos', '/about'], ['Blog', '/blog'], ['Forum', '/forum'], ['Confidentialité', '/legal/privacy'], ['CGU', '/legal/terms']].map(([l, to]) => (
             <Link key={l} to={to} className="hover:text-muted-foreground/50 transition-colors">{l}</Link>
           ))}
         </div>

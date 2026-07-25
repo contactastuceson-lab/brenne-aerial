@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 Deno.serve(async (req) => {
   try {
@@ -8,22 +8,16 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { action, device_name } = body;
+    const subscription = body.subscription;
 
-    // Support both formats: { fcm_token } or { subscription: { endpoint, type } }
-    const fcmToken = body.fcm_token || body.subscription?.endpoint;
-
-    if (!fcmToken) {
-      return Response.json({ error: 'Invalid token' }, { status: 400 });
+    if (!subscription || !subscription.endpoint) {
+      return Response.json({ error: 'Invalid subscription' }, { status: 400 });
     }
 
+    const subscription_json = JSON.stringify(subscription);
+
     const existing = await base44.asServiceRole.entities.PushSubscription.filter({ user_email: user.email });
-    const match = existing.find(s => {
-      // Match against raw token or JSON-stored token
-      if (s.subscription_json === fcmToken) return true;
-      try {
-        return JSON.parse(s.subscription_json).endpoint === fcmToken;
-      } catch (_) { return false; }
-    });
+    const match = existing.find(s => s.subscription_json === subscription_json);
 
     if (action === 'unsubscribe') {
       if (match) await base44.asServiceRole.entities.PushSubscription.delete(match.id);
@@ -33,7 +27,7 @@ Deno.serve(async (req) => {
     if (!match) {
       await base44.asServiceRole.entities.PushSubscription.create({
         user_email: user.email,
-        subscription_json: fcmToken, // store raw token
+        subscription_json,
         device_name: device_name || 'Navigateur',
       });
     }

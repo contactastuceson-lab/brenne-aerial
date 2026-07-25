@@ -19,6 +19,7 @@
         "quote_refused",
         "quote_pending",
         "new_message",
+        "contact_request",
         "appointment",
         "system",
         "badge",

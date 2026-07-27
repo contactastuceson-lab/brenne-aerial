@@ -62,6 +62,7 @@ import AdminUpdates from "@/pages/admin/AdminUpdates";
 import AdminSessions from "@/pages/admin/AdminSessions";
 import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import AdminForum from "@/pages/admin/AdminForum";
+import AdminPortfolio from "@/pages/admin/AdminPortfolio";
 import BlogArticlePage from "@/pages/BlogArticlePage";
 import { Navigate } from "react-router-dom";
 import UptimePage from "@/pages/UptimePage";
@@ -81,6 +82,7 @@ import PremiumPage from "@/pages/PremiumPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import CreatePostPage from "@/pages/CreatePostPage";
 import SearchPage from "@/pages/SearchPage";
+import PortfolioPage from "@/pages/PortfolioPage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -100,7 +102,7 @@ const AuthenticatedApp = () => {
   if (authError?.type === "user_not_registered") return <UserNotRegisteredError />;
   if (authError?.type === "auth_required") {
     // Allow public routes to render without auth (like TikTok/Instagram public profiles)
-    const publicPaths = ['/', '/about', '/blog', '/discover', '/forum',
+    const publicPaths = ['/', '/about', '/blog', '/discover', '/portfolio', '/forum',
       '/uptime', '/enor', '/legal', '/status', '/donation', '/user'];
     const currentPath = window.location.pathname;
     const isPublicPath = publicPaths.some(p => currentPath === p || currentPath.startsWith(p + '/'))
@@ -129,6 +131,7 @@ const AuthenticatedApp = () => {
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/discover" element={<DiscoverPage />} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/certification-success" element={<CertificationSuccessPage />} />
@@ -168,6 +171,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/maintenance" element={<AdminMaintenance />} />
         <Route path="/admin/announcements" element={<AdminAnnouncements />} />
         <Route path="/admin/pages" element={<AdminPages />} />
+        <Route path="/admin/portfolio" element={<AdminPortfolio />} />
         <Route path="/admin/badges" element={<AdminBadges />} />
         <Route path="/admin/emailing" element={<AdminEmailing />} />
         <Route path="/admin/pricing" element={<AdminPricing />} />

@@ -30,6 +30,7 @@ const navSections = [
     items: [
       { key: 'blog', icon: FileText, path: '/admin/blog', label: 'Blog' },
       { key: 'pages', icon: FileText, path: '/admin/pages', label: 'Pages' },
+      { key: 'portfolio', icon: Map, path: '/admin/portfolio', label: 'Portfolio' },
     ]
   },
   {

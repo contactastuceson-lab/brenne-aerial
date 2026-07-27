@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Compass, MessageCircle, Bell, Bookmark, Calendar,
-  Users, BarChart3, Briefcase, FileText, Award,
+  Users, BarChart3, Briefcase, FileText, Award, Camera,
   Heart, Star, MoreHorizontal, LogOut, Sparkles
 } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -17,6 +17,7 @@ const NAV = [
   { icon: Bell,          label: 'Notifications',  to: '/notifications' },
   { icon: MessageCircle, label: 'Messages',       to: '/messages', badge: true },
   { icon: FileText,      label: 'Forum',          to: '/forum' },
+  { icon: Camera,        label: 'Portfolio',      to: '/portfolio' },
   { icon: Briefcase,     label: 'Business',       to: '/business', businessOnly: true },
   { icon: Sparkles,      label: 'Premium',        to: '/premium', premium: true },
 ];

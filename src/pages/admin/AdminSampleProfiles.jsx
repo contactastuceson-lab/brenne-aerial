@@ -140,13 +140,9 @@ export default function AdminSampleProfiles() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
 
-  const { data: profiles = [], isLoading } = useQuery({
+  const { data: profiles = [], isLoading, error } = useQuery({
     queryKey: ['admin-sample-profiles'],
-    queryFn: async () => {
-      const res = await base44.functions.invoke('getSampleProfiles', {});
-      const data = res?.data ?? res;
-      return Array.isArray(data) ? data : (Array.isArray(res) ? res : []);
-    },
+    queryFn: () => base44.entities.SampleProfile.list('-created_date', 500),
   });
 
   const saveMutation = useMutation({
@@ -222,8 +218,10 @@ export default function AdminSampleProfiles() {
 
       {isLoading ? (
         <div className="flex justify-center py-12"><RefreshCw className="w-5 h-5 text-primary animate-spin" /></div>
+      ) : error ? (
+        <div className="text-center py-16 text-destructive font-inter text-sm">Erreur: {error?.message || 'impossible de charger'}</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground font-inter text-sm">Aucun profil trouvé</div>
+        <div className="text-center py-16 text-muted-foreground font-inter text-sm">Aucun profil trouvé — clique sur « Régénérer 100 » pour en créer</div>
       ) : (
         <div className="space-y-2">
           {filtered.map(p => {

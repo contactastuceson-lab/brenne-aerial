@@ -55,7 +55,7 @@ export default function SampleProfilePage() {
         const list = await base44.entities.SampleProfile.list('-created_date', 500);
         const found = (list || []).find(p => (p.username || '').toLowerCase() === (username || '').toLowerCase());
         if (!found) { setNotFound(true); return; }
-        setProfile(found);
+        setProfile({ ...found, is_sample: true });
         const name = found.display_name || found.full_name || found.username;
         document.title = `${name} (@${found.username}) · eza`;
         let desc = document.querySelector('meta[name="description"]');

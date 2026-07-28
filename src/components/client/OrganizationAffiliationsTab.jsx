@@ -11,10 +11,14 @@ import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, CheckCircle2, XCircle, Sparkles, ShieldCheck, Eye, EyeOff,
-  Loader2, UserPlus, Trash2, Users, Clock, RefreshCw, AlertTriangle,
+  Loader2, UserPlus, Trash2, Users, Clock, RefreshCw, AlertTriangle, MoreVertical,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { canManageAffiliations } from '@/lib/affiliationUtils';
 import { formatDistanceToNow } from 'date-fns';
@@ -398,38 +402,40 @@ export default function OrganizationAffiliationsTab({ user }) {
                   </p>
                 </div>
 
-                {/* Actions */}
-                <div className="flex flex-wrap gap-2 shrink-0">
-                  {row.status === 'pending' && (
-                    <>
-                      <Button size="sm" variant="outline" className="gap-1.5 text-emerald-400 border-emerald-400/30 hover:bg-emerald-400/10"
-                        onClick={() => handleUpdate(row.id, { status: 'accepted', acceptedAt: new Date().toISOString() })}>
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Accepter
-                      </Button>
-                      <Button size="sm" variant="outline" className="gap-1.5 text-red-400 border-red-400/30 hover:bg-red-400/10"
-                        onClick={() => handleUpdate(row.id, { status: 'rejected' })}>
-                        <XCircle className="w-3.5 h-3.5" /> Refuser
-                      </Button>
-                    </>
-                  )}
-                  {row.status === 'accepted' && (
-                    <Button size="sm" variant="outline" className="gap-1.5"
-                      onClick={() => handleUpdate(row.id, { visibility: row.visibility === 'public' ? 'private' : 'public' })}>
-                      {row.visibility === 'public' ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      {row.visibility === 'public' ? 'Rendre privée' : 'Rendre publique'}
-                    </Button>
-                  )}
-                  {row.status !== 'removed' && (
-                    <Button size="sm" variant="outline" className="gap-1.5"
-                      onClick={() => handleToggleRole(row)}>
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      {ROLE_LABELS[row.role === 'member' ? 'moderator' : row.role === 'moderator' ? 'admin' : 'member'] || 'Changer rôle'}
-                    </Button>
-                  )}
-                  <Button size="sm" variant="outline" className="gap-1.5 text-amber-400 border-amber-400/30 hover:bg-amber-400/10"
-                    onClick={() => setRemovalTarget(row)}>
-                    <AlertTriangle className="w-3.5 h-3.5" /> Demander suppression
-                  </Button>
+                {/* Actions — menu 3 points */}
+                <div className="flex-shrink-0">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                      <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                      {row.status === 'pending' && (
+                        <>
+                          <DropdownMenuItem onClick={() => handleUpdate(row.id, { status: 'accepted', acceptedAt: new Date().toISOString() })}>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Accepter
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleUpdate(row.id, { status: 'rejected' })}>
+                            <XCircle className="w-3.5 h-3.5 text-red-400" /> Refuser
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      {row.status === 'accepted' && (
+                        <DropdownMenuItem onClick={() => handleUpdate(row.id, { visibility: row.visibility === 'public' ? 'private' : 'public' })}>
+                          {row.visibility === 'public' ? <><EyeOff className="w-3.5 h-3.5" /> Rendre privée</> : <><Eye className="w-3.5 h-3.5" /> Rendre publique</>}
+                        </DropdownMenuItem>
+                      )}
+                      {row.status !== 'removed' && (
+                        <DropdownMenuItem onClick={() => handleToggleRole(row)}>
+                          <ShieldCheck className="w-3.5 h-3.5" /> Rôle : {ROLE_LABELS[row.role === 'member' ? 'moderator' : row.role === 'moderator' ? 'admin' : 'member']}
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setRemovalTarget(row)}>
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Demander la suppression
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </motion.div>
             ))}

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Search, Plus, RefreshCw, Trash2, Pencil, Star, Save, X } from 'lucide-react';
+import { Search, Plus, RefreshCw, Trash2, Pencil, Star, Save, X, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
+import { isTopManagement } from '@/lib/roles';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -139,6 +140,15 @@ export default function AdminSampleProfiles() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    base44.auth.me()
+      .then(setUser)
+      .catch(() => setUser(null))
+      .finally(() => setLoadingUser(false));
+  }, []);
 
   const { data: profiles = [], isLoading, error } = useQuery({
     queryKey: ['admin-sample-profiles'],
@@ -174,6 +184,28 @@ export default function AdminSampleProfiles() {
   });
 
   const filtered = profiles.filter(p => !search || (p.full_name || '').toLowerCase().includes(search.toLowerCase()) || (p.username || '').toLowerCase().includes(search.toLowerCase()) || (p.niche || '').toLowerCase().includes(search.toLowerCase()));
+
+  if (loadingUser) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <RefreshCw className="w-5 h-5 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isTopManagement(user)) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center px-6">
+        <div className="w-14 h-14 rounded-2xl bg-destructive/10 border border-destructive/30 flex items-center justify-center mb-4">
+          <ShieldAlert className="w-7 h-7 text-destructive" />
+        </div>
+        <h2 className="font-grotesk font-bold text-xl mb-2">Accès réservé aux fondateurs</h2>
+        <p className="font-inter text-sm text-muted-foreground max-w-sm">
+          Seuls les PDG et PDG-Adjoints peuvent gérer les profils suggérés.
+        </p>
+      </div>
+    );
+  }
 
   const [seeding, setSeeding] = useState(false);
   const handleSeed = async () => {

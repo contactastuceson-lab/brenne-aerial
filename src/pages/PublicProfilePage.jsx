@@ -3,7 +3,7 @@ import ProfileNotFound from '@/components/profile/ProfileNotFound';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash, Settings, Image, Reply, Ban, ShieldOff } from 'lucide-react';
+import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash, Settings, Image, Reply, Ban, ShieldOff, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -522,6 +522,19 @@ export default function PublicProfilePage() {
                 {user.badge_ineligibility_reason && (
                   <p className="font-mono text-xs text-muted-foreground/70 italic">« {user.badge_ineligibility_reason} »</p>
                 )}
+              </div>
+            )}
+
+            {/* Mention : compte restreint */}
+            {user.account_status === 'restricted' && (
+              <div className="mb-4 rounded-2xl border border-amber-400/30 bg-amber-400/5 p-4 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-amber-400" />
+                  <p className="font-grotesk font-semibold text-sm text-amber-400">Compte restreint</p>
+                </div>
+                <p className="font-inter text-xs text-muted-foreground leading-relaxed">
+                  Ce compte fait l'objet d'une restriction administrative de eza.group. Certaines actions (publications, échanges, interactions) peuvent être temporairement limitées.
+                </p>
               </div>
             )}
 

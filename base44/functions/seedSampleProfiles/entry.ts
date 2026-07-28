@@ -102,17 +102,27 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.SampleProfile.deleteMany({});
   } catch (_) {}
 
+  const rnd = (n) => Math.floor(Math.random() * n);
+  const pick = (arr) => arr[rnd(arr.length)];
+  const usedUsernames = new Set();
+  const uniqUsername = (fn, suffix) => {
+    let u = `${slug(fn)}${suffix}${rnd(9000) + 1000}`;
+    while (usedUsernames.has(u)) u = `${slug(fn)}${suffix}${rnd(9000) + 1000}`;
+    usedUsernames.add(u);
+    return u;
+  };
+
   const total = 100;
   const records = [];
   for (let i = 0; i < total; i++) {
-    const fn = FIRST[i % FIRST.length];
-    const ln = LAST[(i * 7) % LAST.length];
-    const niche = NICHES[i % NICHES.length];
-    const bio = niche.bios[i % niche.bios.length];
-    const username = `${slug(fn)}${niche.suffix}${i}`;
+    const fn = pick(FIRST);
+    const ln = pick(LAST);
+    const niche = pick(NICHES);
+    const bio = pick(niche.bios);
+    const username = uniqUsername(fn, niche.suffix);
     const displayName = `${fn} ${ln}`;
-    const followersCount = i % 3 === 0 ? ((i * 97) % 900000) + 100000 : ((i * 131) % 48000) + 2000;
-    const website = i % 2 === 0 ? `https://linktr.ee/${username}` : '';
+    const followersCount = rnd(10) === 0 ? rnd(900000) + 100000 : rnd(48000) + 2000;
+    const website = rnd(2) === 0 ? `https://linktr.ee/${username}` : '';
     const rec = {
       username,
       display_name: displayName,

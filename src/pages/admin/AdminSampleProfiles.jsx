@@ -179,14 +179,20 @@ export default function AdminSampleProfiles() {
 
   const filtered = profiles.filter(p => !search || (p.full_name || '').toLowerCase().includes(search.toLowerCase()) || (p.username || '').toLowerCase().includes(search.toLowerCase()) || (p.niche || '').toLowerCase().includes(search.toLowerCase()));
 
+  const [seeding, setSeeding] = useState(false);
   const handleSeed = async () => {
+    setSeeding(true);
     try {
       const res = await base44.functions.invoke('seedSampleProfiles', {});
-      toast.success(`${res.created || 100} profils générés`);
-      qc.invalidateQueries({ queryKey: ['admin-sample-profiles'] });
-      qc.invalidateQueries({ queryKey: ['sample-profiles'] });
+      const payload = res?.data ?? res;
+      if (payload?.error) { toast.error(payload.error); return; }
+      toast.success(`${payload?.created ?? 100} profils générés`);
+      await qc.refetchQueries({ queryKey: ['admin-sample-profiles'] });
+      await qc.refetchQueries({ queryKey: ['sample-profiles'] });
     } catch (e) {
       toast.error(e?.message || 'Erreur');
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -200,8 +206,8 @@ export default function AdminSampleProfiles() {
           <p className="font-inter text-sm text-muted-foreground">Profils créateurs crédibles affichés parmi les membres</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleSeed} className="flex items-center gap-2">
-            <RefreshCw className="w-4 h-4" /> Régénérer 100
+          <Button variant="outline" onClick={handleSeed} disabled={seeding} className="flex items-center gap-2">
+            <RefreshCw className={`w-4 h-4 ${seeding ? 'animate-spin' : ''}`} /> {seeding ? 'Génération...' : 'Régénérer 100'}
           </Button>
           <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="flex items-center gap-2">
             <Plus className="w-4 h-4" /> Nouveau

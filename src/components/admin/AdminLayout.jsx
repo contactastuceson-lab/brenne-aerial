@@ -7,7 +7,7 @@ import {
   Flag, MessageCircle, Shield, Megaphone, LayoutDashboard, BadgeCheck, Mail,
   Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, Map,
   FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap,
-  SlidersHorizontal, Activity, Radar, CreditCard, Ban, TrendingUp, Network
+  SlidersHorizontal, Activity, Radar, CreditCard, Ban, TrendingUp, Network, Star
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
@@ -96,6 +96,7 @@ const NAV_GROUPS = [
       { path: '/admin/accounts', icon: Users, label: 'Comptes & Rôles', minLevel: 80 },
       { path: '/admin/governance', icon: Crown, label: 'Gouvernance', minLevel: 80 },
       { path: '/admin/employees', icon: Briefcase, label: 'Équipe', minLevel: 80 },
+      { path: '/admin/sample-profiles', icon: Star, label: 'Profils suggérés', minLevel: 100 },
       { path: '/admin/sessions', icon: Zap, label: 'Sessions', minLevel: 100 },
       { path: '/admin/audit-logs', icon: Activity, label: 'Audit Logs', minLevel: 100 },
       { path: '/admin/pdg', icon: Crown, label: 'Espace PDG', minLevel: 100 },

@@ -517,7 +517,7 @@ export default function PublicProfilePage() {
                   <p className="font-grotesk font-semibold text-sm text-red-400">Non-éligibilité aux badges</p>
                 </div>
                 <p className="font-inter text-xs text-muted-foreground leading-relaxed">
-                  Ce profil a été marqué comme non-éligible à l'attribution de badges et vérifications par l'administration de Brenne Aerial.
+                  Ce profil a été marqué comme non-éligible à l'attribution de badges et vérifications par l'administration de eza.group.
                 </p>
                 {user.badge_ineligibility_reason && (
                   <p className="font-mono text-xs text-muted-foreground/70 italic">« {user.badge_ineligibility_reason} »</p>

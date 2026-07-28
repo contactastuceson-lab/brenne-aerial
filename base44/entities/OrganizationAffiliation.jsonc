@@ -4,16 +4,16 @@
   "properties": {
     "organizationId": {
       "type": "string",
-      "description": "Identifiant de l'organisation qui gère l'affiliation"
+      "description": "Identifiant de l'organisation qui g\u00e8re l'affiliation"
     },
     "userId": {
       "type": "string",
-      "description": "Identifiant de l'utilisateur affilié"
+      "description": "Identifiant de l'utilisateur affili\u00e9"
     },
     "role": {
       "type": "string",
       "default": "member",
-      "description": "Rôle de l'affilié au sein de l'organisation"
+      "description": "R\u00f4le de l'affili\u00e9 au sein de l'organisation"
     },
     "status": {
       "type": "string",
@@ -33,12 +33,12 @@
         "private"
       ],
       "default": "public",
-      "description": "Visibilité du logo d'affiliation"
+      "description": "Visibilit\u00e9 du logo d'affiliation"
     },
     "createdAt": {
       "type": "string",
       "format": "date-time",
-      "description": "Date de création de l'affiliation"
+      "description": "Date de cr\u00e9ation de l'affiliation"
     },
     "acceptedAt": {
       "type": "string",
@@ -52,19 +52,48 @@
     },
     "invitedBy": {
       "type": "string",
-      "description": "Identifiant de l'utilisateur qui a créé l'invitation"
+      "description": "Identifiant de l'utilisateur qui a cr\u00e9\u00e9 l'invitation"
     },
     "message": {
       "type": "string",
-      "description": "Message facultatif associé à l'invitation"
+      "description": "Message facultatif associ\u00e9 \u00e0 l'invitation"
     },
     "organizationName": {
       "type": "string",
-      "description": "Nom de l'organisation au moment de la création"
+      "description": "Nom de l'organisation au moment de la cr\u00e9ation"
     },
     "organizationAvatarUrl": {
       "type": "string",
-      "description": "Logo ou avatar de l'organisation au moment de la création"
+      "description": "Logo ou avatar de l'organisation au moment de la cr\u00e9ation"
+    },
+    "removalRequestStatus": {
+      "type": "string",
+      "enum": [
+        "none",
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "none",
+      "description": "Statut de la demande de suppression (l'org demande, l'admin d\u00e9cide)"
+    },
+    "removalReason": {
+      "type": "string",
+      "description": "Raison de la suppression (fournie par l'org lors de la demande ou par l'admin lors d'une suppression directe)"
+    },
+    "removalRequestedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de la demande de suppression par l'organisation"
+    },
+    "removalDecidedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de d\u00e9cision de l'administrateur"
+    },
+    "removalDecidedBy": {
+      "type": "string",
+      "description": "Identifiant/email de l'administrateur ayant d\u00e9cid\u00e9 la suppression"
     }
   },
   "required": [
@@ -95,6 +124,9 @@
         },
         {
           "data.status": "accepted"
+        },
+        {
+          "data.status": "removed"
         }
       ]
     },

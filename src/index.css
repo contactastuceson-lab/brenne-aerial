@@ -164,9 +164,12 @@ button, a {
 }
 
 /* GPU acceleration for fixed/sticky elements */
+/* Note: on n'applique PAS de `transform: translateZ(0)` ici — cela écraserait
+   le transform de centrage (translate-x/y -50%) des modales shadcn (DialogContent
+   porte la classe `fixed`), ce qui décale toutes les modales. will-change suffit
+   pour promouvoir l'élément sur son propre layer GPU. */
 .sticky, [class*="fixed"] {
   will-change: transform;
-  transform: translateZ(0);
 }
 
 /* Custom scrollbar */

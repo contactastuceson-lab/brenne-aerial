@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown, CreditCard } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown, CreditCard, Network } from 'lucide-react';
 import { useState } from 'react';
 
 const navSections = [
@@ -17,6 +17,7 @@ const navSections = [
       { key: 'users', icon: Users, path: '/admin/users', label: 'Utilisateurs' },
       { key: 'badges', icon: Award, path: '/admin/badges', label: 'Badges' },
       { key: 'certifications', icon: Award, path: '/admin/certifications', label: 'Certifications' },
+      { key: 'affiliations', icon: Network, path: '/admin/affiliations', label: 'Affiliations' },
       { key: 'conversations', icon: MessageSquare, path: '/admin/conversations', label: 'Conversations' },
       { key: 'messaging', icon: MessageCircle, path: '/admin/messaging', label: 'Messagerie' },
       { key: 'forum', icon: MessageCircle, path: '/admin/forum', label: 'Forum' },

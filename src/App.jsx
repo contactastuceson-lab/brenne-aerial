@@ -63,6 +63,7 @@ import AdminSessions from "@/pages/admin/AdminSessions";
 import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import AdminForum from "@/pages/admin/AdminForum";
 import AdminPortfolio from "@/pages/admin/AdminPortfolio";
+import AdminAffiliations from "@/pages/admin/AdminAffiliations";
 import BlogArticlePage from "@/pages/BlogArticlePage";
 import { Navigate } from "react-router-dom";
 import UptimePage from "@/pages/UptimePage";
@@ -176,6 +177,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/announcements" element={<AdminAnnouncements />} />
         <Route path="/admin/pages" element={<AdminPages />} />
         <Route path="/admin/portfolio" element={<AdminPortfolio />} />
+        <Route path="/admin/affiliations" element={<AdminAffiliations />} />
         <Route path="/admin/badges" element={<AdminBadges />} />
         <Route path="/admin/emailing" element={<AdminEmailing />} />
         <Route path="/admin/pricing" element={<AdminPricing />} />

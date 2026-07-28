@@ -18,14 +18,24 @@ Deno.serve(async (req) => {
 
     // ── LIST : renvoie toutes les affiliations enrichies (bypass RLS) ──
     if (!action || action === 'list') {
-      const [affiliations, users] = await Promise.all([
+      const [affiliations, users, sampleProfiles] = await Promise.all([
         base44.asServiceRole.entities.OrganizationAffiliation.list('-created_date', 500),
         base44.asServiceRole.entities.User.list(),
+        base44.asServiceRole.entities.SampleProfile.list('-created_date', 500),
       ]);
       const userMap = {};
       for (const u of users || []) {
         userMap[u.id] = u;
         if (u.email) userMap[u.email] = u;
+      }
+      // Les profils suggérés (SampleProfile) peuvent aussi être affiliés :
+      // on les ajoute au userMap pour résoudre nom/avatar/email dans la liste.
+      for (const p of sampleProfiles || []) {
+        userMap[p.id] = {
+          ...p,
+          email: p.username ? `@${p.username}` : '',
+          is_sample: true,
+        };
       }
       const enriched = (affiliations || []).map((a) => {
         const org = userMap[a.organizationId];
@@ -38,6 +48,7 @@ Deno.serve(async (req) => {
           affiliateName: aff?.display_name || aff?.full_name || 'Utilisateur supprimé',
           affiliateEmail: aff?.email || (typeof a.userId === 'string' && a.userId.includes('@') ? a.userId : ''),
           affiliateAvatar: aff?.avatar_url || '',
+          affiliateIsSample: !!aff?.is_sample,
         };
       });
       return Response.json({ affiliations: enriched });

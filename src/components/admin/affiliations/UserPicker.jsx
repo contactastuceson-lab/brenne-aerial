@@ -28,6 +28,9 @@ export default function UserPicker({ label, users, value, onChange, placeholder 
                 <span className="w-full h-full flex items-center justify-center text-[10px] font-bold text-primary">{(selected.display_name || selected.full_name || 'U')[0]}</span>}
             </div>
             <span className="font-inter text-sm truncate flex-1">{selected.display_name || selected.full_name}</span>
+            {selected.tag && (
+              <span className="font-mono text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20 flex-shrink-0">{selected.tag}</span>
+            )}
             <span className="font-mono text-[10px] text-muted-foreground truncate">{selected.email}</span>
           </>
         ) : (
@@ -60,7 +63,12 @@ export default function UserPicker({ label, users, value, onChange, placeholder 
                     <span className="w-full h-full flex items-center justify-center text-[10px] font-bold text-primary">{(u.display_name || u.full_name || 'U')[0]}</span>}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-inter text-sm truncate">{u.display_name || u.full_name || '—'}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-inter text-sm truncate">{u.display_name || u.full_name || '—'}</p>
+                    {u.tag && (
+                      <span className="font-mono text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20 flex-shrink-0">{u.tag}</span>
+                    )}
+                  </div>
                   <p className="font-mono text-[10px] text-muted-foreground truncate">{u.email}</p>
                 </div>
                 {value === u.id && <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />}

@@ -13,7 +13,7 @@ const STATUS_OPTIONS = [
   { value: 'removed', label: 'Supprimée' },
 ];
 
-export default function AffiliationDialog({ open, onOpenChange, users, onSubmit, editing }) {
+export default function AffiliationDialog({ open, onOpenChange, users, affiliateUsers, onSubmit, editing }) {
   const [organizationId, setOrganizationId] = useState('');
   const [userId, setUserId] = useState('');
   const [role, setRole] = useState('member');
@@ -71,8 +71,8 @@ export default function AffiliationDialog({ open, onOpenChange, users, onSubmit,
           <UserPicker label="Organisation" users={users} value={organizationId}
             onChange={setOrganizationId} placeholder="Choisir l'organisation"
           />
-          <UserPicker label="Utilisateur affilié" users={users} value={userId}
-            onChange={setUserId} placeholder="Choisir l'utilisateur"
+          <UserPicker label="Utilisateur affilié" users={affiliateUsers || users} value={userId}
+            onChange={setUserId} placeholder="Choisir l'utilisateur (ou un profil suggéré)"
           />
           <div className="grid grid-cols-2 gap-3">
             <div>

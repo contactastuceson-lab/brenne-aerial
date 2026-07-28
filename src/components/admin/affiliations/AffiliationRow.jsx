@@ -46,7 +46,12 @@ export default function AffiliationRow({ a, onAction, onEdit }) {
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <Avatar src={a.affiliateAvatar} name={a.affiliateName} />
           <div className="min-w-0 flex-1">
-            <p className="font-inter text-sm truncate">{a.affiliateName}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="font-inter text-sm truncate">{a.affiliateName}</p>
+              {a.affiliateIsSample && (
+                <span className="font-mono text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20 flex-shrink-0">Suggéré</span>
+              )}
+            </div>
             <p className="font-mono text-[10px] text-muted-foreground truncate">{a.affiliateEmail || a.userId}</p>
           </div>
         </div>

@@ -35,6 +35,25 @@ export default function AdminAffiliations() {
     },
   });
 
+  const { data: sampleProfiles = [] } = useQuery({
+    queryKey: ['admin-affiliations-samples'],
+    queryFn: () => base44.entities.SampleProfile.list('-created_date', 500),
+  });
+
+  // Liste combinée pour le sélecteur d'affilié : utilisateurs réels + profils suggérés.
+  const affiliateUsers = [
+    ...(users || []),
+    ...(sampleProfiles || []).map(p => ({
+      id: p.id,
+      display_name: p.display_name || p.full_name,
+      full_name: p.full_name,
+      email: p.username ? `@${p.username}` : '',
+      avatar_url: p.avatar_url || '',
+      tag: 'Suggéré',
+      is_sample: true,
+    })),
+  ];
+
   const mutate = useMutation({
     mutationFn: async (payload) => {
       const action = payload.action || (payload.affiliation ? 'create' : payload.affiliationId && payload.patch ? 'update' : payload.affiliationId ? 'delete' : 'list');
@@ -154,6 +173,7 @@ export default function AdminAffiliations() {
       )}
 
       <AffiliationDialog open={dialogOpen} onOpenChange={setDialogOpen} users={users}
+        affiliateUsers={affiliateUsers}
         onSubmit={handleDialogSubmit} editing={editing} />
     </div>
   );

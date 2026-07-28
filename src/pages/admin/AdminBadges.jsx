@@ -6,6 +6,7 @@ import VerificationChip from '@/components/ui/VerificationChip';
 import VerificationMark from '@/components/ui/VerificationMark';
 import { Input } from '@/components/ui/input';
 import BadgeChip from '@/components/ui/BadgeChip';
+import BadgeEligibilityBlock from '@/components/admin/badges/BadgeEligibilityBlock';
 import { toast } from 'sonner';
 
 const ALL_BADGES = ['Fondateur', 'Collaborateur', 'VIP', 'Admin', 'Pilote', 'Officiel', 'Vérifié', 'Beta Testeur', 'Partenaire'];
@@ -111,6 +112,15 @@ export default function AdminBadges() {
     }
   };
 
+  const toggleIneligible = async (user, reason) => {
+    const ineligible = user.badges_eligible === false;
+    const data = ineligible
+      ? { badges_eligible: true }
+      : { badges_eligible: false, badge_ineligibility_reason: reason };
+    updateUser.mutate({ id: user.id, data });
+    toast.success(ineligible ? 'Éligibilité rétablie' : 'Profil marqué non-éligible aux badges');
+  };
+
   const filtered = users
     .filter(u => !search || (u.display_name || u.full_name)?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()))
     .filter(u => selectedBadge === 'all' || (selectedBadge === 'verified' ? u.verified_status === 'yes' : u.badges?.includes(selectedBadge)));
@@ -208,19 +218,23 @@ export default function AdminBadges() {
               {/* Expandable content - Mobile friendly */}
               {expandedUserId === u.id && (
                 <div className="border-t border-border bg-secondary/40 p-3 sm:p-4 space-y-4">
+                  {/* Éligibilité aux badges */}
+                  <BadgeEligibilityBlock user={u} onToggle={(reason) => toggleIneligible(u, reason)} />
+
                   {/* Verifications grid - 2 cols on mobile */}
                   <div>
                     <p className="font-inter text-xs font-semibold text-muted-foreground mb-2.5 uppercase tracking-wide">Vérifications — cliquez pour attribuer</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {VERIFICATION_TYPES.map(vt => {
                         const active = (u.verifications || []).includes(vt.key);
+                        const locked = u.badges_eligible === false;
                         return (
                           <button
                             key={vt.key}
                             onClick={() => toggleVerification(u, vt.key)}
-                            disabled={vt.key === 'supreme' && !canManageSupremeAndBadges}
-                            title={vt.desc}
-                            className={`flex flex-col items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 border transition-all ${active ? `${vt.bg} ${vt.border}` : 'bg-background border-border hover:border-primary/30'}`}
+                            disabled={(vt.key === 'supreme' && !canManageSupremeAndBadges) || locked}
+                            title={locked ? 'Profil non-éligible aux badges' : vt.desc}
+                            className={`flex flex-col items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 border transition-all ${active ? `${vt.bg} ${vt.border}` : 'bg-background border-border hover:border-primary/30'} ${locked ? 'opacity-40 cursor-not-allowed' : ''}`}
                           >
                             <span style={{ fontSize: '1rem' }}><VerificationMark type={vt.key} /></span>
                             <span className={`font-inter text-[9px] font-semibold text-center leading-tight ${active ? vt.color : 'text-muted-foreground'}`}>{vt.label}</span>
@@ -237,15 +251,17 @@ export default function AdminBadges() {
                       {ALL_BADGES.map(badge => {
                         const hasBadge = u.badges?.includes(badge);
                         const Icon = BADGE_ICONS[badge] || Shield;
+                        const locked = u.badges_eligible === false;
                         return (
                           <button
                             key={badge}
                             onClick={() => toggleBadge(u, badge)}
+                            disabled={locked}
                             className={`flex flex-col items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 border transition-all ${
                               hasBadge
                                 ? 'bg-primary/20 text-primary border-primary/40'
                                 : 'bg-background border-border text-muted-foreground hover:border-primary/30 hover:text-foreground'
-                            }`}
+                            } ${locked ? 'opacity-40 cursor-not-allowed' : ''}`}
                           >
                             <Icon className="w-4 h-4" />
                             <span className="font-inter text-[9px] font-semibold text-center leading-tight truncate w-full">{badge}</span>

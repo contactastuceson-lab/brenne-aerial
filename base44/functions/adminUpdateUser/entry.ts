@@ -223,6 +223,31 @@ Deno.serve(async (req) => {
     let targetUser = null;
     try { targetUser = await base44.asServiceRole.entities.User.get(id); } catch(_) {}
 
+    // Non-éligibilité aux badges : bloquer toute attribution de badges/vérifications
+    if (targetUser?.badges_eligible === false && data.badges_eligible !== true) {
+      const curBadges = targetUser.badges || [];
+      const curVerifs = targetUser.verifications || [];
+      if (data.badges && data.badges.some(b => !curBadges.includes(b))) {
+        return Response.json({ error: 'Profil non-éligible aux badges' }, { status: 403 });
+      }
+      if (data.verifications && data.verifications.some(v => !curVerifs.includes(v))) {
+        return Response.json({ error: 'Profil non-éligible aux badges' }, { status: 403 });
+      }
+      if (data.verified_status === 'yes' && targetUser.verified_status !== 'yes') {
+        return Response.json({ error: 'Profil non-éligible aux badges' }, { status: 403 });
+      }
+    }
+
+    // Horodatage automatique de la non-éligibilité
+    if (data.badges_eligible === false) {
+      data.badge_ineligibility_set_at = new Date().toISOString();
+      data.badge_ineligibility_set_by = user?.email || 'admin';
+    } else if (data.badges_eligible === true) {
+      data.badge_ineligibility_reason = null;
+      data.badge_ineligibility_set_at = null;
+      data.badge_ineligibility_set_by = null;
+    }
+
     // Vérifier si on essaie d'attribuer/retirer supreme sans les droits nécessaires
     if (data.verifications) {
       const targetUser2 = await base44.asServiceRole.entities.User.get(id).catch(() => null);

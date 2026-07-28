@@ -78,6 +78,24 @@
       ],
       "default": "no"
     },
+    "badges_eligible": {
+      "type": "boolean",
+      "default": true,
+      "description": "Profil \u00e9ligible \u00e0 l'attribution de badges et v\u00e9rifications"
+    },
+    "badge_ineligibility_reason": {
+      "type": "string",
+      "description": "Raison de la non-\u00e9ligibilit\u00e9 aux badges"
+    },
+    "badge_ineligibility_set_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date \u00e0 laquelle la non-\u00e9ligibilit\u00e9 a \u00e9t\u00e9 d\u00e9finie"
+    },
+    "badge_ineligibility_set_by": {
+      "type": "string",
+      "description": "Email de l'admin ayant d\u00e9fini la non-\u00e9ligibilit\u00e9"
+    },
     "account_status": {
       "type": "string",
       "enum": [

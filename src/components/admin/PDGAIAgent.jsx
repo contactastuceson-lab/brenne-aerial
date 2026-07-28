@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   Sparkles, Send, Loader2, ChevronDown, ChevronRight,
   Terminal, Zap, Users, BarChart3, FileText, Megaphone, Mail, Flag,
@@ -87,7 +88,7 @@ function MessageBubble({ msg }) {
             {isUser
               ? <p className="whitespace-pre-wrap">{msg.content}</p>
               : <div className="prose-nexus">
-                  <ReactMarkdown components={{
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
                     p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
                     h1: ({ children }) => <h3 className="text-sm font-semibold mb-2 mt-1 text-foreground">{children}</h3>,
                     h2: ({ children }) => <h4 className="text-sm font-semibold mb-2 mt-1 text-foreground">{children}</h4>,

@@ -10,6 +10,7 @@ import AffiliationStats from '@/components/admin/affiliations/AffiliationStats';
 import AffiliationRow from '@/components/admin/affiliations/AffiliationRow';
 import AffiliationDialog from '@/components/admin/affiliations/AffiliationDialog';
 import RemovalRequestsPanel from '@/components/admin/affiliations/RemovalRequestsPanel';
+import { refreshAffiliations } from '@/hooks/useOrganizationAffiliations';
 
 export default function AdminAffiliations() {
   const qc = useQueryClient();
@@ -41,6 +42,14 @@ export default function AdminAffiliations() {
     },
     onSuccess: (_res, payload) => {
       qc.invalidateQueries({ queryKey: ['admin-affiliations'] });
+      // Rafraîchir le cache des affiliations (profil public) pour les entités impactées
+      if (payload.action === 'removeAllForUser' && payload.userId) {
+        refreshAffiliations({ userId: payload.userId });
+      } else if (payload.affiliationId) {
+        const aff = affiliations.find(a => a.id === payload.affiliationId);
+        if (aff?.userId) refreshAffiliations({ userId: aff.userId });
+        if (aff?.organizationId) refreshAffiliations({ organizationId: aff.organizationId });
+      }
       if (payload.action === 'approveRemoval') toast.success('Suppression approuvée');
       else if (payload.action === 'rejectRemoval') toast.success('Demande refusée');
       else if (payload.action === 'removeDirect') toast.success('Affiliation marquée supprimée');

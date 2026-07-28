@@ -84,6 +84,7 @@ import CreatePostPage from "@/pages/CreatePostPage";
 import SearchPage from "@/pages/SearchPage";
 import PortfolioPage from "@/pages/PortfolioPage";
 import DocumentationPage from "@/pages/DocumentationPage";
+import DocumentationArticlePage from "@/pages/DocumentationArticlePage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -156,6 +157,7 @@ const AuthenticatedApp = () => {
           <Route path="/create-post" element={<CreatePostPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
+          <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />
           {/* Profile catch-all route for /@username - must be last in public routes */}
           <Route path="/:pathUsername" element={<PublicProfilePage />} />
         </Route>

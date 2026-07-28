@@ -52,9 +52,8 @@ export default function SampleProfilePage() {
     const load = async () => {
       setLoading(true); setNotFound(false); setProfile(null);
       try {
-        const res = await base44.functions.invoke('getSampleProfiles', {});
-        const list = res.data || res || [];
-        const found = list.find(p => (p.username || '').toLowerCase() === (username || '').toLowerCase());
+        const list = await base44.entities.SampleProfile.list('-created_date', 500);
+        const found = (list || []).find(p => (p.username || '').toLowerCase() === (username || '').toLowerCase());
         if (!found) { setNotFound(true); return; }
         setProfile(found);
         const name = found.display_name || found.full_name || found.username;

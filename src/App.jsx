@@ -108,7 +108,7 @@ const AuthenticatedApp = () => {
   if (authError?.type === "auth_required") {
     // Allow public routes to render without auth (like TikTok/Instagram public profiles)
     const publicPaths = ['/', '/about', '/blog', '/discover', '/portfolio', '/forum', '/documentation',
-      '/uptime', '/enor', '/legal', '/status', '/donation', '/user'];
+      '/uptime', '/enor', '/legal', '/status', '/donation', '/user', '/s'];
     const currentPath = window.location.pathname;
     const isPublicPath = publicPaths.some(p => currentPath === p || currentPath.startsWith(p + '/'))
       || /^\/@?[a-zA-Z0-9_.-]+$/.test(currentPath); // public profile /@username or /username

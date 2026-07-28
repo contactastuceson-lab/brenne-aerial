@@ -64,6 +64,7 @@ import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import AdminForum from "@/pages/admin/AdminForum";
 import AdminPortfolio from "@/pages/admin/AdminPortfolio";
 import AdminAffiliations from "@/pages/admin/AdminAffiliations";
+import AdminSampleProfiles from "@/pages/admin/AdminSampleProfiles";
 import BlogArticlePage from "@/pages/BlogArticlePage";
 import { Navigate } from "react-router-dom";
 import UptimePage from "@/pages/UptimePage";
@@ -83,6 +84,7 @@ import PremiumPage from "@/pages/PremiumPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import CreatePostPage from "@/pages/CreatePostPage";
 import SearchPage from "@/pages/SearchPage";
+import SampleProfilePage from "@/pages/SampleProfilePage";
 import PortfolioPage from "@/pages/PortfolioPage";
 import DocumentationPage from "@/pages/DocumentationPage";
 import DocumentationArticlePage from "@/pages/DocumentationArticlePage";
@@ -157,6 +159,7 @@ const AuthenticatedApp = () => {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/create-post" element={<CreatePostPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />
           {/* Profile catch-all route for /@username - must be last in public routes */}
@@ -178,6 +181,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/pages" element={<AdminPages />} />
         <Route path="/admin/portfolio" element={<AdminPortfolio />} />
         <Route path="/admin/affiliations" element={<AdminAffiliations />} />
+        <Route path="/admin/sample-profiles" element={<AdminSampleProfiles />} />
         <Route path="/admin/badges" element={<AdminBadges />} />
         <Route path="/admin/emailing" element={<AdminEmailing />} />
         <Route path="/admin/pricing" element={<AdminPricing />} />

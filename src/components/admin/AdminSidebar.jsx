@@ -18,6 +18,7 @@ const navSections = [
       { key: 'badges', icon: Award, path: '/admin/badges', label: 'Badges' },
       { key: 'certifications', icon: Award, path: '/admin/certifications', label: 'Certifications' },
       { key: 'affiliations', icon: Network, path: '/admin/affiliations', label: 'Affiliations' },
+      { key: 'sample_profiles', icon: Users, path: '/admin/sample-profiles', label: 'Profils suggérés' },
       { key: 'conversations', icon: MessageSquare, path: '/admin/conversations', label: 'Conversations' },
       { key: 'messaging', icon: MessageCircle, path: '/admin/messaging', label: 'Messagerie' },
       { key: 'forum', icon: MessageCircle, path: '/admin/forum', label: 'Forum' },

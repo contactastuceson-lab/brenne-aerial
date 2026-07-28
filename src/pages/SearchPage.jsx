@@ -15,6 +15,7 @@ function Section({ title, children }) {
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const { data: users = [] } = useQuery({ queryKey: ['search-users'], queryFn: async () => (await base44.functions.invoke('getPublicUsers', {})).data || [], staleTime: 300000 });
+  const { data: sampleProfiles = [] } = useQuery({ queryKey: ['sample-profiles'], queryFn: async () => (await base44.functions.invoke('getSampleProfiles', {})).data || [], staleTime: 300000 });
   const { data: posts = [] } = useQuery({ queryKey: ['search-posts'], queryFn: () => base44.entities.Post.list('-created_date', 100), staleTime: 60000 });
   const tags = useMemo(() => {
     const counts = {};
@@ -22,7 +23,11 @@ export default function SearchPage() {
     return Object.entries(counts).map(([tag, count]) => ({ tag, count })).sort((a, b) => b.count - a.count);
   }, [posts]);
   const normalized = query.trim().replace(/^#/, '').toLowerCase();
-  const matchingUsers = useMemo(() => normalized ? users.filter(user => `${user.username || ''} ${user.display_name || ''} ${user.full_name || ''}`.toLowerCase().includes(normalized)).slice(0, 12) : [], [users, normalized]);
+  const matchingUsers = useMemo(() => {
+    if (!normalized) return [];
+    const all = [...users, ...sampleProfiles.map(p => ({ ...p, is_sample: true }))];
+    return all.filter(u => `${u.username || ''} ${u.display_name || ''} ${u.full_name || ''}`.toLowerCase().includes(normalized)).slice(0, 12);
+  }, [users, sampleProfiles, normalized]);
   const matchingPosts = useMemo(() => normalized ? posts.filter(post => `${post.content || ''} ${post.author_username || ''} ${post.author_display_name || ''}`.toLowerCase().includes(normalized)).slice(0, 30) : posts.slice(0, 20), [posts, normalized]);
   const matchingTags = useMemo(() => (normalized ? tags.filter(item => item.tag.includes(normalized)) : tags).slice(0, 10), [tags, normalized]);
   return (

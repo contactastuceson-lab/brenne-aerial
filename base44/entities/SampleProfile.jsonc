@@ -1,0 +1,106 @@
+{
+  "name": "SampleProfile",
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string",
+      "description": "Username unique du profil sugg\u00e9r\u00e9"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Nom d'affichage"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Nom complet"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Bio / accroche cr\u00e9ateur"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Photo de profil"
+    },
+    "cover_url": {
+      "type": "string",
+      "description": "Banni\u00e8re de couverture (optionnel)"
+    },
+    "location": {
+      "type": "string",
+      "description": "Localisation"
+    },
+    "website": {
+      "type": "string",
+      "description": "Site web / lien principal"
+    },
+    "niche": {
+      "type": "string",
+      "description": "Cr\u00e9neau / cat\u00e9gorie cr\u00e9ateur"
+    },
+    "verifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "V\u00e9rifications (verified, pro, certified, official)"
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Badges communautaires"
+    },
+    "social_twitter": {
+      "type": "string"
+    },
+    "social_instagram": {
+      "type": "string"
+    },
+    "social_tiktok": {
+      "type": "string"
+    },
+    "social_youtube": {
+      "type": "string"
+    },
+    "followers_count": {
+      "type": "number",
+      "default": 0
+    },
+    "following_count": {
+      "type": "number",
+      "default": 0
+    },
+    "posts_count": {
+      "type": "number",
+      "default": 0
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "username",
+    "full_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

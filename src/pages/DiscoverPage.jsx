@@ -108,6 +108,12 @@ export default function DiscoverPage() {
     enabled: !!user,
   });
 
+  const { data: sampleProfiles = [] } = useQuery({
+    queryKey: ['sample-profiles'],
+    queryFn: async () => (await base44.functions.invoke('getSampleProfiles', {})).data || [],
+    enabled: !!user,
+  });
+
   useEffect(() => {
     const unsub = base44.entities.User.subscribe(evt => {
       if (evt.type === 'update') {
@@ -187,7 +193,7 @@ export default function DiscoverPage() {
 
   const getFollowersCount = (email) => allFollows.filter(f => f.following_email === email).length;
 
-  const filtered = allUsers
+  const realFiltered = allUsers
     .filter(u => u.email !== user.email)
     .filter(u =>
       !search ||
@@ -204,6 +210,13 @@ export default function DiscoverPage() {
       }
       return 0;
     });
+
+  const sampleFiltered = sampleProfiles
+    .filter(p => !search || p.full_name?.toLowerCase().includes(search.toLowerCase()) || p.username?.toLowerCase().includes(search.toLowerCase()) || p.niche?.toLowerCase().includes(search.toLowerCase()))
+    .map(p => ({ ...p, is_sample: true }))
+    .sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
+
+  const filtered = [...realFiltered, ...sampleFiltered];
 
   const filteredEmployees = employees
     .filter(e => filterPole === 'all' || e.pole === filterPole)
@@ -222,7 +235,7 @@ export default function DiscoverPage() {
               </div>
               <div>
                 <h1 className="font-grotesk font-bold text-3xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Découvrir</h1>
-                <p className="font-inter text-xs text-muted-foreground mt-0.5">Explorez la communauté Brenne Aerial</p>
+                <p className="font-inter text-xs text-muted-foreground mt-0.5">Explorez la communauté eza</p>
               </div>
             </div>
           </div>
@@ -368,7 +381,7 @@ export default function DiscoverPage() {
                     className="flex items-center gap-3 px-3 py-2 transition-colors cursor-pointer group hover:bg-secondary/10"
                     onClick={() => {
                       window.scrollTo({ top: 0, behavior: 'auto' });
-                      navigate(profile.username ? `/@${profile.username}` : `/profile?user=${profile.id}`);
+                      navigate(profile.is_sample ? `/s/${profile.username}` : (profile.username ? `/@${profile.username}` : `/profile?user=${profile.id}`));
                     }}
                   >
                     <div
@@ -398,7 +411,7 @@ export default function DiscoverPage() {
                             <MapPin className="w-3 h-3" /> {profile.location}
                           </span>
                         )}
-                        <span className="truncate">• {formatFollowers(getFollowersCount(profile.email))}</span>
+                        <span className="truncate">• {profile.is_sample ? formatFollowers(profile.followers_count || 0) : formatFollowers(getFollowersCount(profile.email))}</span>
                       </div>
                       {profile.badges?.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1 mt-1 text-[10px] text-muted-foreground">
@@ -417,6 +430,7 @@ export default function DiscoverPage() {
                         </div>
                       )}
                     </div>
+                    {!profile.is_sample && (
                     <div className="flex flex-shrink-0 items-center gap-2" onClick={e => e.stopPropagation()}>
                       {isFollowing ? (
                         <Button size="sm" variant="outline" className="text-[11px] h-8 px-2 rounded-full"
@@ -447,7 +461,7 @@ export default function DiscoverPage() {
                           </Button>
                         </Link>
                       )}
-                    </div>
+                    </div>)}
                   </div>
                 );
               })}
@@ -465,7 +479,7 @@ export default function DiscoverPage() {
                 return (
                   <div
                     key={profile.id}
-                    onClick={() => navigate(profile.username ? `/@${profile.username}` : `/user/${profile.id}`)}
+                    onClick={() => navigate(profile.is_sample ? `/s/${profile.username}` : (profile.username ? `/@${profile.username}` : `/user/${profile.id}`))}
                     className={`group relative rounded-2xl overflow-hidden hover-lift cursor-pointer ${isSupreme ? 'border-2' : 'border border-border bg-card'}`}
                     style={isSupreme ? {
                       background: 'linear-gradient(145deg, #0d0800, #1a0e00, #0d0800)',
@@ -541,7 +555,7 @@ export default function DiscoverPage() {
                           </p>
                         )}
                         <p className="font-inter text-[10px] text-muted-foreground flex items-center gap-1">
-                          <Users className="w-2.5 h-2.5" /> {getFollowersCount(profile.email)} abonné{getFollowersCount(profile.email) > 1 ? 's' : ''}
+                          <Users className="w-2.5 h-2.5" /> {profile.is_sample ? formatFollowers(profile.followers_count || 0) : `${getFollowersCount(profile.email)} abonné${getFollowersCount(profile.email) > 1 ? 's' : ''}`}
                         </p>
                       </div>
                       {profile.role && (
@@ -575,6 +589,7 @@ export default function DiscoverPage() {
                           )}
                         </div>
                       )}
+                      {!profile.is_sample && (
                       <div className="flex gap-2 mt-1">
                         {isFollowing ? (
                           <Button size="sm" variant="outline" className="flex-1 text-xs font-inter gap-1.5 h-8"
@@ -605,7 +620,7 @@ export default function DiscoverPage() {
                             </Button>
                           </Link>
                         )}
-                      </div>
+                      </div>)}
                     </div>
                   </div>
                 );

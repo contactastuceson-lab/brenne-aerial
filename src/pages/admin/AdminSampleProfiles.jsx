@@ -183,6 +183,8 @@ export default function AdminSampleProfiles() {
     onError: e => toast.error(e?.message || 'Erreur'),
   });
 
+  const [seeding, setSeeding] = useState(false);
+
   const filtered = profiles.filter(p => !search || (p.full_name || '').toLowerCase().includes(search.toLowerCase()) || (p.username || '').toLowerCase().includes(search.toLowerCase()) || (p.niche || '').toLowerCase().includes(search.toLowerCase()));
 
   if (loadingUser) {
@@ -206,8 +208,6 @@ export default function AdminSampleProfiles() {
       </div>
     );
   }
-
-  const [seeding, setSeeding] = useState(false);
   const handleSeed = async () => {
     setSeeding(true);
     try {

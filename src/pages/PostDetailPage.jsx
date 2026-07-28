@@ -34,7 +34,7 @@ export default function PostDetailPage() {
           setParentPost(parent);
         }
         // Increment view count
-        base44.entities.Post.update(id, { views_count: (postData.views_count || 0) + 1 }).catch(() => {});
+        base44.functions.invoke('incrementPostViews', { postId: id }).catch(() => {});
       } catch {
         navigate('/');
       } finally {

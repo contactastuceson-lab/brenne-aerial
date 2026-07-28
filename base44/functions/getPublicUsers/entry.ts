@@ -24,6 +24,8 @@ Deno.serve(async (req) => {
     verifications: u.verifications || [],
     verified_status: u.verified_status || 'no',
     account_status: u.account_status || 'active',
+    badges_eligible: u.badges_eligible !== undefined ? u.badges_eligible : true,
+    badge_ineligibility_reason: u.badge_ineligibility_reason || null,
     last_seen: u.last_seen || null,
   }));
 

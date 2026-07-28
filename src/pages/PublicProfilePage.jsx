@@ -3,7 +3,7 @@ import ProfileNotFound from '@/components/profile/ProfileNotFound';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash, Settings, Image, Reply, Ban } from 'lucide-react';
+import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash, Settings, Image, Reply, Ban, ShieldOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -506,6 +506,22 @@ export default function PublicProfilePage() {
                     </span>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Mention : non-éligibilité aux badges */}
+            {user.badges_eligible === false && (
+              <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/5 p-4 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <ShieldOff className="w-4 h-4 text-red-400" />
+                  <p className="font-grotesk font-semibold text-sm text-red-400">Non-éligibilité aux badges</p>
+                </div>
+                <p className="font-inter text-xs text-muted-foreground leading-relaxed">
+                  Ce profil a été marqué comme non-éligible à l'attribution de badges et vérifications par l'administration de Brenne Aerial.
+                </p>
+                {user.badge_ineligibility_reason && (
+                  <p className="font-mono text-xs text-muted-foreground/70 italic">« {user.badge_ineligibility_reason} »</p>
+                )}
               </div>
             )}
 

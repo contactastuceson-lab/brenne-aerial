@@ -58,6 +58,8 @@ function ReportsTab({ user, selectedId, onSelect }) {
     queryKey: ['my-reports', user.email],
     queryFn: () => base44.entities.Report.filter({ reporter_email: user.email }, '-created_date', 100),
     enabled: !!user?.email,
+    staleTime: 0,
+    refetchOnMount: true,
   });
   const selected = useMemo(() => reports.find(r => r.id === selectedId) || reports[0] || null, [reports, selectedId]);
 
@@ -165,6 +167,9 @@ export default function UserSpacePage() {
   const [selCertif, setSelCertif] = useState(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get('tab');
+    if (t && TABS.some(x => x.id === t)) setTab(t);
     base44.auth.isAuthenticated().then(async authed => {
       if (authed) setUser(await base44.auth.me());
       setAuthChecked(true);

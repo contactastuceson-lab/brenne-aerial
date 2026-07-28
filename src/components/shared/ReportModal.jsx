@@ -63,7 +63,7 @@ export default function ReportModal({ open, onClose, user, targetType, targetId,
 
   const handleGoToReports = () => {
     onClose();
-    navigate('/espace-client?tab=reports');
+    navigate('/espace?tab=reports');
   };
 
   if (reportId) {

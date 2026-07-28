@@ -3,7 +3,7 @@ import ProfileNotFound from '@/components/profile/ProfileNotFound';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash, Settings, Image, Reply } from 'lucide-react';
+import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash, Settings, Image, Reply, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -94,6 +94,10 @@ export default function PublicProfilePage() {
   const userAffiliationDescriptor = useMemo(() => user?.id ? { userId: user.id } : null, [user?.id]);
   const { affiliations: userAffiliations } = useOrganizationAffiliations(userAffiliationDescriptor);
   const hasPublicAffiliation = userAffiliations.some((item) => item.status === 'accepted' && item.visibility === 'public');
+  const removedAffiliations = useMemo(
+    () => userAffiliations.filter((item) => item.status === 'removed'),
+    [userAffiliations]
+  );
   const orgDescriptor = useMemo(() => user?.id ? { organizationId: user.id } : null, [user?.id]);
   const { affiliations: orgAffiliations } = useOrganizationAffiliations(orgDescriptor);
   const affiliatedAccounts = useMemo(
@@ -502,6 +506,41 @@ export default function PublicProfilePage() {
                     </span>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Suppressions (mention pénalisante) */}
+            {removedAffiliations.length > 0 && (
+              <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/5 p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Ban className="w-4 h-4 text-red-400" />
+                  <p className="font-grotesk font-semibold text-sm text-red-400">
+                    Suppression{removedAffiliations.length > 1 ? 's' : ''} d'affiliation
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Ce compte présente {removedAffiliations.length} affiliation{removedAffiliations.length > 1 ? 's' : ''} supprimée{removedAffiliations.length > 1 ? 's' : ''} par les administrateurs.
+                </p>
+                <div className="space-y-2">
+                  {removedAffiliations.map((r) => (
+                    <div key={r.id} className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/5 p-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-red-500/10 overflow-hidden flex items-center justify-center flex-shrink-0">
+                        {r.organizationAvatarUrl
+                          ? <img src={r.organizationAvatarUrl} alt="" className="h-full w-full object-cover" />
+                          : <span className="font-grotesk font-bold text-xs text-red-400">{(r.organizationName || 'O')[0]}</span>}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-inter text-sm font-medium truncate">{r.organizationName || 'Organisation'}</p>
+                        {r.removalReason && (
+                          <p className="font-inter text-xs text-muted-foreground italic mt-0.5">« {r.removalReason} »</p>
+                        )}
+                        <p className="font-mono text-[10px] text-muted-foreground mt-1">
+                          Supprimée par les administrateurs{r.removedAt ? ` · ${formatDistanceToNow(new Date(r.removedAt), { addSuffix: true, locale: fr })}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

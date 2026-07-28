@@ -11,7 +11,7 @@ import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, CheckCircle2, XCircle, Sparkles, ShieldCheck, Eye, EyeOff,
-  Loader2, UserPlus, Trash2, Users, Clock, RefreshCw,
+  Loader2, UserPlus, Trash2, Users, Clock, RefreshCw, AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { notifyAffiliationInvitation, notifyAffiliationStatus } from '@/lib/affiliationNotifications';
 import { useOrganizationAffiliations, refreshAffiliations } from '@/hooks/useOrganizationAffiliations';
+import RemovalRequestDialog from '@/components/affiliations/RemovalRequestDialog';
 
 const ROLE_OPTIONS = ['member', 'moderator', 'admin'];
 const STATUS_FILTERS = ['all', 'pending', 'accepted', 'rejected', 'removed'];
@@ -50,6 +51,7 @@ export default function OrganizationAffiliationsTab({ user }) {
   const [autoAccept, setAutoAccept]         = useState(false);
   const [creating, setCreating]             = useState(false);
   const [publicUsers, setPublicUsers]       = useState([]);
+  const [removalTarget, setRemovalTarget]   = useState(null);
 
   // ── Données affiliations ─────────────────────────────────────────────────────
   const descriptor = useMemo(
@@ -163,17 +165,19 @@ export default function OrganizationAffiliationsTab({ user }) {
     }
   };
 
-  const handleRemove = async (id) => {
-    const row = affiliations.find((r) => r.id === id);
+  const handleRequestRemoval = async (reason) => {
+    if (!removalTarget) return;
     try {
-      await base44.functions.invoke('processOrganizationAffiliation', { action: 'delete', affiliationId: id });
-      if (row) {
-        await notifyAffiliationStatus({ targetEmail: row.userId, organizationName: row.organizationName, status: 'removed' });
-      }
+      await base44.functions.invoke('processOrganizationAffiliation', {
+        action: 'requestRemoval',
+        affiliationId: removalTarget.id,
+        reason,
+      });
       await refreshAffiliations({ organizationId: user.id });
-      toast.success('Affiliation supprimée');
+      toast.success('Demande de suppression envoyée aux administrateurs');
+      setRemovalTarget(null);
     } catch (e) {
-      toast.error(e?.message || 'Suppression impossible');
+      toast.error(e?.message || 'Impossible d\'envoyer la demande');
     }
   };
 
@@ -369,6 +373,21 @@ export default function OrganizationAffiliationsTab({ user }) {
                     <span className={`text-[10px] uppercase tracking-wider rounded-full border px-2 py-0.5 font-mono ${row.visibility === 'public' ? 'border-primary/30 text-primary bg-primary/10' : 'border-border text-muted-foreground'}`}>
                       {row.visibility === 'public' ? 'Publique' : 'Privée'}
                     </span>
+                    {row.removalRequestStatus === 'pending' && (
+                      <span className="text-[10px] uppercase tracking-wider rounded-full border border-amber-400/30 text-amber-400 bg-amber-400/10 px-2 py-0.5 font-mono">
+                        Suppression demandée
+                      </span>
+                    )}
+                    {row.removalRequestStatus === 'rejected' && (
+                      <span className="text-[10px] uppercase tracking-wider rounded-full border border-red-400/30 text-red-400 bg-red-400/10 px-2 py-0.5 font-mono">
+                        Demande refusée
+                      </span>
+                    )}
+                    {row.removalRequestStatus === 'approved' && (
+                      <span className="text-[10px] uppercase tracking-wider rounded-full border border-zinc-400/30 text-zinc-400 bg-zinc-400/10 px-2 py-0.5 font-mono">
+                        Suppression approuvée
+                      </span>
+                    )}
                   </div>
                   <p className="font-inter text-sm font-medium text-foreground truncate">{row.userId}</p>
                   {row.message && (
@@ -407,9 +426,9 @@ export default function OrganizationAffiliationsTab({ user }) {
                       {ROLE_LABELS[row.role === 'member' ? 'moderator' : row.role === 'moderator' ? 'admin' : 'member'] || 'Changer rôle'}
                     </Button>
                   )}
-                  <Button size="sm" variant="outline" className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10"
-                    onClick={() => handleRemove(row.id)}>
-                    <Trash2 className="w-3.5 h-3.5" /> Retirer
+                  <Button size="sm" variant="outline" className="gap-1.5 text-amber-400 border-amber-400/30 hover:bg-amber-400/10"
+                    onClick={() => setRemovalTarget(row)}>
+                    <AlertTriangle className="w-3.5 h-3.5" /> Demander suppression
                   </Button>
                 </div>
               </motion.div>
@@ -417,6 +436,13 @@ export default function OrganizationAffiliationsTab({ user }) {
           </AnimatePresence>
         </div>
       </div>
+
+      <RemovalRequestDialog
+        open={!!removalTarget}
+        onOpenChange={(o) => { if (!o) setRemovalTarget(null); }}
+        target={removalTarget}
+        onSubmit={handleRequestRemoval}
+      />
     </div>
   );
 }

@@ -4,7 +4,8 @@ import {
   DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { MoreVertical, Check, X, Ban, Trash2, Pencil, Eye, EyeOff, Users } from 'lucide-react';
-import { AFFILIATION_STATUSES, VISIBILITY_CONFIG } from '@/lib/affiliationStatus';
+import { AFFILIATION_STATUSES, VISIBILITY_CONFIG, REMOVAL_REQUEST } from '@/lib/affiliationStatus';
+import DirectRemovalDialog from './DirectRemovalDialog';
 
 function Avatar({ src, name, size = 'md' }) {
   const dim = size === 'sm' ? 'w-7 h-7' : 'w-9 h-9';
@@ -28,7 +29,9 @@ function Mini({ label, value, sub }) {
 export default function AffiliationRow({ a, onAction, onEdit }) {
   const st = AFFILIATION_STATUSES[a.status] || AFFILIATION_STATUSES.pending;
   const vis = VISIBILITY_CONFIG[a.visibility] || VISIBILITY_CONFIG.public;
+  const rq = REMOVAL_REQUEST[a.removalRequestStatus] || null;
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [directRemoval, setDirectRemoval] = useState(false);
 
   return (
     <div className="bg-card border border-border rounded-xl p-3 sm:p-4 hover:border-primary/20 transition-colors">
@@ -54,9 +57,14 @@ export default function AffiliationRow({ a, onAction, onEdit }) {
         </div>
 
         {/* Status */}
-        <div className="flex items-center gap-1.5 w-28">
-          <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
-          <span className={`font-inter text-xs font-medium ${st.color}`}>{st.label}</span>
+        <div className="flex flex-col gap-0.5 w-28">
+          <div className="flex items-center gap-1.5">
+            <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+            <span className={`font-inter text-xs font-medium ${st.color}`}>{st.label}</span>
+          </div>
+          {rq && rq.label && (
+            <span className={`font-mono text-[9px] uppercase tracking-wide ${rq.color}`}>{rq.label}</span>
+          )}
         </div>
 
         {/* Visibility */}
@@ -77,7 +85,19 @@ export default function AffiliationRow({ a, onAction, onEdit }) {
             <DropdownMenuItem onClick={() => onAction('update', { affiliationId: a.id, patch: { status: 'rejected' } })}>
               <X className="w-3.5 h-3.5 text-red-400" /> Refuser
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onAction('update', { affiliationId: a.id, patch: { status: 'removed', removedAt: new Date().toISOString() } })}>
+            {a.removalRequestStatus === 'pending' && (
+              <>
+                <DropdownMenuLabel>Demande de suppression</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => onAction('approveRemoval', { affiliationId: a.id })}>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" /> Approuver la suppression
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onAction('rejectRemoval', { affiliationId: a.id })}>
+                  <X className="w-3.5 h-3.5 text-red-400" /> Rejeter la demande
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem onClick={() => setDirectRemoval(true)}>
               <Ban className="w-3.5 h-3.5 text-zinc-400" /> Marquer supprimée
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -100,6 +120,13 @@ export default function AffiliationRow({ a, onAction, onEdit }) {
         <Avatar src={a.organizationAvatarResolved} name={a.organizationNameResolved} size="sm" />
         <Mini value={a.organizationNameResolved} sub={a.organizationEmail || 'Organisation'} />
       </div>
+
+      <DirectRemovalDialog
+        open={directRemoval}
+        onOpenChange={setDirectRemoval}
+        target={a}
+        onSubmit={(reason) => onAction('removeDirect', { affiliationId: a.id, reason })}
+      />
     </div>
   );
 }

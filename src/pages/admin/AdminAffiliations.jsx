@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Search, Plus, Network, RefreshCw } from 'lucide-react';
+import { Search, Plus, Network, RefreshCw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -35,12 +35,15 @@ export default function AdminAffiliations() {
 
   const mutate = useMutation({
     mutationFn: async (payload) => {
-      const action = payload.affiliation ? 'create' : payload.affiliationId && payload.patch ? 'update' : payload.affiliationId ? 'delete' : 'list';
+      const action = payload.action || (payload.affiliation ? 'create' : payload.affiliationId && payload.patch ? 'update' : payload.affiliationId ? 'delete' : 'list');
       return base44.functions.invoke('adminManageAffiliations', { action, ...payload });
     },
     onSuccess: (_res, payload) => {
       qc.invalidateQueries({ queryKey: ['admin-affiliations'] });
-      if (payload.affiliation) toast.success('Affiliation créée');
+      if (payload.action === 'approveRemoval') toast.success('Suppression approuvée');
+      else if (payload.action === 'rejectRemoval') toast.success('Demande refusée');
+      else if (payload.action === 'removeDirect') toast.success('Affiliation marquée supprimée');
+      else if (payload.affiliation) toast.success('Affiliation créée');
       else if (payload.patch?.status) toast.success(`Statut → ${AFFILIATION_STATUSES[payload.patch.status]?.label || ''}`);
       else if (payload.patch?.visibility !== undefined) toast.success('Visibilité modifiée');
       else if (!payload.patch) toast.success('Affiliation supprimée');
@@ -50,8 +53,7 @@ export default function AdminAffiliations() {
   });
 
   const handleAction = (type, payload) => {
-    if (type === 'update') mutate.mutate(payload);
-    else if (type === 'delete') mutate.mutate(payload);
+    mutate.mutate({ action: type, ...payload });
   };
 
   const handleDialogSubmit = (payload) => {
@@ -60,8 +62,14 @@ export default function AdminAffiliations() {
     setEditing(null);
   };
 
+  const pendingRemovalCount = affiliations.filter(a => a.removalRequestStatus === 'pending').length;
+
   const filtered = affiliations
-    .filter(a => statusFilter === 'all' || a.status === statusFilter)
+    .filter(a => {
+      if (statusFilter === 'removal_pending') return a.removalRequestStatus === 'pending';
+      if (statusFilter !== 'all') return a.status === statusFilter;
+      return true;
+    })
     .filter(a => {
       if (!search) return true;
       const q = search.toLowerCase();
@@ -107,6 +115,12 @@ export default function AdminAffiliations() {
               </button>
             );
           })}
+          {pendingRemovalCount > 0 && (
+            <button onClick={() => setStatusFilter('removal_pending')}
+              className={`px-3 py-1.5 rounded-full font-inter text-xs border transition-all flex items-center gap-1.5 ${statusFilter === 'removal_pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 'border-amber-500/30 text-amber-400/70 hover:text-amber-400'}`}>
+              <AlertTriangle className="w-3 h-3" /> Demandes ({pendingRemovalCount})
+            </button>
+          )}
         </div>
       </div>
 

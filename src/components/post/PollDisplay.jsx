@@ -32,7 +32,8 @@ export default function PollDisplay({ post, currentUser }) {
       const newTotal = updatedOptions.reduce((s, o) => s + (o.votes || 0), 0);
       const updatedPoll = { ...localPoll, options: updatedOptions, total_votes: newTotal };
       setLocalPoll(updatedPoll);
-      await base44.entities.Post.update(post.id, { poll: updatedPoll });
+      const res = await base44.functions.invoke('votePoll', { postId: post.id, optionId });
+      if (res?.data?.poll) setLocalPoll(res.data.poll);
     } catch {
       setLocalPoll(poll);
     } finally {

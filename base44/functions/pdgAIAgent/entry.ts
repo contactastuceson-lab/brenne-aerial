@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { sendEzaEmail } from '../../shared/ezaEmails.ts';
 
 /**
  * PDG AI Agent — Assistant IA avec accès total à la plateforme
@@ -80,13 +81,15 @@ async function listReports(base44) {
 }
 
 async function sendAnnouncementEmail(base44, subject, body, targetEmail) {
-  await base44.asServiceRole.integrations.Core.SendEmail({
+  // targetEmail can be a single address, a comma-separated list, or an array
+  return await sendEzaEmail(base44, {
     to: targetEmail,
-    from_name: 'Brenne Aerial — Direction',
     subject,
     body,
+    fromName: 'eza — Direction',
+    title: subject,
+    tagline: 'Direction',
   });
-  return { success: true, message: `Email envoyé à ${targetEmail}` };
 }
 
 async function createAnnouncement(base44, title, content, type) {
@@ -146,7 +149,7 @@ Outils disponibles :
 - update_quote_status → params: {quoteId, status, notes?}
 - list_employees → liste les employés
 - list_reports → signalements en attente
-- send_email → params: {to, subject, body}
+- send_email → params: {to, subject, body} — "to" accepte une adresse, une liste séparée par virgules ou un tableau. Le corps est automatiquement mis en forme avec le template HTML officiel eza (ne pas écrire de HTML toi-même, juste du texte lisible). IMPORTANT: l'envoi ne fonctionne que vers les utilisateurs enregistrés sur l'app ; si un destinataire n'est pas enregistré, signale-le au PDG.
 - create_announcement → params: {title, content, type} — types: info/warning/success/error
 - get_app_settings → paramètres de l'app
 

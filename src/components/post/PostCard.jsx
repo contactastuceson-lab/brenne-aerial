@@ -114,7 +114,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
     likedByRef.current = newLikedBy;
     likesCountRef.current = newCount;
     try {
-      await base44.entities.Post.update(post.id, { liked_by: newLikedBy, likes_count: newCount });
+      await base44.functions.invoke('togglePostLike', { postId: post.id });
       // Met à jour le cache TanStack Query pour éviter que le refetch écrase l'état local
       queryClient.setQueriesData({ queryKey: ['home-feed-posts'] }, (old) => {
         if (!Array.isArray(old)) return old;

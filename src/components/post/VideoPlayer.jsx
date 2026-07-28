@@ -105,7 +105,7 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
     likesCountRef.current = newCount;
 
     try {
-      await base44.entities.Post.update(post.id, { liked_by: newLikedBy, likes_count: newCount });
+      await base44.functions.invoke('togglePostLike', { postId: post.id });
       if (!wasLiked && post.author_id && post.author_id !== currentUser.id) {
         const users = await base44.entities.User.filter({ id: post.author_id }).catch(() => []);
         if (users[0]?.email) {

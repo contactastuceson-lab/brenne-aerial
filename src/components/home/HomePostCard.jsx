@@ -93,7 +93,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
     likedByRef.current = newLikedBy;
     likesCountRef.current = newCount;
     try {
-      await base44.entities.Post.update(post.id, { liked_by: newLikedBy, likes_count: newCount });
+      await base44.functions.invoke('togglePostLike', { postId: post.id });
     } catch {
       setLiked(wasLiked);
       setLikes(prevCount);

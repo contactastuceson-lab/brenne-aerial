@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plane, Camera, Building2, Film, Play, X, MapPin, Calendar, ExternalLink, Star } from 'lucide-react';
-import InteractiveMap from '@/components/portfolio/InteractiveMap';
 import ReviewsSection from '@/components/portfolio/ReviewsSection';
 import BeforeAfterSlider from '@/components/shared/BeforeAfterSlider';
 import { Button } from '@/components/ui/button';
@@ -189,7 +188,7 @@ export default function PortfolioPage() {
           </motion.p>
           <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             className="font-grotesk font-black text-4xl sm:text-5xl leading-tight">
-            Portfolio <span className="gradient-text">Brenne Aerial</span>
+            Portfolio <span className="gradient-text">EZA</span>
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="font-inter text-sm text-muted-foreground mt-4 max-w-xl mx-auto">
@@ -197,9 +196,6 @@ export default function PortfolioPage() {
           </motion.p>
         </div>
       </div>
-
-      {/* Carte interactive */}
-      <InteractiveMap />
 
       {/* Galerie de projets */}
       <section className="px-4 lg:px-10 max-w-6xl mx-auto py-12">

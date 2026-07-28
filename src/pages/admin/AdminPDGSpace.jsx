@@ -125,7 +125,7 @@ export default function AdminPDGSpace() {
         }
         
         if (content) {
-          zip.file(`brenne-aerial/${path}`, content);
+          zip.file(`eza/${path}`, content);
         }
         done++;
       }
@@ -135,7 +135,7 @@ export default function AdminPDGSpace() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `brenne-aerial-source-${new Date().toISOString().slice(0, 10)}.zip`;
+      a.download = `eza-source-${new Date().toISOString().slice(0, 10)}.zip`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success('ZIP téléchargé avec succès !');
@@ -176,7 +176,7 @@ export default function AdminPDGSpace() {
         </div>
         <h2 className="font-grotesk font-bold text-xl">Accès restreint</h2>
         <p className="font-inter text-sm text-muted-foreground text-center max-w-sm">
-          Cet espace est réservé exclusivement au PDG et au PDG-Adjoint de Brenne Aerial.
+          Cet espace est réservé exclusivement au PDG et au PDG-Adjoint d'eza.
         </p>
       </div>
     );

@@ -4,10 +4,15 @@ import {
   Building2, Users, UserPlus, Search, CheckCircle2, XCircle,
   Eye, EyeOff, Trash2, ShieldCheck, Clock, Loader2, RefreshCw,
   Settings, Crown, BadgeCheck, BarChart3, UserCheck, LogIn,
-  ChevronRight, Globe, Lock, Sparkles, Edit3, Save, X,
+  ChevronRight, Globe, Lock, Sparkles, Edit3, Save, X, MoreVertical, AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import RemovalRequestDialog from '@/components/affiliations/RemovalRequestDialog';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { canManageAffiliations, getOrganizationBadge } from '@/lib/affiliationUtils';
@@ -43,7 +48,7 @@ function StatCard({ icon: Icon, label, value, color, bg }) {
 }
 
 /* ── Member row ── */
-function MemberRow({ row, onUpdate, onRemove, usersMap }) {
+function MemberRow({ row, onUpdate, onRequestRemoval, usersMap }) {
   const s = STATUS_STYLES[row.status] || STATUS_STYLES.removed;
   const [busy, setBusy] = useState(false);
   const profile = usersMap?.[row.userId];
@@ -87,63 +92,57 @@ function MemberRow({ row, onUpdate, onRemove, usersMap }) {
         <p className="font-mono text-[10px] text-zinc-600 mt-0.5">
           {row.createdAt ? formatDistanceToNow(new Date(row.createdAt), { addSuffix: true, locale: fr }) : '—'}
           {row.visibility === 'private' && <span className="ml-2 text-zinc-600">· Badge masqué</span>}
+          {row.removalRequestStatus === 'pending' && <span className="ml-2 text-amber-400">· Suppression demandée</span>}
         </p>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-1.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
+      {/* Actions — menu 3 points */}
+      <div className="flex-shrink-0" onClick={e => e.stopPropagation()}>
         {busy ? (
           <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />
         ) : (
-          <>
-            {row.status === 'pending' && (
-              <>
-                <button
-                  onClick={() => act(() => onUpdate(row.id, { status: 'accepted', acceptedAt: new Date().toISOString() }))}
-                  className="p-1.5 rounded-lg bg-emerald-400/10 hover:bg-emerald-400/20 text-emerald-400 transition-colors"
-                  title="Accepter"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => act(() => onUpdate(row.id, { status: 'rejected' }))}
-                  className="p-1.5 rounded-lg bg-red-400/10 hover:bg-red-400/20 text-red-400 transition-colors"
-                  title="Refuser"
-                >
-                  <XCircle className="w-4 h-4" />
-                </button>
-              </>
-            )}
-            {row.status === 'accepted' && (
-              <button
-                onClick={() => act(() => onUpdate(row.id, { visibility: row.visibility === 'public' ? 'private' : 'public' }))}
-                className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 transition-colors"
-                title={row.visibility === 'public' ? 'Masquer le badge' : 'Afficher le badge'}
-              >
-                {row.visibility === 'public' ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-              </button>
-            )}
-            {row.status !== 'removed' && (
-              <button
-                onClick={() => {
-                  const roles = ['member', 'moderator', 'admin'];
-                  const next = roles[(roles.indexOf(row.role) + 1) % roles.length];
-                  act(() => onUpdate(row.id, { role: next }));
-                }}
-                className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 transition-colors"
-                title="Changer le rôle"
-              >
-                <ShieldCheck className="w-4 h-4" />
-              </button>
-            )}
-            <button
-              onClick={() => act(() => onRemove(row.id))}
-              className="p-1.5 rounded-lg bg-zinc-800 hover:bg-red-400/10 text-zinc-600 hover:text-red-400 transition-colors"
-              title="Retirer"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 transition-colors">
+              <MoreVertical className="w-4 h-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              {row.status === 'pending' && (
+                <>
+                  <DropdownMenuItem onClick={() => act(() => onUpdate(row.id, { status: 'accepted', acceptedAt: new Date().toISOString() }))}>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Accepter
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => act(() => onUpdate(row.id, { status: 'rejected' }))}>
+                    <XCircle className="w-3.5 h-3.5 text-red-400" /> Refuser
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              {row.status === 'accepted' && (
+                <DropdownMenuItem onClick={() => act(() => onUpdate(row.id, { visibility: row.visibility === 'public' ? 'private' : 'public' }))}>
+                  {row.visibility === 'public'
+                    ? <><EyeOff className="w-3.5 h-3.5" /> Masquer le badge</>
+                    : <><Eye className="w-3.5 h-3.5" /> Afficher le badge</>}
+                </DropdownMenuItem>
+              )}
+              {row.status !== 'removed' && (() => {
+                const roles = ['member', 'moderator', 'admin'];
+                const next = roles[(roles.indexOf(row.role) + 1) % roles.length];
+                return (
+                  <DropdownMenuItem onClick={() => act(() => onUpdate(row.id, { role: next }))}>
+                    <ShieldCheck className="w-3.5 h-3.5" /> Rôle : {ROLE_LABELS[next]}
+                  </DropdownMenuItem>
+                );
+              })()}
+              {row.removalRequestStatus !== 'pending' && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onRequestRemoval(row)}>
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Demander la suppression
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
     </motion.div>
@@ -384,6 +383,8 @@ export default function BusinessSpacePage() {
   const [search, setSearch]       = useState('');
   const [statusFilter, setStatus] = useState('all');
   const [activeView, setView]     = useState('members'); // members | invite | settings
+  const [removalTarget, setRemovalTarget] = useState(null);
+  const [submittingRemoval, setSubmittingRemoval] = useState(false);
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(async authed => {
@@ -437,12 +438,23 @@ export default function BusinessSpacePage() {
     toast.success('Mis à jour');
   };
 
-  const handleRemove = async (id) => {
-    const row = affiliations.find(r => r.id === id);
-    await base44.functions.invoke('processOrganizationAffiliation', { action: 'delete', affiliationId: id });
-    if (row) await notifyAffiliationStatus({ targetEmail: row.userId, organizationName: row.organizationName, status: 'removed' });
-    await refreshAffiliations({ organizationId: user.id });
-    toast.success('Membre retiré');
+  const handleRequestRemoval = async (reason) => {
+    if (!removalTarget) return;
+    setSubmittingRemoval(true);
+    try {
+      await base44.functions.invoke('processOrganizationAffiliation', {
+        action: 'requestRemoval',
+        affiliationId: removalTarget.id,
+        reason,
+      });
+      await refreshAffiliations({ organizationId: user.id });
+      toast.success('Demande de suppression envoyée aux administrateurs');
+      setRemovalTarget(null);
+    } catch (e) {
+      toast.error(e?.message || 'Erreur lors de la demande');
+    } finally {
+      setSubmittingRemoval(false);
+    }
   };
 
   /* Guards */
@@ -621,7 +633,7 @@ export default function BusinessSpacePage() {
                   <div>
                     <AnimatePresence initial={false}>
                       {filtered.map(row => (
-                        <MemberRow key={row.id} row={row} onUpdate={handleUpdate} onRemove={handleRemove} usersMap={usersMap} />
+                        <MemberRow key={row.id} row={row} onUpdate={handleUpdate} onRequestRemoval={setRemovalTarget} usersMap={usersMap} />
                       ))}
                     </AnimatePresence>
                   </div>
@@ -642,6 +654,13 @@ export default function BusinessSpacePage() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      <RemovalRequestDialog
+        open={!!removalTarget}
+        onOpenChange={(o) => !o && setRemovalTarget(null)}
+        target={removalTarget}
+        onSubmit={handleRequestRemoval}
+      />
     </div>
   );
 }

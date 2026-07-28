@@ -111,6 +111,21 @@ Deno.serve(async (req) => {
       return Response.json({ affiliation: updated });
     }
 
+    // ── CLEAR REMOVAL (retirer la mention de suppression) ──
+    if (action === 'clearRemoval') {
+      if (!affiliationId) return Response.json({ error: 'Missing affiliationId' }, { status: 400 });
+      const updated = await base44.asServiceRole.entities.OrganizationAffiliation.update(affiliationId, {
+        status: 'accepted',
+        removalRequestStatus: 'none',
+        removalReason: '',
+        removalRequestedAt: null,
+        removedAt: null,
+        removalDecidedAt: null,
+        removalDecidedBy: '',
+      });
+      return Response.json({ affiliation: updated });
+    }
+
     return Response.json({ error: 'Unsupported action' }, { status: 400 });
   } catch (error) {
     return Response.json({ error: error?.message || 'Internal error' }, { status: 500 });

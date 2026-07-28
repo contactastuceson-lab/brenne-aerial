@@ -9,6 +9,7 @@ import { AFFILIATION_STATUSES, STATUS_ORDER } from '@/lib/affiliationStatus';
 import AffiliationStats from '@/components/admin/affiliations/AffiliationStats';
 import AffiliationRow from '@/components/admin/affiliations/AffiliationRow';
 import AffiliationDialog from '@/components/admin/affiliations/AffiliationDialog';
+import RemovalRequestsPanel from '@/components/admin/affiliations/RemovalRequestsPanel';
 
 export default function AdminAffiliations() {
   const qc = useQueryClient();
@@ -43,6 +44,7 @@ export default function AdminAffiliations() {
       if (payload.action === 'approveRemoval') toast.success('Suppression approuvée');
       else if (payload.action === 'rejectRemoval') toast.success('Demande refusée');
       else if (payload.action === 'removeDirect') toast.success('Affiliation marquée supprimée');
+      else if (payload.action === 'clearRemoval') toast.success('Mention de suppression retirée');
       else if (payload.affiliation) toast.success('Affiliation créée');
       else if (payload.patch?.status) toast.success(`Statut → ${AFFILIATION_STATUSES[payload.patch.status]?.label || ''}`);
       else if (payload.patch?.visibility !== undefined) toast.success('Visibilité modifiée');
@@ -92,6 +94,8 @@ export default function AdminAffiliations() {
       </div>
 
       <AffiliationStats affiliations={affiliations} />
+
+      <RemovalRequestsPanel affiliations={affiliations} onAction={handleAction} />
 
       {/* Filters */}
       <div className="space-y-3 mb-6">

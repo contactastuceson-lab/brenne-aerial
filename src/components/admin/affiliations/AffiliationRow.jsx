@@ -3,7 +3,7 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Check, X, Ban, Trash2, Pencil, Eye, EyeOff, Users } from 'lucide-react';
+import { MoreVertical, Check, X, Ban, Trash2, Pencil, Eye, EyeOff, Users, RotateCcw } from 'lucide-react';
 import { AFFILIATION_STATUSES, VISIBILITY_CONFIG, REMOVAL_REQUEST } from '@/lib/affiliationStatus';
 import DirectRemovalDialog from './DirectRemovalDialog';
 
@@ -100,6 +100,11 @@ export default function AffiliationRow({ a, onAction, onEdit }) {
             <DropdownMenuItem onClick={() => setDirectRemoval(true)}>
               <Ban className="w-3.5 h-3.5 text-zinc-400" /> Marquer supprimée
             </DropdownMenuItem>
+            {a.status === 'removed' && (
+              <DropdownMenuItem onClick={() => onAction('clearRemoval', { affiliationId: a.id })}>
+                <RotateCcw className="w-3.5 h-3.5 text-emerald-400" /> Retirer la mention de suppression
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onAction('update', { affiliationId: a.id, patch: { visibility: a.visibility === 'public' ? 'private' : 'public' } })}>
               {a.visibility === 'public' ? <><EyeOff className="w-3.5 h-3.5" /> Rendre privé</> : <><Eye className="w-3.5 h-3.5" /> Rendre public</>}

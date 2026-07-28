@@ -83,6 +83,7 @@ import NotificationsPage from "@/pages/NotificationsPage";
 import CreatePostPage from "@/pages/CreatePostPage";
 import SearchPage from "@/pages/SearchPage";
 import PortfolioPage from "@/pages/PortfolioPage";
+import DocumentationPage from "@/pages/DocumentationPage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -102,7 +103,7 @@ const AuthenticatedApp = () => {
   if (authError?.type === "user_not_registered") return <UserNotRegisteredError />;
   if (authError?.type === "auth_required") {
     // Allow public routes to render without auth (like TikTok/Instagram public profiles)
-    const publicPaths = ['/', '/about', '/blog', '/discover', '/portfolio', '/forum',
+    const publicPaths = ['/', '/about', '/blog', '/discover', '/portfolio', '/forum', '/documentation',
       '/uptime', '/enor', '/legal', '/status', '/donation', '/user'];
     const currentPath = window.location.pathname;
     const isPublicPath = publicPaths.some(p => currentPath === p || currentPath.startsWith(p + '/'))
@@ -154,6 +155,7 @@ const AuthenticatedApp = () => {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/create-post" element={<CreatePostPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/documentation" element={<DocumentationPage />} />
           {/* Profile catch-all route for /@username - must be last in public routes */}
           <Route path="/:pathUsername" element={<PublicProfilePage />} />
         </Route>

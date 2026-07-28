@@ -432,7 +432,7 @@ export default function OrganizationAffiliationsTab({ user }) {
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => setRemovalTarget(row)}>
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Demander la suppression
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Demander la mention de suppression
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

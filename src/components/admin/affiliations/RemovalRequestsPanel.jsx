@@ -17,11 +17,11 @@ export default function RemovalRequestsPanel({ affiliations, onAction }) {
       <div className="flex items-center gap-2">
         <AlertTriangle className="w-4 h-4 text-amber-400" />
         <p className="font-grotesk font-semibold text-sm text-amber-400">
-          Demandes de suppression d'affiliation ({pending.length})
+          Demandes de mention de suppression ({pending.length})
         </p>
       </div>
       <p className="text-xs text-muted-foreground">
-        Les organisations ci-dessous demandent la suppression d'une affiliation. Examinez la raison avant d'approuver.
+        Les organisations ci-dessous demandent une mention de suppression d'affiliation. Examinez la raison avant d'approuver.
       </p>
       <div className="space-y-2">
         {pending.map((a) => (

@@ -92,7 +92,7 @@ function MemberRow({ row, onUpdate, onRequestRemoval, usersMap }) {
         <p className="font-mono text-[10px] text-zinc-600 mt-0.5">
           {row.createdAt ? formatDistanceToNow(new Date(row.createdAt), { addSuffix: true, locale: fr }) : '—'}
           {row.visibility === 'private' && <span className="ml-2 text-zinc-600">· Badge masqué</span>}
-          {row.removalRequestStatus === 'pending' && <span className="ml-2 text-amber-400">· Suppression demandée</span>}
+          {row.removalRequestStatus === 'pending' && <span className="ml-2 text-amber-400">· Mention de suppression demandée</span>}
         </p>
       </div>
 
@@ -137,7 +137,7 @@ function MemberRow({ row, onUpdate, onRequestRemoval, usersMap }) {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => onRequestRemoval(row)}>
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Demander la suppression
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Demander la mention de suppression
                   </DropdownMenuItem>
                 </>
               )}
@@ -448,7 +448,7 @@ export default function BusinessSpacePage() {
         reason,
       });
       await refreshAffiliations({ organizationId: user.id });
-      toast.success('Demande de suppression envoyée aux administrateurs');
+      toast.success('Demande de mention de suppression envoyée aux administrateurs');
       setRemovalTarget(null);
     } catch (e) {
       toast.error(e?.message || 'Erreur lors de la demande');

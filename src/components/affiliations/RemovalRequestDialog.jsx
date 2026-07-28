@@ -32,14 +32,14 @@ export default function RemovalRequestDialog({ open, onOpenChange, target, onSub
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400" /> Demander la suppression
+            <AlertTriangle className="w-4 h-4 text-amber-400" /> Demander la mention de suppression
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3 py-2">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Vous ne pouvez pas supprimer directement une affiliation. Votre demande sera
-            examinée par les administrateurs. Indiquez une raison détaillée
-            (minimum 10 caractères).
+            Vous ne pouvez pas retirer directement une affiliation. Votre demande de
+            mention de suppression sera examinée par les administrateurs, qui décideront
+            de l'appliquer. Indiquez une raison détaillée (minimum 10 caractères).
           </p>
           <Textarea
             value={reason}

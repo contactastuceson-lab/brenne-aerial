@@ -70,6 +70,47 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true });
     }
 
+    // ── APPROVE REMOVAL REQUEST ──
+    if (action === 'approveRemoval') {
+      if (!affiliationId) return Response.json({ error: 'Missing affiliationId' }, { status: 400 });
+      const now = new Date().toISOString();
+      const updated = await base44.asServiceRole.entities.OrganizationAffiliation.update(affiliationId, {
+        status: 'removed',
+        removalRequestStatus: 'approved',
+        removedAt: now,
+        removalDecidedAt: now,
+        removalDecidedBy: user?.id || user?.email || 'admin',
+      });
+      return Response.json({ affiliation: updated });
+    }
+
+    // ── REJECT REMOVAL REQUEST ──
+    if (action === 'rejectRemoval') {
+      if (!affiliationId) return Response.json({ error: 'Missing affiliationId' }, { status: 400 });
+      const updated = await base44.asServiceRole.entities.OrganizationAffiliation.update(affiliationId, {
+        removalRequestStatus: 'rejected',
+        removalDecidedAt: new Date().toISOString(),
+        removalDecidedBy: user?.id || user?.email || 'admin',
+      });
+      return Response.json({ affiliation: updated });
+    }
+
+    // ── DIRECT REMOVAL (admin, with reason) ──
+    if (action === 'removeDirect') {
+      if (!affiliationId) return Response.json({ error: 'Missing affiliationId' }, { status: 400 });
+      const reason = String(body.reason || '').trim();
+      const now = new Date().toISOString();
+      const updated = await base44.asServiceRole.entities.OrganizationAffiliation.update(affiliationId, {
+        status: 'removed',
+        removalReason: reason,
+        removalRequestStatus: 'approved',
+        removedAt: now,
+        removalDecidedAt: now,
+        removalDecidedBy: user?.id || user?.email || 'admin',
+      });
+      return Response.json({ affiliation: updated });
+    }
+
     return Response.json({ error: 'Unsupported action' }, { status: 400 });
   } catch (error) {
     return Response.json({ error: error?.message || 'Internal error' }, { status: 500 });

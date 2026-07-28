@@ -219,6 +219,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Only the organization owner can manage this affiliation' }, { status: 403 });
     }
 
+    // ── Action "requestRemoval" : l'org demande la suppression (avec raison) ──
+    if (action === 'requestRemoval') {
+      const reason = String(body.reason || '').trim();
+      if (reason.length < 10) {
+        return Response.json({ error: 'Une raison d\'au moins 10 caractères est requise' }, { status: 400 });
+      }
+      const updatedAffiliation = await base44.asServiceRole.entities.OrganizationAffiliation.update(affiliationId, {
+        removalRequestStatus: 'pending',
+        removalReason: reason,
+        removalRequestedAt: new Date().toISOString(),
+      });
+      return Response.json({ affiliation: updatedAffiliation });
+    }
+
     if (action === 'update') {
       if (!patch) {
         return Response.json({ error: 'Missing patch' }, { status: 400 });

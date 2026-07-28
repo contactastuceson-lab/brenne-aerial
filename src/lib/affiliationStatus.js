@@ -11,3 +11,10 @@ export const VISIBILITY_CONFIG = {
   public: { label: 'Public', color: 'text-primary' },
   private: { label: 'Privé', color: 'text-muted-foreground' },
 };
+
+export const REMOVAL_REQUEST = {
+  none: { label: '', color: '' },
+  pending: { label: 'Suppression demandée', color: 'text-amber-400' },
+  approved: { label: 'Suppression approuvée', color: 'text-zinc-400' },
+  rejected: { label: 'Demande refusée', color: 'text-red-400' },
+};

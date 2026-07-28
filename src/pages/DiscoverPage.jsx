@@ -110,7 +110,11 @@ export default function DiscoverPage() {
 
   const { data: sampleProfiles = [] } = useQuery({
     queryKey: ['sample-profiles'],
-    queryFn: async () => (await base44.functions.invoke('getSampleProfiles', {})).data || [],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getSampleProfiles', {});
+      const data = res?.data ?? res;
+      return Array.isArray(data) ? data : (Array.isArray(res) ? res : []);
+    },
     enabled: !!user,
   });
 

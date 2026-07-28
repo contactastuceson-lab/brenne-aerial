@@ -144,7 +144,8 @@ export default function AdminSampleProfiles() {
     queryKey: ['admin-sample-profiles'],
     queryFn: async () => {
       const res = await base44.functions.invoke('getSampleProfiles', {});
-      return res.data || res || [];
+      const data = res?.data ?? res;
+      return Array.isArray(data) ? data : (Array.isArray(res) ? res : []);
     },
   });
 

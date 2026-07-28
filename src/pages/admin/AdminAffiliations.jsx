@@ -45,6 +45,7 @@ export default function AdminAffiliations() {
       else if (payload.action === 'rejectRemoval') toast.success('Demande refusée');
       else if (payload.action === 'removeDirect') toast.success('Affiliation marquée supprimée');
       else if (payload.action === 'clearRemoval') toast.success('Mention de suppression retirée');
+      else if (payload.action === 'removeAllForUser') toast.success(payload.mode === 'delete' ? 'Toutes les affiliations supprimées' : 'Toutes les affiliations marquées supprimées');
       else if (payload.affiliation) toast.success('Affiliation créée');
       else if (payload.patch?.status) toast.success(`Statut → ${AFFILIATION_STATUSES[payload.patch.status]?.label || ''}`);
       else if (payload.patch?.visibility !== undefined) toast.success('Visibilité modifiée');

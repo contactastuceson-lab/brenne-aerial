@@ -111,6 +111,24 @@ Deno.serve(async (req) => {
       return Response.json({ affiliation: updated });
     }
 
+    // ── REMOVE ALL FOR USER (toutes les affiliations d'un utilisateur) ──
+    if (action === 'removeAllForUser') {
+      const targetUserId = body.userId;
+      if (!targetUserId) return Response.json({ error: 'Missing userId' }, { status: 400 });
+      const mode = body.mode === 'delete' ? 'delete' : 'remove';
+      const actor = user?.id || user?.email || 'admin';
+      if (mode === 'remove') {
+        const now = new Date().toISOString();
+        await base44.asServiceRole.entities.OrganizationAffiliation.updateMany(
+          { userId: targetUserId },
+          { $set: { status: 'removed', removedAt: now, removalDecidedAt: now, removalDecidedBy: actor, removalRequestStatus: 'approved' } }
+        );
+        return Response.json({ ok: true, mode: 'remove' });
+      }
+      await base44.asServiceRole.entities.OrganizationAffiliation.deleteMany({ userId: targetUserId });
+      return Response.json({ ok: true, mode: 'delete' });
+    }
+
     // ── CLEAR REMOVAL (retirer la mention de suppression) ──
     if (action === 'clearRemoval') {
       if (!affiliationId) return Response.json({ error: 'Missing affiliationId' }, { status: 400 });

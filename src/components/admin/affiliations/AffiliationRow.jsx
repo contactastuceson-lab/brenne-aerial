@@ -100,6 +100,13 @@ export default function AffiliationRow({ a, onAction, onEdit }) {
             <DropdownMenuItem onClick={() => setDirectRemoval(true)}>
               <Ban className="w-3.5 h-3.5 text-zinc-400" /> Marquer supprimée
             </DropdownMenuItem>
+            <DropdownMenuLabel>Pour cet utilisateur</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => { if (confirm(`Marquer SUPPRIMÉES toutes les affiliations de ${a.affiliateName || a.userId} ?`)) onAction('removeAllForUser', { userId: a.userId, mode: 'remove' }); }}>
+              <Ban className="w-3.5 h-3.5 text-amber-400" /> Marquer supprimées (toutes)
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive" onClick={() => { if (confirm(`Supprimer DÉFINITIVEMENT toutes les affiliations de ${a.affiliateName || a.userId} ?`)) onAction('removeAllForUser', { userId: a.userId, mode: 'delete' }); }}>
+              <Trash2 className="w-3.5 h-3.5" /> Supprimer définitivement (toutes)
+            </DropdownMenuItem>
             {a.status === 'removed' && (
               <DropdownMenuItem onClick={() => onAction('clearRemoval', { affiliationId: a.id })}>
                 <RotateCcw className="w-3.5 h-3.5 text-emerald-400" /> Retirer la mention de suppression

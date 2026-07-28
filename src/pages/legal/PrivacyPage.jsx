@@ -25,15 +25,19 @@ const SECTIONS = [
     icon: User,
     num: '01',
     title: 'Responsable du traitement',
-    summary: 'Brenne Aerial — Enor Lefoulon Meyer',
+    summary: 'eza — Brenne Aerial',
     subsections: [
       {
         label: 'Identité',
-        content: 'Brenne Aerial, représentée par Enor Lefoulon Meyer, est responsable du traitement de vos données personnelles. Conformément au Règlement Général sur la Protection des Données (RGPD — Règlement UE 2016/679) et à la loi n°78-17 du 6 janvier 1978, Brenne Aerial s\'engage à protéger la vie privée de ses utilisateurs.',
+        content: 'Brenne Aerial, représentée par son fondateur Enor Lefoulon Meyer, édite la plateforme eza et est responsable du traitement de vos données personnelles. Conformément au Règlement Général sur la Protection des Données (RGPD — Règlement UE 2016/679) et à la loi n°78-17 du 6 janvier 1978 dite « Informatique et Libertés », eza s\'engage à protéger la vie privée de ses Utilisateurs.',
       },
       {
-        label: 'Coordonnées',
-        list: ['📍 Brenne, Indre (36), France', '✉️ contact@brenneaerial.fr', '📞 +33 6 00 00 00 00'],
+        label: 'Coordonnées du responsable',
+        list: ['📍 Brenne, Indre (36), France', '✉️ contact@brenneaerial.fr', '📞 Sur demande via le canal de support'],
+      },
+      {
+        label: 'Délégué à la protection des données',
+        content: 'Pour toute question relative à vos données, contactez-nous à contact@brenneaerial.fr. Un référent interne veille à l\'application du RGPD au sein de l\'Équipe.',
       },
     ],
   },
@@ -41,26 +45,31 @@ const SECTIONS = [
     icon: Database,
     num: '02',
     title: 'Données collectées',
-    summary: '5 catégories de données traitées',
+    summary: 'Catégories traitées sur la Plateforme',
     subsections: [
-      { label: 'Identification', list: ['Nom et prénom', 'Adresse email', 'Numéro de téléphone', 'Adresse postale', 'Raison sociale (professionnels)'] },
-      { label: 'Navigation', list: ['Adresse IP', 'Type de navigateur et version', 'Système d\'exploitation', 'Pages visitées et durée', 'Provenance du trafic', 'Date et heure de connexion'] },
-      { label: 'Communication', list: ['Messages via formulaire de contact', 'Échanges par email', 'Demandes de devis', 'Réclamations et SAV'] },
-      { label: 'Financières', list: ['Informations de facturation', 'Montants des prestations', '⚠️ Aucune donnée bancaire stockée sur nos serveurs'] },
-      { label: 'Contenu', list: ['Fichiers et photos uploadés lors des devis', 'Préférences de prestation'] },
+      { label: 'Identification & compte', list: ['Nom complet et nom d\'affichage', 'Adresse email', 'Username unique', 'Avatar et photo de couverture', 'Mot de passe (haché, jamais en clair)', 'Photo de profil Google (si connexion Google)'] },
+      { label: 'Profil public & social', list: ['Bio, localisation, site web, niche créateur', 'Liens sociaux (Twitter, Instagram, TikTok, YouTube)', 'Vérifications et badges attribués', 'Nombre d\'abonnés, d\'abonnements et de publications'] },
+      { label: 'Contenu publié', list: ['Posts, réponses, likes, sondages', 'Médias (images, vidéos, GIFs) uploadés', 'Hashtags et mentions utilisés', 'Messages privés et demandes de contact', 'Discussions et réponses du forum'] },
+      { label: 'Navigation & technique', list: ['Adresse IP et géolocalisation grossière', 'Type de navigateur, version, système d\'exploitation', 'Pages visitées, durée, provenance du trafic', 'Sessions actives et empreinte appareil'] },
+      { label: 'Prestations & financières', list: ['Demandes de devis (nom, email, téléphone, lieu, description)', 'Fichiers uploadés pour le devis', 'Montants et historique de facturation', 'Donations et statut Donateur', '⚠️ Aucune donnée bancaire stockée sur nos serveurs (Stripe)'] },
+      { label: 'Certifications & affiliations', list: ['Réponses au questionnaire de certification', 'Statut et historique de certification', 'Liens d\'affiliation à une organisation'] },
     ],
   },
   {
     icon: Target,
     num: '03',
     title: 'Finalités du traitement',
-    summary: '5 usages distincts et encadrés',
+    summary: 'Usages distincts et encadrés',
     subsections: [
-      { label: 'Exécution contractuelle', list: ['Traitement et suivi des devis', 'Gestion des réservations et RDV', 'Fourniture des prestations drone', 'Facturation et comptabilité'] },
-      { label: 'Relation client', list: ['Réponse aux demandes de contact', 'Confirmations de commande', 'Suivi de l\'avancement des projets', 'SAV et gestion des litiges'] },
-      { label: 'Communication commerciale', content: 'Uniquement avec votre consentement : newsletter, promotions, actualités, invitations aux événements Brenne Aerial.' },
-      { label: 'Amélioration des services', list: ['Analyse des statistiques de navigation', 'Évaluation de la satisfaction client', 'Développement de nouvelles fonctionnalités'] },
-      { label: 'Obligations légales', list: ['Conservation des documents comptables', 'Réponse aux autorités compétentes', 'Prévention de la fraude'] },
+      { label: 'Exécution contractuelle', list: ['Traitement et suivi des devis aériens', 'Gestion des rendez-vous et créneaux', 'Fourniture des prestations drone', 'Facturation et comptabilité'] },
+      { label: 'Vie communautaire & réseau social', list: ['Création et gestion du compte et du profil public', 'Publication, affichage et indexation des contenus', 'Abonnements, likes, mentions, notifications', 'Messagerie privée et demandes de contact'] },
+      { label: 'Certifications & badges', list: ['Examen des demandes de certification', 'Attribution et gestion des vérifications et badges', 'Suivi du statut Suprême'] },
+      { label: 'Donations & soutien', list: ['Traitement sécurisé des donations via Stripe', 'Attribution du badge Donateur', 'Reconnaissance des contributeurs'] },
+      { label: 'Affiliations', list: ['Liaison d\'un Membre à une organisation', 'Affichage public du logo et du nom d\'orga', 'Gestion des demandes de suppression d\'affiliation'] },
+      { label: 'Communication', content: 'Avec votre consentement : newsletter, annonces, actualités, invitations aux événements eza. Retrait possible à tout moment.' },
+      { label: 'Sécurité & modération', list: ['Détection et prévention de la fraude et du spam', 'Modération des contenus et des comptes', 'Journaux de sécurité et traçabilité des actions admin'] },
+      { label: 'Amélioration des services', list: ['Analyse anonymisée des statistiques de navigation', 'Évaluation de la satisfaction', 'Développement de nouvelles fonctionnalités'] },
+      { label: 'Obligations légales', list: ['Conservation des documents comptables', 'Réponse aux autorités compétentes', 'Prévention de la fraude et lutte contre le blanchiment'] },
     ],
   },
   {
@@ -72,10 +81,10 @@ const SECTIONS = [
       {
         label: 'Les 4 bases légales',
         cards: [
-          { icon: '📜', title: 'Exécution d\'un contrat', desc: 'Traitement nécessaire lors d\'une commande ou demande de devis.' },
-          { icon: '✅', title: 'Consentement', desc: 'Pour les communications commerciales — retrait possible à tout moment.' },
-          { icon: '⚖️', title: 'Intérêt légitime', desc: 'Amélioration de nos services, prévention de la fraude, sécurité du site.' },
-          { icon: '🏛️', title: 'Obligation légale', desc: 'Respect de nos obligations fiscales et comptables.' },
+          { icon: '📜', title: 'Exécution d\'un contrat', desc: 'Compte, profil, devis, prestations, donations et abonnements.' },
+          { icon: '✅', title: 'Consentement', desc: 'Communications commerciales, cookies non essentiels — retrait possible à tout moment.' },
+          { icon: '⚖️', title: 'Intérêt légitime', desc: 'Modération, sécurité, prévention de la fraude, amélioration des services.' },
+          { icon: '🏛️', title: 'Obligation légale', desc: 'Conservation comptable, réponse aux autorités, lutte anti-fraude.' },
         ],
       },
     ],
@@ -84,17 +93,22 @@ const SECTIONS = [
     icon: Clock,
     num: '05',
     title: 'Durée de conservation',
-    summary: 'Des délais précis pour chaque type de donnée',
+    summary: 'Des délais précis par type de donnée',
     subsections: [
       {
         label: 'Tableau de conservation',
         table: [
+          { type: 'Compte & profil', duree: 'Durée de vie du compte', detail: 'Effacement à la demande ou après inactivité prolongée' },
+          { type: 'Contenu publié', duree: 'Jusqu\'à suppression', detail: 'Par l\'auteur ou par modération' },
+          { type: 'Messages privés', duree: 'Jusqu\'à suppression', detail: 'Par un participant ou par modération' },
           { type: 'Données clients & devis', duree: '5 ans', detail: 'À compter de la dernière prestation' },
           { type: 'Données de facturation', duree: '10 ans', detail: 'Obligation légale comptable' },
-          { type: 'Données de contact', duree: '3 ans', detail: 'À compter du dernier contact' },
+          { type: 'Donations', duree: '10 ans', detail: 'Obligation comptable + badge Donateur conservé' },
+          { type: 'Certifications', duree: '5 ans', detail: 'À compter de l\'attribution ou du refus' },
+          { type: 'Affiliations', duree: 'Durée du lien', detail: 'Supprimées à la demande approuvée' },
           { type: 'Données de navigation', duree: '13 mois', detail: 'Cookies — durée maximale légale' },
-          { type: 'Données de connexion', duree: '1 an', detail: 'Journaux de sécurité' },
-          { type: 'Fichiers uploadés', duree: '12 mois', detail: 'Après la prestation, puis suppression sécurisée' },
+          { type: 'Journaux de sécurité', duree: '1 an', detail: 'Connexions, actions admin, audit' },
+          { type: 'Fichiers uploadés (devis)', duree: '12 mois', detail: 'Après la prestation, puis suppression sécurisée' },
           { type: 'Données marketing', duree: 'Jusqu\'au retrait', detail: 'Newsletter — consentement révocable' },
         ],
       },
@@ -106,15 +120,31 @@ const SECTIONS = [
     title: 'Partage avec des tiers',
     summary: 'Zéro vente de données — transparence totale',
     subsections: [
-      { label: 'Prestataires techniques', list: ['Hébergeur web : serveurs sécurisés en UE', 'Outil d\'emailing : plateforme conforme RGPD', 'Outil d\'analyse : statistiques anonymisées'] },
+      { label: 'Sous-traitants techniques', list: ['Hébergeur : serveurs sécurisés en Union Européenne', 'Plateforme de paiement : Stripe (données bancaires traitées par Stripe, jamais par eza)', 'Service d\'emailing : plateforme conforme RGPD', 'Notifications push : Firebase (Google) — voir Transferts internationaux', 'Intégration calendrier : Microsoft Outlook (pour les RDV, sur consentement)'] },
       { label: 'Partenaires commerciaux', content: 'Sous-traitants drone (pilotes certifiés DGAC) en cas de mission déléguée. Tous nos partenaires sont liés par des clauses de confidentialité strictes.' },
-      { label: 'Autorités légales', list: ['Administration fiscale et douanière si requis', 'Autorités judiciaires en cas de litige', 'CNIL en cas d\'enquête'] },
-      { label: '🌍 Transferts internationaux', content: 'Aucun transfert de données hors Union Européenne n\'est effectué sans garanties appropriées conformément au RGPD (Chapitre V).' },
+      { label: 'Visibilité publique', content: 'Les informations de votre profil public (nom, username, bio, avatar, badges, publications) sont visibles par tout Utilisateur et indexées par les moteurs de recherche. Vous contrôlez ce que vous y publiez.' },
+      { label: 'Autorités légales', list: ['Administration fiscale et douanière si requis', 'Autorités judiciaires en cas de litige ou de procédure', 'CNIL en cas d\'enquête', 'Plateformes de signalement (contenus illicites impliquant des mineurs)'] },
+    ],
+  },
+  {
+    icon: Globe,
+    num: '07',
+    title: 'Transferts internationaux',
+    summary: 'Hors UE uniquement avec garanties',
+    subsections: [
+      {
+        label: 'Hébergement principal',
+        content: 'Vos données sont principalement hébergées dans l\'Union Européenne. Aucun transfert hors UE n\'a lieu sans garanties appropriées conformément au RGPD (Chapitre V).',
+      },
+      {
+        label: 'Exceptions encadrées',
+        content: 'Certaines fonctionnalités font appel à des prestataires pouvant traiter des données hors UE :\n• Stripe (paiements) — garanties RGPD et clauses contractuelles types\n• Firebase (notifications push, Google) — garanties appropriées et clauses contractuelles types\n• Microsoft Outlook (calendrier) — uniquement si vous connectez votre compte\n\nDans tous les cas, un transfert hors UE s\'appuie sur une décision d\'adéquation, des clauses contractuelles types ou votre consentement explicite.',
+      },
     ],
   },
   {
     icon: Eye,
-    num: '07',
+    num: '08',
     title: 'Vos droits RGPD',
     summary: '7 droits fondamentaux garantis',
     subsections: [
@@ -130,24 +160,25 @@ const SECTIONS = [
           { icon: Bell, label: 'Retrait du consentement', desc: 'Retirer votre consentement à tout moment.' },
         ],
       },
-      { label: 'Comment exercer vos droits ?', content: '✉️ contact@brenneaerial.fr — Délai de réponse : 30 jours maximum.\n🏛️ Réclamation possible auprès de la CNIL : www.cnil.fr' },
+      { label: 'Comment exercer vos droits ?', content: '✉️ contact@brenneaerial.fr — Délai de réponse : 1 mois maximum.\nPour prouver votre identité, joignez une pièce d\'identité ou utilisez l\'email de votre compte. En cas de doute raisonnable, nous pouvons demander une information complémentaire.\n🏛️ Réclamation possible auprès de la CNIL : www.cnil.fr' },
+      { label: 'Limites', content: 'Vos droits s\'exercent dans le respect des droits des tiers, des obligations légales (notamment comptables) et de la sécurité de la Plateforme. L\'effacement peut être différé ou partiel lorsque la loi nous impose la conservation.' },
     ],
   },
   {
     icon: Cookie,
-    num: '08',
-    title: 'Politique des cookies',
+    num: '09',
+    title: 'Cookies & traceurs',
     summary: '3 catégories clairement définies',
     subsections: [
-      { label: '🟢 Cookies strictement nécessaires', content: 'Pas de consentement requis. Incluent : session utilisateur, préférences de langue, formulaires en cours de saisie.' },
+      { label: '🟢 Cookies strictement nécessaires', content: 'Pas de consentement requis. Incluent : session utilisateur, jeton d\'authentification, préférences de langue et de thème, formulaires en cours de saisie, bandeau de consentement.' },
       { label: '🟡 Cookies analytiques', content: 'Avec votre consentement : mesure d\'audience anonymisée, analyse du comportement de navigation, amélioration de l\'expérience utilisateur.' },
-      { label: '🔵 Cookies marketing', content: 'Avec votre consentement : personnalisation des contenus, retargeting publicitaire, intégrations réseaux sociaux (YouTube, TikTok, Instagram).' },
-      { label: 'Gestion', content: 'Vous pouvez modifier vos préférences à tout moment via le bandeau cookie ou les paramètres de votre navigateur. Le refus des cookies non essentiels n\'affecte pas l\'accès au site.' },
+      { label: '🔵 Cookies & intégrations tiers', content: 'Avec votre consentement : intégrations réseaux sociaux (YouTube, TikTok, Instagram), retargeting publicitaire, personnalisation des contenus.' },
+      { label: 'Gestion', content: 'Vous pouvez modifier vos préférences à tout moment via le bandeau cookie ou les paramètres de votre navigateur. Le refus des cookies non essentiels n\'affecte pas l\'accès à la Plateforme ni la création d\'un compte.' },
     ],
   },
   {
     icon: Lock,
-    num: '09',
+    num: '10',
     title: 'Sécurité des données',
     summary: 'Architecture sécurisée de bout en bout',
     subsections: [
@@ -157,21 +188,22 @@ const SECTIONS = [
           { icon: '🔒', label: 'Chiffrement SSL/TLS', desc: 'Toutes les communications chiffrées' },
           { icon: '💾', label: 'Stockage sécurisé', desc: 'Chiffrement des données au repos' },
           { icon: '👁️', label: 'Accès restreint', desc: 'Principe du moindre privilège' },
-          { icon: '🔑', label: 'Auth forte', desc: 'Authentification multifacteur admin' },
+          { icon: '🔑', label: 'Auth. forte', desc: '2FA disponible, MFA admin' },
           { icon: '💿', label: 'Sauvegardes', desc: 'Backups réguliers et sécurisés' },
-          { icon: '📋', label: 'Audit régulier', desc: 'Tests de sécurité périodiques' },
+          { icon: '📋', label: 'Audit & journaux', desc: 'Traçabilité des actions sensibles' },
         ],
       },
-      { label: '⚠️ Notification en cas de violation', content: 'En cas de violation de données susceptible d\'engendrer un risque élevé pour vos droits, vous serez notifié dans les 72 heures conformément à l\'article 34 du RGPD.' },
+      { label: 'Sécurité du compte', content: 'Nous vous recommandons d\'activer l\'authentification à deux facteurs et de gérer vos sessions actives depuis votre espace. En cas de soupçon de compromission, révoquez les sessions et changez votre mot de passe immédiatement.' },
+      { label: '⚠️ Notification en cas de violation', content: 'En cas de violation de données susceptible d\'engendrer un risque élevé pour vos droits, vous serez notifié dans les meilleurs délais et au plus tard dans les 72 heures conformément à l\'article 34 du RGPD. La CNIL est également informée lorsque cela est requis.' },
     ],
   },
   {
     icon: Bell,
-    num: '10',
+    num: '11',
     title: 'Modifications de la politique',
     summary: 'Transparence sur les évolutions',
     subsections: [
-      { label: 'En cas de modification substantielle, vous serez informé par :', list: ['📧 Email si vous êtes client ou abonné à notre newsletter', '🔔 Bandeau d\'information sur le site web', '📅 Mise à jour de la date de dernière révision'] },
+      { label: 'En cas de modification substantielle, vous serez informé par :', list: ['📧 Email si vous êtes Membre, client ou abonné à la newsletter', '🔔 Bandeau d\'information sur la Plateforme', '📅 Mise à jour de la date de dernière révision'] },
       { label: 'Date de dernière mise à jour', content: new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) },
     ],
   },
@@ -318,13 +350,13 @@ export default function PrivacyPage() {
         <div className="relative max-w-4xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
             <div className="inline-flex items-center gap-2 font-mono text-xs text-primary border border-primary/30 bg-primary/5 px-4 py-2 rounded-full mb-6">
-              <Shield className="w-3.5 h-3.5" /> Document légal — RGPD
+              <Shield className="w-3.5 h-3.5" /> Document légal — RGPD v2.0
             </div>
             <h1 className="font-grotesk font-bold text-4xl sm:text-6xl mb-4">
               Politique de <span className="gradient-text">confidentialité</span>
             </h1>
             <p className="font-inter text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
-              Chez Brenne Aerial, la protection de vos données est une priorité absolue. Cette politique détaille avec transparence la façon dont vos informations sont collectées, utilisées et protégées.
+              eza traite vos données avec la plus grande rigueur. Cette politique détaille, avec transparence, la collecte, l\'usage, le partage et la protection de vos informations sur la Plateforme — du profil public aux prestations aériennes.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-mono text-muted-foreground">
               <span className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 text-green-400 px-3 py-1.5 rounded-full">

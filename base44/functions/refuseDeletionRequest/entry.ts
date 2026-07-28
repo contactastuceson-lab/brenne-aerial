@@ -12,16 +12,16 @@ function emailTemplate({ title, preheader, bodyHtml }) {
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
         <tr><td align="center" style="background:#0d1a2e;border-radius:16px 16px 0 0;padding:32px 40px 24px;border-bottom:1px solid #1e3048;">
-          <img src="${LOGO_URL}" width="110" alt="Brenne Aerial" style="display:block;margin:0 auto 12px;border-radius:50%;" />
-          <p style="margin:0;font-size:11px;letter-spacing:3px;color:#3ab0dc;font-weight:700;text-transform:uppercase;">Brenne Aerial — Premium Drone Services</p>
+          <img src="${LOGO_URL}" width="110" alt="eza" style="display:block;margin:0 auto 12px;border-radius:50%;" />
+          <p style="margin:0;font-size:11px;letter-spacing:3px;color:#3ab0dc;font-weight:700;text-transform:uppercase;">eza — Réseau social et communautés</p>
         </td></tr>
         <tr><td style="background:#0f1f36;padding:40px;">
           <h1 style="margin:0 0 20px;font-size:22px;font-weight:700;color:#e8f4fc;">${title}</h1>
           ${bodyHtml}
         </td></tr>
         <tr><td align="center" style="background:#0d1a2e;border-radius:0 0 16px 16px;padding:24px 40px;border-top:1px solid #1e3048;">
-          <p style="margin:0 0 6px;font-size:12px;color:#4a6a8a;">© 2026 Brenne Aerial · Premium Drone Services</p>
-          <p style="margin:0;font-size:11px;color:#3a5a7a;">Brenne, Creuse, France · <a href="mailto:contact@brenneaerial.fr" style="color:#3ab0dc;text-decoration:none;">contact@brenneaerial.fr</a></p>
+          <p style="margin:0 0 6px;font-size:12px;color:#4a6a8a;">© 2026 eza · Réseau social et communautés</p>
+          <p style="margin:0;font-size:11px;color:#3a5a7a;">France · <a href="mailto:contact@ezagroup.org" style="color:#3ab0dc;text-decoration:none;">contact@ezagroup.org</a></p>
         </td></tr>
       </table>
     </td></tr>
@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
   // Send refusal email to user
   await base44.integrations.Core.SendEmail({
     to: userEmail,
-    subject: '❌ Demande de suppression de compte refusée — Brenne Aerial',
+    subject: '❌ Demande de suppression de compte refusée — eza',
     body: emailTemplate({
       title: 'Demande de suppression refusée',
       preheader: 'Votre demande de suppression de compte a été refusée par un administrateur.',
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
           <p style="margin:0;color:#3ab0dc;font-size:13px;font-weight:700;">ℹ️ Vous pouvez renouveler votre demande</p>
           <p style="margin:6px 0 0;color:#8aaec8;font-size:13px;">Si vous souhaitez toujours supprimer votre compte, vous pouvez soumettre une nouvelle demande depuis votre espace personnel.</p>
         </div>
-        <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Pour toute question, contactez-nous à <a href="mailto:contact@brenneaerial.fr" style="color:#3ab0dc;">contact@brenneaerial.fr</a></p>
+        <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Pour toute question, contactez-nous à <a href="mailto:contact@ezagroup.org" style="color:#3ab0dc;">contact@ezagroup.org</a></p>
       `,
     }),
   });

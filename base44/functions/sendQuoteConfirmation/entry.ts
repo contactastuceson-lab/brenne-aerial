@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // Email de confirmation au client
     const ref = (quoteId || '').slice(-6).toUpperCase();
     const service = SERVICE_LABELS[serviceType] || serviceType;
-    const APP_URL_VAL = Deno.env.get('APP_URL') || 'https://brenneaerial.fr';
+    const APP_URL_VAL = Deno.env.get('APP_URL') || 'https://eza.social';
 
     const html = `<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><title>eza</title></head>
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
 <tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
   <tr><td style="padding-bottom:32px;text-align:center;">
-    <span style="font-size:15px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#e8edf5;">BRENNE <span style="color:#38aadc;">AERIAL</span></span>
+    <span style="font-size:15px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#e8edf5;">eza</span>
   </td></tr>
   <tr><td style="background:linear-gradient(145deg,#0c1828,#0f2040);border:1px solid rgba(56,170,220,0.2);border-radius:16px;padding:40px;">
     <div style="display:inline-block;padding:6px 16px;border-radius:30px;background:rgba(56,170,220,0.12);border:1px solid rgba(56,170,220,0.3);margin-bottom:24px;">
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
     <a href="${APP_URL_VAL}/dashboard" style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#fff;text-decoration:none;border-radius:10px;background:linear-gradient(135deg,#1a6aaa,#38aadc);">Suivre ma demande →</a>
   </td></tr>
   <tr><td style="padding-top:24px;text-align:center;">
-    <p style="font-size:12px;color:#2e4a6a;margin:0;"><strong style="color:#38aadc;">eza</strong> · <a href="${APP_URL_VAL}" style="color:#38aadc;text-decoration:none;">brenneaerial.fr</a></p>
+    <p style="font-size:12px;color:#2e4a6a;margin:0;"><strong style="color:#38aadc;">eza</strong> · <a href="${APP_URL_VAL}" style="color:#38aadc;text-decoration:none;">eza.social</a></p>
   </td></tr>
 </table>
 </td></tr>

@@ -26,7 +26,7 @@ function emailWrapper(content) {
   <tr><td style="padding-bottom:32px;text-align:center;">
     <div style="display:inline-flex;align-items:center;gap:10px;">
       <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#38aadc,#1dd8b4);display:flex;align-items:center;justify-content:center;font-size:18px;">🚁</div>
-      <span style="font-size:15px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#e8edf5;">BRENNE <span style="color:#38aadc;">AERIAL</span></span>
+      <span style="font-size:15px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#e8edf5;">eza</span>
     </div>
   </td></tr>
 

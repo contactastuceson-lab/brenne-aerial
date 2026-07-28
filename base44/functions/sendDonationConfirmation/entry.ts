@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       </div>
 
       <p style="margin: 25px 0 0 0; color: #4b5563; font-size: 14px; text-align: center;">
-        Des questions ? Répondez directement à cet email ou contactez-nous à <strong>contact@eza.social</strong>
+        Des questions ? Répondez directement à cet email ou contactez-nous à <strong>contact@ezagroup.org</strong>
       </p>
 
       <p style="margin-top: 30px; margin-bottom: 0; color: #1f2937; font-weight: 600;">
@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
       </p>
     </div>
     <div class="footer">
-      <p>eza — Solutions drone professionnelles</p>
+      <p>eza — Réseau social et communautés</p>
       <p><a href="${Deno.env.get('APP_URL')}/donation">Faire un autre don →</a></p>
       <p>© 2026 eza. Tous droits réservés.</p>
     </div>

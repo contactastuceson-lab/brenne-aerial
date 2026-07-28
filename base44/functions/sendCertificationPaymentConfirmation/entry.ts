@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
         <a href="${Deno.env.get('APP_URL')}/dashboard?tab=certifications" class="btn">Voir la timeline</a>
       </div>
 
-      <p>Si vous avez des questions, contactez-nous à <strong>contact@eza.social</strong></p>
+      <p>Si vous avez des questions, contactez-nous à <strong>contact@ezagroup.org</strong></p>
 
       <p style="margin-top: 30px; margin-bottom: 0;">Cordialement,<br><strong>L'équipe eza</strong></p>
     </div>

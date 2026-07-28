@@ -19,7 +19,7 @@ function buildNormalMessageEmail({ senderName, senderEmail, preview, recipientNa
 <table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;">
 
   <tr><td style="padding-bottom:28px;text-align:center;">
-    <span style="font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#38aadc;opacity:0.8;">BRENNE AERIAL</span>
+    <span style="font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#38aadc;opacity:0.8;">eza</span>
   </td></tr>
 
   <tr><td style="background:linear-gradient(145deg,#0c1a30,#0f2040);border:1px solid rgba(56,170,220,0.2);border-radius:16px;overflow:hidden;">
@@ -87,7 +87,7 @@ function buildSupremeMessageEmail({ senderName, senderEmail, preview, recipientN
   <tr><td style="padding-bottom:32px;text-align:center;">
     <div style="display:inline-block;padding:8px 24px;border-radius:30px;background:linear-gradient(135deg,#92400e,#b45309,#d97706);box-shadow:0 4px 20px rgba(245,158,11,0.35);">
       <span style="font-size:18px;margin-right:8px;">👑</span>
-      <span style="font-size:12px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:#fef3c7;">BRENNE AERIAL</span>
+      <span style="font-size:12px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:#fef3c7;">eza</span>
       <span style="font-size:18px;margin-left:8px;">👑</span>
     </div>
     <div style="margin-top:10px;font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#b45309;opacity:0.7;">RANG SUPRÊME</div>
@@ -202,7 +202,7 @@ function buildOfficialMessageEmail({ preview, recipientName }) {
 <table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;">
 
   <tr><td style="padding-bottom:28px;text-align:center;">
-    <span style="font-size:13px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#38aadc;">BRENNE AERIAL</span>
+    <span style="font-size:13px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#38aadc;">eza</span>
     <div style="margin-top:4px;height:1px;background:linear-gradient(90deg,transparent,rgba(56,170,220,0.4),transparent);"></div>
   </td></tr>
 

@@ -13,15 +13,15 @@ function emailTemplate({ title, preheader, bodyHtml }) {
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
         <tr><td align="center" style="background:#0d1a2e;border-radius:16px 16px 0 0;padding:32px 40px 24px;border-bottom:1px solid #1e3048;">
           <img src="${LOGO_URL}" width="110" alt="eza" style="display:block;margin:0 auto 12px;border-radius:50%;" />
-          <p style="margin:0;font-size:11px;letter-spacing:3px;color:#3ab0dc;font-weight:700;text-transform:uppercase;">eza — Premium Drone Services</p>
+          <p style="margin:0;font-size:11px;letter-spacing:3px;color:#3ab0dc;font-weight:700;text-transform:uppercase;">eza — Réseau social et communautés</p>
         </td></tr>
         <tr><td style="background:#0f1f36;padding:40px;">
           <h1 style="margin:0 0 20px;font-size:22px;font-weight:700;color:#e8f4fc;">${title}</h1>
           ${bodyHtml}
         </td></tr>
         <tr><td align="center" style="background:#0d1a2e;border-radius:0 0 16px 16px;padding:24px 40px;border-top:1px solid #1e3048;">
-          <p style="margin:0 0 6px;font-size:12px;color:#4a6a8a;">© 2026 eza · Premium Drone Services</p>
-          <p style="margin:0;font-size:11px;color:#3a5a7a;">Brenne, Creuse, France · <a href="mailto:contact@eza.social" style="color:#3ab0dc;text-decoration:none;">contact@eza.social</a></p>
+          <p style="margin:0 0 6px;font-size:12px;color:#4a6a8a;">© 2026 eza · Réseau social et communautés</p>
+          <p style="margin:0;font-size:11px;color:#3a5a7a;">France · <a href="mailto:contact@ezagroup.org" style="color:#3ab0dc;text-decoration:none;">contact@ezagroup.org</a></p>
         </td></tr>
       </table>
     </td></tr>
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       <p style="margin:6px 0 0;color:#8aaec8;font-size:13px;">Votre compte a bien été supprimé conformément à votre demande.</p>
     </div>
     <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Toutes vos données personnelles ont été <strong style="color:#e8f4fc;">définitivement effacées</strong> de notre plateforme.</p>
-    <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Nous vous remercions d'avoir fait confiance à eza. Si vous avez des questions, contactez-nous à <a href="mailto:contact@eza.social" style="color:#3ab0dc;">contact@eza.social</a></p>
+    <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Nous vous remercions d'avoir fait confiance à eza. Si vous avez des questions, contactez-nous à <a href="mailto:contact@ezagroup.org" style="color:#3ab0dc;">contact@ezagroup.org</a></p>
   ` : `
     <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Bonjour <strong style="color:#e8f4fc;">${userName || ''}</strong>,</p>
     <div style="background:#0a1120;border-left:3px solid #e55555;border-radius:8px;padding:16px 20px;margin:0 0 20px;">
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
       ${reason ? `<p style="margin:6px 0 0;color:#8aaec8;font-size:13px;"><strong style="color:#e8f4fc;">Raison :</strong> ${reason}</p>` : ''}
     </div>
     <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Toutes vos données personnelles ont été <strong style="color:#e8f4fc;">définitivement effacées</strong> de notre plateforme.</p>
-    <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Si vous pensez qu'il s'agit d'une erreur, contactez-nous à <a href="mailto:contact@eza.social" style="color:#3ab0dc;">contact@eza.social</a></p>
+    <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Si vous pensez qu'il s'agit d'une erreur, contactez-nous à <a href="mailto:contact@ezagroup.org" style="color:#3ab0dc;">contact@ezagroup.org</a></p>
   `;
 
   await base44.integrations.Core.SendEmail({

@@ -157,7 +157,7 @@ function buildEmail(userName, subject, message, senderName, senderRole, senderTh
               <td style="vertical-align:middle;">
                 <p style="margin:0;font-size:15px;font-weight:800;color:#ffffff;">${senderName}</p>
                 <p style="margin:3px 0 0;font-size:12px;color:${t.accent};">${t.signature}</p>
-                <p style="margin:3px 0 0;font-size:11px;color:#3d5a7a;">contact@brenneaerial.fr</p>
+                <p style="margin:3px 0 0;font-size:11px;color:#3d5a7a;">contact@ezagroup.org</p>
               </td>
             </tr>
           </table>
@@ -169,13 +169,13 @@ function buildEmail(userName, subject, message, senderName, senderRole, senderTh
             © ${new Date().getFullYear()} eza · Le réseau social qui rapproche les communautés
           </p>
           <p style="margin:0 0 8px;font-size:11px;color:#1e3040;">
-            Brenne, Indre (36) · France ·
-            <a href="mailto:contact@brenneaerial.fr" style="color:${t.accent};text-decoration:none;">contact@brenneaerial.fr</a>
+            France ·
+            <a href="mailto:contact@ezagroup.org" style="color:${t.accent};text-decoration:none;">contact@ezagroup.org</a>
           </p>
           <p style="margin:0;font-size:10px;color:#1a2a3a;">
             <a href="${Deno.env.get('APP_URL') || 'https://eza.social'}/legal/privacy" style="color:#2d4a6a;text-decoration:none;">Politique de confidentialité</a>
             &nbsp;·&nbsp;
-            <a href="${Deno.env.get('APP_URL') || 'https://eza.social'}" style="color:#2d4a6a;text-decoration:none;">brenneaerial.fr</a>
+            <a href="${Deno.env.get('APP_URL') || 'https://eza.social'}" style="color:#2d4a6a;text-decoration:none;">eza.social</a>
           </p>
         </td></tr>
 

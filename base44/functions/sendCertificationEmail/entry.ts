@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       </div>
 
       ${!isApproved ? `
-        <p>Vous pouvez soumettre une nouvelle demande ultérieurement. Si vous avez des questions, contactez-nous à <strong><a href="mailto:contact@eza.social" style="color:#38aadc;">contact@eza.social</a></strong> ou via notre <a href="https://support.brenneaerial.org/support" style="color:#38aadc;">support en ligne</a>.</p>
+        <p>Vous pouvez soumettre une nouvelle demande ultérieurement. Si vous avez des questions, contactez-nous à <strong><a href="mailto:contact@ezagroup.org" style="color:#38aadc;">contact@ezagroup.org</a></strong> ou via notre <a href="https://eza.social" style="color:#38aadc;">support en ligne</a>.</p>
       ` : ''}
 
       <p style="margin-top: 30px; margin-bottom: 0;">Cordialement,<br><strong>L'équipe eza</strong></p>

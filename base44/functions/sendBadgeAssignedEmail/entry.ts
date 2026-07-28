@@ -175,7 +175,7 @@ function buildEmail(tpl, userName) {
 
   <!-- Supreme Header -->
   <div style="background:linear-gradient(135deg,#0a0600 0%,#1a0e00 40%,#0a0600 100%);padding:54px 40px 40px;text-align:center;border-bottom:2px solid #b45309;">
-    <p style="color:#92400e;font-size:9px;font-weight:700;letter-spacing:6px;text-transform:uppercase;margin:0 0 20px;">BRENNE AERIAL · DISTINCTION SUPRÊME · CONFIDENTIEL</p>
+    <p style="color:#92400e;font-size:9px;font-weight:700;letter-spacing:6px;text-transform:uppercase;margin:0 0 20px;">eza · DISTINCTION SUPRÊME · CONFIDENTIEL</p>
     <div style="font-size:60px;margin:0 0 18px;">👑</div>
     <h1 style="background:linear-gradient(135deg,#f59e0b,#fde68a,#d97706,#fde68a,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:46px;font-weight:900;letter-spacing:6px;margin:0 0 10px;text-transform:uppercase;">SUPRÊME</h1>
     <p style="color:#d97706;font-size:12px;letter-spacing:3px;margin:0;text-transform:uppercase;">Le rang le plus élevé · Sur invitation exclusive de la Direction</p>
@@ -251,8 +251,8 @@ function buildEmail(tpl, userName) {
 
   <!-- Footer -->
   <div style="padding:20px 40px;border-top:1px solid #1a0e00;text-align:center;background:#000000;">
-    <p style="color:#4a3510;font-size:10px;margin:0;letter-spacing:2px;text-transform:uppercase;">BRENNE AERIAL · DISTINCTION EXCLUSIVE · CONFIDENTIEL</p>
-    <p style="color:#3a2a0a;font-size:10px;margin:6px 0 0;"><a href="${profileUrl}" style="color:#4a3510;text-decoration:underline;">brenneaerial.fr/profile</a></p>
+    <p style="color:#4a3510;font-size:10px;margin:0;letter-spacing:2px;text-transform:uppercase;">eza · DISTINCTION EXCLUSIVE · CONFIDENTIEL</p>
+    <p style="color:#3a2a0a;font-size:10px;margin:6px 0 0;"><a href="${profileUrl}" style="color:#4a3510;text-decoration:underline;">eza.social/profile</a></p>
   </div>
 </div>
 </body>
@@ -269,7 +269,7 @@ function buildEmail(tpl, userName) {
 
   <!-- Header premium -->
   <div style="background:linear-gradient(135deg,#0a1628 0%,#0f1f3d 60%,#0a1628 100%);padding:40px 36px 32px;text-align:center;border-bottom:1px solid ${tpl.accentColor}30;">
-    <p style="color:${tpl.accentColor};font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin:0 0 14px;">BRENNE AERIAL</p>
+    <p style="color:${tpl.accentColor};font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin:0 0 14px;">eza</p>
     <div style="font-size:44px;margin:0 0 14px;">${tpl.emoji}</div>
     <h1 style="color:#ffffff;font-size:28px;font-weight:800;margin:0 0 6px;">${tpl.headline}</h1>
     <p style="color:${tpl.accentColor};font-size:13px;margin:0;">${tpl.subline}</p>
@@ -313,7 +313,7 @@ function buildEmail(tpl, userName) {
 
   <!-- Header -->
   <div style="background:#0a1628;padding:32px 32px 24px;text-align:center;border-bottom:1px solid #1a2d4a;">
-    <p style="color:#38aadc;font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;margin:0 0 12px;">BRENNE AERIAL</p>
+    <p style="color:#38aadc;font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;margin:0 0 12px;">eza</p>
     <div style="font-size:36px;margin:0 0 12px;">${tpl.emoji}</div>
     <h1 style="color:#ffffff;font-size:22px;font-weight:800;margin:0 0 4px;">${tpl.headline}</h1>
     <p style="color:${tpl.accentColor};font-size:12px;margin:0;">${tpl.subline}</p>

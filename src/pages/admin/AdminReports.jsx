@@ -63,6 +63,19 @@ export default function AdminReports() {
     onSuccess: (_, { id, data }) => {
       qc.invalidateQueries({ queryKey: ['admin-reports'] });
       logAction('update', id, data);
+      // Notify the reporter of the status change by email (non-blocking)
+      if (data.status && selected) {
+        base44.functions.invoke('sendReportStatusUpdate', {
+          reportId: id,
+          reporterEmail: selected.reporter_email,
+          reporterName: selected.reporter_name,
+          targetName: selected.target_name || selected.target_email,
+          targetType: selected.target_type,
+          reason: selected.reason,
+          newStatus: data.status,
+          adminNotes: data.admin_notes || '',
+        }).catch(() => {});
+      }
       setSelected(null);
       setAction(null);
       toast.success('✓ Signalement mis à jour');

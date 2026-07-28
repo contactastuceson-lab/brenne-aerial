@@ -45,8 +45,18 @@ export default function ReportModal({ open, onClose, user, targetType, targetId,
         targetName: targetName || targetEmail,
         targetType,
         reason: REASONS.find(r => r.value === reason)?.label || reason,
-      });
-      
+      }).catch(() => {});
+
+      // Send acknowledgment email to the reporter (non-blocking)
+      await base44.functions.invoke('sendReportAcknowledgment', {
+        reportId: report.id,
+        reporterEmail: user.email,
+        reporterName: user.full_name,
+        targetName: targetName || targetEmail,
+        targetType,
+        reason,
+      }).catch(() => {});
+
       return report;
     },
     onSuccess: (report) => {

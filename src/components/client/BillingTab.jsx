@@ -36,38 +36,53 @@ export default function BillingTab() {
   const fetchData = async () => {
     setLoading(true);
     setError(null);
-    const res = await base44.functions.invoke('getMySubscriptions', {});
-    if (res.data?.error) {
-      setError(res.data.error);
-    } else {
-      setData(res.data);
+    try {
+      const res = await base44.functions.invoke('getMySubscriptions', {});
+      if (res.data?.error) {
+        setError(res.data.error);
+      } else {
+        setData(res.data);
+      }
+    } catch (e) {
+      setError(e?.message || 'Service de facturation indisponible');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => { fetchData(); }, []);
 
   const handleOpenPortal = async () => {
     setPortalLoading(true);
-    const res = await base44.functions.invoke('getStripePortalUrl', {});
-    setPortalLoading(false);
-    if (res.data?.url) {
-      window.open(res.data.url, '_blank');
-    } else {
-      toast.error('Impossible d\'ouvrir le portail de facturation');
+    try {
+      const res = await base44.functions.invoke('getStripePortalUrl', {});
+      if (res.data?.url) {
+        window.open(res.data.url, '_blank');
+      } else {
+        toast.error('Impossible d\'ouvrir le portail de facturation');
+      }
+    } catch (e) {
+      toast.error('Portail de facturation indisponible');
+    } finally {
+      setPortalLoading(false);
     }
   };
 
   const handleCancel = async (subscriptionId, immediately) => {
     if (!confirm(immediately ? 'Annuler immédiatement cet abonnement ? Vous serez remboursé au prorata.' : 'Annuler cet abonnement à la fin de la période en cours ?')) return;
     setCancelling(subscriptionId);
-    const res = await base44.functions.invoke('cancelSubscription', { subscriptionId, immediately });
-    setCancelling(null);
-    if (res.data?.success) {
-      toast.success(immediately ? 'Abonnement annulé immédiatement' : 'Abonnement programmé pour annulation');
-      fetchData();
-    } else {
-      toast.error(res.data?.error || 'Erreur lors de l\'annulation');
+    try {
+      const res = await base44.functions.invoke('cancelSubscription', { subscriptionId, immediately });
+      if (res.data?.success) {
+        toast.success(immediately ? 'Abonnement annulé immédiatement' : 'Abonnement programmé pour annulation');
+        fetchData();
+      } else {
+        toast.error(res.data?.error || 'Erreur lors de l\'annulation');
+      }
+    } catch (e) {
+      toast.error(e?.message || 'Erreur lors de l\'annulation');
+    } finally {
+      setCancelling(null);
     }
   };
 

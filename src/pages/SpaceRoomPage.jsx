@@ -279,32 +279,21 @@ export default function SpaceRoomPage() {
       return;
     }
     const inIframe = window.self !== window.top;
-    const hasDisplayCapture = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getDisplayMedia;
-    if (!hasDisplayCapture) {
-      if (inIframe) {
-        toast.info("Ouverture du Space dans un nouvel onglet pour autoriser le partage d'écran…");
-        const url = new URL(window.location.href);
-        url.searchParams.set('autoshare', '1');
-        window.open(url.toString(), '_blank');
-      } else {
-        toast.error("Ce navigateur ne supporte pas le partage d'écran.");
-      }
-      return;
-    }
     const want = !screenSharer?.isLocal;
     setScreenBusy(true);
     try {
       await room.localParticipant.setScreenShareEnabled(want);
     } catch (e) {
-      const msg = String(e?.message || e || '');
-      if (msg.includes('NotAllowed') || msg.includes('denied') || msg.includes('Permission')) {
-        toast.error(
-          inIframe
-            ? "Partage d'écran bloqué par l'aperçu. Ouvrez l'app publiée (plein écran) pour partager."
-            : "Partage d'écran refusé par le navigateur. Autorisez la capture d'écran."
-        );
+      const msg = String(e?.message || e || '').toLowerCase();
+      if (inIframe && (msg.includes('notallowed') || msg.includes('getdisplaymedia') || msg.includes('permission'))) {
+        toast.info("Ouverture du Space dans un nouvel onglet pour autoriser le partage d'écran…");
+        const url = new URL(window.location.href);
+        url.searchParams.set('autoshare', '1');
+        window.open(url.toString(), '_blank');
+      } else if (msg.includes('notallowed') || msg.includes('denied') || msg.includes('permission')) {
+        toast.error("Partage d'écran refusé par le navigateur. Autorisez la capture d'écran.");
       } else {
-        toast.error("Partage d'écran indisponible : " + (msg || 'erreur inconnue'));
+        toast.error("Partage d'écran indisponible sur cet appareil : " + (msg || 'non supporté'));
       }
     } finally {
       setScreenBusy(false);

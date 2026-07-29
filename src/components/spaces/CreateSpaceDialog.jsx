@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, Calendar, Radio } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
 export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
+  const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [scheduleMode, setScheduleMode] = useState('now');
@@ -23,10 +25,12 @@ export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
       });
       const data = res.data || res;
       if (data.error) { toast.error(data.error); setSaving(false); return; }
-      toast.success(scheduleMode === 'schedule' ? 'Space programmé' : 'Space démarré');
+      const wasNow = scheduleMode === 'now';
+      toast.success(wasNow ? 'Space démarré' : 'Space programmé');
       setTitle(''); setDescription(''); setScheduleMode('now'); setScheduledAt('');
       onCreated?.(data.space);
       onClose();
+      if (wasNow && data.space?.id) navigate(`/space/${data.space.id}`);
     } catch {
       toast.error('Erreur');
       setSaving(false);

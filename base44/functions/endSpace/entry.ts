@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { RoomServiceClient } from 'npm:livekit-server-sdk@2.10.0';
 
 export default async function(req) {
   try {
@@ -11,6 +12,20 @@ export default async function(req) {
     const space = await base44.asServiceRole.entities.Space.get(spaceId).catch(() => null);
     if (!space) return Response.json({ error: 'Space introuvable' }, { status: 404 });
     if (space.host_id !== user.id) return Response.json({ error: 'Hôte uniquement' }, { status: 403 });
+
+    // Détruit la room LiveKit → déconnecte tous les participants
+    const wsUrl = Deno.env.get('LIVEKIT_WS_URL');
+    const apiKey = Deno.env.get('LIVEKIT_API_KEY');
+    const apiSecret = Deno.env.get('LIVEKIT_API_SECRET');
+    if (wsUrl && apiKey && apiSecret) {
+      try {
+        const svc = new RoomServiceClient(wsUrl, apiKey, apiSecret);
+        await svc.deleteRoom(space.livekit_room);
+      } catch (e) {
+        console.error('deleteRoom:', e?.message || e);
+      }
+    }
+
     await base44.asServiceRole.entities.Space.update(spaceId, { status: 'ended', ended_at: new Date().toISOString() });
     return Response.json({ success: true });
   } catch (error) {

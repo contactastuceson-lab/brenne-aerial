@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { X, Loader2, Calendar, Radio } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -41,7 +42,7 @@ export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.7)' }}
@@ -89,6 +90,7 @@ export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -1,0 +1,66 @@
+{
+  "name": "UserList",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nom de la liste"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description de la liste"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "ID du cr\u00e9ateur de la liste"
+    },
+    "owner_username": {
+      "type": "string",
+      "description": "Username du cr\u00e9ateur (snapshot)"
+    },
+    "member_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs des utilisateurs membres de la liste"
+    },
+    "member_usernames": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Usernames des membres (snapshot)"
+    },
+    "is_private": {
+      "type": "boolean",
+      "default": true,
+      "description": "Liste priv\u00e9e (visible par son cr\u00e9ateur uniquement)"
+    }
+  },
+  "required": [
+    "name",
+    "owner_id"
+  ],
+  "rls": {
+    "create": {
+      "data.owner_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "data.is_private": false
+        }
+      ]
+    },
+    "update": {
+      "data.owner_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.owner_id": "{{user.id}}"
+    }
+  }
+}

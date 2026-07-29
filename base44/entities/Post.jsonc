@@ -89,6 +89,11 @@
       "default": false,
       "description": "Post \u00e9pingl\u00e9 en haut du profil de l'auteur"
     },
+    "is_highlight": {
+      "type": "boolean",
+      "default": false,
+      "description": "Mis en avant (\u00c0 la une du profil)"
+    },
     "visibility": {
       "type": "string",
       "enum": [
@@ -117,6 +122,10 @@
       "type": "number",
       "default": 0,
       "description": "Nombre de citations (quote posts)"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "ID de la communaut\u00e9 si post communautaire"
     },
     "is_draft": {
       "type": "boolean",

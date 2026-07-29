@@ -252,6 +252,7 @@ export default function PublicProfilePage() {
 
   const isClosed = user?.account_status === 'closed';
   const isSupreme = user?.verifications?.includes('supreme');
+  const isPremiumProfile = isSupreme || user?.verifications?.includes('pro') || user?.verifications?.includes('certified');
   const roleCfg = ROLE_CONFIG[user?.role];
 
   const statusColors = {
@@ -628,9 +629,10 @@ export default function PublicProfilePage() {
           <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border/40 flex">
             {[
               { id: 'posts', label: 'Posts', count: userPosts.length },
+              { id: 'highlights', label: 'À la une', count: userPosts.filter(p => p.is_highlight).length, premiumOnly: true },
               { id: 'replies', label: 'Réponses', count: userReplies.length },
               { id: 'medias', label: 'Médias', count: userMediaPosts.length },
-            ].map(tab => (
+            ].filter(t => !t.premiumOnly || isPremiumProfile).map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setProfileTab(tab.id)}
@@ -649,7 +651,9 @@ export default function PublicProfilePage() {
           {/* Tab content */}
           <div className="min-h-[300px]">
             {(() => {
-              let tabPosts = profileTab === 'posts' ? userPosts : profileTab === 'replies' ? userReplies : userMediaPosts;
+              let tabPosts = profileTab === 'posts' ? userPosts
+                : profileTab === 'highlights' ? userPosts.filter(p => p.is_highlight)
+                : profileTab === 'replies' ? userReplies : userMediaPosts;
               if (profileTab === 'posts' && tabPosts.length) {
                 tabPosts = [...tabPosts].sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0));
               }
@@ -658,7 +662,7 @@ export default function PublicProfilePage() {
                   <div className="py-16 text-center px-4">
                     <p className="font-grotesk font-bold text-lg text-muted-foreground">Aucun contenu</p>
                     <p className="font-inter text-sm text-muted-foreground/60 mt-1">
-                      {profileTab === 'posts' ? 'Aucun post publié.' : profileTab === 'replies' ? 'Aucune réponse.' : 'Aucun média partagé.'}
+                      {profileTab === 'posts' ? 'Aucun post publié.' : profileTab === 'highlights' ? 'Aucun contenu à la une.' : profileTab === 'replies' ? 'Aucune réponse.' : 'Aucun média partagé.'}
                     </p>
                   </div>
                 );

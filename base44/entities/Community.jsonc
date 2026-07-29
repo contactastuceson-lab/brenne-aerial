@@ -1,0 +1,83 @@
+{
+  "name": "Community",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nom de la communaut\u00e9"
+    },
+    "slug": {
+      "type": "string",
+      "description": "Slug identifiant la communaut\u00e9"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description de la communaut\u00e9"
+    },
+    "cover_url": {
+      "type": "string",
+      "description": "Image de couverture"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "ID du cr\u00e9ateur"
+    },
+    "owner_name": {
+      "type": "string",
+      "description": "Nom du cr\u00e9ateur (snapshot)"
+    },
+    "owner_username": {
+      "type": "string",
+      "description": "Username du cr\u00e9ateur (snapshot)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed"
+      ],
+      "default": "open",
+      "description": "open = publique, closed = ferm\u00e9e (membres uniquement)"
+    },
+    "member_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs des membres"
+    },
+    "members_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de membres"
+    }
+  },
+  "required": [
+    "name",
+    "owner_id"
+  ],
+  "rls": {
+    "create": {
+      "data.owner_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.type": "open"
+        },
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "data.member_ids": "{{user.id}}"
+        }
+      ]
+    },
+    "update": {
+      "data.owner_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.owner_id": "{{user.id}}"
+    }
+  }
+}

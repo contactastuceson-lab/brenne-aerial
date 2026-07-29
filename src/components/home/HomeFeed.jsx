@@ -7,6 +7,7 @@ import CreatePost from '@/components/post/CreatePost';
 import { RefreshCw, Rss, Sparkles, ArrowUp, Users, TrendingUp, Zap, ArrowRight, Hash, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { extractHashtags } from '@/lib/hashtags';
+import { hasAdminAccess } from '@/lib/roles';
 import { getOrFetchUser } from '@/hooks/usePublicUser';
 import { readFeedCache, saveFeedCache } from '@/lib/feedCache';
 
@@ -128,6 +129,31 @@ export default function HomeFeed({ user }) {
     refetchOnWindowFocus: false,
   });
 
+  const { data: following = [] } = useQuery({
+    queryKey: ['my-following-feed', user?.email],
+    queryFn: () => base44.entities.Follow.filter({ follower_email: user.email }),
+    enabled: !!user?.email,
+    staleTime: 60000,
+  });
+  const followingEmails = useMemo(() => new Set(following.map(f => f.following_email).filter(Boolean)), [following]);
+
+  const { data: allUsersFeed = [] } = useQuery({
+    queryKey: ['public-users-feed'],
+    queryFn: async () => { const res = await base44.functions.invoke('getPublicUsers', {}); return res.data || res; },
+    staleTime: 120000,
+  });
+  const emailById = useMemo(() => { const m = {}; allUsersFeed.forEach(u => { if (u.id) m[u.id] = u.email; }); return m; }, [allUsersFeed]);
+
+  const isVisibleForUser = (post) => {
+    if (!post.visibility || post.visibility === 'public') return true;
+    if (!user) return false;
+    if (post.author_id === user.id) return true;
+    if (post.visibility === 'followers') return followingEmails.has(emailById[post.author_id]);
+    if (post.visibility === 'certified') return !!(user.verifications && (user.verifications.includes('certified') || user.verifications.includes('pro') || user.verifications.includes('supreme')));
+    if (post.visibility === 'eza_circle') return hasAdminAccess(user);
+    return true;
+  };
+
   useEffect(() => {
     posts.forEach((post) => getOrFetchUser(post.author_id));
   }, [posts]);
@@ -150,7 +176,7 @@ export default function HomeFeed({ user }) {
 
   const filteredPosts = useMemo(() => {
     // Le fil principal ne montre que les publications racines ; les réponses restent dans la vue détaillée du post.
-    let result = posts.filter((post) => !post.reply_to_id && !post.is_draft);
+    let result = posts.filter((post) => !post.reply_to_id && !post.is_draft && !post.community_id && isVisibleForUser(post));
 
     // Hashtag filter
     if (urlTag) {

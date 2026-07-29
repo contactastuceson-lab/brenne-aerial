@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Heart, MessageCircle, MoreHorizontal, Eye, Trash2, Pencil, X, Check, Repeat2, Upload, Bookmark, Pin } from 'lucide-react';
+import { Heart, MessageCircle, MoreHorizontal, Eye, Trash2, Pencil, X, Check, Repeat2, Upload, Bookmark, Pin, Star } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -73,6 +73,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [pinned, setPinned] = useState(!!post.is_pinned);
+  const [highlighted, setHighlighted] = useState(!!post.is_highlight);
   const menuRef = useRef(null);
   // Refs pour éviter les race conditions — source de vérité locale
   const likedByRef = useRef(post.liked_by || []);
@@ -224,6 +225,21 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
     }
   }, [isOwner, pinned, post, currentUser, queryClient]);
 
+  const handleToggleHighlight = useCallback(async (e) => {
+    e?.stopPropagation();
+    if (!isOwner) return;
+    const next = !highlighted;
+    setHighlighted(next);
+    try {
+      await base44.entities.Post.update(post.id, { is_highlight: next });
+      toast.success(next ? 'Mis à la une' : 'Retiré de la une');
+      queryClient.invalidateQueries({ queryKey: ['home-feed-posts'] });
+    } catch {
+      setHighlighted(!next);
+      toast.error('Erreur');
+    }
+  }, [isOwner, highlighted, post, queryClient]);
+
   const currentContent = editing ? editContent : (post.content || '');
   const isLong = currentContent.length > TRUNCATE_LIMIT;
   const displayContent = isLong && !expanded ? currentContent.slice(0, TRUNCATE_LIMIT) + '…' : currentContent;
@@ -296,6 +312,14 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
                       className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-foreground hover:bg-white/6 transition-colors"
                     >
                       <Pin className="w-3.5 h-3.5 text-amber-400" /> {pinned ? 'Désépingler' : 'Épingler sur le profil'}
+                    </button>
+                  )}
+                  {!post.reply_to_id && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setMenuOpen(false); handleToggleHighlight(e); }}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-foreground hover:bg-white/6 transition-colors"
+                    >
+                      <Star className="w-3.5 h-3.5 text-cyan-400" /> {highlighted ? 'Retirer de la une' : 'Mettre à la une'}
                     </button>
                   )}
                   <button

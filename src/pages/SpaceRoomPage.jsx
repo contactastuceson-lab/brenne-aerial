@@ -278,6 +278,11 @@ export default function SpaceRoomPage() {
     setCameraBusy(true);
     try {
       await room.localParticipant.setCameraEnabled(want);
+      if (!want) {
+        try { localCameraTrackRef.current?.detach(); localCameraTrackRef.current?.stop(); } catch {}
+        localCameraTrackRef.current = null;
+        setCameraSharer(prev => prev?.isLocal ? null : prev);
+      }
     } catch (e) {
       const msg = String(e?.message || e || '').toLowerCase();
       if (msg.includes('notallowed') || msg.includes('denied') || msg.includes('permission')) {

@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
     Home, Compass, MessageCircle, Bell, Bookmark, Calendar,
     Users, BarChart3, Briefcase, FileText, Award, Camera,
-    Heart, Star, MoreHorizontal, LogOut, Sparkles, UserCircle, List
+    Heart, Star, MoreHorizontal, LogOut, Sparkles, UserCircle, List, Radio
     } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { hasAdminAccess } from '@/lib/roles';
@@ -17,6 +17,7 @@ const NAV = [
   { icon: Bell,          label: 'Notifications',  to: '/notifications' },
   { icon: UserCircle,    label: 'Mon espace',     to: '/espace' },
   { icon: MessageCircle, label: 'Messages',       to: '/messages', badge: true },
+  { icon: Radio,        label: 'Spaces',          to: '/spaces' },
   { icon: Bookmark,      label: 'Signets',        to: '/bookmarks' },
   { icon: FileText,      label: 'Forum',          to: '/forum' },
   { icon: Users,         label: 'Communautés',    to: '/communities' },

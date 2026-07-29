@@ -4,7 +4,7 @@ import {
   Home, Compass, MessageCircle, MoreHorizontal, X, Search,
   Bell, User, LogOut, LayoutDashboard, Bookmark,
   Users, FileText, Calendar, Settings, Heart, Shield,
-  Building2, Star, Award, Plus, Camera, List
+  Building2, Star, Award, Plus, Camera, List, Radio
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -25,6 +25,7 @@ const MORE_ITEMS = [
   { to: '/bookmarks',            icon: Bookmark,    label: 'Signets',         color: 'text-amber-400' },
   { to: '/communities',          icon: Users,       label: 'Communautés',     color: 'text-emerald-400' },
   { to: '/lists',                icon: List,        label: 'Listes',          color: 'text-sky-400' },
+  { to: '/spaces',               icon: Radio,       label: 'Spaces',          color: 'text-red-400' },
   { to: '/discover',             icon: Compass,      label: 'Explorer',        color: 'text-cyan-400' },
   { to: '/forum',                icon: FileText,     label: 'Forum',           color: 'text-blue-400' },
   { to: '/business',             icon: Building2,    label: 'Business',        color: 'text-cyan-400' },

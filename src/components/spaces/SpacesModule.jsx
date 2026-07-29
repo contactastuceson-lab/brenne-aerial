@@ -7,7 +7,7 @@ import { Plus, Radio, Wrench } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageEnabled } from '@/hooks/usePageEnabled';
 
-export default function SpacesModule({ user }) {
+export default function SpacesModule({ user, embedded = false }) {
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const { enabled: spacesEnabled } = usePageEnabled('page_spaces_enabled');
@@ -38,17 +38,25 @@ export default function SpacesModule({ user }) {
   if (all.length === 0 && !user) return null;
 
   return (
-    <div className="mb-3">
-      <div className="flex items-center gap-2 mb-2 px-1">
-        <Radio className="w-4 h-4 text-red-400" />
-        <span className="font-grotesk font-bold text-sm flex-1">Spaces</span>
-        {user && spacesEnabled && (
-          <button onClick={() => setDialogOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90">
-            <Plus className="w-3.5 h-3.5" /> Démarrer
-          </button>
-        )}
-      </div>
+    <div className={embedded ? '' : 'mb-3'}>
+      {!embedded && (
+        <div className="flex items-center gap-2 mb-2 px-1">
+          <Radio className="w-4 h-4 text-red-400" />
+          <span className="font-grotesk font-bold text-sm flex-1">Spaces</span>
+          {user && spacesEnabled && (
+            <button onClick={() => setDialogOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90">
+              <Plus className="w-3.5 h-3.5" /> Démarrer
+            </button>
+          )}
+        </div>
+      )}
+      {embedded && user && spacesEnabled && (
+        <button onClick={() => setDialogOpen(true)}
+          className="w-full mb-3 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-2xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90">
+          <Plus className="w-4 h-4" /> Démarrer un Space
+        </button>
+      )}
       {!spacesEnabled ? (
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-center gap-3">
           <Wrench className="w-4 h-4 text-amber-400 flex-shrink-0 animate-pulse" />

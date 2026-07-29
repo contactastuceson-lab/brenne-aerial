@@ -171,7 +171,18 @@ export default function SpaceRoomPage() {
       });
       room.on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
         if (track.source === Track.Source.Camera) {
-          try { track.detach(); } catch {}
+          try {
+            const els = track.detach();
+            (Array.isArray(els) ? els : [els]).forEach(e => {
+              if (e && e.tagName === 'VIDEO') {
+                try { e.srcObject = null; e.load?.(); } catch {}
+              }
+              e?.remove?.();
+            });
+          } catch {}
+          if (remoteCameraVideoEl.current) {
+            try { remoteCameraVideoEl.current.srcObject = null; } catch {}
+          }
           remoteCameraTrackRef.current = null;
           setCameraSharer(prev => (!prev?.isLocal && prev?.identity === participant.identity) ? null : prev);
         } else {

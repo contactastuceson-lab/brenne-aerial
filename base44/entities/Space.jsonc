@@ -1,0 +1,100 @@
+{
+  "name": "Space",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre du Space"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description / sujet du Space"
+    },
+    "host_id": {
+      "type": "string",
+      "description": "ID de l'h\u00f4te"
+    },
+    "host_name": {
+      "type": "string",
+      "description": "Nom de l'h\u00f4te (snapshot)"
+    },
+    "host_username": {
+      "type": "string",
+      "description": "Username de l'h\u00f4te (snapshot)"
+    },
+    "host_avatar": {
+      "type": "string",
+      "description": "Avatar de l'h\u00f4te (snapshot)"
+    },
+    "host_verifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "V\u00e9rifications de l'h\u00f4te (snapshot)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "live",
+        "scheduled",
+        "ended"
+      ],
+      "default": "live",
+      "description": "Statut du Space"
+    },
+    "scheduled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date programm\u00e9e (si scheduled)"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de d\u00e9marrage du direct"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de fin"
+    },
+    "livekit_room": {
+      "type": "string",
+      "description": "Nom de la room LiveKit"
+    }
+  },
+  "required": [
+    "title",
+    "host_id"
+  ],
+  "rls": {
+    "create": {
+      "data.host_id": "{{user.id}}"
+    },
+    "read": true,
+    "update": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,211 @@
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Room, RoomEvent, ConnectionState } from 'livekit-client';
+import { ArrowLeft, Mic, MicOff, PhoneOff, Loader2, Radio, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
+import VerificationIcons from '@/components/ui/VerificationIcon';
+
+const parseMeta = (p) => {
+  try { return JSON.parse(p.metadata || '{}'); } catch { return {}; }
+};
+
+export default function SpaceRoomPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const roomRef = useRef(null);
+  const [status, setStatus] = useState('connecting');
+  const [participants, setParticipants] = useState([]);
+  const [micOn, setMicOn] = useState(false);
+  const [activeSpeakers, setActiveSpeakers] = useState(new Set());
+  const [ending, setEnding] = useState(false);
+
+  const { data: user } = useQuery({ queryKey: ['current-user'], queryFn: () => base44.auth.me(), staleTime: 60000, retry: false });
+  const { data: space } = useQuery({
+    queryKey: ['space', id],
+    queryFn: () => base44.entities.Space.get(id),
+    enabled: !!id,
+    retry: false,
+  });
+
+  const collectParticipants = useCallback((room) => {
+    if (!room || !user) return;
+    const list = [];
+    const local = room.localParticipant;
+    list.push({
+      identity: local.identity,
+      name: user.display_name || user.full_name || user.username || local.identity,
+      avatar: user.avatar_url,
+      username: user.username,
+      verifications: user.verifications || [],
+      isLocal: true,
+      micOn: local.isMicrophoneEnabled,
+    });
+    room.remoteParticipants.forEach((p) => {
+      const meta = parseMeta(p);
+      list.push({
+        identity: p.identity,
+        name: p.name || p.identity,
+        avatar: meta.avatar,
+        username: meta.username,
+        verifications: meta.verifications || [],
+        isLocal: false,
+        micOn: p.isMicrophoneEnabled,
+      });
+    });
+    setParticipants(list);
+  }, [user]);
+
+  useEffect(() => {
+    if (!id || !user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await base44.functions.invoke('generateSpaceToken', { spaceId: id });
+        const data = res.data || res;
+        if (data.error) { setStatus('error'); toast.error(data.error); return; }
+        const { token, url } = data;
+        const room = new Room({ adaptiveStream: true, dynacast: true });
+        roomRef.current = room;
+        room.on(RoomEvent.ParticipantConnected, () => collectParticipants(room));
+        room.on(RoomEvent.ParticipantDisconnected, () => collectParticipants(room));
+        room.on(RoomEvent.ActiveSpeakerChanged, (speakers) => {
+          setActiveSpeakers(new Set(speakers.map(s => s.identity)));
+        });
+        room.on(RoomEvent.ConnectionStateChanged, (state) => {
+          if (state === ConnectionState.Connected) setStatus('live');
+          if (state === ConnectionState.Disconnected) setStatus('ended');
+        });
+        await room.connect(url, token);
+        await room.localParticipant.setMicrophoneEnabled(false);
+        if (!cancelled) collectParticipants(room);
+      } catch (e) {
+        if (!cancelled) { setStatus('error'); toast.error('Connexion au Space impossible'); }
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (roomRef.current) { try { roomRef.current.disconnect(); } catch {} roomRef.current = null; }
+    };
+  }, [id, user, collectParticipants]);
+
+  const toggleMic = async () => {
+    const room = roomRef.current;
+    if (!room) return;
+    const next = !micOn;
+    try {
+      await room.localParticipant.setMicrophoneEnabled(next);
+      setMicOn(next);
+      collectParticipants(room);
+    } catch {
+      toast.error('Micro inaccessible');
+    }
+  };
+
+  const handleLeave = () => {
+    if (roomRef.current) { try { roomRef.current.disconnect(); } catch {} roomRef.current = null; }
+    navigate(-1);
+  };
+
+  const handleEnd = async () => {
+    if (!confirm('Terminer le Space pour tous les participants ?')) return;
+    setEnding(true);
+    try {
+      const res = await base44.functions.invoke('endSpace', { spaceId: id });
+      const data = res.data || res;
+      if (data.error) { toast.error(data.error); setEnding(false); return; }
+      toast.success('Space terminé');
+      qc.invalidateQueries({ queryKey: ['spaces-live'] });
+      handleLeave();
+    } catch {
+      toast.error('Erreur');
+      setEnding(false);
+    }
+  };
+
+  const isHost = space?.host_id === user?.id;
+
+  if (status === 'error') {
+    return (
+      <div className="w-full max-w-[680px] mx-auto py-24 text-center px-4">
+        <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-3" />
+        <p className="font-grotesk font-bold text-lg mb-2">Impossible de rejoindre</p>
+        <p className="font-inter text-sm text-muted-foreground mb-4">Le Space est terminé, pas encore démarré, ou l'audio n'est pas disponible sur cet appareil.</p>
+        <button onClick={handleLeave} className="text-primary text-sm hover:underline">← Retour</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-[680px] min-w-0 mx-auto pb-28">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border/60 px-4 py-2 flex items-center gap-2">
+        <button onClick={handleLeave} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/8"><ArrowLeft className="w-4 h-4" /></button>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <Radio className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+            <span className="text-[10px] font-bold text-red-400">EN DIRECT</span>
+          </div>
+          <p className="font-grotesk font-bold text-sm truncate">{space?.title || 'Space'}</p>
+        </div>
+        {status === 'connecting' && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+      </div>
+
+      {space?.description && (
+        <p className="px-4 py-2 font-inter text-sm text-muted-foreground border-b border-border/40">{space.description}</p>
+      )}
+
+      <div className="px-4 py-4">
+        <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60 mb-3">Orateurs</p>
+        <div className="grid grid-cols-4 gap-3">
+          {participants.filter(p => p.micOn || p.isLocal || activeSpeakers.has(p.identity)).map(p => {
+            const speaking = activeSpeakers.has(p.identity) && p.micOn;
+            return (
+              <div key={p.identity} className="flex flex-col items-center gap-1.5">
+                <div className={`relative w-16 h-16 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center ${speaking ? 'ring-4 ring-red-500/60' : ''}`}>
+                  {p.avatar ? <img src={p.avatar} className="w-full h-full object-cover" alt="" /> : <span className="font-grotesk font-bold text-primary text-lg">{(p.name || 'U')[0]}</span>}
+                  <div className="absolute bottom-0.5 right-0.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: p.micOn ? 'hsl(var(--primary))' : 'hsl(var(--muted))' }}>
+                    {p.micOn ? <Mic className="w-2.5 h-2.5 text-primary-foreground" /> : <MicOff className="w-2.5 h-2.5 text-muted-foreground" />}
+                  </div>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  <span className="font-inter text-[11px] font-semibold truncate max-w-[64px]">{p.isLocal ? 'Vous' : (p.username ? p.username : p.name?.split(' ')[0])}</span>
+                  {!p.isLocal && p.verifications?.length > 0 && <VerificationIcons verifications={p.verifications} size="sm" />}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60 mt-5 mb-3">Auditeurs ({participants.filter(p => !p.micOn && !p.isLocal && !activeSpeakers.has(p.identity)).length})</p>
+        <div className="grid grid-cols-6 gap-2">
+          {participants.filter(p => !p.micOn && !p.isLocal && !activeSpeakers.has(p.identity)).map(p => (
+            <div key={p.identity} className="w-10 h-10 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
+              {p.avatar ? <img src={p.avatar} className="w-full h-full object-cover" alt="" /> : <span className="font-grotesk font-bold text-primary text-xs">{(p.name || 'U')[0]}</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-20 bg-background/95 backdrop-blur border-t border-border">
+        <div className="max-w-[680px] mx-auto px-4 py-3 flex items-center justify-center gap-3" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}>
+          <button onClick={toggleMic}
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${micOn ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+            {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+          </button>
+          <button onClick={handleLeave}
+            className="w-12 h-12 rounded-full flex items-center justify-center bg-destructive text-destructive-foreground">
+            <PhoneOff className="w-5 h-5" />
+          </button>
+          {isHost && (
+            <button onClick={handleEnd} disabled={ending}
+              className="px-4 h-12 rounded-full flex items-center gap-1.5 bg-destructive/15 text-destructive border border-destructive/30 text-sm font-semibold disabled:opacity-50">
+              {ending ? <Loader2 className="w-4 h-4 animate-spin" /> : <PhoneOff className="w-4 h-4" />} Terminer
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

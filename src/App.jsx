@@ -93,6 +93,7 @@ import BookmarksPage from "@/pages/BookmarksPage";
 import ListsPage from "@/pages/ListsPage";
 import CommunitiesPage from "@/pages/CommunitiesPage";
 import CommunityDetailPage from "@/pages/CommunityDetailPage";
+import SpaceRoomPage from "@/pages/SpaceRoomPage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -169,6 +170,7 @@ const AuthenticatedApp = () => {
           <Route path="/lists" element={<ListsPage />} />
           <Route path="/communities" element={<CommunitiesPage />} />
           <Route path="/community/:id" element={<CommunityDetailPage />} />
+          <Route path="/space/:id" element={<SpaceRoomPage />} />
           <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />

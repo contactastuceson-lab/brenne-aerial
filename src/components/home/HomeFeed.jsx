@@ -8,6 +8,7 @@ import { RefreshCw, Rss, Sparkles, ArrowUp, Users, TrendingUp, Zap, ArrowRight, 
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { extractHashtags } from '@/lib/hashtags';
 import { hasAdminAccess } from '@/lib/roles';
+import SpacesModule from '@/components/spaces/SpacesModule';
 import { getOrFetchUser } from '@/hooks/usePublicUser';
 import { readFeedCache, saveFeedCache } from '@/lib/feedCache';
 
@@ -275,6 +276,9 @@ export default function HomeFeed({ user }) {
           </button>
         </div>
       )}
+
+      {/* Spaces */}
+      {user && <SpacesModule user={user} />}
 
       {/* Feed */}
       {user === undefined || isLoading ? (

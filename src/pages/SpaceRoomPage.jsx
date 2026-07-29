@@ -15,6 +15,7 @@ export default function SpaceRoomPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const roomRef = useRef(null);
+  const intendedRef = useRef(false);
   const [status, setStatus] = useState('connecting'); // connecting | live | ended | error
   const [errorMsg, setErrorMsg] = useState('');
   const [participants, setParticipants] = useState([]);
@@ -86,7 +87,12 @@ export default function SpaceRoomPage() {
       });
       room.on(RoomEvent.ConnectionStateChanged, (state) => {
         if (state === ConnectionState.Connected) setStatus('live');
-        if (state === ConnectionState.Disconnected) setStatus(prev => prev === 'ending' ? 'ended' : 'ended');
+        if (state === ConnectionState.Disconnected && !intendedRef.current) {
+          // Perte réseau involontaire → on propose une reconnexion plutôt que "Space terminé"
+          if (roomRef.current) { try { roomRef.current.disconnect(); } catch {} roomRef.current = null; }
+          setStatus('error');
+          setErrorMsg('Connexion audio perdue.');
+        }
       });
 
       // Timeout : si LiveKit n'est pas atteint en 15s, on abandonne proprement
@@ -94,6 +100,8 @@ export default function SpaceRoomPage() {
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Le serveur audio ne répond pas (timeout).')), 15000));
       await Promise.race([connectPromise, timeoutPromise]);
 
+      // La connexion est établie → on passe en live immédiatement (bouton micro débloqué)
+      setStatus('live');
       await room.localParticipant.setMicrophoneEnabled(false);
       collectParticipants(room);
     } catch (e) {
@@ -126,12 +134,14 @@ export default function SpaceRoomPage() {
   };
 
   const handleLeave = () => {
+    intendedRef.current = true;
     if (roomRef.current) { try { roomRef.current.disconnect(); } catch {} roomRef.current = null; }
     navigate(-1);
   };
 
   const handleEnd = async () => {
     if (!confirm('Terminer le Space pour tous les participants ?')) return;
+    intendedRef.current = true;
     setEnding(true);
     setStatus('ending');
     try {

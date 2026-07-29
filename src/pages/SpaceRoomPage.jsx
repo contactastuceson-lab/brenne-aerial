@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { ArrowLeft, Mic, MicOff, PhoneOff, Phone, Loader2, Radio, AlertTriangle, Users, RotateCw } from 'lucide-react';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -17,13 +18,14 @@ export default function SpaceRoomPage() {
   const roomRef = useRef(null);
   const intendedRef = useRef(false);
   const [status, setStatus] = useState('connecting'); // connecting | live | ended | error
+  const [stage, setStage] = useState('init'); // init | importing | token | connecting | live
   const [errorMsg, setErrorMsg] = useState('');
   const [participants, setParticipants] = useState([]);
   const [micOn, setMicOn] = useState(false);
   const [activeSpeakers, setActiveSpeakers] = useState(new Set());
   const [ending, setEnding] = useState(false);
 
-  const { data: user } = useQuery({ queryKey: ['current-user'], queryFn: () => base44.auth.me(), staleTime: 60000, retry: false });
+  const { user } = useAuth();
   const { data: space } = useQuery({
     queryKey: ['space', id],
     queryFn: () => base44.entities.Space.get(id),
@@ -63,15 +65,18 @@ export default function SpaceRoomPage() {
     if (!id || !user) return;
     setStatus('connecting');
     setErrorMsg('');
+    setStage('init');
+    let currentStage = 'init';
     let room;
     try {
-      // Import dynamique pour isoler tout crash du module livekit-client
+      currentStage = 'importing'; setStage('importing');
       const { Room, RoomEvent, ConnectionState } = await import('livekit-client');
 
+      currentStage = 'token'; setStage('token');
       let data;
       try {
         const res = await base44.functions.invoke('generateSpaceToken', { spaceId: id });
-        data = res.data;
+        data = res.data || res;
       } catch (err) {
         data = err?.response?.data || { error: 'Jeton indisponible' };
       }
@@ -95,20 +100,22 @@ export default function SpaceRoomPage() {
         }
       });
 
-      // Timeout : si LiveKit n'est pas atteint en 15s, on abandonne proprement
+      currentStage = 'connecting'; setStage('connecting');
+      // Timeout : si LiveKit n'est pas atteint en 20s, on abandonne proprement
       const connectPromise = room.connect(url, token);
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Le serveur audio ne répond pas (timeout).')), 15000));
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Le serveur audio ne répond pas (timeout 20s).')), 20000));
       await Promise.race([connectPromise, timeoutPromise]);
 
       // La connexion est établie → on passe en live immédiatement (bouton micro débloqué)
       setStatus('live');
+      setStage('live');
       await room.localParticipant.setMicrophoneEnabled(false);
       collectParticipants(room);
     } catch (e) {
       if (room) { try { room.disconnect(); } catch {} }
       roomRef.current = null;
       setStatus('error');
-      setErrorMsg(e?.message || 'Connexion au Space impossible.');
+      setErrorMsg(`${e?.message || 'Connexion au Space impossible.'} (étape: ${currentStage})`);
     }
   }, [id, user, collectParticipants]);
 
@@ -218,7 +225,13 @@ export default function SpaceRoomPage() {
         {status === 'connecting' ? (
           <div className="py-20 flex flex-col items-center gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="font-inter text-sm text-muted-foreground">Connexion au Space en cours…</p>
+            <p className="font-inter text-sm text-muted-foreground">
+              {stage === 'importing' && 'Chargement du moteur audio…'}
+              {stage === 'token' && 'Génération du jeton…'}
+              {stage === 'connecting' && 'Connexion au serveur audio…'}
+              {(stage === 'init' || !stage) && 'Connexion au Space en cours…'}
+            </p>
+            <button onClick={handleLeave} className="mt-2 text-xs text-muted-foreground/60 hover:text-foreground">Annuler</button>
           </div>
         ) : (
           <>

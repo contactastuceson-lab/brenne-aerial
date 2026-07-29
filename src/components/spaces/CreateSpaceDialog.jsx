@@ -25,7 +25,7 @@ export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
         description: description.trim(),
         scheduled_at: scheduleMode === 'schedule' ? new Date(scheduledAt).toISOString() : null,
       });
-      const data = res.data;
+      const data = res.data || res;
       if (data?.error) { setErr(data.error); setSaving(false); return; }
       const wasNow = scheduleMode === 'now';
       toast.success(wasNow ? 'Space démarré' : 'Space programmé');

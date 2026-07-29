@@ -38,7 +38,7 @@ function AffiliationChip({ affiliation, size, onOpen }) {
 /**
  * @param {{ verifications?: Array<string>, size?: string, user?: any|null, onAffiliationOpen?: () => void }} props
  */
-export default function VerificationIcons({ verifications = [], size = 'sm', user = null, onAffiliationOpen }) {
+export default function VerificationIcons({ verifications = [], size = 'sm', user = null, onAffiliationOpen, markSize }) {
   const [internalOpen, setInternalOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -66,7 +66,7 @@ export default function VerificationIcons({ verifications = [], size = 'sm', use
       {displayedVerification && (() => {
         const config = VERIFICATION_CONFIG[displayedVerification];
         if (!config) return null;
-        const icon = <span className="inline-flex items-center leading-none flex-shrink-0"><VerificationMark type={displayedVerification} /></span>;
+        const icon = <span className="inline-flex items-center leading-none flex-shrink-0"><VerificationMark type={displayedVerification} size={markSize} /></span>;
         return (
           <button key={displayedVerification} type="button" onClick={handleClick} className="inline-flex cursor-pointer focus-visible:outline-none">{icon}</button>
         );

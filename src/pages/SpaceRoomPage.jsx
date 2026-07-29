@@ -397,9 +397,12 @@ export default function SpaceRoomPage() {
                   {pendingHands.map(p => (
                     <div key={p.identity} className="flex items-center gap-2">
                       <Avatar p={p} size="sm" />
-                      <span className="flex-1 font-inter text-xs font-semibold truncate">{p.isLocal ? 'Vous' : (p.username || p.name?.split(' ')[0])}</span>
-                      <button onClick={() => approveHand(p)} className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center"><Check className="w-3.5 h-3.5" /></button>
-                      <button onClick={() => denyHand(p)} className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center"><X className="w-3.5 h-3.5" /></button>
+                      <div className="flex-1 min-w-0 flex items-center gap-1">
+                        <span className="font-inter text-xs font-semibold truncate">{p.isLocal ? 'Vous' : (p.name?.split(' ')[0] || p.username)}</span>
+                        {!p.isLocal && p.verifications?.length > 0 && <VerificationIcons verifications={p.verifications} size="sm" markSize="0.8em" />}
+                      </div>
+                      <button onClick={() => approveHand(p)} className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0"><Check className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => denyHand(p)} className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center flex-shrink-0"><X className="w-3.5 h-3.5" /></button>
                     </div>
                   ))}
                 </div>
@@ -423,10 +426,10 @@ export default function SpaceRoomPage() {
                         </button>
                       )}
                     </div>
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex items-center gap-0.5 min-w-0">
                       <RoleBadge role={p.role} />
-                      <span className="font-inter text-[11px] font-semibold truncate max-w-[64px]">{p.isLocal ? 'Vous' : (p.username || p.name?.split(' ')[0])}</span>
-                      {!p.isLocal && p.verifications?.length > 0 && <VerificationIcons verifications={p.verifications} size="sm" />}
+                      <span className="font-inter text-[11px] font-semibold truncate flex-1 min-w-0">{p.isLocal ? 'Vous' : (p.name?.split(' ')[0] || p.username)}</span>
+                      {!p.isLocal && p.verifications?.length > 0 && <span className="flex-shrink-0"><VerificationIcons verifications={p.verifications} size="sm" markSize="0.8em" /></span>}
                     </div>
                   </div>
                 );
@@ -530,7 +533,10 @@ export default function SpaceRoomPage() {
             <div className="flex items-center gap-3 mb-4">
               <Avatar p={menuFor} />
               <div className="min-w-0">
-                <p className="font-grotesk font-bold text-sm truncate">{menuFor.name}</p>
+                <div className="flex items-center gap-1">
+                  <p className="font-grotesk font-bold text-sm truncate">{menuFor.name}</p>
+                  {!menuFor.isLocal && menuFor.verifications?.length > 0 && <VerificationIcons verifications={menuFor.verifications} size="sm" markSize="0.85em" />}
+                </div>
                 <p className="font-inter text-xs text-muted-foreground">@{menuFor.username || menuFor.identity} · {ROLE_LABEL[menuFor.role]}</p>
               </div>
               <button onClick={() => setMenuFor(null)} className="ml-auto w-8 h-8 rounded-full hover:bg-white/8 flex items-center justify-center"><X className="w-4 h-4" /></button>

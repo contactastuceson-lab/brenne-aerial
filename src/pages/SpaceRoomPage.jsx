@@ -2,8 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Room, RoomEvent, ConnectionState } from 'livekit-client';
-import { ArrowLeft, Mic, MicOff, PhoneOff, Phone, Loader2, Radio, AlertTriangle, Users } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, PhoneOff, Phone, Loader2, Radio, AlertTriangle, Users, RotateCw } from 'lucide-react';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 
@@ -16,7 +15,7 @@ export default function SpaceRoomPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const roomRef = useRef(null);
-  const [status, setStatus] = useState('connecting');
+  const [status, setStatus] = useState('connecting'); // connecting | live | ended | error
   const [errorMsg, setErrorMsg] = useState('');
   const [participants, setParticipants] = useState([]);
   const [micOn, setMicOn] = useState(false);
@@ -59,38 +58,58 @@ export default function SpaceRoomPage() {
     setParticipants(list);
   }, [user]);
 
-  useEffect(() => {
+  const connect = useCallback(async () => {
     if (!id || !user) return;
-    let cancelled = false;
-    (async () => {
+    setStatus('connecting');
+    setErrorMsg('');
+    let room;
+    try {
+      // Import dynamique pour isoler tout crash du module livekit-client
+      const { Room, RoomEvent, ConnectionState } = await import('livekit-client');
+
+      let data;
       try {
         const res = await base44.functions.invoke('generateSpaceToken', { spaceId: id });
-        const data = res.data || res;
-        if (data.error) { setStatus('error'); setErrorMsg(data.error); return; }
-        const { token, url } = data;
-        const room = new Room({ adaptiveStream: true, dynacast: true });
-        roomRef.current = room;
-        room.on(RoomEvent.ParticipantConnected, () => collectParticipants(room));
-        room.on(RoomEvent.ParticipantDisconnected, () => collectParticipants(room));
-        room.on(RoomEvent.ActiveSpeakerChanged, (speakers) => {
-          setActiveSpeakers(new Set(speakers.map(s => s.identity)));
-        });
-        room.on(RoomEvent.ConnectionStateChanged, (state) => {
-          if (state === ConnectionState.Connected) setStatus('live');
-          if (state === ConnectionState.Disconnected) setStatus(prev => prev === 'ending' ? 'ended' : 'ended');
-        });
-        await room.connect(url, token);
-        await room.localParticipant.setMicrophoneEnabled(false);
-        if (!cancelled) collectParticipants(room);
-      } catch (e) {
-        if (!cancelled) { setStatus('error'); setErrorMsg('Connexion au Space impossible. Vérifiez votre réseau.'); }
+        data = res.data;
+      } catch (err) {
+        data = err?.response?.data || { error: 'Jeton indisponible' };
       }
-    })();
+      if (data?.error) { setStatus('error'); setErrorMsg(data.error); return; }
+      const { token, url } = data;
+
+      room = new Room({ adaptiveStream: true, dynacast: true });
+      roomRef.current = room;
+      room.on(RoomEvent.ParticipantConnected, () => collectParticipants(room));
+      room.on(RoomEvent.ParticipantDisconnected, () => collectParticipants(room));
+      room.on(RoomEvent.ActiveSpeakerChanged, (speakers) => {
+        setActiveSpeakers(new Set(speakers.map(s => s.identity)));
+      });
+      room.on(RoomEvent.ConnectionStateChanged, (state) => {
+        if (state === ConnectionState.Connected) setStatus('live');
+        if (state === ConnectionState.Disconnected) setStatus(prev => prev === 'ending' ? 'ended' : 'ended');
+      });
+
+      // Timeout : si LiveKit n'est pas atteint en 15s, on abandonne proprement
+      const connectPromise = room.connect(url, token);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Le serveur audio ne répond pas (timeout).')), 15000));
+      await Promise.race([connectPromise, timeoutPromise]);
+
+      await room.localParticipant.setMicrophoneEnabled(false);
+      collectParticipants(room);
+    } catch (e) {
+      if (room) { try { room.disconnect(); } catch {} }
+      roomRef.current = null;
+      setStatus('error');
+      setErrorMsg(e?.message || 'Connexion au Space impossible.');
+    }
+  }, [id, user, collectParticipants]);
+
+  useEffect(() => {
+    connect();
     return () => {
-      cancelled = true;
       if (roomRef.current) { try { roomRef.current.disconnect(); } catch {} roomRef.current = null; }
     };
-  }, [id, user, collectParticipants]);
+  }, [connect]);
 
   const toggleMic = async () => {
     const room = roomRef.current;
@@ -116,9 +135,14 @@ export default function SpaceRoomPage() {
     setEnding(true);
     setStatus('ending');
     try {
-      const res = await base44.functions.invoke('endSpace', { spaceId: id });
-      const data = res.data || res;
-      if (data.error) { toast.error(data.error); setEnding(false); setStatus('live'); return; }
+      let data;
+      try {
+        const res = await base44.functions.invoke('endSpace', { spaceId: id });
+        data = res.data;
+      } catch (err) {
+        data = err?.response?.data || { error: 'Erreur' };
+      }
+      if (data?.error) { toast.error(data.error); setEnding(false); setStatus('live'); return; }
       toast.success('Space terminé');
       qc.invalidateQueries({ queryKey: ['spaces-live'] });
       qc.invalidateQueries({ queryKey: ['spaces-scheduled'] });
@@ -133,19 +157,21 @@ export default function SpaceRoomPage() {
 
   const isHost = space?.host_id === user?.id;
 
-  // Erreur
   if (status === 'error') {
     return (
       <div className="w-full max-w-[680px] mx-auto py-24 text-center px-4">
         <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-3" />
         <p className="font-grotesk font-bold text-lg mb-2">Impossible de rejoindre</p>
-        <p className="font-inter text-sm text-muted-foreground mb-4">{errorMsg || 'Space introuvable ou terminé.'}</p>
-        <button onClick={handleLeave} className="text-primary text-sm hover:underline">← Retour</button>
+        <p className="font-inter text-sm text-muted-foreground mb-4 max-w-sm mx-auto">{errorMsg || 'Space introuvable ou terminé.'}</p>
+        <div className="flex items-center justify-center gap-3">
+          <button onClick={connect} className="flex items-center gap-1.5 text-primary text-sm hover:underline"><RotateCw className="w-3.5 h-3.5" /> Réessayer</button>
+          <span className="text-muted-foreground/40">·</span>
+          <button onClick={handleLeave} className="text-muted-foreground text-sm hover:underline">Retour</button>
+        </div>
       </div>
     );
   }
 
-  // Space terminé par l'hôte
   if (status === 'ended') {
     return (
       <div className="w-full max-w-[680px] mx-auto py-24 text-center px-4">
@@ -229,8 +255,8 @@ export default function SpaceRoomPage() {
 
       <div className="fixed bottom-0 left-0 right-0 z-20 bg-background/95 backdrop-blur border-t border-border">
         <div className="max-w-[680px] mx-auto px-4 py-3 flex items-center justify-center gap-3" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}>
-          <button onClick={toggleMic}
-            className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${micOn ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+          <button onClick={toggleMic} disabled={status !== 'live'}
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors disabled:opacity-40 ${micOn ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
             {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
           </button>
           {isHost ? (

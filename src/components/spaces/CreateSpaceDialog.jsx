@@ -12,10 +12,12 @@ export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
   const [scheduleMode, setScheduleMode] = useState('now');
   const [scheduledAt, setScheduledAt] = useState('');
   const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
 
   const handleCreate = async () => {
-    if (!title.trim()) { toast.error('Titre requis'); return; }
-    if (scheduleMode === 'schedule' && !scheduledAt) { toast.error('Date requise'); return; }
+    setErr('');
+    if (!title.trim()) { setErr('Donnez un titre à votre Space'); return; }
+    if (scheduleMode === 'schedule' && !scheduledAt) { setErr('Choisissez une date'); return; }
     setSaving(true);
     try {
       const res = await base44.functions.invoke('createSpace', {
@@ -23,16 +25,16 @@ export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
         description: description.trim(),
         scheduled_at: scheduleMode === 'schedule' ? new Date(scheduledAt).toISOString() : null,
       });
-      const data = res.data || res;
-      if (data.error) { toast.error(data.error); setSaving(false); return; }
+      const data = res.data;
+      if (data?.error) { setErr(data.error); setSaving(false); return; }
       const wasNow = scheduleMode === 'now';
       toast.success(wasNow ? 'Space démarré' : 'Space programmé');
       setTitle(''); setDescription(''); setScheduleMode('now'); setScheduledAt('');
       onCreated?.(data.space);
       onClose();
       if (wasNow && data.space?.id) navigate(`/space/${data.space.id}`);
-    } catch {
-      toast.error('Erreur');
+    } catch (e) {
+      setErr(e?.response?.data?.error || 'Création impossible, réessayez');
       setSaving(false);
     }
   };
@@ -81,7 +83,8 @@ export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
               )}
             </div>
             <div className="px-5 py-3 border-t border-border">
-              <button onClick={handleCreate} disabled={saving}
+              {err && <p className="text-xs text-destructive mb-2 text-center">{err}</p>}
+              <button onClick={handleCreate} disabled={saving || !title.trim()}
                 className="w-full py-2.5 rounded-full bg-primary text-primary-foreground font-grotesk font-bold text-sm hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null} {scheduleMode === 'schedule' ? 'Programmer' : 'Démarrer le direct'}
               </button>

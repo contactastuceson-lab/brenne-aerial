@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { Room, RoomEvent, ConnectionState, Track } from 'livekit-client';
 import {
   ArrowLeft, Mic, MicOff, PhoneOff, Phone, Loader2, Radio, AlertTriangle, Users,
-  RotateCw, Hand, Headphones, Smile, Crown, Shield, UserPlus, UserMinus, X, Check, MoreVertical, Monitor,
+  RotateCw, Hand, Headphones, Smile, Crown, Shield, UserPlus, UserMinus, X, Check, MoreVertical, Video,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -49,10 +49,10 @@ export default function SpaceRoomPage() {
   const deafenedRef = useRef(false);
   const isHostRef = useRef(false);
   const reactionIdRef = useRef(0);
-  const remoteScreenTrackRef = useRef(null);
-  const localScreenTrackRef = useRef(null);
-  const remoteScreenVideoEl = useRef(null);
-  const localScreenVideoEl = useRef(null);
+  const remoteCameraTrackRef = useRef(null);
+  const localCameraTrackRef = useRef(null);
+  const remoteCameraVideoEl = useRef(null);
+  const localCameraVideoEl = useRef(null);
 
   const [status, setStatus] = useState('connecting');
   const [stage, setStage] = useState('init');
@@ -66,8 +66,8 @@ export default function SpaceRoomPage() {
   const [showReactions, setShowReactions] = useState(false);
   const [menuFor, setMenuFor] = useState(null);
   const [ending, setEnding] = useState(false);
-  const [screenSharer, setScreenSharer] = useState(null);
-  const [screenBusy, setScreenBusy] = useState(false);
+  const [cameraSharer, setCameraSharer] = useState(null);
+  const [cameraBusy, setCameraBusy] = useState(false);
 
   const { user } = useAuth();
   const { data: space } = useQuery({
@@ -162,18 +162,18 @@ export default function SpaceRoomPage() {
             if (audioContainerRef.current) audioContainerRef.current.appendChild(el);
             audioElsRef.current.push(el);
           } catch {}
-        } else if (track.source === Track.Source.ScreenShare && track.kind === Track.Kind.Video) {
-          remoteScreenTrackRef.current = track;
+        } else if (track.source === Track.Source.Camera && track.kind === Track.Kind.Video) {
+          remoteCameraTrackRef.current = track;
           const meta = parseMeta(participant);
-          setScreenSharer({ identity: participant.identity, name: participant.name || meta.username || participant.identity, isLocal: false });
+          setCameraSharer({ identity: participant.identity, name: participant.name || meta.username || participant.identity, isLocal: false });
         }
         collectParticipants(room);
       });
       room.on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
-        if (track.source === Track.Source.ScreenShare) {
+        if (track.source === Track.Source.Camera) {
           try { track.detach(); } catch {}
-          remoteScreenTrackRef.current = null;
-          setScreenSharer(prev => (!prev?.isLocal && prev?.identity === participant.identity) ? null : prev);
+          remoteCameraTrackRef.current = null;
+          setCameraSharer(prev => (!prev?.isLocal && prev?.identity === participant.identity) ? null : prev);
         } else {
           try { const els = track.detach(); if (Array.isArray(els)) els.forEach(e => e?.remove?.()); } catch {}
         }
@@ -196,16 +196,16 @@ export default function SpaceRoomPage() {
         }
       });
       room.on(RoomEvent.LocalTrackPublished, (publication, participant) => {
-        if (publication.source === Track.Source.ScreenShare && publication.track) {
-          localScreenTrackRef.current = publication.track;
-          setScreenSharer({ identity: participant.identity, name: 'Vous', isLocal: true });
+        if (publication.source === Track.Source.Camera && publication.track) {
+          localCameraTrackRef.current = publication.track;
+          setCameraSharer({ identity: participant.identity, name: 'Vous', isLocal: true });
         }
       });
       room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
-        if (publication.source === Track.Source.ScreenShare) {
+        if (publication.source === Track.Source.Camera) {
           try { publication.track?.detach(); } catch {}
-          localScreenTrackRef.current = null;
-          setScreenSharer(prev => prev?.isLocal ? null : prev);
+          localCameraTrackRef.current = null;
+          setCameraSharer(prev => prev?.isLocal ? null : prev);
         }
       });
 
@@ -217,10 +217,6 @@ export default function SpaceRoomPage() {
 
       setStatus('live'); setStage('live');
       await room.localParticipant.setMicrophoneEnabled(false);
-      const shareParams = new URLSearchParams(window.location.search);
-      if (shareParams.get('autoshare') === '1') {
-        try { await room.localParticipant.setScreenShareEnabled(true); } catch {}
-      }
       collectParticipants(room);
     } catch (e) {
       if (room) { try { room.disconnect(); } catch {} }
@@ -238,13 +234,13 @@ export default function SpaceRoomPage() {
   }, [connect]);
 
   useEffect(() => {
-    if (!screenSharer) return;
-    if (screenSharer.isLocal && localScreenVideoEl.current && localScreenTrackRef.current) {
-      try { localScreenTrackRef.current.attach(localScreenVideoEl.current); } catch {}
-    } else if (!screenSharer.isLocal && remoteScreenVideoEl.current && remoteScreenTrackRef.current) {
-      try { remoteScreenTrackRef.current.attach(remoteScreenVideoEl.current); } catch {}
+    if (!cameraSharer) return;
+    if (cameraSharer.isLocal && localCameraVideoEl.current && localCameraTrackRef.current) {
+      try { localCameraTrackRef.current.attach(localCameraVideoEl.current); } catch {}
+    } else if (!cameraSharer.isLocal && remoteCameraVideoEl.current && remoteCameraTrackRef.current) {
+      try { remoteCameraTrackRef.current.attach(remoteCameraVideoEl.current); } catch {}
     }
-  }, [screenSharer]);
+  }, [cameraSharer]);
 
   const local = participants.find(p => p.isLocal);
   const localRole = local?.role || (isHost ? 'host' : 'listener');
@@ -271,32 +267,26 @@ export default function SpaceRoomPage() {
     audioElsRef.current.forEach(el => { el.muted = next; });
   };
 
-  const toggleScreenShare = async () => {
+  const toggleCamera = async () => {
     const room = roomRef.current;
-    if (!room || !canSpeak || screenBusy) return;
+    if (!room || !canSpeak || cameraBusy) return;
     if (!room.localParticipant.permissions?.canPublish) {
       toast.error("Vous n'avez pas la permission de partager dans ce Space.");
       return;
     }
-    const inIframe = window.self !== window.top;
-    const want = !screenSharer?.isLocal;
-    setScreenBusy(true);
+    const want = !cameraSharer?.isLocal;
+    setCameraBusy(true);
     try {
-      await room.localParticipant.setScreenShareEnabled(want);
+      await room.localParticipant.setCameraEnabled(want);
     } catch (e) {
       const msg = String(e?.message || e || '').toLowerCase();
-      if (inIframe && (msg.includes('notallowed') || msg.includes('getdisplaymedia') || msg.includes('permission'))) {
-        toast.info("Ouverture du Space dans un nouvel onglet pour autoriser le partage d'écran…");
-        const url = new URL(window.location.href);
-        url.searchParams.set('autoshare', '1');
-        window.open(url.toString(), '_blank');
-      } else if (msg.includes('notallowed') || msg.includes('denied') || msg.includes('permission')) {
-        toast.error("Partage d'écran refusé par le navigateur. Autorisez la capture d'écran.");
+      if (msg.includes('notallowed') || msg.includes('denied') || msg.includes('permission')) {
+        toast.error("Caméra refusée par le navigateur. Autorisez l'accès à la caméra.");
       } else {
-        toast.error("Partage d'écran indisponible sur cet appareil : " + (msg || 'non supporté'));
+        toast.error("Caméra indisponible sur cet appareil : " + (msg || 'non supporté'));
       }
     } finally {
-      setScreenBusy(false);
+      setCameraBusy(false);
     }
   };
 
@@ -428,20 +418,20 @@ export default function SpaceRoomPage() {
         <p className="px-4 py-2 font-inter text-sm text-muted-foreground border-b border-border/40">{space.description}</p>
       )}
 
-      {screenSharer && (
+      {cameraSharer && (
         <div className="px-4 py-3 border-b border-border/40">
           <div className="relative rounded-2xl overflow-hidden bg-black border border-border">
             <video
-              ref={screenSharer.isLocal ? localScreenVideoEl : remoteScreenVideoEl}
+              ref={cameraSharer.isLocal ? localCameraVideoEl : remoteCameraVideoEl}
               className="w-full aspect-video bg-black object-contain"
               autoPlay playsInline
-              muted={screenSharer.isLocal}
+              muted={cameraSharer.isLocal}
             />
             <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/60 backdrop-blur text-[10px] font-semibold text-white">
-              <Monitor className="w-3 h-3" /> {screenSharer.isLocal ? 'Vous partagez votre écran' : `${screenSharer.name} partage`}
+              <Video className="w-3 h-3" /> {cameraSharer.isLocal ? 'Votre caméra' : `Caméra de ${cameraSharer.name}`}
             </div>
-            {screenSharer.isLocal && (
-              <button onClick={toggleScreenShare} disabled={screenBusy}
+            {cameraSharer.isLocal && (
+              <button onClick={toggleCamera} disabled={cameraBusy}
                 className="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold disabled:opacity-50">
                 Arrêter
               </button>
@@ -513,9 +503,9 @@ export default function SpaceRoomPage() {
                       <div className="absolute bottom-0.5 right-0.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: p.micOn ? 'hsl(var(--primary))' : 'hsl(var(--muted))' }}>
                         {p.micOn ? <Mic className="w-2.5 h-2.5 text-primary-foreground" /> : <MicOff className="w-2.5 h-2.5 text-muted-foreground" />}
                       </div>
-                      {screenSharer?.identity === p.identity && (
+                      {cameraSharer?.identity === p.identity && (
                         <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-primary flex items-center justify-center border-2 border-card">
-                          <Monitor className="w-2.5 h-2.5 text-primary-foreground" />
+                          <Video className="w-2.5 h-2.5 text-primary-foreground" />
                         </span>
                       )}
                       {isHost && !p.isLocal && (
@@ -594,10 +584,10 @@ export default function SpaceRoomPage() {
           </button>
 
           {canSpeak && (
-            <button onClick={toggleScreenShare} disabled={status !== 'live' || screenBusy}
-              className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors disabled:opacity-40 ${screenSharer?.isLocal ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
-              title="Partager l'écran">
-              {screenBusy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Monitor className="w-5 h-5" />}
+            <button onClick={toggleCamera} disabled={status !== 'live' || cameraBusy}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors disabled:opacity-40 ${cameraSharer?.isLocal ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+              title="Partager la caméra">
+              {cameraBusy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Video className="w-5 h-5" />}
             </button>
           )}
 

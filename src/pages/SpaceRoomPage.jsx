@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Room, RoomEvent, ConnectionState } from 'livekit-client';
+import { Room, RoomEvent, ConnectionState, Track } from 'livekit-client';
 import { ArrowLeft, Mic, MicOff, PhoneOff, Phone, Loader2, Radio, AlertTriangle, Users, RotateCw } from 'lucide-react';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -18,6 +18,7 @@ export default function SpaceRoomPage() {
   const qc = useQueryClient();
   const roomRef = useRef(null);
   const intendedRef = useRef(false);
+  const audioContainerRef = useRef(null);
   const [status, setStatus] = useState('connecting'); // connecting | live | ended | error
   const [stage, setStage] = useState('init'); // init | importing | token | connecting | live
   const [errorMsg, setErrorMsg] = useState('');
@@ -85,6 +86,16 @@ export default function SpaceRoomPage() {
       roomRef.current = room;
       room.on(RoomEvent.ParticipantConnected, () => collectParticipants(room));
       room.on(RoomEvent.ParticipantDisconnected, () => collectParticipants(room));
+      room.on(RoomEvent.TrackSubscribed, (track) => {
+        if (track.kind === Track.Kind.Audio) {
+          try { const el = track.attach(); if (audioContainerRef.current) audioContainerRef.current.appendChild(el); } catch {}
+        }
+        collectParticipants(room);
+      });
+      room.on(RoomEvent.TrackUnsubscribed, (track) => {
+        try { track.detach(); const els = track.detach?.(); if (Array.isArray(els)) els.forEach(e => e?.remove?.()); } catch {}
+        collectParticipants(room);
+      });
       room.on(RoomEvent.ActiveSpeakerChanged, (speakers) => {
         setActiveSpeakers(new Set(speakers.map(s => s.identity)));
       });
@@ -203,6 +214,7 @@ export default function SpaceRoomPage() {
 
   return (
     <div className="w-full max-w-[680px] min-w-0 mx-auto pb-28">
+      <div ref={audioContainerRef} className="hidden" aria-hidden="true" />
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border/60 px-4 py-2 flex items-center gap-2">
         <button onClick={handleLeave} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/8"><ArrowLeft className="w-4 h-4" /></button>
         <div className="flex-1 min-w-0">

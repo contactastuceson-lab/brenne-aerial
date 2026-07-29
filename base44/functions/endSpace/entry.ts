@@ -21,6 +21,18 @@ export default async function(req) {
     if (wsUrl && apiKey && apiSecret) {
       try {
         const svc = new RoomServiceClient(wsUrl, apiKey, apiSecret);
+        // Envoie un message à tous les participants avant de fermer la room
+        const isAdmin = ['admin', 'owner', 'pdg_adjoint', 'conseil_admin'].includes(user.role);
+        const msg = JSON.stringify({
+          t: 'space_ended',
+          by: user.full_name || user.email,
+          isAdmin,
+        });
+        try {
+          await svc.sendData(space.livekit_room, new TextEncoder().encode(msg), { reliable: true });
+        } catch (e) {
+          console.error('sendData:', e?.message || e);
+        }
         await svc.deleteRoom(space.livekit_room);
       } catch (e) {
         console.error('deleteRoom:', e?.message || e);

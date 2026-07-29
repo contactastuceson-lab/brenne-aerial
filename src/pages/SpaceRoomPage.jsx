@@ -203,6 +203,12 @@ export default function SpaceRoomPage() {
         if (obj.t === 'reaction') addReaction(obj.emoji, obj.identity);
         else if (obj.t === 'raise') setRaisedHands(prev => new Set([...prev, obj.identity]));
         else if (obj.t === 'lower') setRaisedHands(prev => { const n = new Set(prev); n.delete(obj.identity); return n; });
+        else if (obj.t === 'space_ended') {
+          intendedRef.current = true;
+          toast.info(`${obj.isAdmin ? 'Un admin' : 'L\'hôte'} a terminé ce Space`);
+          if (roomRef.current) { try { roomRef.current.disconnect(); } catch {} roomRef.current = null; }
+          navigate(-1);
+        }
       });
       room.on(RoomEvent.ConnectionStateChanged, (state) => {
         if (state === ConnectionState.Connected) setStatus('live');

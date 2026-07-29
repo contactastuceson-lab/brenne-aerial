@@ -5,7 +5,7 @@ import {
   Settings, Globe, LayoutDashboard, MessageCircle, Compass, FileText, BookOpen,
   Calendar, Save, Loader2, AlertTriangle, Users, Star, Zap, Home,
   Warehouse, Calculator, Shield, Building2, ZoomIn, QrCode, Pencil, Check, BellRing,
-  Copy, CheckCheck, ExternalLink, WifiOff
+  Copy, CheckCheck, ExternalLink, WifiOff, Radio
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ const PAGE_SETTINGS = [
   // Communauté & espace client
   { key: 'page_discover_enabled', label: 'Page Découvrir', icon: Compass, description: 'Répertoire social des membres', default: 'true' },
   { key: 'page_messages_enabled', label: 'Page Messages', icon: MessageCircle, description: 'Messagerie entre membres', default: 'true' },
+  { key: 'page_spaces_enabled', label: 'Spaces Audio (Live)', icon: Radio, description: 'Salons audio en direct sur l\'accueil', default: 'true' },
   { key: 'page_espace_client_enabled', label: 'Espace Client', icon: Users, description: 'Portail fichiers clients', default: 'true' },
   { key: 'page_partenaires_enabled', label: 'Page Partenaires', icon: Building2, description: 'Annuaire des partenaires', default: 'true' },
   { key: 'page_parrainage_enabled', label: 'Page Parrainage', icon: Users, description: 'Programme de parrainage', default: 'true' },

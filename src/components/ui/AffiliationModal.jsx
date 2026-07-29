@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Calendar, ExternalLink, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Calendar, ExternalLink, HelpCircle, X } from 'lucide-react';
 import { Sheet, SheetClose, SheetContent } from '@/components/ui/sheet';
 import VerificationMark from '@/components/ui/VerificationMark';
 import { useCachedUser, useOrganizationAffiliations } from '@/hooks/useOrganizationAffiliations';
@@ -175,6 +176,9 @@ export default function AffiliationModal({ user, open, onOpenChange }) {
             <div className={`flex items-start gap-3 ${isSupreme ? 'rounded-2xl border border-chart-5/30 bg-chart-5/10 p-4 sky-glow' : 'rounded-xl border border-border bg-secondary/30 p-3.5'}`}>
               <VerificationMark type={badge.type} size={isSupreme ? '2.5em' : '2em'} marginLeft="0" className="mt-0.5 flex-shrink-0" />
               <p className={`leading-6 text-foreground ${isSupreme ? 'text-base font-medium' : 'text-sm'}`}>{description}</p>
+              <Link to={`/documentation/badges#${badge.type}`} target="_blank" className="mt-1.5 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors" title="En savoir plus sur ce badge">
+                <HelpCircle className="h-3 w-3" /> En savoir plus
+              </Link>
             </div>
             {isSupreme && (
               <div className="flex items-center gap-3 rounded-xl border border-chart-5/20 bg-chart-5/5 px-3 py-2.5">

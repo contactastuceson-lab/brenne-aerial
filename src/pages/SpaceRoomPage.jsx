@@ -270,12 +270,18 @@ export default function SpaceRoomPage() {
   const toggleScreenShare = async () => {
     const room = roomRef.current;
     if (!room || !canSpeak || screenBusy) return;
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getDisplayMedia) {
-      toast.error("Ce navigateur ne supporte pas le partage d'écran.");
-      return;
-    }
     if (!room.localParticipant.permissions?.canPublish) {
       toast.error("Vous n'avez pas la permission de partager dans ce Space.");
+      return;
+    }
+    const inIframe = window.self !== window.top;
+    const hasDisplayCapture = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getDisplayMedia;
+    if (!hasDisplayCapture) {
+      toast.error(
+        inIframe
+          ? "Partage d'écran bloqué par l'aperçu. Ouvrez l'app publiée (plein écran) pour partager."
+          : "Ce navigateur ne supporte pas le partage d'écran."
+      );
       return;
     }
     const want = !screenSharer?.isLocal;
@@ -284,7 +290,6 @@ export default function SpaceRoomPage() {
       await room.localParticipant.setScreenShareEnabled(want);
     } catch (e) {
       const msg = String(e?.message || e || '');
-      const inIframe = window.self !== window.top;
       if (msg.includes('NotAllowed') || msg.includes('denied') || msg.includes('Permission')) {
         toast.error(
           inIframe

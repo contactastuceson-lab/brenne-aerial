@@ -4,8 +4,10 @@ import { Radio, Plus } from 'lucide-react';
 import SpacesModule from '@/components/spaces/SpacesModule';
 import CreateSpaceDialog from '@/components/spaces/CreateSpaceDialog';
 import { usePageEnabled } from '@/hooks/usePageEnabled';
+import { useAuth } from '@/lib/AuthContext';
 
-export default function SpacesPage({ user }) {
+export default function SpacesPage() {
+  const { user } = useAuth();
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const { enabled: spacesEnabled } = usePageEnabled('page_spaces_enabled');

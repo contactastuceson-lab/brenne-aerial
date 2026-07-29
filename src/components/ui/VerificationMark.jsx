@@ -27,13 +27,8 @@ const COLORS = {
   innovator: 'rgb(217, 70, 239)',
 };
 
-// Badges with animated gradient effect
+// Animated gradient reserved for the most prestigious badges only
 const GRADIENT_BADGES = {
-  ambassador: ['#fb923c', '#f97316', '#ea580c'],
-  developer: ['#60a5fa', '#3b82f6', '#1e40af'],
-  pioneer: ['#34d399', '#059669', '#047857'],
-  early_supporter: ['#fbbf24', '#d97706', '#92400e'],
-  innovator: ['#e879f9', '#d946ef', '#a21caf'],
   supreme_gold: ['#FDE047', '#EAB308', '#A16207'],
 };
 

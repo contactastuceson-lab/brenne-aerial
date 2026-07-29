@@ -19,6 +19,10 @@ const VERIFICATION_TYPES = [
   { key: 'pro', label: 'Pro', color: 'text-emerald-400', bg: 'bg-emerald-400/15', border: 'border-emerald-400/40', desc: 'Professionnel validé (vert)' },
   { key: 'government', label: 'Gouvernement', color: 'text-zinc-300', bg: 'bg-zinc-500/15', border: 'border-zinc-400/40', desc: 'Institution gouvernementale ou multilatérale vérifiée (gris)' },
   { key: 'supreme', label: 'Suprême', color: 'text-chart-5', bg: 'bg-chart-5/15', border: 'border-chart-5/40', desc: 'Compte Suprême eza (or)' },
+  { key: 'urgency', label: 'Urgence', color: 'text-red-400', bg: 'bg-red-400/15', border: 'border-red-400/40', desc: 'Professionnel habilité aux interventions urgentes (rouge)' },
+  { key: 'moderator', label: 'Modérateur', color: 'text-red-500', bg: 'bg-red-500/15', border: 'border-red-500/40', desc: 'Modérateur de la communauté Eza (rouge foncé)' },
+  { key: 'beta', label: 'Beta Testeur', color: 'text-rose-400', bg: 'bg-rose-400/15', border: 'border-rose-400/40', desc: 'Pionnier testant les nouvelles fonctionnalités (rose)' },
+  { key: 'donor', label: 'Donateur', color: 'text-red-300', bg: 'bg-red-300/15', border: 'border-red-300/40', desc: 'Membre soutenant financièrement Eza (rouge clair)' },
 ];
 
 export default function AdminBadges() {

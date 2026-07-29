@@ -96,6 +96,7 @@ import CommunitiesPage from "@/pages/CommunitiesPage";
 import CommunityDetailPage from "@/pages/CommunityDetailPage";
 import SpaceRoomPage from "@/pages/SpaceRoomPage";
 import SpacesPage from "@/pages/SpacesPage";
+import WifiPortalPage from "@/pages/WifiPortalPage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -220,6 +221,7 @@ const AuthenticatedApp = () => {
 
       </Route>
 
+      <Route path="/wifi-portal" element={<WifiPortalPage />} />
       <Route path="*" element={<PageNotFound />} />
             </Routes>
     </>

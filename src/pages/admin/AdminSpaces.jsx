@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Radio, Trash2, Crown, Loader2, ExternalLink, Search, Filter, PhoneOff, ShieldCheck, ShieldOff, Pencil, Copy, RefreshCw, CheckSquare, Square, Radio as RadioIcon, Clock, Calendar, Users } from 'lucide-react';
+import { Radio, Trash2, Crown, Loader2, ExternalLink, Search, Filter, PhoneOff, ShieldCheck, ShieldOff, Pencil, Copy, RefreshCw, CheckSquare, Square, Radio as RadioIcon, Clock, Calendar, Users, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -79,6 +79,12 @@ export default function AdminSpaces() {
     mutationFn: ({ id, val }) => base44.entities.Space.update(id, { is_official: val }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-spaces'] }),
     onError: () => toast.error('Erreur lors de la mise à jour'),
+  });
+
+  const notifyEnd = useMutation({
+    mutationFn: (spaceId) => base44.functions.invoke('notifySpaceEnd', { spaceId }),
+    onSuccess: () => toast.success('Participants notifiés'),
+    onError: () => toast.error('Erreur lors de la notification'),
   });
 
   const bulkEnd = useMutation({
@@ -283,10 +289,16 @@ export default function AdminSpaces() {
 
                     <div className="flex items-center gap-2 mt-3 flex-wrap">
                       {s.status === 'live' && (
-                        <Button size="sm" variant="destructive" onClick={() => endMutation.mutate(s.id)} disabled={endMutation.isPending}>
-                          {endMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PhoneOff className="w-3.5 h-3.5" />}
-                          Terminer
-                        </Button>
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => notifyEnd.mutate(s.id)} disabled={notifyEnd.isPending || endMutation.isPending}>
+                            {notifyEnd.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Bell className="w-3.5 h-3.5" />}
+                            Notifier
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => endMutation.mutate(s.id)} disabled={endMutation.isPending}>
+                            {endMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PhoneOff className="w-3.5 h-3.5" />}
+                            Terminer
+                          </Button>
+                        </>
                       )}
                       {s.status !== 'ended' && (
                         <Button size="sm" variant="outline" asChild>

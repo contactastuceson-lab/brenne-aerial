@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import { applySeoMeta, getSpaceSeoData } from '@/lib/seo';
 
 const parseMeta = (p) => {
   try { return JSON.parse(p?.metadata || '{}'); } catch { return {}; }
@@ -77,6 +78,10 @@ export default function SpaceRoomPage() {
     retry: false,
   });
   const isHost = space?.host_id === user?.id;
+
+  useEffect(() => {
+    if (space) applySeoMeta(getSpaceSeoData(space));
+  }, [space]);
 
   useEffect(() => {
     isHostRef.current = isHost;

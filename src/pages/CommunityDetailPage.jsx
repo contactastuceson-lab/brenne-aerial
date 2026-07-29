@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PostCard from '@/components/post/PostCard';
 import { ArrowLeft, Lock, Globe, Users, Loader2, Send, LogIn, LogOut, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { applySeoMeta, getCommunitySeoData } from '@/lib/seo';
 
 export default function CommunityDetailPage() {
   const { id } = useParams();
@@ -30,6 +31,10 @@ export default function CommunityDetailPage() {
   const community = detail?.community;
   const posts = detail?.posts || [];
   const isMember = detail?.isMember || (community?.owner_id === user?.id);
+
+  useEffect(() => {
+    if (community) applySeoMeta(getCommunitySeoData(community));
+  }, [community]);
 
   const handleJoin = async (action) => {
     setJoining(true);

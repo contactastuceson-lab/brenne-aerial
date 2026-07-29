@@ -6,6 +6,7 @@ import PostCard from '@/components/post/PostCard';
 import HomePostCard from '@/components/home/HomePostCard';
 import CreatePost from '@/components/post/CreatePost';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
+import { applySeoMeta, getPostSeoData } from '@/lib/seo';
 
 export default function PostDetailPage() {
   const { id } = useParams();
@@ -28,6 +29,7 @@ export default function PostDetailPage() {
         setCurrentUser(me);
         setPost(postData);
         setReplies(replyList);
+        applySeoMeta(getPostSeoData(postData));
         // Load parent post if this is a reply
         if (postData.reply_to_id) {
           const parent = await base44.entities.Post.get(postData.reply_to_id).catch(() => null);

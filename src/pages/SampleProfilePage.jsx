@@ -10,6 +10,7 @@ import { VERIFICATION_CONFIG } from '@/components/ui/VerificationChip';
 import ProfileNotFound from '@/components/profile/ProfileNotFound';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { applySeoMeta, getSampleProfileSeoData } from '@/lib/seo';
 
 const BADGE_CONFIG = {
   'Fondateur': { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -57,7 +58,7 @@ export default function SampleProfilePage() {
         if (!found) { setNotFound(true); return; }
         setProfile({ ...found, is_sample: true });
         const name = found.display_name || found.full_name || found.username;
-        document.title = `${name} (@${found.username}) · eza`;
+        applySeoMeta(getSampleProfileSeoData(found));
         let desc = document.querySelector('meta[name="description"]');
         if (!desc) { desc = document.createElement('meta'); desc.name = 'description'; document.head.appendChild(desc); }
         desc.content = `${name} (@${found.username}) sur eza. ${found.bio || ''}`.slice(0, 200);

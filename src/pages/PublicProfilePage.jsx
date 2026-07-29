@@ -117,9 +117,9 @@ export default function PublicProfilePage() {
     const displayedVerification = getHighestVerificationBadge(user.verifications);
     const badges = displayedVerification ? [displayedVerification].map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ') : '';
 
-    const title = `${displayName} (${handle}) · Brenne Aerial`;
+    const title = `${displayName} (${handle}) · EZA`;
     const desc = [
-      `${displayName} ${handle} sur Brenne Aerial.`,
+      `${displayName} ${handle} sur EZA.`,
       followerCount ? `${followerCount} abonné${followerCount > 1 ? 's' : ''}.` : '',
       badges ? `${badges}.` : '',
       bio,

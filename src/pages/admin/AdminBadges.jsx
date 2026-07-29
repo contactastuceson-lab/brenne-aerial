@@ -23,6 +23,18 @@ const VERIFICATION_TYPES = [
   { key: 'moderator', label: 'Modérateur', color: 'text-red-500', bg: 'bg-red-500/15', border: 'border-red-500/40', desc: 'Modérateur de la communauté Eza (rouge foncé)' },
   { key: 'beta', label: 'Beta Testeur', color: 'text-rose-400', bg: 'bg-rose-400/15', border: 'border-rose-400/40', desc: 'Pionnier testant les nouvelles fonctionnalités (rose)' },
   { key: 'donor', label: 'Donateur', color: 'text-red-300', bg: 'bg-red-300/15', border: 'border-red-300/40', desc: 'Membre soutenant financièrement Eza (rouge clair)' },
+  { key: 'ambassador', label: 'Ambassadeur', color: 'text-orange-400', bg: 'bg-orange-400/15', border: 'border-orange-400/40', desc: 'Représentant officiel d\u2019une marque partenaire (orange)' },
+  { key: 'developer', label: 'Développeur', color: 'text-blue-400', bg: 'bg-blue-400/15', border: 'border-blue-400/40', desc: 'Contribue au code source d\u2019Eza (bleu)' },
+  { key: 'translator', label: 'Traducteur', color: 'text-cyan-400', bg: 'bg-cyan-400/15', border: 'border-cyan-400/40', desc: 'Traduit la plateforme en d\u2019autres langues (cyan)' },
+  { key: 'mentor', label: 'Mentor', color: 'text-purple-500', bg: 'bg-purple-500/15', border: 'border-purple-500/40', desc: 'Accompagne les nouveaux membres (violet)' },
+  { key: 'scholar', label: 'Érudit', color: 'text-indigo-400', bg: 'bg-indigo-400/15', border: 'border-indigo-400/40', desc: 'Connaissances approfondies et recherche (indigo)' },
+  { key: 'pioneer', label: 'Pionnier', color: 'text-emerald-500', bg: 'bg-emerald-500/15', border: 'border-emerald-500/40', desc: 'Premier membre dès le lancement (vert émeraude)' },
+  { key: 'advocate', label: 'Avocat', color: 'text-pink-400', bg: 'bg-pink-400/15', border: 'border-pink-400/40', desc: 'Militant pour les valeurs d\u2019Eza (rose)' },
+  { key: 'organizer', label: 'Organisateur', color: 'text-teal-400', bg: 'bg-teal-400/15', border: 'border-teal-400/40', desc: 'Organise des événements communautaires (turquoise)' },
+  { key: 'contributor', label: 'Contributeur', color: 'text-violet-400', bg: 'bg-violet-400/15', border: 'border-violet-400/40', desc: 'Contributeur régulier aux projets (violet clair)' },
+  { key: 'early_supporter', label: 'Soutien historique', color: 'text-amber-500', bg: 'bg-amber-500/15', border: 'border-amber-500/40', desc: 'A soutenu Eza dès le début (ambre)' },
+  { key: 'protector', label: 'Protecteur', color: 'text-slate-400', bg: 'bg-slate-400/15', border: 'border-slate-400/40', desc: 'Veille à la sécurité de la communauté (gris-bleu)' },
+  { key: 'innovator', label: 'Innovateur', color: 'text-fuchsia-400', bg: 'bg-fuchsia-400/15', border: 'border-fuchsia-400/40', desc: 'Propose des idées novantes (fuchsia)' },
 ];
 
 export default function AdminBadges() {

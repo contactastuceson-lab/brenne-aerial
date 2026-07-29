@@ -1,5 +1,9 @@
 export const AFFILIATION_ELIGIBLE_BADGES = ['official', 'supreme', 'officiel', 'suprême'];
-export const AFFILIATION_BADGE_HIERARCHY = ['verified', 'certified', 'pro', 'official', 'government', 'supreme', 'urgency', 'moderator', 'beta', 'donor'];
+export const AFFILIATION_BADGE_HIERARCHY = [
+  'verified', 'donor', 'beta', 'early_supporter', 'contributor', 'certified', 'pro', 'urgency',
+  'pioneer', 'translator', 'official', 'moderator', 'government', 'supreme',
+  'ambassador', 'developer', 'mentor', 'scholar', 'advocate', 'organizer', 'protector', 'innovator',
+];
 export const AFFILIATION_BADGE_LEVEL = {
   verified: 1,
   certified: 2,
@@ -11,14 +15,30 @@ export const AFFILIATION_BADGE_LEVEL = {
   moderator: 4,
   beta: 2,
   donor: 1,
+  ambassador: 4,
+  developer: 4,
+  translator: 2,
+  mentor: 3,
+  scholar: 4,
+  pioneer: 3,
+  advocate: 3,
+  organizer: 3,
+  contributor: 2,
+  early_supporter: 2,
+  protector: 4,
+  innovator: 4,
 };
 
 const normalizeBadge = (value) => String(value || '').toLowerCase();
-const AFFILIATION_VERIFICATION_ORDER = ['verified', 'donor', 'beta', 'certified', 'pro', 'urgency', 'official', 'moderator', 'government', 'supreme'];
+const AFFILIATION_VERIFICATION_ORDER = [
+  'verified', 'donor', 'early_supporter', 'beta', 'contributor', 'certified', 'pro', 'urgency',
+  'pioneer', 'translator', 'official', 'moderator', 'ambassador', 'developer', 'mentor',
+  'scholar', 'advocate', 'organizer', 'protector', 'innovator', 'government', 'supreme',
+];
 const canonicalVerificationBadge = (value) => {
   const normalized = normalizeBadge(value);
   if (['supreme', 'suprême'].includes(normalized)) return 'supreme';
-  if (['official', 'officiel'].includes(normalized)) return 'official';
+  if (['official', '! officiel', 'officiel'].includes(normalized)) return 'official';
   if (['government', 'gouvernement', 'gouvernemental', 'multilateral', 'multilatéral'].includes(normalized)) return 'government';
   if (normalized === 'pro') return 'pro';
   if (['certified', 'certifié'].includes(normalized)) return 'certified';
@@ -61,7 +81,7 @@ export function getOrganizationBadge(user = {}) {
 
   if (normalizedVerifications.includes('supreme') || normalizedVerifications.includes('suprême')) return 'supreme';
   if (normalizedVerifications.includes('official') || normalizedVerifications.includes('officiel')) return 'official';
-  if (badges.some((value) => normalizeBadge(value) === 'suprême')) return 'supreme';
+  if (badges.some((value) => normalizeBadge(value) === 'suprême')) return '! suprême';
   if (badges.some((value) => normalizeBadge(value) === 'officiel')) return 'official';
   return null;
 }

@@ -29,7 +29,7 @@ export default async function(req) {
           isAdmin,
         });
         try {
-          await svc.sendData(space.livekit_room, new TextEncoder().encode(msg), { reliable: true });
+          await svc.sendData(space.livekit_room, new TextEncoder().encode(msg), { kind: 0 });
         } catch (e) {
           console.error('sendData:', e?.message || e);
         }

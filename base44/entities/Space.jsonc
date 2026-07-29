@@ -61,6 +61,11 @@
     "livekit_room": {
       "type": "string",
       "description": "Nom de la room LiveKit"
+    },
+    "is_official": {
+      "type": "boolean",
+      "default": false,
+      "description": "Space officiel EZA (badg\u00e9 Officiel)"
     }
   },
   "required": [
@@ -81,6 +86,21 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "conseil_admin"
+          }
         }
       ]
     },
@@ -92,6 +112,21 @@
         {
           "user_condition": {
             "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "conseil_admin"
           }
         }
       ]

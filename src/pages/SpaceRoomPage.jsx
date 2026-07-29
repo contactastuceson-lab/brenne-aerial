@@ -425,7 +425,13 @@ export default function SpaceRoomPage() {
 
       {cameraSharer && (
         <div className="px-4 py-3 border-b border-border/40">
-          <div className="relative rounded-2xl overflow-hidden bg-black border border-border">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: -8 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+            className="relative rounded-2xl overflow-hidden bg-black border border-primary/40 sky-glow"
+          >
             <video
               ref={cameraSharer.isLocal ? localCameraVideoEl : remoteCameraVideoEl}
               className="w-full aspect-video bg-black object-contain"
@@ -441,7 +447,8 @@ export default function SpaceRoomPage() {
                 Arrêter
               </button>
             )}
-          </div>
+            <div className="scan-line absolute left-0 right-0 top-0 h-px bg-primary/70 pointer-events-none" />
+          </motion.div>
         </div>
       )}
 

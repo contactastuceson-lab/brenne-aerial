@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { Room, RoomEvent, ConnectionState } from 'livekit-client';
 import { ArrowLeft, Mic, MicOff, PhoneOff, Phone, Loader2, Radio, AlertTriangle, Users, RotateCw } from 'lucide-react';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -69,9 +70,6 @@ export default function SpaceRoomPage() {
     let currentStage = 'init';
     let room;
     try {
-      currentStage = 'importing'; setStage('importing');
-      const { Room, RoomEvent, ConnectionState } = await import('livekit-client');
-
       currentStage = 'token'; setStage('token');
       let data;
       try {
@@ -226,10 +224,9 @@ export default function SpaceRoomPage() {
           <div className="py-20 flex flex-col items-center gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
             <p className="font-inter text-sm text-muted-foreground">
-              {stage === 'importing' && 'Chargement du moteur audio…'}
               {stage === 'token' && 'Génération du jeton…'}
               {stage === 'connecting' && 'Connexion au serveur audio…'}
-              {(stage === 'init' || !stage) && 'Connexion au Space en cours…'}
+              {(stage === 'init' || stage === 'live' || !stage) && 'Connexion au Space en cours…'}
             </p>
             <button onClick={handleLeave} className="mt-2 text-xs text-muted-foreground/60 hover:text-foreground">Annuler</button>
           </div>

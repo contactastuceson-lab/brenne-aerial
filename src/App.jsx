@@ -89,6 +89,7 @@ import SampleProfilePage from "@/pages/SampleProfilePage";
 import PortfolioPage from "@/pages/PortfolioPage";
 import DocumentationPage from "@/pages/DocumentationPage";
 import DocumentationArticlePage from "@/pages/DocumentationArticlePage";
+import BadgesDocPage from "@/pages/BadgesDocPage";
 import UserSpacePage from "@/pages/UserSpacePage";
 import BookmarksPage from "@/pages/BookmarksPage";
 import ListsPage from "@/pages/ListsPage";
@@ -178,6 +179,7 @@ const AuthenticatedApp = () => {
           <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />
+          <Route path="/documentation/badges" element={<BadgesDocPage />} />
           {/* Profile catch-all route for /@username - must be last in public routes */}
           <Route path="/:pathUsername" element={<PublicProfilePage />} />
         </Route>

@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import BadgeChip from '@/components/ui/BadgeChip';
 import BadgeEligibilityBlock from '@/components/admin/badges/BadgeEligibilityBlock';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
+import { HelpCircle } from 'lucide-react';
 
 const ALL_BADGES = ['Fondateur', 'Collaborateur', 'VIP', 'Admin', 'Pilote', 'Officiel', 'Vérifié', 'Beta Testeur', 'Partenaire'];
 const BADGE_ICONS = { Fondateur: Check, Collaborateur: Check, VIP: Check, Admin: Check, Pilote: Check, Officiel: Check, Vérifié: Check, 'Beta Testeur': Check, Partenaire: Check };
@@ -254,6 +256,9 @@ export default function AdminBadges() {
                           >
                             <span style={{ fontSize: '1rem' }}><VerificationMark type={vt.key} /></span>
                             <span className={`font-inter text-[9px] font-semibold text-center leading-tight ${active ? vt.color : 'text-muted-foreground'}`}>{vt.label}</span>
+                            <Link to={`/documentation/badges#${vt.key}`} target="_blank" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-0.5 text-[8px] text-muted-foreground/60 hover:text-primary transition-colors" title="En savoir plus">
+                              <HelpCircle className="w-2.5 h-2.5" /> En savoir plus
+                            </Link>
                           </button>
                         );
                       })}

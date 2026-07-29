@@ -1,5 +1,5 @@
 export const AFFILIATION_ELIGIBLE_BADGES = ['official', 'supreme', 'officiel', 'suprême'];
-export const AFFILIATION_BADGE_HIERARCHY = ['verified', 'certified', 'pro', 'official', 'government', 'supreme'];
+export const AFFILIATION_BADGE_HIERARCHY = ['verified', 'certified', 'pro', 'official', 'government', 'supreme', 'urgency', 'moderator', 'beta', 'donor'];
 export const AFFILIATION_BADGE_LEVEL = {
   verified: 1,
   certified: 2,
@@ -7,10 +7,14 @@ export const AFFILIATION_BADGE_LEVEL = {
   official: 4,
   supreme: 5,
   government: 5,
+  urgency: 3,
+  moderator: 4,
+  beta: 2,
+  donor: 1,
 };
 
 const normalizeBadge = (value) => String(value || '').toLowerCase();
-const AFFILIATION_VERIFICATION_ORDER = ['verified', 'certified', 'pro', 'official', 'government', 'supreme'];
+const AFFILIATION_VERIFICATION_ORDER = ['verified', 'donor', 'beta', 'certified', 'pro', 'urgency', 'official', 'moderator', 'government', 'supreme'];
 const canonicalVerificationBadge = (value) => {
   const normalized = normalizeBadge(value);
   if (['supreme', 'suprême'].includes(normalized)) return 'supreme';

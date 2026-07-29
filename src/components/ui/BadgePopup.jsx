@@ -91,9 +91,14 @@ const BADGE_INFO = {
   Donateur: { label: 'Donateur', icon: Heart, bg: '#ef4444', short: 'Supporteur du projet.', description: 'Membre ayant soutenu financièrement le projet.' },
 };
 
-// Gradient header reserved for the most prestigious badge only
+// Gradient header reserved for the main status badges only
 const GRADIENT_BG = {
   supreme: 'linear-gradient(135deg, #fde047, #eab308, #a16207)',
+  verified: 'linear-gradient(135deg, #38bdf8, #0ea5e9, #0284c7)',
+  certified: 'linear-gradient(135deg, #fde047, #eab308, #a16207)',
+  official: 'linear-gradient(135deg, #c084fc, #a855f7, #7c3aed)',
+  pro: 'linear-gradient(135deg, #34d399, #10b981, #047857)',
+  government: 'linear-gradient(135deg, #a4b0b8, #71717a, #52525b)',
 };
 
 function Popup({ info, badgeKey, anchorRect, onClose }) {

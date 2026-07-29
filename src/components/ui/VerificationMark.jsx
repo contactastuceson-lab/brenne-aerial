@@ -27,9 +27,13 @@ const COLORS = {
   innovator: 'rgb(217, 70, 239)',
 };
 
-// Animated gradient reserved for the most prestigious badges only
+// Animated gradient reserved for the main status badges only
 const GRADIENT_BADGES = {
   supreme_gold: ['#FDE047', '#EAB308', '#A16207'],
+  verified: ['#38bdf8', '#0ea5e9', '#0284c7'],
+  official: ['#c084fc', '#a855f7', '#7c3aed'],
+  pro: ['#34d399', '#10b981', '#047857'],
+  government: ['#a4b0b8', '#71717a', '#52525b'],
 };
 
 const ROSETTE_TYPES = [

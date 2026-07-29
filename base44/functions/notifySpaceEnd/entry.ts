@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { RoomServiceClient } from 'npm:livekit-server-sdk@2.10.0';
+import { RoomServiceClient } from 'npm:livekit-server-sdk@2.17.0';
 
 export default async function(req) {
   try {
@@ -25,7 +25,7 @@ export default async function(req) {
           by: user.full_name || user.email,
           isAdmin,
         });
-        await svc.sendData(space.livekit_room, new TextEncoder().encode(msg), { kind: 0 });
+        await svc.sendData(space.livekit_room, new TextEncoder().encode(msg), { reliable: true });
       } catch (e) {
         console.error('sendData:', e?.message || e);
       }

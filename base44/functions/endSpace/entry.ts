@@ -33,6 +33,8 @@ export default async function(req) {
         } catch (e) {
           console.error('sendData:', e?.message || e);
         }
+        // Laisse le temps aux participants de recevoir le message avant la fermeture
+        await new Promise(r => setTimeout(r, 2500));
         await svc.deleteRoom(space.livekit_room);
       } catch (e) {
         console.error('deleteRoom:', e?.message || e);

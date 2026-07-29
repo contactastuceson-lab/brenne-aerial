@@ -217,7 +217,8 @@ export default function SpaceRoomPage() {
         if (state === ConnectionState.Connected) setStatus('live');
         if (state === ConnectionState.Disconnected && !intendedRef.current) {
           if (roomRef.current) { try { roomRef.current.disconnect(); } catch {} roomRef.current = null; }
-          setStatus('error'); setErrorMsg('Connexion audio perdue.');
+          toast.info('Le Space a été terminé');
+          navigate(-1);
         }
       });
       room.on(RoomEvent.LocalTrackPublished, (publication, participant) => {

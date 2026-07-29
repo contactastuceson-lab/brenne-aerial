@@ -63,7 +63,7 @@ export default function WifiPortalPage() {
                     <span className="font-mono text-[10px] uppercase tracking-wider text-primary">Réseau sécurisé</span>
                   </div>
                   <h1 className="font-grotesk font-bold text-2xl leading-tight mb-2">
-                    Connectez-vous à votre compte Iza
+                    Connectez-vous à votre compte Eza
                   </h1>
                   <p className="font-inter text-sm text-muted-foreground leading-relaxed">
                     pour activer votre accès Internet.
@@ -142,7 +142,7 @@ export default function WifiPortalPage() {
                       type="submit"
                       className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-grotesk font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.97] transition-all sky-glow"
                     >
-                      SE CONNECTER AVEC IZA
+                      SE CONNECTER AVEC EZA
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </form>

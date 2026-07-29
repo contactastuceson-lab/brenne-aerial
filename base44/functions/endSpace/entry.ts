@@ -11,7 +11,8 @@ export default async function(req) {
     if (!spaceId) return Response.json({ error: 'spaceId requis' }, { status: 400 });
     const space = await base44.asServiceRole.entities.Space.get(spaceId).catch(() => null);
     if (!space) return Response.json({ error: 'Space introuvable' }, { status: 404 });
-    if (space.host_id !== user.id) return Response.json({ error: 'Hôte uniquement' }, { status: 403 });
+    const isAdmin = ['admin', 'owner', 'pdg_adjoint', 'conseil_admin'].includes(user.role);
+    if (space.host_id !== user.id && !isAdmin) return Response.json({ error: 'Hôte ou admin uniquement' }, { status: 403 });
 
     // Détruit la room LiveKit → déconnecte tous les participants
     const wsUrl = Deno.env.get('LIVEKIT_WS_URL');

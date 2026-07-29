@@ -217,6 +217,10 @@ export default function SpaceRoomPage() {
 
       setStatus('live'); setStage('live');
       await room.localParticipant.setMicrophoneEnabled(false);
+      const shareParams = new URLSearchParams(window.location.search);
+      if (shareParams.get('autoshare') === '1') {
+        try { await room.localParticipant.setScreenShareEnabled(true); } catch {}
+      }
       collectParticipants(room);
     } catch (e) {
       if (room) { try { room.disconnect(); } catch {} }
@@ -277,11 +281,14 @@ export default function SpaceRoomPage() {
     const inIframe = window.self !== window.top;
     const hasDisplayCapture = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getDisplayMedia;
     if (!hasDisplayCapture) {
-      toast.error(
-        inIframe
-          ? "Partage d'écran bloqué par l'aperçu. Ouvrez l'app publiée (plein écran) pour partager."
-          : "Ce navigateur ne supporte pas le partage d'écran."
-      );
+      if (inIframe) {
+        toast.info("Ouverture du Space dans un nouvel onglet pour autoriser le partage d'écran…");
+        const url = new URL(window.location.href);
+        url.searchParams.set('autoshare', '1');
+        window.open(url.toString(), '_blank');
+      } else {
+        toast.error("Ce navigateur ne supporte pas le partage d'écran.");
+      }
       return;
     }
     const want = !screenSharer?.isLocal;

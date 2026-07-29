@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Heart, MessageCircle, MoreHorizontal, Eye, Trash2, Pencil, X, Check, Repeat2, Upload } from 'lucide-react';
+import { Heart, MessageCircle, MoreHorizontal, Eye, Trash2, Pencil, X, Check, Repeat2, Upload, Bookmark, Pin } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -18,6 +18,8 @@ import { parseEntityDate } from '@/lib/entityDate';
 import { formatPostTime } from '@/lib/postTime';
 import { handleIdentityClick } from '@/lib/identityClick';
 import AffiliationModal from '@/components/ui/AffiliationModal';
+import RepostDialog from '@/components/post/RepostDialog';
+import RepostEmbed from '@/components/post/RepostEmbed';
 
 const TRUNCATE_LIMIT = 560;
 
@@ -67,6 +69,10 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
   const [deleted, setDeleted] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [identityModalOpen, setIdentityModalOpen] = useState(false);
+  const [repostOpen, setRepostOpen] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const [pinned, setPinned] = useState(!!post.is_pinned);
   const menuRef = useRef(null);
   // Refs pour éviter les race conditions — source de vérité locale
   const likedByRef = useRef(post.liked_by || []);
@@ -164,6 +170,60 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
     finally { setEditLoading(false); }
   }, [post, editContent, onEdited]);
 
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    let active = true;
+    base44.entities.Bookmark.filter({ user_id: currentUser.id, post_id: post.id })
+      .then(b => { if (active) setBookmarked(b.length > 0); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [currentUser?.id, post.id]);
+
+  const handleBookmark = useCallback(async (e) => {
+    e.stopPropagation();
+    if (!currentUser) { navigate('/login'); return; }
+    if (bookmarkLoading) return;
+    setBookmarkLoading(true);
+    const was = bookmarked;
+    setBookmarked(!was);
+    try {
+      if (was) {
+        const existing = await base44.entities.Bookmark.filter({ user_id: currentUser.id, post_id: post.id });
+        if (existing[0]) await base44.entities.Bookmark.delete(existing[0].id);
+      } else {
+        await base44.entities.Bookmark.create({
+          user_id: currentUser.id,
+          post_id: post.id,
+          post_excerpt: (post.content || '').slice(0, 120),
+          author_username: post.author_username,
+        });
+      }
+    } catch {
+      setBookmarked(was);
+    } finally {
+      setBookmarkLoading(false);
+    }
+  }, [bookmarked, bookmarkLoading, currentUser, post, navigate]);
+
+  const handleTogglePin = useCallback(async (e) => {
+    e?.stopPropagation();
+    if (!isOwner) return;
+    const next = !pinned;
+    setPinned(next);
+    try {
+      if (next) {
+        const own = await base44.entities.Post.filter({ author_id: currentUser.id, is_pinned: true });
+        for (const p of own) { if (p.id !== post.id) await base44.entities.Post.update(p.id, { is_pinned: false }); }
+      }
+      await base44.entities.Post.update(post.id, { is_pinned: next });
+      toast.success(next ? 'Épinglé sur votre profil' : 'Désépinglé');
+      queryClient.invalidateQueries({ queryKey: ['home-feed-posts'] });
+    } catch {
+      setPinned(!next);
+      toast.error('Erreur lors de l\'épinglage');
+    }
+  }, [isOwner, pinned, post, currentUser, queryClient]);
+
   const currentContent = editing ? editContent : (post.content || '');
   const isLong = currentContent.length > TRUNCATE_LIMIT;
   const displayContent = isLong && !expanded ? currentContent.slice(0, TRUNCATE_LIMIT) + '…' : currentContent;
@@ -230,6 +290,14 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
               </button>
               {menuOpen && (
                 <div className="absolute right-0 top-7 z-50 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
+                  {!post.reply_to_id && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setMenuOpen(false); handleTogglePin(e); }}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-foreground hover:bg-white/6 transition-colors"
+                    >
+                      <Pin className="w-3.5 h-3.5 text-amber-400" /> {pinned ? 'Désépingler' : 'Épingler sur le profil'}
+                    </button>
+                  )}
                   <button
                     onClick={e => { e.stopPropagation(); setMenuOpen(false); setEditing(true); setEditContent(post.content || ''); }}
                     className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-foreground hover:bg-white/6 transition-colors"
@@ -254,6 +322,16 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
             En réponse à <span className="text-primary hover:underline cursor-pointer">@{post.reply_to_author_username}</span>
           </p>
         )}
+
+        {/* Pinned label */}
+        {pinned && (
+          <div className="flex items-center gap-1 text-[12px] text-muted-foreground/60 mb-1">
+            <Pin className="w-3 h-3" /> Épinglé
+          </div>
+        )}
+
+        {/* Repost / quote embed */}
+        {post.repost_of_id && <RepostEmbed postId={post.repost_of_id} />}
 
         {/* Text content */}
         {editing ? (
@@ -317,8 +395,9 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
           />
           <ActionBtn
             icon={<Repeat2 className="w-[17px] h-[17px]" />}
+            count={(post.reposts_count || 0) + (post.quotes_count || 0)}
             color="green"
-            onClick={(e) => { e.stopPropagation(); }}
+            onClick={(e) => { e.stopPropagation(); setRepostOpen(true); }}
           />
           <ActionBtn
             icon={<Heart className={`w-[17px] h-[17px] ${liked ? 'fill-current' : ''}`} />}
@@ -336,9 +415,16 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
             color="blue"
             onClick={handleShare}
           />
+          <ActionBtn
+            icon={<Bookmark className={`w-[17px] h-[17px] ${bookmarked ? 'fill-current' : ''}`} />}
+            active={bookmarked}
+            color="amber"
+            onClick={handleBookmark}
+          />
         </div>
       </div>
 
+      <RepostDialog open={repostOpen} onClose={() => setRepostOpen(false)} post={post} currentUser={currentUser} />
       <AffiliationModal user={identityUser} open={identityModalOpen} onOpenChange={setIdentityModalOpen} />
 
       {/* Delete confirm */}
@@ -390,6 +476,7 @@ const ActionBtn = memo(function ActionBtn({ icon, count, onClick, active = false
     blue:  { text: 'text-primary',    bg: 'hover:bg-primary/10',    hover: 'group-hover/a:text-primary' },
     green: { text: 'text-emerald-400', bg: 'hover:bg-emerald-400/10', hover: 'group-hover/a:text-emerald-400' },
     rose:  { text: 'text-rose-500',   bg: 'hover:bg-rose-500/10',   hover: 'group-hover/a:text-rose-500' },
+    amber: { text: 'text-amber-400', bg: 'hover:bg-amber-400/10',  hover: 'group-hover/a:text-amber-400' },
   };
   const c = colorMap[color] || colorMap.blue;
   return (

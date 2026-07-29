@@ -649,7 +649,10 @@ export default function PublicProfilePage() {
           {/* Tab content */}
           <div className="min-h-[300px]">
             {(() => {
-              const tabPosts = profileTab === 'posts' ? userPosts : profileTab === 'replies' ? userReplies : userMediaPosts;
+              let tabPosts = profileTab === 'posts' ? userPosts : profileTab === 'replies' ? userReplies : userMediaPosts;
+              if (profileTab === 'posts' && tabPosts.length) {
+                tabPosts = [...tabPosts].sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0));
+              }
               if (tabPosts.length === 0) {
                 return (
                   <div className="py-16 text-center px-4">

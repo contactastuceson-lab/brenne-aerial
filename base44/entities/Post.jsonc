@@ -87,16 +87,46 @@
     "is_pinned": {
       "type": "boolean",
       "default": false,
-      "description": "Post \u00e9pingl\u00e9"
+      "description": "Post \u00e9pingl\u00e9 en haut du profil de l'auteur"
     },
     "visibility": {
       "type": "string",
       "enum": [
         "public",
-        "followers"
+        "followers",
+        "certified",
+        "eza_circle"
       ],
       "default": "public",
-      "description": "Visibilit\u00e9 du post"
+      "description": "Port\u00e9e du post"
+    },
+    "repost_of_id": {
+      "type": "string",
+      "description": "ID du post original si repost / citation"
+    },
+    "quote_content": {
+      "type": "string",
+      "description": "Commentaire ajout\u00e9 lors d'une citation (quote post)"
+    },
+    "reposts_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de reposts simples"
+    },
+    "quotes_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de citations (quote posts)"
+    },
+    "is_draft": {
+      "type": "boolean",
+      "default": false,
+      "description": "Brouillon non publi\u00e9"
+    },
+    "scheduled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de publication programm\u00e9e"
     },
     "migrated_from_discussion": {
       "type": "string",

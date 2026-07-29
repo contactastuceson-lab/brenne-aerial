@@ -17,6 +17,7 @@ const NAV = [
   { icon: Bell,          label: 'Notifications',  to: '/notifications' },
   { icon: UserCircle,    label: 'Mon espace',     to: '/espace' },
   { icon: MessageCircle, label: 'Messages',       to: '/messages', badge: true },
+  { icon: Bookmark,      label: 'Signets',        to: '/bookmarks' },
   { icon: FileText,      label: 'Forum',          to: '/forum' },
   { icon: Camera,        label: 'Portfolio',      to: '/portfolio' },
   { icon: Briefcase,     label: 'Business',       to: '/business', businessOnly: true },

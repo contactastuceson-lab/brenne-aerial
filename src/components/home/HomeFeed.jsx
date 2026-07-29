@@ -134,7 +134,7 @@ export default function HomeFeed({ user }) {
 
   useEffect(() => {
     const unsub = base44.entities.Post.subscribe((event) => {
-      if (event.type === 'create' && !event.data?.reply_to_id) setNewCount(c => c + 1);
+      if (event.type === 'create' && !event.data?.reply_to_id && !event.data?.is_draft) setNewCount(c => c + 1);
     });
     return unsub;
   }, []);
@@ -150,7 +150,7 @@ export default function HomeFeed({ user }) {
 
   const filteredPosts = useMemo(() => {
     // Le fil principal ne montre que les publications racines ; les réponses restent dans la vue détaillée du post.
-    let result = posts.filter((post) => !post.reply_to_id);
+    let result = posts.filter((post) => !post.reply_to_id && !post.is_draft);
 
     // Hashtag filter
     if (urlTag) {

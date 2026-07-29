@@ -22,6 +22,7 @@ const MAIN_TABS = [
 const MORE_ITEMS = [
   { to: '/notifications',        icon: Bell,         label: 'Notifications',  color: 'text-primary' },
   { to: '/profile',              icon: User,         label: 'Mon profil',      color: 'text-primary' },
+  { to: '/bookmarks',            icon: Bookmark,    label: 'Signets',         color: 'text-amber-400' },
   { to: '/discover',             icon: Compass,      label: 'Explorer',        color: 'text-cyan-400' },
   { to: '/forum',                icon: FileText,     label: 'Forum',           color: 'text-blue-400' },
   { to: '/business',             icon: Building2,    label: 'Business',        color: 'text-cyan-400' },

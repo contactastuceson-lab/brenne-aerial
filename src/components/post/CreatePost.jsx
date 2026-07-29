@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Image, X, Loader2, Globe, Users, BarChart3 } from 'lucide-react';
+import { Image, X, Loader2, Globe, Users, BarChart3, BadgeCheck, ShieldCheck, CalendarClock, FileEdit } from 'lucide-react';
 import { toast } from 'sonner';
 import { extractHashtags, extractMentions } from '@/lib/hashtags';
 import { compressImage } from '@/lib/imageUtils';
@@ -11,6 +11,15 @@ import { notify } from '@/lib/notificationHelper';
 import { isRestricted, isActionBlocked, RESTRICTED_TOAST } from '@/lib/accountStatus';
 
 const MAX_CHARS = 280;
+
+const VIS_LABELS = { public: 'Tout le monde', followers: 'Abonnés', certified: 'Certifiés', eza_circle: 'Cercle EZA' };
+const VIS_ORDER = ['public', 'followers', 'certified', 'eza_circle'];
+function VisibilityIcon({ v }) {
+  if (v === 'followers') return <Users className="w-3 h-3" />;
+  if (v === 'certified') return <BadgeCheck className="w-3 h-3" />;
+  if (v === 'eza_circle') return <ShieldCheck className="w-3 h-3" />;
+  return <Globe className="w-3 h-3" />;
+}
 
 function makePoll() {
   return {
@@ -46,6 +55,8 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
   const [focused, setFocused] = useState(false);
   const [showGif, setShowGif] = useState(false);
   const [poll, setPoll] = useState(null);
+  const [scheduleAt, setScheduleAt] = useState('');
+  const [showSchedule, setShowSchedule] = useState(false);
   const fileRef = useRef(null);
   const textareaRef = useRef(null);
 
@@ -112,6 +123,38 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
     setFocused(true);
   };
 
+  const handleSaveDraft = async () => {
+    if (!content.trim() && mediaUrls.length === 0 && !poll) { toast.error('Rédigez quelque chose'); return; }
+    setPosting(true);
+    try {
+      const hashtags = extractHashtags(content);
+      const postData = {
+        content: content.trim(),
+        author_id: user.id,
+        author_name: user.full_name,
+        author_display_name: user.display_name || user.full_name,
+        author_username: user.username,
+        author_avatar: user.avatar_url,
+        author_verifications: user.verifications || [],
+        media_urls: mediaUrls,
+        hashtags,
+        mentions: extractMentions(content),
+        likes_count: 0, liked_by: [], replies_count: 0, views_count: 0,
+        visibility,
+        is_draft: true,
+      };
+      if (scheduleAt) postData.scheduled_at = new Date(scheduleAt).toISOString();
+      await base44.entities.Post.create(postData);
+      toast.success('Brouillon enregistré');
+      setContent(''); setMediaUrls([]); setPoll(null); setFocused(false); setScheduleAt(''); setShowSchedule(false);
+      onPost?.();
+    } catch {
+      toast.error("Erreur lors de l'enregistrement");
+    } finally {
+      setPosting(false);
+    }
+  };
+
   const handlePost = async () => {
     if (!canPost) return;
     if (isActionBlocked(user, 'post')) { toast.error(RESTRICTED_TOAST); return; }
@@ -144,7 +187,12 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
         const endsAt = new Date(Date.now() + poll.duration_hours * 3600 * 1000).toISOString();
         postData.poll = { ...poll, ends_at: endsAt };
       }
+      if (scheduleAt) {
+        postData.scheduled_at = new Date(scheduleAt).toISOString();
+        postData.is_draft = true;
+      }
       const created = await base44.entities.Post.create(postData);
+      toast.success(scheduleAt ? 'Publication programmée' : 'Post publié');
 
       // Envoyer une notification MENTION pour chaque @username mentionné
       if (mentions.length > 0) {
@@ -169,6 +217,8 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
       setMediaUrls([]);
       setPoll(null);
       setFocused(false);
+      setScheduleAt('');
+      setShowSchedule(false);
       onPost?.();
     } catch {
       toast.error('Erreur lors de la publication');
@@ -245,13 +295,29 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
 
           {/* Visibility chip — shown when focused */}
           {focused && (
-            <button
-              onClick={() => setVisibility(v => v === 'public' ? 'followers' : 'public')}
-              className="self-start flex items-center gap-1 px-2.5 py-0.5 rounded-full text-primary text-xs font-semibold border border-primary/30 hover:bg-primary/10 transition-colors mb-2"
-            >
-              {visibility === 'public' ? <Globe className="w-3 h-3" /> : <Users className="w-3 h-3" />}
-              {visibility === 'public' ? 'Tout le monde' : 'Abonnés'}
-            </button>
+            <div className="self-start flex flex-wrap items-center gap-2 mb-2">
+              <button
+                onClick={() => setVisibility(v => VIS_ORDER[(VIS_ORDER.indexOf(v) + 1) % VIS_ORDER.length])}
+                className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-primary text-xs font-semibold border border-primary/30 hover:bg-primary/10 transition-colors"
+              >
+                <VisibilityIcon v={visibility} />
+                {VIS_LABELS[visibility]}
+              </button>
+              <button
+                onClick={() => setShowSchedule(s => !s)}
+                className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-colors ${showSchedule ? 'text-amber-400 border-amber-400/40 bg-amber-400/10' : 'text-muted-foreground border-border hover:bg-white/6'}`}
+              >
+                <CalendarClock className="w-3 h-3" /> Programmer
+              </button>
+              {showSchedule && (
+                <input
+                  type="datetime-local"
+                  value={scheduleAt}
+                  onChange={e => setScheduleAt(e.target.value)}
+                  className="bg-secondary/50 border border-border rounded-full px-2.5 py-0.5 text-xs text-foreground focus:outline-none focus:border-primary/50"
+                />
+              )}
+            </div>
           )}
 
           {/* Media previews */}
@@ -370,6 +436,18 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
                 <div className="w-px h-5 bg-zinc-700/60" />
               )}
 
+              {/* Draft button */}
+              {content.trim().length > 0 && !replyTo && (
+                <button
+                  onClick={handleSaveDraft}
+                  disabled={posting}
+                  title="Sauvegarder en brouillon"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-full font-inter font-semibold text-xs border border-border text-muted-foreground hover:bg-white/6 transition-all disabled:opacity-40"
+                >
+                  <FileEdit className="w-3.5 h-3.5" /> Brouillon
+                </button>
+              )}
+
               {/* Post button */}
               <button
                 onClick={handlePost}
@@ -378,6 +456,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
               >
                 {posting
                   ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : scheduleAt ? 'Programmer'
                   : replyTo ? 'Répondre' : 'Publier'
                 }
               </button>

@@ -423,14 +423,15 @@ export default function SpaceRoomPage() {
         <p className="px-4 py-2 font-inter text-sm text-muted-foreground border-b border-border/40">{space.description}</p>
       )}
 
-      {cameraSharer && (
-        <div className="px-4 py-3 border-b border-border/40">
+      <AnimatePresence>
+        {cameraSharer && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: -8 }}
+            key="camera-feed"
+            initial={{ opacity: 0, scale: 1.15, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: -8 }}
+            exit={{ opacity: 0, scale: 0.88, y: -8 }}
             transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-            className="relative rounded-2xl overflow-hidden bg-black border border-primary/40 sky-glow"
+            className="px-4 py-3 border-b border-border/40 relative rounded-2xl overflow-hidden bg-black border border-primary/40 sky-glow mx-4"
           >
             <video
               ref={cameraSharer.isLocal ? localCameraVideoEl : remoteCameraVideoEl}
@@ -449,8 +450,8 @@ export default function SpaceRoomPage() {
             )}
             <div className="scan-line absolute left-0 right-0 top-0 h-px bg-primary/70 pointer-events-none" />
           </motion.div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       <div className="pointer-events-none fixed left-0 right-0 bottom-28 z-30 flex justify-center">
         <div className="relative h-0">

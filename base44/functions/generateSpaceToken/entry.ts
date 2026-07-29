@@ -17,20 +17,21 @@ export default async function(req) {
     const apiSecret = Deno.env.get('LIVEKIT_API_SECRET');
     const wsUrl = Deno.env.get('LIVEKIT_WS_URL');
     if (!apiKey || !apiSecret || !wsUrl) return Response.json({ error: 'LiveKit non configuré' }, { status: 500 });
+    const isHost = space.host_id === user.id;
     const at = new AccessToken(apiKey, apiSecret, {
       identity: user.id,
       name: user.display_name || user.full_name || user.username || user.id,
-      metadata: JSON.stringify({ avatar: user.avatar_url || '', username: user.username || '', verifications: user.verifications || [] }),
+      metadata: JSON.stringify({ avatar: user.avatar_url || '', username: user.username || '', verifications: user.verifications || [], role: isHost ? 'host' : 'listener' }),
     });
     at.addGrant({
       room: space.livekit_room,
       roomJoin: true,
-      canPublish: true,
+      canPublish: isHost,
       canSubscribe: true,
       canPublishData: true,
     });
     const token = await at.toJwt();
-    return Response.json({ token, url: wsUrl, space, isHost: space.host_id === user.id });
+    return Response.json({ token, url: wsUrl, space, isHost });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { X, Loader2, Calendar, Radio } from 'lucide-react';
+import { X, Loader2, Calendar, Radio, BadgeCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { hasAdminAccess } from '@/lib/roles';
 
 export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
   const navigate = useNavigate();
@@ -11,8 +12,10 @@ export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
   const [description, setDescription] = useState('');
   const [scheduleMode, setScheduleMode] = useState('now');
   const [scheduledAt, setScheduledAt] = useState('');
+  const [official, setOfficial] = useState(false);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
+  const isAdmin = hasAdminAccess(user);
 
   const handleCreate = async () => {
     setErr('');
@@ -24,13 +27,14 @@ export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
         title: title.trim(),
         description: description.trim(),
         scheduled_at: scheduleMode === 'schedule' ? new Date(scheduledAt).toISOString() : null,
+        is_official: official,
       });
       const data = res.data || res;
       if (data?.error) { setErr(data.error); setSaving(false); return; }
       const wasNow = scheduleMode === 'now';
       toast.success(wasNow ? 'Space démarré' : 'Space programmé');
       const createdSpace = data.space;
-      setTitle(''); setDescription(''); setScheduleMode('now'); setScheduledAt('');
+      setTitle(''); setDescription(''); setScheduleMode('now'); setScheduledAt(''); setOfficial(false);
       onCreated?.(createdSpace);
       onClose?.();
       if (wasNow && createdSpace?.id) navigate(`/space/${createdSpace.id}`);
@@ -80,6 +84,16 @@ export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
               <input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)}
                 className="mt-1 w-full bg-secondary/50 border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50" />
             </div>
+          )}
+          {isAdmin && (
+            <button type="button" onClick={() => setOfficial(v => !v)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm transition-colors ${official ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-white/5'}`}>
+              <BadgeCheck className={`w-4 h-4 ${official ? 'text-primary' : 'text-muted-foreground'}`} />
+              <span className="flex-1 text-left font-semibold">Space officiel EZA</span>
+              <span className={`w-9 h-5 rounded-full relative transition-colors ${official ? 'bg-primary' : 'bg-muted'}`}>
+                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${official ? 'left-[18px]' : 'left-0.5'}`} />
+              </span>
+            </button>
           )}
         </div>
         <div className="px-5 py-3 border-t border-border">

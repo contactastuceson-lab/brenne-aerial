@@ -11,6 +11,8 @@ export default async function(req) {
     const scheduledAt = body.scheduled_at || null;
     if (!title) return Response.json({ error: 'Titre requis' }, { status: 400 });
     const livekitRoom = `space-${crypto.randomUUID()}`;
+    const canOfficial = ['owner', 'pdg_adjoint', 'conseil_admin', 'admin'].includes(user.role);
+    const isOfficial = canOfficial ? !!body.is_official : false;
     const space = await base44.entities.Space.create({
       title,
       description,
@@ -23,6 +25,7 @@ export default async function(req) {
       scheduled_at: scheduledAt,
       started_at: scheduledAt ? null : new Date().toISOString(),
       livekit_room: livekitRoom,
+      is_official: isOfficial,
     });
     return Response.json({ success: true, space });
   } catch (error) {

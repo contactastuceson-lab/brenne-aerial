@@ -51,12 +51,6 @@ export default function SpacesModule({ user, embedded = false }) {
           )}
         </div>
       )}
-      {embedded && user && spacesEnabled && (
-        <button onClick={() => setDialogOpen(true)}
-          className="w-full mb-3 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-2xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90">
-          <Plus className="w-4 h-4" /> Démarrer un Space
-        </button>
-      )}
       {!spacesEnabled ? (
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-center gap-3">
           <Wrench className="w-4 h-4 text-amber-400 flex-shrink-0 animate-pulse" />

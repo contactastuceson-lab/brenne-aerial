@@ -59,6 +59,25 @@ Deno.serve(async (req) => {
         return Response.json({ success: true });
       }
 
+      // ── Credit purchase ──
+      if (paymentType === 'credits') {
+        const creditsAmount = parseInt(metadata.credits_amount || '0', 10);
+        const userEmail = metadata.user_email || session.customer_email;
+        if (creditsAmount > 0 && userEmail) {
+          try {
+            const users = await base44.asServiceRole.entities.User.filter({ email: userEmail });
+            if (users.length > 0) {
+              const u = users[0];
+              const newCredits = (u.referral_credits || 0) + creditsAmount;
+              await base44.asServiceRole.entities.User.update(u.id, { referral_credits: newCredits });
+            }
+          } catch (e) {
+            console.error('Credit attribution error:', e.message);
+          }
+        }
+        return Response.json({ success: true });
+      }
+
       // ── Donation payment ──
       const donorEmail = metadata.donor_email || session.customer_email;
       const donorName = metadata.donor_name || 'Anonyme';

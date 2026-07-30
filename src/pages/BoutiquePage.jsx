@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import { applySeoMeta } from '@/lib/seo';
 import UseTokenDialog from '@/components/boutique/UseTokenDialog';
 import UseCommunityTokenDialog from '@/components/boutique/UseCommunityTokenDialog';
+import BuyCreditsSection from '@/components/boutique/BuyCreditsSection';
 
 const CATEGORIES = {
   abonnements: { label: 'Abonnements', icon: Crown, color: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
@@ -167,6 +168,16 @@ export default function BoutiquePage() {
       description: 'Boutique de récompenses Eza : abonnements, badges, boosts, exclusivités et plus encore.',
     });
     init();
+
+    // Handle Stripe redirect result (credit purchase)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('purchase') === 'success') {
+      toast.success('Paiement réussi ! Vos crédits ont été crédités.');
+      window.history.replaceState({}, '', '/boutique');
+    } else if (params.get('purchase') === 'cancelled') {
+      toast.info('Paiement annulé.');
+      window.history.replaceState({}, '', '/boutique');
+    }
   }, []);
 
   const init = useCallback(async () => {
@@ -303,6 +314,9 @@ export default function BoutiquePage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Buy credits with real money */}
+        <BuyCreditsSection />
 
         {/* Active perks */}
         {activePerks.length > 0 && (

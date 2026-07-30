@@ -221,6 +221,14 @@ function RedemptionRow({ r, onAction }) {
                 <RotateCcw className="w-3 h-3" /> Rouvrir (pending)
               </Button>
             )}
+            {/* Revoke — reverse effects + refund + mark rejected */}
+            {r.status !== 'rejected' && (
+              <Button size="sm" variant="outline" disabled={busy}
+                onClick={() => { if (confirm(`Révoquer ? Les effets (badges/perks/tokens) seront retirés et ${r.cost} crédits remboursés.`)) handle(() => onAction('revoke', r.id, { adminNotes: notes, refundCredits: true })); }}
+                className="h-8 text-xs text-orange-400 border-orange-400/30 hover:bg-orange-400/10">
+                <AlertCircle className="w-3 h-3" /> Révoquer (retirer effets)
+              </Button>
+            )}
             {r.status === 'rejected' && (
               <Button size="sm" variant="outline" disabled={busy}
                 onClick={() => handle(() => onAction('refund', r.id, {}))}

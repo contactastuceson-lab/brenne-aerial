@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { waitUntil } from 'base44:runtime';
+import { REWARD_EFFECTS, reverseRewardEffect } from '../../shared/rewardEffects.ts';
+import { sendEzaEmail } from '../../shared/ezaEmails.ts';
 
 const ADMIN_ROLES = ['admin', 'owner', 'pdg_adjoint', 'conseil_admin'];
 
@@ -17,7 +19,7 @@ export default async function(req) {
 
     const { redemptionId, action, adminNotes, refundCredits, redemptionIds } = body || {};
 
-    // Bulk actions
+    // ── Bulk actions ──
     if (action === 'bulk_fulfill' && Array.isArray(redemptionIds)) {
       const results = [];
       for (const id of redemptionIds) {
@@ -30,10 +32,12 @@ export default async function(req) {
             admin_notes: adminNotes || 'Honorée (action groupée)',
           });
           waitUntil(
-            base44.integrations.Core.SendEmail({
+            sendEzaEmail(base44, {
               to: r.user_email,
-              subject: '✅ Votre récompense a été honorée',
-              body: `Bonjour ${r.user_name},\n\nVotre récompense « ${r.item_label} » a été honorée par notre équipe.\n\n— L'équipe Eza`,
+              title: 'Récompense honorée',
+              subject: '✅ Votre récompense Eza a été honorée',
+              body: `Bonjour **${r.user_name}**,\n\nVotre récompense **${r.item_label}** a été honorée par notre équipe.\n\nElle est désormais active sur votre compte.\n\n— L'équipe eza`,
+              tagline: 'Boutique & Récompenses',
             }).catch(() => {})
           );
           results.push(id);
@@ -52,6 +56,8 @@ export default async function(req) {
             status: 'rejected',
             admin_notes: adminNotes || 'Refusée (action groupée)',
           });
+          // Reverse effects
+          if (r.item_id) waitUntil(reverseRewardEffect(base44, r.user_id, r.item_id).catch(() => {}));
           // Refund
           if (refundCredits !== false && r.user_id) {
             try {
@@ -63,19 +69,21 @@ export default async function(req) {
             } catch {}
           }
           waitUntil(
-            base44.integrations.Core.SendEmail({
+            sendEzaEmail(base44, {
               to: r.user_email,
-              subject: '❌ Récompense refusée',
-              body: `Bonjour ${r.user_name},\n\nVotre demande « ${r.item_label} » n'a pas pu être honorée.${refundCredits !== false ? ` Vos ${r.cost} crédits ont été remboursés.` : ''}\n\n— L'équipe Eza`,
+              title: 'Récompense refusée',
+              subject: '❌ Récompense Eza refusée',
+              body: `Bonjour **${r.user_name}**,\n\nVotre demande **${r.item_label}** n'a pas pu être honorée.${refundCredits !== false ? `\n\nVos **${r.cost} crédits** ont été remboursés sur votre compte.` : ''}\n\nSi vous avez des questions, contactez notre équipe.\n\n— L'équipe eza`,
+              tagline: 'Boutique & Récompenses',
             }).catch(() => {})
           );
           results.push(id);
         } catch {}
       }
-      return Response.json({ success: true, count: results.length, message: `${results.length} récompense(s) refusée(s) et remboursées` });
+      return Response.json({ success: true, count: results.length, message: `${results.length} refusée(s) + effets retirés + crédits remboursés` });
     }
 
-    // Single actions
+    // ── Single actions ──
     if (!redemptionId || !action) return Response.json({ error: 'Paramètres manquants' }, { status: 400 });
 
     const redemption = await base44.asServiceRole.entities.RewardRedemption.get(redemptionId);
@@ -88,10 +96,12 @@ export default async function(req) {
         admin_notes: adminNotes ?? redemption.admin_notes ?? '',
       });
       waitUntil(
-        base44.integrations.Core.SendEmail({
+        sendEzaEmail(base44, {
           to: redemption.user_email,
-          subject: '✅ Votre récompense a été honorée',
-          body: `Bonjour ${redemption.user_name},\n\nVotre récompense « ${redemption.item_label} » a été honorée par notre équipe.${adminNotes ? `\n\nNote : ${adminNotes}` : ''}\n\n— L'équipe Eza`,
+          title: 'Récompense honorée',
+          subject: '✅ Votre récompense Eza a été honorée',
+          body: `Bonjour **${redemption.user_name}**,\n\nVotre récompense **${redemption.item_label}** a été honorée par notre équipe.\n\nElle est désormais pleinement active sur votre compte.${adminNotes ? `\n\n**Note de l'équipe :** ${adminNotes}` : ''}\n\n- **Récompense :** ${redemption.item_label}\n- **Coût :** ${redemption.cost} crédits\n\nMerci de votre confiance,\n— L'équipe eza`,
+          tagline: 'Boutique & Récompenses',
         }).catch(() => {})
       );
       return Response.json({ success: true, message: 'Récompense honorée — email envoyé' });
@@ -101,6 +111,17 @@ export default async function(req) {
         status: 'rejected',
         admin_notes: adminNotes || 'Refusée par l\'administration',
       });
+      // Reverse the reward effects (badges, perks, tokens)
+      let reversalInfo = '';
+      if (redemption.item_id) {
+        try {
+          const rev = await reverseRewardEffect(base44, redemption.user_id, redemption.item_id);
+          reversalInfo = rev.details;
+        } catch (e) {
+          reversalInfo = 'Erreur reversal: ' + (e?.message || 'unknown');
+        }
+      }
+      // Refund credits
       if (refundCredits !== false && redemption.user_id) {
         try {
           const tu = await base44.asServiceRole.entities.User.get(redemption.user_id);
@@ -111,13 +132,56 @@ export default async function(req) {
         } catch {}
       }
       waitUntil(
-        base44.integrations.Core.SendEmail({
+        sendEzaEmail(base44, {
           to: redemption.user_email,
-          subject: '❌ Récompense refusée',
-          body: `Bonjour ${redemption.user_name},\n\nVotre demande « ${redemption.item_label} » n'a pas pu être honorée.${refundCredits !== false ? ` Vos ${redemption.cost} crédits ont été remboursés.` : ''}${adminNotes ? `\n\nRaison : ${adminNotes}` : ''}\n\n— L'équipe Eza`,
+          title: 'Récompense refusée',
+          subject: '❌ Récompense Eza refusée',
+          body: `Bonjour **${redemption.user_name}**,\n\nVotre demande de récompense **${redemption.item_label}** n'a pas pu être honorée par notre équipe.\n\n${
+            refundCredits !== false ? `- **Crédits :** Vos **${redemption.cost} crédits** ont été remboursés.\n` : ''
+          }- **Effets :** Les avantages éventuellement accordés ont été retirés de votre compte.\n${adminNotes ? `\n**Raison :** ${adminNotes}\n` : ''}\nSi vous pensez qu'il s'agit d'une erreur, contactez notre équipe.\n\n— L'équipe eza`,
+          tagline: 'Boutique & Récompenses',
         }).catch(() => {})
       );
-      return Response.json({ success: true, message: refundCredits !== false ? 'Refusée + crédits remboursés + email envoyé' : 'Refusée + email envoyé' });
+      return Response.json({
+        success: true,
+        message: `Refusée${refundCredits !== false ? ' + crédits remboursés' : ''} + effets retirés (${reversalInfo})`,
+        reversal: reversalInfo,
+      });
+
+    } else if (action === 'revoke') {
+      // Revoke without changing status — just reverse effects + refund
+      let reversalInfo = '';
+      if (redemption.item_id) {
+        try {
+          const rev = await reverseRewardEffect(base44, redemption.user_id, redemption.item_id);
+          reversalInfo = rev.details;
+        } catch (e) {
+          reversalInfo = 'Erreur: ' + (e?.message || 'unknown');
+        }
+      }
+      if (refundCredits !== false && redemption.user_id) {
+        try {
+          const tu = await base44.asServiceRole.entities.User.get(redemption.user_id);
+          if (tu) {
+            const nc = (tu.referral_credits || 0) + (redemption.cost || 0);
+            await base44.asServiceRole.entities.User.update(tu.id, { referral_credits: nc });
+          }
+        } catch {}
+      }
+      await base44.asServiceRole.entities.RewardRedemption.update(redemptionId, {
+        status: 'rejected',
+        admin_notes: (adminNotes || 'Révoquée par l\'admin') + (reversalInfo ? ` | ${reversalInfo}` : ''),
+      });
+      waitUntil(
+        sendEzaEmail(base44, {
+          to: redemption.user_email,
+          title: 'Récompense révoquée',
+          subject: '⚠️ Récompense révoquée sur Eza',
+          body: `Bonjour **${redemption.user_name}**,\n\nVotre récompense **${redemption.item_label}** a été **révoquée** par l'administration.\n\n- **Effets retirés :** ${reversalInfo || 'aucun effet actif'}\n- **Crédits :** ${refundCredits !== false ? `${redemption.cost} crédits remboursés` : 'non remboursés'}\n${adminNotes ? `\n**Note :** ${adminNotes}\n` : ''}\nPour toute question, contactez notre équipe.\n\n— L'équipe eza`,
+          tagline: 'Boutique & Récompenses',
+        }).catch(() => {})
+      );
+      return Response.json({ success: true, message: `Révoquée — ${reversalInfo}`, reversal: reversalInfo });
 
     } else if (action === 'refund') {
       if (redemption.user_id) {
@@ -138,7 +202,6 @@ export default async function(req) {
       return Response.json({ success: true, message: 'Note enregistrée' });
 
     } else if (action === 'reset') {
-      // Reset to pending (reopen)
       await base44.asServiceRole.entities.RewardRedemption.update(redemptionId, {
         status: 'pending',
         applied_at: null,

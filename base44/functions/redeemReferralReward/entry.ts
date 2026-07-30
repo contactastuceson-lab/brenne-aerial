@@ -1,80 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { waitUntil } from 'base44:runtime';
+import { REWARD_EFFECTS } from '../../shared/rewardEffects.ts';
+import { sendEzaEmail } from '../../shared/ezaEmails.ts';
 
 const ADMIN_EMAIL = 'contact.astuceson@gmail.com';
-const DAY = 1;
-const MONTH = 30;
-const YEAR = 365;
-
-// Catalogue des effets de récompenses (inline — les backends ne supportent pas les imports partagés)
-type RewardEffect = {
-  type: 'auto' | 'token' | 'manual';
-  apply?: { verifications?: string[]; perks?: Record<string, number | null> };
-  token?: { key: string; count: number; label: string };
-};
-
-const REWARD_EFFECTS: Record<string, RewardEffect> = {
-  // ── Abonnements (auto — flags temporels) ──
-  premium_1m:    { type: 'auto', apply: { perks: { premium_until: MONTH } } },
-  premium_3m:   { type: 'auto', apply: { perks: { premium_until: 90 } } },
-  premium_1y:   { type: 'auto', apply: { perks: { premium_until: YEAR } } },
-  business_1m:  { type: 'auto', apply: { perks: { business_until: MONTH } } },
-  business_3m:  { type: 'auto', apply: { perks: { business_until: 90 } } },
-  enterprise_1m:{ type: 'auto', apply: { perks: { enterprise_until: MONTH } } },
-
-  // ── Badges (auto — ajout aux verifications) ──
-  badge_verified:    { type: 'auto', apply: { verifications: ['verified'] } },
-  badge_pro:         { type: 'auto', apply: { verifications: ['pro'] } },
-  badge_certified:   { type: 'auto', apply: { verifications: ['certified'] } },
-  badge_official:    { type: 'auto', apply: { verifications: ['official'] } },
-  badge_ambassador:  { type: 'auto', apply: { verifications: ['ambassador'] } },
-  badge_scholar:     { type: 'auto', apply: { verifications: ['scholar'] } },
-  badge_donor:       { type: 'auto', apply: { verifications: ['donor'] } },
-  badge_beta:        { type: 'auto', apply: { verifications: ['beta_tester'] } },
-  badge_mentor:      { type: 'auto', apply: { verifications: ['mentor'] } },
-
-  // ── Boosts de profil (auto — dates d'expiration) ──
-  profile_featured_7d:   { type: 'auto', apply: { perks: { featured_until: 7 } } },
-  profile_featured_30d:  { type: 'auto', apply: { perks: { featured_until: 30 } } },
-  top_explorer_30d:      { type: 'auto', apply: { perks: { top_explorer_until: 30 } } },
-
-  // ── Boosts de posts (token — l'utilisateur choisit le post) ──
-  boost_1:  { type: 'token', token: { key: 'boost', count: 1, label: 'Boost de publication' } },
-  boost_3:  { type: 'token', token: { key: 'boost', count: 3, label: 'Boost de publication' } },
-  boost_10: { type: 'token', token: { key: 'boost', count: 10, label: 'Boost de publication' } },
-  post_pinned_24h: { type: 'token', token: { key: 'pin_24h', count: 1, label: 'Post épinglé 24h' } },
-  post_pinned_7d:  { type: 'token', token: { key: 'pin_7d', count: 1, label: 'Post épinglé 7j' } },
-
-  // ── Fonctionnalités (auto — flags/dates) ──
-  analytics_adv:         { type: 'auto', apply: { perks: { analytics_until: MONTH } } },
-  scheduled_posts:       { type: 'auto', apply: { perks: { scheduled_posts_until: MONTH } } },
-  storage_5gb:           { type: 'auto', apply: { perks: { storage_until: MONTH } } },
-  custom_colors:         { type: 'auto', apply: { perks: { custom_colors: null } } },
-  custom_animated_badge: { type: 'auto', apply: { perks: { custom_animated_badge: null } } },
-  custom_notif_sound:    { type: 'auto', apply: { perks: { custom_notif_sound: null } } },
-  particle_effects:      { type: 'auto', apply: { perks: { particle_effects: null } } },
-  custom_watermark:      { type: 'auto', apply: { perks: { custom_watermark: null } } },
-
-  // ── Exclusivités ──
-  vip_1m:         { type: 'auto', apply: { perks: { vip_until: MONTH } } },
-  early_access:   { type: 'auto', apply: { perks: { early_access_until: YEAR } } },
-  founder_cert:   { type: 'auto', apply: { perks: { founder_number: 0, founder_at: 0 } } },
-  call_pdg:       { type: 'manual' },
-  studio_visit:   { type: 'manual' },
-  tshirt_eza:     { type: 'manual' },
-  hoodie_eza:     { type: 'manual' },
-  stickers_pack:  { type: 'manual' },
-  feature_naming: { type: 'manual' },
-  vip_playlist:   { type: 'manual' },
-
-  // ── Communauté (token) ──
-  vip_community:            { type: 'token', token: { key: 'community_premium_design', count: 1, label: 'Création communauté VIP' } },
-  community_1k:             { type: 'token', token: { key: 'community_capacity', count: 1, label: 'Capacité 1000 membres' } },
-  pin_community:            { type: 'token', token: { key: 'community_pin', count: 1, label: 'Épingler une communauté' } },
-  sponsored_event:          { type: 'token', token: { key: 'sponsored_event', count: 1, label: 'Événement sponsorisé' } },
-  community_premium_design: { type: 'token', token: { key: 'community_premium_design', count: 1, label: 'Design premium communauté' } },
-  community_space:          { type: 'token', token: { key: 'community_space', count: 1, label: 'Space communautaire' } },
-};
 
 async function getNextFounderNumber(base44: any): Promise<number> {
   try {
@@ -212,16 +141,20 @@ export default async function(req) {
       );
     }
 
-    // Email confirmation
+    // Email confirmation — branded eza template
     waitUntil(
-      base44.integrations.Core.SendEmail({
+      sendEzaEmail(base44, {
         to: user.email,
-        subject: effect.type === 'auto' ? '✅ Récompense activée !' : effect.type === 'token' ? '🎫 Tokens ajoutés !' : '🎁 Récompense réclamée',
-        body: `Bonjour ${user.display_name || user.username},\n\nVous avez échangé ${cost} crédits contre : ${rewardLabel}.\n\n${
-          effect.type === 'auto' ? 'Votre avantage a été activé automatiquement et est disponible dès maintenant.' :
-          effect.type === 'token' ? `${tokenCount} token(s) ont été ajoutés à votre compte. Rendez-vous sur la boutique pour les utiliser.` :
-          'Votre demande est en cours de traitement par notre équipe. Vous serez notifié(e) dès qu\'elle sera active.'
-        }\n\nCrédits restants : ${newCredits}\n\n— L'équipe Eza`,
+        title: effect.type === 'auto' ? 'Récompense activée' : effect.type === 'token' ? 'Tokens ajoutés' : 'Récompense réclamée',
+        subject: effect.type === 'auto' ? '✅ Votre récompense Eza est active' : effect.type === 'token' ? '🎫 Tokens ajoutés sur Eza' : '🎁 Récompense réclamée sur Eza',
+        body: `Bonjour **${user.display_name || user.username}**,\n\nVous avez échangé **${cost} crédits** contre :\n\n**${rewardLabel}**\n\n${
+          effect.type === 'auto'
+            ? 'Votre avantage a été **activé automatiquement** et est disponible dès maintenant sur votre compte.'
+            : effect.type === 'token'
+              ? `**${tokenCount} token(s)** ont été ajoutés à votre compte. Rendez-vous sur la **Boutique** pour les utiliser sur vos publications.`
+              : 'Votre demande est en cours de traitement par notre équipe. Vous recevrez une notification dès qu\'elle sera active.'
+        }\n\n- **Crédits restants :** ${newCredits}\n- **Type :** ${effect.type === 'auto' ? 'Instantané' : effect.type === 'token' ? 'Token' : 'Manuel'}\n\nMerci de votre confiance,\n— L'équipe eza`,
+        tagline: 'Boutique & Récompenses',
       }).catch(() => {})
     );
 

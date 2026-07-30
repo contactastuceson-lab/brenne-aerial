@@ -899,6 +899,7 @@ export const DOC_TOPICS = [
     title: "Parrainage, Boutique & Crédits",
     tagline: "Économie Eza, récompenses et tokens",
     color: '#f59e0b',
+    isNew: true,
     intro: "EZA possède sa propre économie interne basée sur les crédits. Les utilisateurs gagnent des crédits en parrainant des amis, puis les dépensent dans la Boutique contre des récompenses : abonnements, badges, boosts de visibilité, fonctionnalités premium, tokens et expériences exclusives.",
     sections: [
       {

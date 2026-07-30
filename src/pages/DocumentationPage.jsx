@@ -50,7 +50,14 @@ export default function DocumentationPage() {
                   </div>
                   <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                 </div>
-                <h2 className="font-grotesk font-bold text-base text-foreground mb-1">{t.title}</h2>
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="font-grotesk font-bold text-base text-foreground">{t.title}</h2>
+                  {t.isNew && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-emerald-400/15 text-emerald-400 border border-emerald-400/30">
+                      Nouveau
+                    </span>
+                  )}
+                </div>
                 <p className="font-inter text-xs text-muted-foreground leading-relaxed">{t.tagline}</p>
               </Link>
             </motion.div>

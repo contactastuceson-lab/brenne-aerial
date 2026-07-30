@@ -18,6 +18,36 @@
       "type": "string",
       "description": "Image de couverture"
     },
+    "category": {
+      "type": "string",
+      "enum": [
+        "tech",
+        "business",
+        "art",
+        "music",
+        "gaming",
+        "sport",
+        "formation",
+        "social",
+        "other"
+      ],
+      "default": "other",
+      "description": "Cat\u00e9gorie th\u00e9matique"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags / mots-cl\u00e9s"
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "R\u00e8gles de la communaut\u00e9"
+    },
     "owner_id": {
       "type": "string",
       "description": "ID du cr\u00e9ateur"
@@ -29,6 +59,10 @@
     "owner_username": {
       "type": "string",
       "description": "Username du cr\u00e9ateur (snapshot)"
+    },
+    "owner_avatar": {
+      "type": "string",
+      "description": "Avatar du cr\u00e9ateur (snapshot)"
     },
     "type": {
       "type": "string",
@@ -50,6 +84,11 @@
       "type": "number",
       "default": 0,
       "description": "Nombre de membres"
+    },
+    "posts_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de posts dans la communaut\u00e9"
     },
     "is_premium": {
       "type": "boolean",
@@ -94,10 +133,28 @@
       ]
     },
     "update": {
-      "data.owner_id": "{{user.id}}"
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "delete": {
-      "data.owner_id": "{{user.id}}"
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     }
   }
 }

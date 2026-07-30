@@ -38,6 +38,7 @@ function daysLeft(v) {
 }
 
 function getActiveTier(perks) {
+  if (!perks) return null;
   for (const t of TIERS) if (isPerkActive(perks[t.key])) return t;
   return null;
 }

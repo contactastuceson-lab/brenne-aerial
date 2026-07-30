@@ -213,15 +213,21 @@ export default async function(req) {
       // ── Reset global : vide les perks de tous les utilisateurs + réinitialise
       //    toutes les communautés (unpin, capacité, premium) + rejette toutes les
       //    réclamations de récompense en cours.
+      // Note: bulk update not allowed on User → loop user by user.
       let usersReset = 0;
+      let userSkip = 0;
       let hasMoreUsers = true;
       while (hasMoreUsers) {
-        const res = await base44.asServiceRole.entities.User.updateMany(
-          {},
-          { $set: { perks: {} } }
-        );
-        usersReset += (res as any)?.modified_count || 0;
-        hasMoreUsers = (res as any)?.has_more === true;
+        let batch;
+        try { batch = await base44.asServiceRole.entities.User.list('-created_date', 200, userSkip); } catch { batch = []; }
+        if (!batch || batch.length === 0) break;
+        for (const u of batch) {
+          if (u.perks && Object.keys(u.perks).length > 0) {
+            try { await base44.asServiceRole.entities.User.update(u.id, { perks: {} }); usersReset++; } catch {}
+          }
+        }
+        userSkip += batch.length;
+        hasMoreUsers = batch.length >= 200;
       }
 
       let communitiesReset = 0;

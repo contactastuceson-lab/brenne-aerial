@@ -3,7 +3,7 @@ import ProfileNotFound from '@/components/profile/ProfileNotFound';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash, Settings, Image, Reply, Ban, ShieldOff, ShieldAlert } from 'lucide-react';
+import { MapPin, Globe, CheckCircle, MessageCircle, UserPlus, UserMinus, Loader2, MessageSquare, Calendar, Hash, Settings, Image, Reply, Ban, ShieldOff, ShieldAlert, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VerificationIcons from '@/components/ui/VerificationIcon';
@@ -401,7 +401,7 @@ export default function PublicProfilePage() {
                     : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
                 }
               >
-                {perkFx.hasParticles && <PerkParticles color={perkFx.accentRing || '#22d3ee'} />}
+                {perkFx.hasParticles && <PerkParticles color={perkFx.particleColor || perkFx.accentRing || '#22d3ee'} />}
                 {user.avatar_url ? (
                   <img src={user.avatar_url} alt="" className="w-full h-full object-cover relative z-[1]" />
                 ) : (
@@ -449,6 +449,29 @@ export default function PublicProfilePage() {
               <span className={`inline-flex items-center gap-1 mb-4 font-mono text-[10px] px-2.5 py-1 rounded-full border ${roleCfg.bg} ${roleCfg.color} ${roleCfg.border}`}>
                 {roleCfg.emoji} {roleCfg.label}
               </span>
+            )}
+
+            {/* Badge animé personnalisé (perk custom_animated_badge) */}
+            {perkFx.hasAnimatedBadge && perkFx.badgeText && (
+              <div className="mb-3">
+                <span
+                  className="inline-flex items-center gap-1 font-grotesk font-bold text-xs px-3 py-1 rounded-full border"
+                  style={{
+                    borderColor: `${perkFx.accentRing || '#22d3ee'}40`,
+                    background: `${perkFx.accentRing || '#22d3ee'}12`,
+                    color: perkFx.accentRing || '#22d3ee',
+                    backgroundImage: `linear-gradient(110deg, ${perkFx.accentRing || '#22d3ee'} 0%, #f0f0f0 50%, ${perkFx.accentRing || '#22d3ee'} 100%)`,
+                    backgroundSize: '200% 100%',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    animation: 'shimmer 3s linear infinite',
+                  }}
+                >
+                  <Sparkles className="w-3 h-3" style={{ WebkitTextFillColor: perkFx.accentRing || '#22d3ee' }} />
+                  {perkFx.badgeText}
+                </span>
+              </div>
             )}
 
             {/* Bio */}

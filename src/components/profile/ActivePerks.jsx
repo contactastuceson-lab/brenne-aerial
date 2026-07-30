@@ -68,6 +68,7 @@ export function getActivePerks(perks = {}) {
 
 // ── Visual effects derived from active perks ───────────────────────────────
 export function getPerkEffects(perks = {}) {
+  const cust = perks?.customization || {};
   return {
     hasParticles: perks.particle_effects === true,
     hasCustomColor: perks.custom_colors === true,
@@ -77,12 +78,14 @@ export function getPerkEffects(perks = {}) {
     isBusiness: isActive(perks.business_until),
     isEnterprise: isActive(perks.enterprise_until),
     isFeatured: isActive(perks.featured_until),
+    badgeText: perks.custom_animated_badge === true ? (cust.badgeText || '') : '',
     accentRing: isActive(perks.vip_until) ? '#facc15'
       : isActive(perks.premium_until) ? '#38bdf8'
       : isActive(perks.business_until) ? '#f59e0b'
       : isActive(perks.enterprise_until) ? '#818cf8'
-      : perks.custom_colors === true ? '#22d3ee'
+      : perks.custom_colors === true ? (cust.accentColor || '#22d3ee')
       : null,
+    particleColor: cust.particleColor || null,
   };
 }
 

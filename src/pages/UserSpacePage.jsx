@@ -11,6 +11,7 @@ import CertificationTracking from '@/components/dashboard/CertificationTracking'
 import BillingTab from '@/components/client/BillingTab';
 import MyAffiliationsTab from '@/components/client/MyAffiliationsTab';
 import PerkBadges, { getActivePerks } from '@/components/profile/ActivePerks';
+import PerkCustomizationPanel from '@/components/profile/PerkCustomizationPanel';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
@@ -163,7 +164,7 @@ function CertifsTab({ user, selectedId, onSelect }) {
   );
 }
 
-function PerksTab({ user }) {
+function PerksTab({ user, onRefresh }) {
   const perks = user?.perks || {};
   const active = getActivePerks(perks);
   const hasAnalytics = perks.analytics_until && new Date(perks.analytics_until).getTime() > Date.now();
@@ -236,6 +237,9 @@ function PerksTab({ user }) {
         </div>
       )}
 
+      {/* Personnalisation des perks (couleurs, badge, son, watermark…) */}
+      <PerkCustomizationPanel user={user} onSaved={onRefresh} />
+
       {/* Link to boutique */}
       <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5 text-center">
         <p className="font-grotesk font-bold text-sm mb-1">Gagnez plus d'avantages</p>
@@ -266,6 +270,10 @@ export default function UserSpacePage() {
       setAuthChecked(true);
     });
   }, []);
+
+  const refreshUser = async () => {
+    try { setUser(await base44.auth.me()); } catch {}
+  };
 
   if (!authChecked) {
     return (
@@ -333,7 +341,7 @@ export default function UserSpacePage() {
             transition={{ duration: 0.15 }}>
             {tab === 'reports' && <ReportsTab user={user} selectedId={selReport} onSelect={setSelReport} />}
             {tab === 'certifs' && <CertifsTab user={user} selectedId={selCertif} onSelect={setSelCertif} />}
-            {tab === 'perks' && <PerksTab user={user} />}
+            {tab === 'perks' && <PerksTab user={user} onRefresh={refreshUser} />}
             {tab === 'billing' && (
               <div className="rounded-2xl border border-border bg-card p-4">
                 <BillingTab />

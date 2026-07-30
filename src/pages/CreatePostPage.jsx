@@ -1,15 +1,18 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { X, Image, Globe, Users, BarChart3, Loader2, BadgeCheck, ShieldCheck, CalendarClock, FileEdit } from 'lucide-react';
+import { X, Image, Globe, Users, BarChart3, Loader2, BadgeCheck, ShieldCheck, CalendarClock, FileEdit, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { extractHashtags, extractMentions } from '@/lib/hashtags';
 import { compressImage } from '@/lib/imageUtils';
 import GifPicker from '@/components/post/GifPicker';
 import PollCreator from '@/components/post/PollCreator';
+import { isPerkActive, getCustomization, applyWatermark } from '@/lib/perkCustomization';
 
 const MAX_CHARS = 280;
+const BASE_MEDIA_LIMIT = 4;
+const EXTENDED_MEDIA_LIMIT = 8;
 
 const VIS_LABELS = { public: 'Tout le monde', followers: 'Abonnés', certified: 'Certifiés', eza_circle: 'Cercle EZA' };
 const VIS_ORDER = ['public', 'followers', 'certified', 'eza_circle'];
@@ -57,6 +60,11 @@ export default function CreatePostPage() {
   const fileRef = useRef(null);
   const textareaRef = useRef(null);
 
+  const perks = user?.perks || {};
+  const mediaLimit = isPerkActive(perks, 'storage_until') ? EXTENDED_MEDIA_LIMIT : BASE_MEDIA_LIMIT;
+  const canSchedule = isPerkActive(perks, 'scheduled_posts_until');
+  const wmText = isPerkActive(perks, 'custom_watermark') ? (getCustomization(perks).watermarkText || '') : '';
+
   const uploading = uploadProgress !== null;
   const remaining = MAX_CHARS - content.length;
   const hasPoll = poll && poll.options.filter(o => o.text.trim()).length >= 2;
@@ -68,16 +76,17 @@ export default function CreatePostPage() {
     if (poll) { toast.error("Impossible d'ajouter des médias avec un sondage"); return; }
     setUploadProgress(0);
     try {
-      const toUpload = files.slice(0, 4 - mediaUrls.length);
+      const toUpload = files.slice(0, mediaLimit - mediaUrls.length);
       const urls = [];
       for (let i = 0; i < toUpload.length; i++) {
         setUploadProgress(Math.round((i / toUpload.length) * 90));
-        const compressed = await compressImage(toUpload[i]);
-        const result = await base44.integrations.Core.UploadFile({ file: compressed });
+        let processed = await compressImage(toUpload[i]);
+        if (wmText) processed = await applyWatermark(processed, wmText);
+        const result = await base44.integrations.Core.UploadFile({ file: processed });
         setUploadProgress(Math.round(((i + 1) / toUpload.length) * 100));
         if (result?.file_url) urls.push(result.file_url);
       }
-      setMediaUrls(prev => [...prev, ...urls].slice(0, 4));
+      setMediaUrls(prev => [...prev, ...urls].slice(0, mediaLimit));
     } catch {
       toast.error("Erreur lors de l'upload");
     } finally {
@@ -216,19 +225,27 @@ export default function CreatePostPage() {
                 <VisibilityIcon v={visibility} />
                 {VIS_LABELS[visibility]}
               </button>
-              <button
-                onClick={() => setShowSchedule(s => !s)}
-                className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-colors ${showSchedule ? 'text-amber-400 border-amber-400/40 bg-amber-400/10' : 'text-muted-foreground border-border hover:bg-white/6'}`}
-              >
-                <CalendarClock className="w-3 h-3" /> Programmer
-              </button>
-              {showSchedule && (
-                <input
-                  type="datetime-local"
-                  value={scheduleAt}
-                  onChange={e => setScheduleAt(e.target.value)}
-                  className="bg-secondary/50 border border-border rounded-full px-2.5 py-0.5 text-xs text-foreground focus:outline-none focus:border-primary/50"
-                />
+              {canSchedule ? (
+                <>
+                  <button
+                    onClick={() => setShowSchedule(s => !s)}
+                    className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-colors ${showSchedule ? 'text-amber-400 border-amber-400/40 bg-amber-400/10' : 'text-muted-foreground border-border hover:bg-white/6'}`}
+                  >
+                    <CalendarClock className="w-3 h-3" /> Programmer
+                  </button>
+                  {showSchedule && (
+                    <input
+                      type="datetime-local"
+                      value={scheduleAt}
+                      onChange={e => setScheduleAt(e.target.value)}
+                      className="bg-secondary/50 border border-border rounded-full px-2.5 py-0.5 text-xs text-foreground focus:outline-none focus:border-primary/50"
+                    />
+                  )}
+                </>
+              ) : (
+                <Link to="/boutique" className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border border-border text-muted-foreground/60 hover:text-foreground">
+                  <Lock className="w-3 h-3" /> Programmer
+                </Link>
               )}
             </div>
 
@@ -303,7 +320,7 @@ export default function CreatePostPage() {
 
         <div className="flex items-center gap-1 pt-1">
           {/* Photo/Video */}
-          <button onClick={() => fileRef.current?.click()} disabled={uploading || mediaUrls.length >= 4 || !!poll}
+          <button onClick={() => fileRef.current?.click()} disabled={uploading || mediaUrls.length >= mediaLimit || !!poll}
             className="w-10 h-10 rounded-full flex items-center justify-center text-primary bg-primary/10 hover:bg-primary/20 transition-all disabled:opacity-30">
             <Image className="w-5 h-5" strokeWidth={1.75} />
           </button>
@@ -311,11 +328,11 @@ export default function CreatePostPage() {
 
           {/* GIF */}
           <div className="relative">
-            <button onClick={() => setShowGif(v => !v)} disabled={mediaUrls.length >= 4 || !!poll}
+            <button onClick={() => setShowGif(v => !v)} disabled={mediaUrls.length >= mediaLimit || !!poll}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-30 ${showGif ? 'text-primary bg-primary/20' : 'text-primary bg-primary/10 hover:bg-primary/20'}`}>
               <GifIcon className="w-5 h-5" />
             </button>
-            {showGif && <GifPicker onSelect={(url) => { setMediaUrls(prev => [...prev, url].slice(0, 4)); setShowGif(false); }} onClose={() => setShowGif(false)} />}
+            {showGif && <GifPicker onSelect={(url) => { setMediaUrls(prev => [...prev, url].slice(0, mediaLimit)); setShowGif(false); }} onClose={() => setShowGif(false)} />}
           </div>
 
           {/* Poll */}

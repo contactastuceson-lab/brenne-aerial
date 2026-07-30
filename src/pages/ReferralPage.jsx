@@ -4,33 +4,17 @@ import {
   Gift, Copy, Check, Mail, Users, Coins, Sparkles, Trophy,
   Crown, Loader2, Share2, Award, TrendingUp, UserPlus, Zap,
   UserCircle, MessageCircle, Heart, Video, Landmark, Calendar,
-  AtSign, ArrowRight, Tag, Star,
+  AtSign, ArrowRight, Tag, Star, BookOpen, ChevronDown, RefreshCw,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { applySeoMeta } from '@/lib/seo';
 import CreditPill from '@/components/boutique/CreditPill';
+import { REFERRAL_MILESTONES } from '@/lib/referralMilestones';
 
 const CREDITS_PER_REFERRAL = 50;
-
-const EARNING_METHODS = [
-  { icon: UserPlus, label: "Filleul s'inscrit", credits: 50, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30' },
-  { icon: UserCircle, label: 'Filleul complète son profil', credits: 10, color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/30' },
-  { icon: MessageCircle, label: 'Filleul publie son 1er post', credits: 20, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/30' },
-  { icon: Heart, label: 'Filleul reçoit 100 likes', credits: 30, color: 'text-pink-400', bg: 'bg-pink-400/10', border: 'border-pink-400/30' },
-  { icon: Award, label: 'Filleul obtient un badge', credits: 30, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/30' },
-  { icon: Check, label: 'Filleul devient vérifié', credits: 40, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30' },
-  { icon: Users, label: 'Filleul rejoint une communauté', credits: 15, color: 'text-teal-400', bg: 'bg-teal-400/10', border: 'border-teal-400/30' },
-  { icon: Video, label: 'Filleul crée son 1er Space', credits: 25, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
-  { icon: MessageCircle, label: 'Filleul participe au forum', credits: 15, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/30' },
-  { icon: Crown, label: 'Filleul souscrit Premium', credits: 100, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
-  { icon: Crown, label: 'Filleul souscrit Business', credits: 150, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/30' },
-  { icon: Landmark, label: 'Filleul souscrit Enterprise', credits: 200, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/30' },
-  { icon: UserPlus, label: 'Filleul parraine un autre membre', credits: 20, color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/30' },
-  { icon: Calendar, label: 'Filleul reste actif 30 jours', credits: 50, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/30' },
-  { icon: AtSign, label: 'Filleul est mentionné dans un post', credits: 10, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30' },
-];
+const EARNING_METHODS = REFERRAL_MILESTONES;
 
 export default function ReferralPage() {
   const [user, setUser] = useState(null);
@@ -41,6 +25,8 @@ export default function ReferralPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [copied, setCopied] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [expandedMilestone, setExpandedMilestone] = useState(null);
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     applySeoMeta({
@@ -151,6 +137,30 @@ export default function ReferralPage() {
     } else {
       handleCopy();
     }
+  };
+
+  // Vérifier manuellement les jalons atteints par les filleuls → crédits réels
+  const handleVerifyMilestones = async () => {
+    if (!user?.email) return;
+    setVerifying(true);
+    try {
+      const res = await base44.functions.invoke('evaluateReferralMilestones', { referrerEmail: user.email });
+      const data = res.data || res;
+      if (data?.success) {
+        if (data.awarded > 0) {
+          toast.success(`${data.awarded} crédits crédités ! ${data.details || ''}`);
+        } else {
+          toast.info('Aucun nouveau jalon à récompenser pour le moment.');
+        }
+        await refreshData();
+      } else if (data?.error) {
+        toast.error(data.error);
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || 'Erreur lors de la vérification';
+      toast.error(msg);
+    }
+    setVerifying(false);
   };
 
   if (loading) {
@@ -281,19 +291,54 @@ export default function ReferralPage() {
         {/* How to earn */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="mb-6">
-          <h2 className="font-grotesk font-bold text-sm text-foreground mb-4 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-400" /> Comment gagner des crédits ({EARNING_METHODS.length} situations)
-          </h2>
+          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+            <h2 className="font-grotesk font-bold text-sm text-foreground flex items-center gap-2">
+              <Zap className="w-4 h-4 text-amber-400" /> Comment gagner des crédits ({EARNING_METHODS.length} situations)
+            </h2>
+            <div className="flex items-center gap-2">
+              <Link to="/documentation/economie-credits"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-foreground font-grotesk font-bold text-[11px] hover:bg-muted/50 transition-all">
+                <BookOpen className="w-3 h-3 text-primary" /> En savoir plus
+              </Link>
+              <button onClick={handleVerifyMilestones} disabled={verifying || referrals.length === 0}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground font-grotesk font-bold text-[11px] hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                {verifying ? <><Loader2 className="w-3 h-3 animate-spin" /> Vérification…</> : <><RefreshCw className="w-3 h-3" /> Vérifier mes filleuls</>}
+              </button>
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {EARNING_METHODS.map((m, i) => {
               const Icon = m.icon;
+              const expanded = expandedMilestone === m.id;
               return (
-                <div key={i} className={`flex items-center gap-2.5 p-2.5 rounded-xl border ${m.border} ${m.bg}`}>
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border ${m.border}`}>
-                    <Icon className={`w-3.5 h-3.5 ${m.color}`} />
+                <div key={m.id} className={`rounded-xl border ${m.border} ${m.bg} overflow-hidden transition-all`}>
+                  <div className="flex items-center gap-2.5 p-2.5">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border ${m.border}`}>
+                      <Icon className={`w-3.5 h-3.5 ${m.color}`} />
+                    </div>
+                    <p className="flex-1 font-inter text-xs text-foreground/80 leading-tight">{m.label}</p>
+                    <span className={`font-mono text-xs font-bold ${m.color} flex-shrink-0`}>+{m.credits}</span>
+                    <button
+                      onClick={() => setExpandedMilestone(expanded ? null : m.id)}
+                      className="flex-shrink-0 text-[10px] font-grotesk font-bold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-0.5"
+                      aria-label="Mode d'emploi"
+                    >
+                      Mode d'emploi <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                    </button>
                   </div>
-                  <p className="flex-1 font-inter text-xs text-foreground/80 leading-tight">{m.label}</p>
-                  <span className={`font-mono text-xs font-bold ${m.color} flex-shrink-0`}>+{m.credits}</span>
+                  {expanded && (
+                    <div className="px-2.5 pb-2.5 pt-0.5">
+                      <div className="rounded-lg bg-background/60 border border-border/60 p-2.5">
+                        <p className="font-inter text-[11px] text-muted-foreground leading-relaxed">{m.instructions}</p>
+                        {m.docSlug && (
+                          <Link to={`/documentation/${m.docSlug}`} onClick={() => setExpandedMilestone(null)}
+                            className="inline-flex items-center gap-1 mt-2 text-[10px] font-grotesk font-bold text-primary hover:underline">
+                            Documentation <ArrowRight className="w-2.5 h-2.5" />
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -326,6 +371,11 @@ export default function ReferralPage() {
                     <p className="font-mono text-[10px] text-muted-foreground/50 truncate">{r.referred_email}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
+                    {(r.milestones_rewarded?.length || 0) > 0 && (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30">
+                        {r.milestones_rewarded.length}/{EARNING_METHODS.length} jalons
+                      </span>
+                    )}
                     {r.status === 'validated' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/30">Validé</span>}
                     {r.status === 'rewarded' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30">Récompensé</span>}
                     {r.status === 'pending' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">En attente</span>}

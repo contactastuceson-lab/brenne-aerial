@@ -1,0 +1,151 @@
+// Catalogue des 15 jalons de parrainage Eza.
+// Shared by ReferralPage (UI) — les crédits et ids correspondent au backend
+// evaluateReferralMilestones (base44/functions/evaluateReferralMilestones/entry.ts).
+
+import {
+  UserPlus, UserCircle, MessageCircle, Heart, Award, Check,
+  Users, Video, Crown, Landmark, Calendar, AtSign,
+} from 'lucide-react';
+
+export const REFERRAL_MILESTONES = [
+  {
+    id: 'signup',
+    label: "Filleul s'inscrit",
+    credits: 50,
+    icon: UserPlus,
+    color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30',
+    instructions: "Partagez votre lien /parrainage. Dès qu'un ami crée son compte avec votre code, vous recevez automatiquement 50 crédits. Aucune action supplémentaire requise — c'est le jalon de départ.",
+    docSlug: 'economie-credits',
+  },
+  {
+    id: 'profile_complete',
+    label: 'Filleul complète son profil',
+    credits: 10,
+    icon: UserCircle,
+    color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/30',
+    instructions: "Demandez à votre filleul de remplir son nom d'affichage, sa bio ET d'ajouter une photo de profil dans Paramètres → Profil. Les 3 champs remplis déclenchent automatiquement 10 crédits.",
+    docSlug: 'profile',
+  },
+  {
+    id: 'first_post',
+    label: 'Filleul publie son 1er post',
+    credits: 20,
+    icon: MessageCircle,
+    color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/30',
+    instructions: "Encouragez votre filleul à publier sa première publication depuis le bouton « Publier » (fil d'accueil). La première publication lui donne 20 crédits à vous.",
+    docSlug: 'social',
+  },
+  {
+    id: 'likes_100',
+    label: 'Filleul reçoit 100 likes',
+    credits: 30,
+    icon: Heart,
+    color: 'text-pink-400', bg: 'bg-pink-400/10', border: 'border-pink-400/30',
+    instructions: "Quand la somme des likes reçus sur l'ensemble des publications du filleul atteint 100, vous gagnez 30 crédits. Aidez-le à publier du contenu engageant et à utiliser des hashtags.",
+    docSlug: 'social',
+  },
+  {
+    id: 'badge',
+    label: 'Filleul obtient un badge',
+    credits: 30,
+    icon: Award,
+    color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/30',
+    instructions: "Dès que votre filleul reçoit son premier badge ou sa première vérification (Vérifié, Pro, Donateur, Beta Testeur…), 30 crédits vous sont attribués. Les badges s'obtiennent via la Boutique ou l'administration.",
+    docSlug: 'certifications',
+  },
+  {
+    id: 'verified',
+    label: 'Filleul devient vérifié',
+    credits: 40,
+    icon: Check,
+    color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30',
+    instructions: "Le filleul soumet une demande de certification (Profil → Demande de vérification) et l'admin la valide. Son statut passe à « vérifié » : 40 crédits pour vous.",
+    docSlug: 'certifications',
+  },
+  {
+    id: 'join_community',
+    label: 'Filleul rejoint une communauté',
+    credits: 15,
+    icon: Users,
+    color: 'text-teal-400', bg: 'bg-teal-400/10', border: 'border-teal-400/30',
+    instructions: "Le filleul rejoint sa première communauté depuis /communities (communauté ouverte ou fermée acceptée). 15 crédits dès l'adhésion.",
+    docSlug: 'social',
+  },
+  {
+    id: 'first_space',
+    label: 'Filleul crée son 1er Space',
+    credits: 25,
+    icon: Video,
+    color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30',
+    instructions: "Le filleul anime son premier Space audio en direct depuis /spaces. 25 crédits à la création du premier Space.",
+    docSlug: 'social',
+  },
+  {
+    id: 'forum',
+    label: 'Filleul participe au forum',
+    credits: 15,
+    icon: MessageCircle,
+    color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/30',
+    instructions: "Le filleul crée son premier sujet de discussion ou répond à une discussion existante sur /forum. 15 crédits à la première participation.",
+    docSlug: 'forum',
+  },
+  {
+    id: 'premium',
+    label: 'Filleul souscrit Premium',
+    credits: 100,
+    icon: Crown,
+    color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30',
+    instructions: "Le filleul active un abonnement Premium (via la Boutique en échangeant des crédits, ou achat). Tant que Premium est actif, 100 crédits vous sont crédités une fois.",
+    docSlug: 'economie-boutique',
+  },
+  {
+    id: 'business',
+    label: 'Filleul souscrit Business',
+    credits: 150,
+    icon: Crown,
+    color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/30',
+    instructions: "Le filleul active un abonnement Business. 150 crédits à l'activation.",
+    docSlug: 'economie-boutique',
+  },
+  {
+    id: 'enterprise',
+    label: 'Filleul souscrit Enterprise',
+    credits: 200,
+    icon: Landmark,
+    color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/30',
+    instructions: "Le filleul active un abonnement Enterprise (plan institutionnel). 200 crédits à l'activation — le jalon le plus généreux.",
+    docSlug: 'economie-boutique',
+  },
+  {
+    id: 'referral',
+    label: 'Filleul parraine un autre membre',
+    credits: 20,
+    icon: UserPlus,
+    color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/30',
+    instructions: "Votre filleul devient à son tour parrain : il invite un nouvel utilisateur qui s'inscrit avec son code. 20 crédits pour vous quand son premier filleul s'inscrit.",
+    docSlug: 'economie-credits',
+  },
+  {
+    id: 'active_30d',
+    label: 'Filleul reste actif 30 jours',
+    credits: 50,
+    icon: Calendar,
+    color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/30',
+    instructions: "30 jours après l'inscription de votre filleul, tant que son compte est actif, vous recevez 50 crédits de fidélité. Aucune action — vérifié automatiquement.",
+    docSlug: 'economie-credits',
+  },
+  {
+    id: 'mentioned',
+    label: 'Filleul est mentionné dans un post',
+    credits: 10,
+    icon: AtSign,
+    color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30',
+    instructions: "Un autre membre mentionne votre filleul avec @username dans une publication. 10 crédits (une seule fois). Encouragez votre filleul à être actif pour être mentionné.",
+    docSlug: 'social',
+  },
+];
+
+export const MILESTONE_CREDITS = REFERRAL_MILESTONES.reduce((acc, m) => {
+  acc[m.id] = m.credits;
+  return acc;
+}, {});

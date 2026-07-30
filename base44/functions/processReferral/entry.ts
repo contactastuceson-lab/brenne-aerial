@@ -36,7 +36,7 @@ export default async function(req) {
       return Response.json({ error: 'Parrainage déjà traité', alreadyProcessed: true });
     }
 
-    // Create referral record
+    // Create referral record (signup milestone already credited)
     await base44.asServiceRole.entities.Referral.create({
       referrer_email: referrer.email,
       referrer_name: referrer.display_name || referrer.full_name || referrer.username,
@@ -45,6 +45,7 @@ export default async function(req) {
       referred_email: user.email,
       referred_user_id: user.id,
       credits_earned: CREDITS_PER_REFERRAL,
+      milestones_rewarded: ['signup'],
       status: 'validated',
     });
 

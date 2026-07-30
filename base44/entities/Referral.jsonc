@@ -35,7 +35,15 @@
     "credits_earned": {
       "type": "number",
       "default": 0,
-      "description": "Cr\u00e9dits Eza gagn\u00e9s par le parrain"
+      "description": "Cr\u00e9dits Eza gagn\u00e9s par le parrain (cumul : inscription + jalons)"
+    },
+    "milestones_rewarded": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Jalons d\u00e9j\u00e0 r\u00e9compens\u00e9s (ids) \u2014 \u00e9vite le double-cr\u00e9dit"
     },
     "status": {
       "type": "string",
@@ -60,6 +68,9 @@
       "$or": [
         {
           "data.referrer_email": "{{user.email}}"
+        },
+        {
+          "data.referred_email": "{{user.email}}"
         },
         {
           "user_condition": {

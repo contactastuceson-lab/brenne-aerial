@@ -1,0 +1,115 @@
+{
+  "name": "AdCampaign",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre de la campagne publicitaire"
+    },
+    "advertiser_name": {
+      "type": "string",
+      "description": "Nom de l'annonceur"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Image / cr\u00e9a publicitaire"
+    },
+    "cta_url": {
+      "type": "string",
+      "description": "URL de destination au clic"
+    },
+    "cta_label": {
+      "type": "string",
+      "default": "En savoir plus",
+      "description": "Libell\u00e9 du bouton d'appel \u00e0 l'action"
+    },
+    "headline": {
+      "type": "string",
+      "description": "Titre accrocheur affich\u00e9 dans l'emplacement"
+    },
+    "body": {
+      "type": "string",
+      "description": "Texte descriptif de l'annonce"
+    },
+    "placement": {
+      "type": "string",
+      "enum": [
+        "feed_banner",
+        "between_posts",
+        "sidebar"
+      ],
+      "default": "feed_banner",
+      "description": "Emplacement de l'annonce dans l'app"
+    },
+    "target_hashtags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Hashtags cibl\u00e9s (optionnel)"
+    },
+    "impressions": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre d'impressions servies"
+    },
+    "clicks": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de clics enregistr\u00e9s"
+    },
+    "budget_credits": {
+      "type": "number",
+      "default": 0,
+      "description": "Budget en cr\u00e9dits Eza"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "paused",
+        "ended"
+      ],
+      "default": "draft",
+      "description": "Statut de la campagne"
+    },
+    "starts_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de d\u00e9but"
+    },
+    "ends_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de fin"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "ID du cr\u00e9ateur (admin)"
+    }
+  },
+  "required": [
+    "title",
+    "placement",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

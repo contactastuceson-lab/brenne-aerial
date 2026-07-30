@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, Fragment } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -10,6 +10,7 @@ import { extractHashtags } from '@/lib/hashtags';
 import { hasAdminAccess } from '@/lib/roles';
 import { getOrFetchUser } from '@/hooks/usePublicUser';
 import { readFeedCache, saveFeedCache } from '@/lib/feedCache';
+import AdSlot from '@/components/feed/AdSlot';
 
 const FILTERS = [
   { id: 'foryou',  label: 'Pour vous' },
@@ -278,6 +279,9 @@ export default function HomeFeed({ user }) {
         </div>
       )}
 
+      {/* Feed banner ad (after filter, only for logged-in users) */}
+      {user && <div className="px-4 py-3 border-b border-border/40"><AdSlot placement="feed_banner" /></div>}
+
       {/* Feed */}
       {user === undefined || isLoading ? (
         <FeedSkeleton />
@@ -294,8 +298,15 @@ export default function HomeFeed({ user }) {
         </div>
       ) : (
         <div>
-          {filteredPosts.map(post => (
-            <PostCard key={post.id} post={post} currentUser={user} />
+          {filteredPosts.map((post, i) => (
+            <Fragment key={post.id}>
+              <PostCard post={post} currentUser={user} />
+              {(i + 1) % 6 === 0 && (
+                <div className="px-4 py-3 border-b border-border/40">
+                  <AdSlot placement="between_posts" />
+                </div>
+              )}
+            </Fragment>
           ))}
         </div>
       )}

@@ -5,11 +5,14 @@ import { base44 } from '@/api/base44Client';
 import {
   UserCircle, Flag, Award, CreditCard, Network, Loader2, Gift,
   ChevronRight, RefreshCw, Inbox, Sparkles, TrendingUp, Eye, Heart, MessageCircle,
+  Calendar, BarChart3,
 } from 'lucide-react';
 import ReportTracking from '@/components/dashboard/ReportTracking';
 import CertificationTracking from '@/components/dashboard/CertificationTracking';
 import BillingTab from '@/components/client/BillingTab';
 import MyAffiliationsTab from '@/components/client/MyAffiliationsTab';
+import ScheduledPostsManager from '@/components/user/ScheduledPostsManager';
+import AnalyticsDashboard from '@/components/user/AnalyticsDashboard';
 import PerkBadges, { getActivePerks } from '@/components/profile/ActivePerks';
 import PerkCustomizationPanel from '@/components/profile/PerkCustomizationPanel';
 import CreditPill from '@/components/boutique/CreditPill';
@@ -21,6 +24,8 @@ import SubscriptionTierBanner from '@/components/boutique/SubscriptionTierBanner
 const TABS = [
   { id: 'reports',     label: 'Signalements',  icon: Flag },
   { id: 'certifs',      label: 'Certifications', icon: Award },
+  { id: 'scheduled',   label: 'Programmés',    icon: Calendar },
+  { id: 'analytics',   label: 'Analytics',     icon: BarChart3 },
   { id: 'perks',       label: 'Avantages',    icon: Sparkles },
   { id: 'billing',     label: 'Facturation',   icon: CreditCard },
   { id: 'affiliations', label: 'Affiliations', icon: Network },
@@ -348,6 +353,8 @@ export default function UserSpacePage() {
             transition={{ duration: 0.15 }}>
             {tab === 'reports' && <ReportsTab user={user} selectedId={selReport} onSelect={setSelReport} />}
             {tab === 'certifs' && <CertifsTab user={user} selectedId={selCertif} onSelect={setSelCertif} />}
+            {tab === 'scheduled' && <ScheduledPostsManager user={user} />}
+            {tab === 'analytics' && <AnalyticsDashboard user={user} />}
             {tab === 'perks' && <PerksTab user={user} onRefresh={refreshUser} />}
             {tab === 'billing' && (
               <div className="rounded-2xl border border-border bg-card p-4">

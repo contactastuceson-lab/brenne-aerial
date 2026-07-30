@@ -12,6 +12,7 @@ import BillingTab from '@/components/client/BillingTab';
 import MyAffiliationsTab from '@/components/client/MyAffiliationsTab';
 import PerkBadges, { getActivePerks } from '@/components/profile/ActivePerks';
 import PerkCustomizationPanel from '@/components/profile/PerkCustomizationPanel';
+import CreditPill from '@/components/boutique/CreditPill';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
@@ -314,6 +315,7 @@ export default function UserSpacePage() {
               Suivez vos signalements, certifications et facturations.
             </p>
           </div>
+          <div className="ml-auto"><CreditPill credits={user?.referral_credits} /></div>
         </motion.div>
 
         {/* Tabs */}

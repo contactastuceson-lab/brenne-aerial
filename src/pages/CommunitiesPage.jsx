@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import CommunityDialog from '@/components/community/CommunityDialog';
+import CreditPill from '@/components/boutique/CreditPill';
 import { COMMUNITY_CATEGORIES, getCategoryMeta } from '@/lib/communityCategories';
 import { Plus, Users, Lock, Globe, Loader2, Pin, Crown, Search, MessageCircle } from 'lucide-react';
 
@@ -65,6 +66,7 @@ export default function CommunitiesPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90">
             <Plus className="w-3.5 h-3.5" /> Créer
           </button>
+          <CreditPill className="flex-shrink-0" />
         </div>
 
         {/* Search */}

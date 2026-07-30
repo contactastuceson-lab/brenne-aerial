@@ -21,6 +21,7 @@ import UsernameChanger from '@/components/profile/UsernameChanger';
 import AccountSettings from '@/components/settings/AccountSettings';
 import PreferencesSettings from '@/components/settings/PreferencesSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
+import CreditPill from '@/components/boutique/CreditPill';
 import { ROLE_CONFIG, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 
 const BADGE_CONFIG = {
@@ -277,6 +278,7 @@ export default function ProfilePage() {
               )}
             </div>
             <div className="flex flex-col items-end gap-1 mt-1 flex-shrink-0">
+              <CreditPill credits={user.referral_credits} />
               {user.verified_status === 'yes' && (
                 <span className="flex items-center gap-1 font-mono text-[9px] md:text-[10px] text-accent bg-accent/10 border border-accent/30 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full whitespace-nowrap">
                   <CheckCircle className="w-2.5 h-2.5 md:w-3 md:h-3" /> Vérifié

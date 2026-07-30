@@ -10,6 +10,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { applySeoMeta } from '@/lib/seo';
+import CreditPill from '@/components/boutique/CreditPill';
 
 const CREDITS_PER_REFERRAL = 50;
 
@@ -216,6 +217,7 @@ export default function ReferralPage() {
               <h1 className="font-grotesk font-black text-2xl text-foreground">Parrainage Eza</h1>
               <p className="font-inter text-sm text-muted-foreground">Invitez vos amis, gagnez des récompenses</p>
             </div>
+            <div className="ml-auto"><CreditPill credits={credits} /></div>
           </div>
         </motion.div>
 

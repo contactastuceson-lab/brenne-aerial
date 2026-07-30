@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { extractHashtags } from '@/lib/hashtags';
+import CreditPill from '@/components/boutique/CreditPill';
 
 const TRENDING = [
   { tag: 'communauté',    count: 284, rise: '+18%' },
@@ -257,6 +258,10 @@ export default function HomeRightSidebar() {
   return (
     <div className="flex flex-col w-full">
       <SearchBar allUsers={allUsers} allTags={trendingTags} />
+      <div className="mb-4 rounded-2xl border border-primary/25 bg-primary/5 p-3 flex items-center justify-between gap-2">
+        <span className="font-grotesk font-bold text-xs text-foreground truncate">Crédits Eza</span>
+        <CreditPill />
+      </div>
       <SuggestedUsers users={suggestedUsers} />
       <TrendingSection trendingTags={trendingTags} />
 

@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Radio, Plus } from 'lucide-react';
 import SpacesModule from '@/components/spaces/SpacesModule';
 import CreateSpaceDialog from '@/components/spaces/CreateSpaceDialog';
+import CreditPill from '@/components/boutique/CreditPill';
 import { usePageEnabled } from '@/hooks/usePageEnabled';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -29,6 +30,7 @@ export default function SpacesPage() {
               <Plus className="w-4 h-4" /> Démarrer
             </button>
           )}
+          {user && <CreditPill credits={user.referral_credits} className="flex-shrink-0" />}
         </div>
       </div>
       <div className="p-4">

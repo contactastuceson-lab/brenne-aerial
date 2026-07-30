@@ -1,17 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Coins, CreditCard, Loader2, Zap, Sparkles, ShieldCheck } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { CreditCard, Loader2, Zap, Sparkles, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
-
-const PACKS = [
-  { id: 'pack_50',   credits: 50,   price: '2,99 €' },
-  { id: 'pack_120',  credits: 120,  price: '5,99 €',  popular: true },
-  { id: 'pack_250',  credits: 250,  price: '9,99 €' },
-  { id: 'pack_500',  credits: 500,  price: '17,99 €' },
-  { id: 'pack_1000', credits: 1000, price: '29,99 €' },
-  { id: 'pack_2000', credits: 2000, price: '49,99 €' },
-];
+import { CREDIT_PACKS, startCreditPurchase } from './creditPacks';
 
 export default function BuyCreditsSection() {
   const [buying, setBuying] = useState(null);
@@ -19,17 +10,11 @@ export default function BuyCreditsSection() {
   const handleBuy = async (pack) => {
     setBuying(pack.id);
     try {
-      const res = await base44.functions.invoke('createCreditPurchase', { packId: pack.id });
-      const data = res?.data || res;
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        toast.error(data?.error || 'Erreur lors de la création du paiement');
-      }
+      await startCreditPurchase(pack.id);
     } catch (err) {
       toast.error(err?.message || 'Erreur lors de la création du paiement');
+      setBuying(null);
     }
-    setBuying(null);
   };
 
   return (
@@ -47,7 +32,7 @@ export default function BuyCreditsSection() {
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-        {PACKS.map(p => {
+        {CREDIT_PACKS.map(p => {
           const isBuying = buying === p.id;
           return (
             <button
@@ -64,7 +49,7 @@ export default function BuyCreditsSection() {
                 </span>
               )}
               <div className="flex items-center gap-1 mb-1">
-                <Coins className="w-4 h-4 text-primary" />
+                <CreditCard className="w-4 h-4 text-primary" />
                 <span className="font-grotesk font-black text-lg text-foreground">{p.credits}</span>
               </div>
               <span className="font-grotesk font-bold text-sm text-foreground">{p.price}</span>

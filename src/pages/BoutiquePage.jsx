@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { applySeoMeta } from '@/lib/seo';
 import UseTokenDialog from '@/components/boutique/UseTokenDialog';
+import UseCommunityTokenDialog from '@/components/boutique/UseCommunityTokenDialog';
 
 const CATEGORIES = {
   abonnements: { label: 'Abonnements', icon: Crown, color: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
@@ -128,14 +129,14 @@ const PERK_LABELS = {
 };
 
 const TOKEN_LABELS = {
-  boost: { label: 'Boost de post', icon: Zap, color: 'text-orange-400', usable: true },
-  pin_24h: { label: 'Épingler 24h', icon: Eye, color: 'text-sky-400', usable: true },
-  pin_7d: { label: 'Épingler 7j', icon: Eye, color: 'text-indigo-400', usable: true },
-  community_pin: { label: 'Épingler communauté', icon: Eye, color: 'text-emerald-400', usable: false },
-  community_capacity: { label: 'Capacité 1000', icon: Users, color: 'text-emerald-400', usable: false },
-  community_premium_design: { label: 'Design premium communauté', icon: Palette, color: 'text-emerald-400', usable: false },
-  community_space: { label: 'Space communautaire', icon: Headphones, color: 'text-emerald-400', usable: false },
-  sponsored_event: { label: 'Événement sponsorisé', icon: Megaphone, color: 'text-emerald-400', usable: false },
+  boost: { label: 'Boost de post', icon: Zap, color: 'text-orange-400', usable: true, kind: 'post' },
+  pin_24h: { label: 'Épingler 24h', icon: Eye, color: 'text-sky-400', usable: true, kind: 'post' },
+  pin_7d: { label: 'Épingler 7j', icon: Eye, color: 'text-indigo-400', usable: true, kind: 'post' },
+  community_pin: { label: 'Épingler communauté', icon: Eye, color: 'text-emerald-400', usable: true, kind: 'community' },
+  community_capacity: { label: 'Capacité 1000', icon: Users, color: 'text-emerald-400', usable: true, kind: 'community' },
+  community_premium_design: { label: 'Design premium communauté', icon: Palette, color: 'text-emerald-400', usable: true, kind: 'community' },
+  community_space: { label: 'Space communautaire', icon: Headphones, color: 'text-emerald-400', usable: true, kind: 'community' },
+  sponsored_event: { label: 'Événement sponsorisé', icon: Megaphone, color: 'text-emerald-400', usable: true, kind: 'community' },
 };
 
 function formatDate(iso) {
@@ -213,8 +214,9 @@ export default function BoutiquePage() {
       } else if (data?.error) {
         toast.error(data.error);
       }
-    } catch {
-      toast.error('Erreur lors de la réclamation');
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.response?.data?.detail || err?.message || 'Erreur lors de la réclamation';
+      toast.error(msg);
     }
     setRedeeming(null);
   };
@@ -344,7 +346,7 @@ export default function BoutiquePage() {
                       <p className="font-mono text-[10px] text-muted-foreground/60">{t.count} disponible{t.count > 1 ? 's' : ''}</p>
                     </div>
                     {t.usable && (
-                      <button onClick={() => setTokenDialog({ type: t.key, count: t.count })}
+                      <button onClick={() => setTokenDialog({ type: t.key, count: t.count, kind: t.kind })}
                         className="px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/30 text-primary font-grotesk font-bold text-[11px] hover:bg-primary/20 transition-all flex-shrink-0">
                         Utiliser
                       </button>
@@ -478,8 +480,17 @@ export default function BoutiquePage() {
       </div>
 
       {/* Use token dialog */}
-      {tokenDialog && (
+      {tokenDialog && tokenDialog.kind === 'post' && (
         <UseTokenDialog
+          open={true}
+          onClose={() => setTokenDialog(null)}
+          tokenType={tokenDialog.type}
+          count={tokenDialog.count}
+          onUsed={refreshUser}
+        />
+      )}
+      {tokenDialog && tokenDialog.kind === 'community' && (
+        <UseCommunityTokenDialog
           open={true}
           onClose={() => setTokenDialog(null)}
           tokenType={tokenDialog.type}

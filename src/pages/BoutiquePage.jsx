@@ -31,6 +31,19 @@ const FULFILLMENT_BADGE = {
   manual: { label: 'Manuel', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30', icon: Clock },
 };
 
+// Map rewardId -> verification key (pour refléter l'état actif / révocation admin)
+const BADGE_VERIFICATION_MAP = {
+  badge_verified: 'verified',
+  badge_pro: 'pro',
+  badge_certified: 'certified',
+  badge_official: 'official',
+  badge_ambassador: 'ambassador',
+  badge_scholar: 'scholar',
+  badge_donor: 'donor',
+  badge_beta: 'beta_tester',
+  badge_mentor: 'mentor',
+};
+
 // Map rewardId -> fulfillment type (doit correspondre au backend)
 const ITEM_FULFILLMENT = {
   premium_1m: 'auto', premium_3m: 'auto', premium_1y: 'auto', business_1m: 'auto', business_3m: 'auto', enterprise_1m: 'auto',
@@ -411,8 +424,11 @@ export default function BoutiquePage() {
             const fulfillment = ITEM_FULFILLMENT[item.id] || 'manual';
             const fb = FULFILLMENT_BADGE[fulfillment];
             const FBIcon = fb.icon;
+            // État actif : badge déjà possédé (vérification présente) — révocable par l'admin
+            const verifKey = BADGE_VERIFICATION_MAP[item.id];
+            const alreadyOwned = verifKey && (user?.verifications || []).includes(verifKey);
             return (
-              <div key={item.id} className={`rounded-2xl border ${cat.border} ${cat.bg} p-4 flex flex-col`}>
+              <div key={item.id} className={`rounded-2xl border ${cat.border} ${cat.bg} p-4 flex flex-col ${alreadyOwned ? 'ring-1 ring-emerald-400/40' : ''}`}>
                 <div className="flex items-start gap-3 mb-3">
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border ${cat.border}`} style={{ background: 'rgba(255,255,255,0.04)' }}>
                     <Icon className={`w-5 h-5 ${cat.color}`} />
@@ -426,22 +442,33 @@ export default function BoutiquePage() {
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono border ${fb.color}`}>
                     <FBIcon className="w-2.5 h-2.5" /> {fb.label}
                   </span>
+                  {alreadyOwned && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono border border-emerald-400/30 bg-emerald-400/10 text-emerald-400">
+                      <CheckCircle className="w-2.5 h-2.5" /> Activé
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center justify-between mt-auto pt-2">
                   <div className="flex items-center gap-1.5">
                     <Coins className={`w-3.5 h-3.5 ${cat.color}`} />
                     <span className={`font-mono text-sm font-bold ${cat.color}`}>{item.cost}</span>
                   </div>
-                  <button
-                    onClick={() => handleRedeem(item)}
-                    disabled={!canAfford || isRedeeming}
-                    className={`px-3 py-1.5 rounded-lg font-grotesk font-bold text-xs flex items-center gap-1.5 transition-all ${
-                      canAfford ? 'bg-foreground text-background hover:bg-foreground/90' : 'bg-muted/50 text-muted-foreground/50 cursor-not-allowed'
-                    }`}>
-                    {isRedeeming ? <Loader2 className="w-3 h-3 animate-spin" /> : (
-                      canAfford ? <><Gift className="w-3 h-3" /> Réclamer</> : <><Lock className="w-3 h-3" /> {item.cost - credits} cr</>
-                    )}
-                  </button>
+                  {alreadyOwned ? (
+                    <span className="px-3 py-1.5 rounded-lg font-grotesk font-bold text-xs flex items-center gap-1.5 bg-emerald-400/10 text-emerald-400 border border-emerald-400/30">
+                      <CheckCircle className="w-3 h-3" /> Acquis
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => handleRedeem(item)}
+                      disabled={!canAfford || isRedeeming}
+                      className={`px-3 py-1.5 rounded-lg font-grotesk font-bold text-xs flex items-center gap-1.5 transition-all ${
+                        canAfford ? 'bg-foreground text-background hover:bg-foreground/90' : 'bg-muted/50 text-muted-foreground/50 cursor-not-allowed'
+                      }`}>
+                      {isRedeeming ? <Loader2 className="w-3 h-3 animate-spin" /> : (
+                        canAfford ? <><Gift className="w-3 h-3" /> Réclamer</> : <><Lock className="w-3 h-3" /> {item.cost - credits} cr</>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             );

@@ -16,6 +16,7 @@ import CreditPill from '@/components/boutique/CreditPill';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { hasAdvancedAnalytics } from '@/lib/subscriptionGating';
+import SubscriptionTierBanner from '@/components/boutique/SubscriptionTierBanner';
 
 const TABS = [
   { id: 'reports',     label: 'Signalements',  icon: Flag },
@@ -187,6 +188,9 @@ function PerksTab({ user, onRefresh }) {
 
   return (
     <div className="space-y-4">
+      {/* Statut d'abonnement Premium / Business / Enterprise */}
+      <SubscriptionTierBanner perks={perks} />
+
       {/* Active perks badges */}
       <div className="rounded-2xl border border-border bg-card p-5">
         <div className="flex items-center gap-2 mb-3">

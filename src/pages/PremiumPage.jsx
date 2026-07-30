@@ -5,7 +5,7 @@ import {
   BadgeCheck, Building2, ShieldCheck, User, Calendar, MapPin,
   Phone, Globe, Link2, Heart, Briefcase, Hash, Camera, Star,
   Users, Instagram, Linkedin, ExternalLink, FileText, Loader2,
-  AlertCircle, Sparkles, Crown, Trophy, Info
+  AlertCircle, Sparkles, Crown, Trophy, Info, Megaphone, Landmark, Beaker, BookMarked
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -35,6 +35,27 @@ const TIERS = {
       { icon: Check, text: 'Badge animé sur votre profil' },
     ],
   },
+  creator: {
+    id: 'creator',
+    label: 'Creator',
+    subtitle: 'Pour les créateurs & influenceurs',
+    icon: Megaphone,
+    colorClass: 'text-orange-400',
+    borderClass: 'border-orange-400/60',
+    bgClass: 'bg-orange-400/5',
+    glowClass: 'shadow-orange-400/20',
+    badges: ['ambassador', 'scholar'],
+    monthlyPrice: { ambassador: 25, scholar: 30 },
+    yearlyPrice: { ambassador: 19.99, scholar: 23.99 },
+    perks: [
+      { icon: Megaphone, text: 'Badge Ambassadeur ou Érudit exclusif' },
+      { icon: Star, text: 'Mise en avant dans l\'explorateur créateurs' },
+      { icon: Users, text: 'Outils de suivi de campagnes promotionnelles' },
+      { icon: Trophy, text: 'Accès aux événements exclusifs partenaires' },
+      { icon: Globe, text: 'Publications sponsorisées illimitées' },
+      { icon: Check, text: 'Tous les avantages Premium' },
+    ],
+  },
   business: {
     id: 'business',
     label: 'Business',
@@ -53,7 +74,28 @@ const TIERS = {
       { icon: Globe, text: 'Analyse d\'audience complète' },
       { icon: Star, text: 'Publications sponsorisées gratuites (2/mois)' },
       { icon: Crown, text: 'Support prioritaire dédié 24h' },
-      { icon: Check, text: 'Tous les avantages Premium' },
+      { icon: Check, text: 'Tous les avantages Creator' },
+    ],
+  },
+  enterprise: {
+    id: 'enterprise',
+    label: 'Enterprise',
+    subtitle: 'Pour les institutions & entités publiques',
+    icon: Landmark,
+    colorClass: 'text-indigo-400',
+    borderClass: 'border-indigo-400/60',
+    bgClass: 'bg-indigo-400/5',
+    glowClass: 'shadow-indigo-400/20',
+    badges: ['government'],
+    monthlyPrice: { government: 50 },
+    yearlyPrice: { government: 39.99 },
+    perks: [
+      { icon: Landmark, text: 'Badge Gouvernement exclusif' },
+      { icon: ShieldCheck, text: 'Vérification institutionnelle renforcée' },
+      { icon: Globe, text: 'Visibilité maximale et priorité absolue' },
+      { icon: Crown, text: 'Support dédié avec gestionnaire de compte' },
+      { icon: Users, text: 'Gestion multi-utilisateurs de l\'organisation' },
+      { icon: Check, text: 'Tous les avantages Business' },
     ],
   },
 };
@@ -155,6 +197,75 @@ const BADGE_LEVELS = [
       ]},
     ],
   },
+  {
+    key: 'ambassador', label: 'Ambassadeur', icon: Megaphone, tier: 'creator',
+    color: 'text-orange-400', border: 'border-orange-400/30', bg: 'bg-orange-400/10',
+    price: { monthly: 25, yearly: 19.99 },
+    desc: 'Représentez officiellement une marque partenaire Eza',
+    perks: ['Coche Ambassadeur orange', 'Mise en avant dans les espaces partenaires', 'Outils de suivi des campagnes', 'Accès aux événements exclusifs'],
+    steps: [
+      { title: 'Identité & marque', subtitle: 'Votre rattachement', icon: Megaphone, fields: [
+        { id: 'full_name', label: 'Nom complet', placeholder: 'Prénom Nom', type: 'text', required: true, icon: User },
+        { id: 'brand_name', label: 'Nom de la marque partenaire', placeholder: 'Nom commercial de la marque', type: 'text', required: true, icon: Building2 },
+        { id: 'partnership_role', label: 'Votre rôle dans la marque', placeholder: 'Ambassadeur, représentant...', type: 'text', required: true, icon: Briefcase },
+      ]},
+      { title: 'Activité promotionnelle', subtitle: 'Votre audience', icon: Star, fields: [
+        { id: 'audience_size', label: 'Taille de votre audience', placeholder: 'Ex: 100 000 abonnés...', type: 'text', required: true, icon: Users },
+        { id: 'main_platform', label: 'Plateforme principale', placeholder: 'Instagram, TikTok, YouTube...', type: 'text', required: true, icon: Globe },
+        { id: 'campaign_examples', label: 'Exemples de campagnes réalisées', placeholder: 'Décrivez vos dernières campagnes...', type: 'textarea', required: true },
+      ]},
+      { title: 'Validation', subtitle: 'Confirmation', icon: Heart, fields: [
+        { id: 'brand_contact', label: 'Contact de référence chez la marque', placeholder: 'email@marque.fr', type: 'text', required: true, icon: Phone },
+        { id: 'why_ambassador', label: 'Pourquoi le badge Ambassadeur ?', placeholder: 'Expliquez votre démarche...', type: 'textarea', required: true },
+      ]},
+    ],
+  },
+  {
+    key: 'scholar', label: 'Érudit', icon: BookMarked, tier: 'creator',
+    color: 'text-indigo-400', border: 'border-indigo-400/30', bg: 'bg-indigo-400/10',
+    price: { monthly: 30, yearly: 23.99 },
+    desc: 'Reconnu pour vos connaissances approfondies et votre travail de recherche',
+    perks: ['Coche Érudit indigo', 'Mise en avant dans les discussions spécialisées', 'Accès aux espaces de recherche', 'Badge Érudit animé'],
+    steps: [
+      { title: 'Identité & domaine', subtitle: 'Votre expertise', icon: BookMarked, fields: [
+        { id: 'full_name', label: 'Nom complet', placeholder: 'Prénom Nom', type: 'text', required: true, icon: User },
+        { id: 'scholar_domain', label: "Domaine d'expertise", placeholder: 'Sciences, ingénierie, droit...', type: 'text', required: true, icon: Briefcase },
+        { id: 'experience_years', label: "Années d'expérience", placeholder: 'Ex: 10', type: 'number', required: true, icon: Calendar },
+      ]},
+      { title: 'Travail & reconnaissance', subtitle: 'Votre parcours', icon: Trophy, fields: [
+        { id: 'research_summary', label: 'Résumé de vos travaux', placeholder: 'Décrivez vos recherches ou projets notables...', type: 'textarea', required: true },
+        { id: 'publications', label: 'Publications ou publications de référence', placeholder: 'Titres, liens...', type: 'text', required: false, icon: Globe },
+        { id: 'credentials', label: 'Diplômes, certifications, distinctions', placeholder: 'Master, Doctorant, Lauréat...', type: 'text', required: false, icon: Award },
+      ]},
+      { title: 'Impact', subtitle: 'Votre contribution', icon: Star, fields: [
+        { id: 'contribution_area', label: 'Comment contribuez-vous à Eza ?', placeholder: 'Décrivez votre apport à la communauté...', type: 'textarea', required: true },
+      ]},
+    ],
+  },
+  {
+    key: 'government', label: 'Gouvernement', icon: Landmark, tier: 'enterprise',
+    color: 'text-indigo-400', border: 'border-indigo-400/30', bg: 'bg-indigo-400/10',
+    price: { monthly: 50, yearly: 39.99 },
+    desc: 'Pour les institutions gouvernementales et entités multilatérales',
+    perks: ['Badge Gouvernement exclusif', 'Vérification institutionnelle renforcée', 'Visibilité maximale', 'Support dédié avec gestionnaire de compte'],
+    steps: [
+      { title: 'Identité institutionnelle', subtitle: 'Votre institution', icon: Landmark, fields: [
+        { id: 'institution_name', label: 'Nom officiel de l\'institution', placeholder: 'Nom complet officiel', type: 'text', required: true, icon: Building2 },
+        { id: 'institution_type', label: "Type d'institution", placeholder: 'Mairie, ministère, ONG, service public...', type: 'text', required: true, icon: FileText },
+        { id: 'institution_level', label: 'Niveau (optionnel)', placeholder: 'Local, régional, national, multilatéral...', type: 'text', required: false, icon: Globe },
+      ]},
+      { title: 'Authenticité', subtitle: 'Vérification officielle', icon: ShieldCheck, fields: [
+        { id: 'official_website', label: 'Site web officiel', placeholder: 'https://...', type: 'text', required: true, icon: Globe },
+        { id: 'registration_number', label: "N° d'enregistrement / RNA / identifiant officiel", placeholder: '123 456 789...', type: 'text', required: true, icon: Hash },
+        { id: 'verification_doc_url', label: 'Lien de preuve officielle', placeholder: 'https://...', type: 'text', required: true, icon: ExternalLink },
+      ]},
+      { title: 'Votre rôle', subtitle: 'Qui représente l\'institution', icon: User, fields: [
+        { id: 'your_role', label: 'Votre poste au sein de l\'institution', placeholder: 'Responsable, communicant, agent...', type: 'text', required: true, icon: Briefcase },
+        { id: 'official_email', label: 'Email institutionnel', placeholder: 'contact@institution.fr', type: 'text', required: true, icon: Phone },
+        { id: 'why_government', label: 'Pourquoi le badge Gouvernement ?', placeholder: 'Expliquez l\'usage prévu...', type: 'textarea', required: true },
+      ]},
+    ],
+  },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -192,21 +303,22 @@ const ctaBg = (key) => ({
   pro: 'bg-emerald-400 hover:bg-emerald-300 text-black',
   certified: 'bg-amber-400 hover:bg-amber-300 text-black',
   official: 'bg-purple-400 hover:bg-purple-300 text-black',
+  ambassador: 'bg-orange-400 hover:bg-orange-300 text-black',
+  scholar: 'bg-indigo-400 hover:bg-indigo-300 text-black',
+  government: 'bg-indigo-500 hover:bg-indigo-400 text-white',
 }[key] || 'bg-primary text-primary-foreground');
 
 // ─── Tier card (plaque) ───────────────────────────────────────────────────────
 function TierCard({ tier, billing, selected, onSelect }) {
-  const isPremium = tier.id === 'premium';
-  const primaryBadge = BADGE_LEVELS.find(b => b.key === tier.badges[0]);
-  const secondaryBadge = BADGE_LEVELS.find(b => b.key === tier.badges[1]);
   const isSelected = selected?.id === tier.id;
 
   const loPrice = billing === 'monthly'
     ? tier.monthlyPrice[tier.badges[0]]
     : tier.yearlyPrice[tier.badges[0]];
-  const hiPrice = billing === 'monthly'
-    ? tier.monthlyPrice[tier.badges[1]]
-    : tier.yearlyPrice[tier.badges[1]];
+  const hasRange = tier.badges.length > 1;
+  const hiPrice = hasRange
+    ? (billing === 'monthly' ? tier.monthlyPrice[tier.badges[1]] : tier.yearlyPrice[tier.badges[1]])
+    : null;
 
   const TierIcon = tier.icon;
 
@@ -221,7 +333,7 @@ function TierCard({ tier, billing, selected, onSelect }) {
         <div className="flex items-center gap-2 mb-0.5">
           <span className={`font-grotesk font-black text-lg ${isSelected ? tier.colorClass : 'text-foreground'}`}>{tier.label}</span>
           {billing === 'yearly' && (
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${isPremium ? 'text-sky-400 border-sky-400/30 bg-sky-400/10' : 'text-amber-400 border-amber-400/30 bg-amber-400/10'}`}>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${tier.colorClass} ${tier.borderClass} ${tier.bgClass}`}>
               2 mois offerts
             </span>
           )}
@@ -232,11 +344,14 @@ function TierCard({ tier, billing, selected, onSelect }) {
       {/* Price range */}
       <div className="flex items-baseline gap-1 mt-2 mb-4">
         <span className="font-grotesk font-black text-3xl text-foreground">{loPrice}€</span>
-        <span className="font-inter text-sm text-muted-foreground">– {hiPrice}€ / mois</span>
+        {hasRange
+          ? <span className="font-inter text-sm text-muted-foreground">– {hiPrice}€ / mois</span>
+          : <span className="font-inter text-sm text-muted-foreground">/ mois</span>
+        }
       </div>
 
       {/* Badges pills */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 flex-wrap">
         {tier.badges.map(bKey => {
           const b = BADGE_LEVELS.find(x => x.key === bKey);
           const Icon = b.icon;
@@ -263,7 +378,7 @@ function TierCard({ tier, billing, selected, onSelect }) {
 
       {/* Selected indicator */}
       {isSelected && (
-        <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center ${isPremium ? 'bg-sky-400' : 'bg-amber-400'}`}>
+        <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center ${tier.colorClass.replace('text-', 'bg-')}`}>
           <Check className="w-3 h-3 text-black" />
         </div>
       )}
@@ -364,7 +479,7 @@ export default function PremiumPage() {
     else { setStage('list'); setSelectedTier(null); setSelectedBadge(null); }
   };
 
-  const tiersList = [TIERS.premium, TIERS.business];
+  const tiersList = [TIERS.premium, TIERS.creator, TIERS.business, TIERS.enterprise];
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -399,29 +514,29 @@ export default function PremiumPage() {
                 </div>
               )}
 
-              {/* Two cards */}
+              {/* Tier cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {tiersList.map(tier => (
                   <TierCard key={tier.id} tier={tier} billing={billing} selected={selectedTier} onSelect={setSelectedTier} />
                 ))}
               </div>
 
-              {/* Business CTA banner */}
-              <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl border border-amber-400/20 bg-amber-400/5 mb-6">
+              {/* Enterprise CTA banner */}
+              <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl border border-indigo-400/20 bg-indigo-400/5 mb-6">
                 <div className="flex items-center gap-3 flex-1">
-                  <div className="w-9 h-9 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
-                    <Crown className="w-4 h-4 text-amber-400" />
+                  <div className="w-9 h-9 rounded-xl bg-indigo-400/15 border border-indigo-400/30 flex items-center justify-center flex-shrink-0">
+                    <Landmark className="w-4 h-4 text-indigo-400" />
                   </div>
                   <div>
-                    <p className="font-grotesk font-bold text-sm text-foreground">Vous avez une entreprise ?</p>
+                    <p className="font-grotesk font-bold text-sm text-foreground">Vous représentez une institution publique ?</p>
                     <p className="font-inter text-xs text-muted-foreground">
-                      Gagnez en crédibilité avec le plan <span className="text-amber-400">Business</span> — certifié ou officiel.
+                      Obtenez le badge <span className="text-indigo-400">Gouvernement</span> avec le plan Enterprise — visibilité maximale et support dédié.
                     </p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedTier(TIERS.business)}
+                <button onClick={() => setSelectedTier(TIERS.enterprise)}
                   className="flex-shrink-0 px-4 py-2 rounded-full bg-foreground text-background text-xs font-grotesk font-bold hover:bg-foreground/90 transition-all whitespace-nowrap">
-                  Découvrir Business
+                  Découvrir Enterprise
                 </button>
               </div>
 
@@ -460,7 +575,7 @@ export default function PremiumPage() {
                 <button
                   onClick={handleSubscribe}
                   disabled={!selectedTier}
-                  className={`px-6 py-3 rounded-full font-grotesk font-black text-sm transition-all ${selectedTier ? (selectedTier.id === 'premium' ? 'bg-sky-400 text-black hover:bg-sky-300' : 'bg-amber-400 text-black hover:bg-amber-300') : 'bg-white/10 text-muted-foreground cursor-not-allowed'}`}>
+                  className={`px-6 py-3 rounded-full font-grotesk font-black text-sm transition-all ${selectedTier ? ctaBg(selectedTier.badges[0]) : 'bg-white/10 text-muted-foreground cursor-not-allowed'}`}>
                   S'abonner et payer
                 </button>
               </div>

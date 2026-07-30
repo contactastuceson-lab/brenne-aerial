@@ -4,9 +4,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   TrendingUp, Users, Gift, Coins, Loader2, RefreshCw,
-  Check, X, Clock, Award, Zap,
+  Check, X, Clock, Award, Zap, Trash2, Plus, Minus, Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 const TABS = [
@@ -57,6 +58,97 @@ function StatCard({ icon: Icon, label, value, color }) {
   );
 }
 
+function CreditAdjuster() {
+  const qc = useQueryClient();
+  const [email, setEmail] = useState('');
+  const [amount, setAmount] = useState('');
+  const [found, setFound] = useState(null);
+  const [searching, setSearching] = useState(false);
+  const [applying, setApplying] = useState(false);
+
+  const searchUser = async () => {
+    if (!email.trim()) return;
+    setSearching(true); setFound(null);
+    try {
+      const res = await base44.functions.invoke('adminGetUsers', {});
+      const users = res.data?.users || [];
+      const u = users.find(x => x.email?.toLowerCase() === email.trim().toLowerCase());
+      if (u) setFound(u);
+      else toast.error('Utilisateur introuvable');
+    } catch { toast.error('Erreur de recherche'); }
+    setSearching(false);
+  };
+
+  const apply = async (delta) => {
+    if (!found) return;
+    setApplying(true);
+    try {
+      const newCredits = Math.max(0, (found.referral_credits || 0) + delta);
+      await base44.functions.invoke('adminUpdateUser', { id: found.id, data: { referral_credits: newCredits } });
+      setFound({ ...found, referral_credits: newCredits });
+      toast.success(delta >= 0 ? `+${delta} crédits ajoutés` : `${delta} crédits retirés`);
+      qc.invalidateQueries({ queryKey: ['admin-referrals'] });
+    } catch { toast.error('Erreur'); }
+    setApplying(false);
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+        <Coins className="w-4 h-4 text-amber-400" />
+        <p className="font-grotesk font-semibold text-sm">Ajuster les crédits d'un utilisateur</p>
+      </div>
+      <div className="p-4 space-y-3">
+        <div className="flex gap-2">
+          <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@utilisateur.fr"
+            className="flex-1" onKeyDown={e => e.key === 'Enter' && searchUser()} />
+          <Button onClick={searchUser} disabled={searching} size="sm" className="flex items-center gap-1.5">
+            {searching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />} Rechercher
+          </Button>
+        </div>
+        {found && (
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/40 border border-border">
+            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {found.avatar_url ? <img src={found.avatar_url} className="w-full h-full object-cover" alt="" /> :
+                <span className="font-grotesk font-bold text-xs text-primary">{found.full_name?.[0] || '?'}</span>}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-inter text-sm text-foreground truncate">{found.display_name || found.full_name}</p>
+              <p className="font-mono text-[10px] text-muted-foreground/60 truncate">{found.email}</p>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <p className="font-mono text-[10px] text-muted-foreground/60">Solde</p>
+              <p className="font-grotesk font-black text-lg text-amber-400">{found.referral_credits || 0}</p>
+            </div>
+          </div>
+        )}
+        {found && (
+          <div className="flex flex-wrap items-center gap-2">
+            <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Montant"
+              className="w-32" />
+            <Button onClick={() => apply(parseInt(amount) || 0)} disabled={applying || !amount || parseInt(amount) <= 0}
+              size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-white flex items-center gap-1.5">
+              <Plus className="w-3.5 h-3.5" /> Créditer
+            </Button>
+            <Button onClick={() => apply(-(parseInt(amount) || 0))} disabled={applying || !amount || parseInt(amount) <= 0}
+              size="sm" className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1.5">
+              <Minus className="w-3.5 h-3.5" /> Débiter
+            </Button>
+            <div className="flex gap-1 ml-auto">
+              {[10, 50, 100].map(v => (
+                <button key={v} onClick={() => setAmount(String(v))}
+                  className="px-2.5 py-1 rounded-lg text-xs font-mono border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all">
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function EconomieTab() {
   const { data: referrals = [] } = useQuery({
     queryKey: ['admin-referrals'],
@@ -82,6 +174,9 @@ function EconomieTab() {
         <StatCard icon={Clock} label="Réclamations en attente" value={pendingRedemptions.length} color="bg-orange-400/10 text-orange-400" />
       </div>
 
+      {/* Manual credit adjustment */}
+      <CreditAdjuster />
+
       {/* Earning rules */}
       <div className="rounded-2xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center gap-2">
@@ -104,6 +199,7 @@ function EconomieTab() {
 function ParrainageTab() {
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('all');
+  const [busy, setBusy] = useState(null);
 
   const { data: referrals = [], isLoading } = useQuery({
     queryKey: ['admin-referrals'],
@@ -112,9 +208,29 @@ function ParrainageTab() {
 
   const filtered = statusFilter === 'all' ? referrals : referrals.filter(r => r.status === statusFilter);
 
+  const updateStatus = async (id, status) => {
+    setBusy(id);
+    try {
+      await base44.entities.Referral.update(id, { status });
+      toast.success(status === 'validated' ? 'Parrainage validé' : status === 'rewarded' ? 'Parrainage récompensé' : 'Statut mis à jour');
+      qc.invalidateQueries({ queryKey: ['admin-referrals'] });
+    } catch { toast.error('Erreur'); }
+    setBusy(null);
+  };
+
+  const remove = async (id) => {
+    if (!confirm('Supprimer ce parrainage ?')) return;
+    setBusy(id);
+    try {
+      await base44.entities.Referral.delete(id);
+      toast.success('Parrainage supprimé');
+      qc.invalidateQueries({ queryKey: ['admin-referrals'] });
+    } catch { toast.error('Erreur'); }
+    setBusy(null);
+  };
+
   return (
     <div className="space-y-4">
-      {/* Filter */}
       <div className="flex gap-1.5 flex-wrap">
         {['all', 'pending', 'validated', 'rewarded'].map(s => (
           <button key={s} onClick={() => setStatusFilter(s)}
@@ -139,6 +255,7 @@ function ParrainageTab() {
           <div className="max-h-[60vh] overflow-y-auto divide-y divide-border/60">
             {filtered.map(r => {
               const s = REFERRAL_STATUS[r.status] || REFERRAL_STATUS.pending;
+              const isBusy = busy === r.id;
               return (
                 <div key={r.id} className="flex items-center gap-3 px-4 py-3">
                   <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -154,9 +271,25 @@ function ParrainageTab() {
                       Filleul: {r.referred_name || r.referred_email}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono border ${s.color}`}>{s.label}</span>
                     {r.credits_earned > 0 && <span className="font-mono text-xs font-bold text-amber-400">+{r.credits_earned}</span>}
+                    {r.status === 'pending' && (
+                      <button onClick={() => updateStatus(r.id, 'validated')} disabled={isBusy} title="Valider"
+                        className="w-7 h-7 rounded-lg bg-emerald-400/10 border border-emerald-400/30 flex items-center justify-center hover:bg-emerald-400/20 transition-all disabled:opacity-50">
+                        {isBusy ? <Loader2 className="w-3 h-3 animate-spin text-emerald-400" /> : <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                      </button>
+                    )}
+                    {r.status === 'validated' && (
+                      <button onClick={() => updateStatus(r.id, 'rewarded')} disabled={isBusy} title="Marquer récompensé"
+                        className="w-7 h-7 rounded-lg bg-sky-400/10 border border-sky-400/30 flex items-center justify-center hover:bg-sky-400/20 transition-all disabled:opacity-50">
+                        <Award className="w-3.5 h-3.5 text-sky-400" />
+                      </button>
+                    )}
+                    <button onClick={() => remove(r.id)} disabled={isBusy} title="Supprimer"
+                      className="w-7 h-7 rounded-lg bg-red-400/10 border border-red-400/30 flex items-center justify-center hover:bg-red-400/20 transition-all disabled:opacity-50">
+                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                    </button>
                   </div>
                 </div>
               );
@@ -189,6 +322,17 @@ function BoutiqueTab() {
     } catch {
       toast.error('Erreur lors de la mise à jour');
     }
+    setUpdating(null);
+  };
+
+  const removeRedemption = async (id) => {
+    if (!confirm('Supprimer cette réclamation ?')) return;
+    setUpdating(id);
+    try {
+      await base44.entities.RewardRedemption.delete(id);
+      toast.success('Réclamation supprimée');
+      qc.invalidateQueries({ queryKey: ['admin-redemptions'] });
+    } catch { toast.error('Erreur'); }
     setUpdating(null);
   };
 
@@ -244,6 +388,10 @@ function BoutiqueTab() {
                         </button>
                       </div>
                     )}
+                    <button onClick={() => removeRedemption(r.id)} disabled={isUpdating} title="Supprimer"
+                      className="w-7 h-7 rounded-lg bg-red-400/10 border border-red-400/30 flex items-center justify-center hover:bg-red-400/20 transition-all disabled:opacity-50">
+                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                    </button>
                   </div>
                 </div>
               );

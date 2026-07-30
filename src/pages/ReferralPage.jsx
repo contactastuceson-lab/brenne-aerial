@@ -111,7 +111,7 @@ export default function ReferralPage() {
   }, [processPendingReferral]);
 
   const referralCode = user?.username || '';
-  const referralLink = referralCode ? `${window.location.origin}/parrainage?ref=${referralCode}` : '';
+  const referralLink = referralCode ? `${window.location.origin}/register?ref=${referralCode}` : '';
 
   const handleCopy = async () => {
     if (!referralLink) return;
@@ -130,7 +130,7 @@ export default function ReferralPage() {
     if (!inviteEmail.trim() || !referralLink) return;
     const subject = encodeURIComponent('Rejoins-moi sur Eza 🚀');
     const body = encodeURIComponent(
-      `Salut !\n\nJe t'invite à rejoindre Eza, la plateforme communautaire où créateurs, professionnels et institutions se rassemblent.\n\nInscris-toi avec mon code de parrainage : ${referralCode}\n\n👉 ${referralLink}\n\nÀ très vite !`
+      `Salut !\n\nJe t'invite à rejoindre Eza, la plateforme communautaire où créateurs, professionnels et institutions se rassemblent.\n\nInscris-toi via ce lien : 👉 ${referralLink}\n\nÀ très vite !`
     );
     window.location.href = `mailto:${inviteEmail}?subject=${subject}&body=${body}`;
     setInviteEmail('');

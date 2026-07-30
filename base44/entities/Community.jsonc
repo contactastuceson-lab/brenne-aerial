@@ -50,6 +50,26 @@
       "type": "number",
       "default": 0,
       "description": "Nombre de membres"
+    },
+    "is_premium": {
+      "type": "boolean",
+      "default": false,
+      "description": "Design premium appliqu\u00e9 (token boutique)"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Communaut\u00e9 \u00e9pingl\u00e9e en haut de la liste (token boutique)"
+    },
+    "pinned_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date d'expiration de l'\u00e9pinglage"
+    },
+    "capacity_limit": {
+      "type": "number",
+      "default": 100,
+      "description": "Capacit\u00e9 maximale de membres (\u00e9tendue via token boutique)"
     }
   },
   "required": [

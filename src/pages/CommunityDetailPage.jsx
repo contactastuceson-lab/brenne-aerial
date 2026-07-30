@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PostCard from '@/components/post/PostCard';
-import { ArrowLeft, Lock, Globe, Users, Loader2, Send, LogIn, LogOut, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Lock, Globe, Users, Loader2, Send, LogIn, LogOut, MessageCircle, Pin, Crown, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { applySeoMeta, getCommunitySeoData } from '@/lib/seo';
 
@@ -90,17 +90,33 @@ export default function CommunityDetailPage() {
         </div>
       </div>
 
-      <div className="h-32 bg-gradient-to-br from-primary/20 to-accent/20 relative overflow-hidden">
+      <div className={`h-32 relative overflow-hidden ${community.is_premium ? 'bg-gradient-to-r from-yellow-400/20 via-amber-400/15 to-orange-400/20' : 'bg-gradient-to-br from-primary/20 to-accent/20'}`}>
         {community.cover_url && <img src={community.cover_url} className="w-full h-full object-cover" alt="" />}
+        {community.is_premium && (
+          <div className="absolute inset-0 bg-gradient-to-t from-yellow-400/10 to-transparent pointer-events-none" />
+        )}
       </div>
-      <div className="px-4 py-3">
-        <div className="flex items-center gap-1.5 mb-1">
+      {community.is_premium && (
+        <div className="h-1 bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-400" />
+      )}
+      <div className={`px-4 py-3 ${community.is_premium ? 'border-x border-yellow-400/20' : ''}`}>
+        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+          {community.is_pinned && community.pinned_until && new Date(community.pinned_until).getTime() > Date.now() && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-full">
+              <Pin className="w-2.5 h-2.5" /> Épinglée {Math.max(0, Math.ceil((new Date(community.pinned_until).getTime() - Date.now()) / 86400000))}j
+            </span>
+          )}
+          {community.is_premium && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-2 py-0.5 rounded-full">
+              <Crown className="w-2.5 h-2.5" /> Premium
+            </span>
+          )}
           <h1 className="font-grotesk font-bold text-xl">{community.name}</h1>
           {community.type === 'closed' ? <Lock className="w-4 h-4 text-amber-400" /> : <Globe className="w-4 h-4 text-emerald-400" />}
         </div>
         {community.description && <p className="font-inter text-sm text-muted-foreground mb-3">{community.description}</p>}
         <div className="flex items-center gap-3 mb-4">
-          <span className="flex items-center gap-1 font-mono text-xs text-muted-foreground"><Users className="w-3 h-3" /> {community.members_count || 0} membres</span>
+          <span className="flex items-center gap-1 font-mono text-xs text-muted-foreground"><Users className="w-3 h-3" /> {community.members_count || 0}/{community.capacity_limit || 100} membres</span>
           <span className="font-mono text-xs text-muted-foreground">par @{community.owner_username || 'eza'}</span>
         </div>
 

@@ -85,17 +85,17 @@ export default async function(req) {
       if (community.owner_id !== user.id) {
         return Response.json({ error: 'Vous ne pouvez épingler que votre propre communauté' }, { status: 403 });
       }
-      // Marquer la communauté comme épinglée — on utilise is_featured sur Community si dispo, sinon sur Project... 
-      // Community n'a pas is_featured, on stocke la date dans les perks
       const days = 30;
       const until = new Date(); until.setDate(until.getDate() + days);
+      // Épingler la communauté directement sur l'entité
+      await base44.asServiceRole.entities.Community.update(targetId, {
+        is_pinned: true,
+        pinned_until: until.toISOString(),
+      });
       const newTokens = { ...tokens, community_pin: available - 1 };
       const newPerks = { ...perks, tokens: newTokens };
-      // Stocker l'id communauté épinglée
-      newPerks.pinned_community_id = targetId;
-      newPerks.pinned_community_until = until.toISOString();
       await base44.asServiceRole.entities.User.update(user.id, { perks: newPerks });
-      return Response.json({ success: true, message: 'Communauté épinglée 30 jours !', remainingTokens: newTokens.community_pin });
+      return Response.json({ success: true, message: 'Communauté épinglée 30 jours en haut de la liste !', remainingTokens: newTokens.community_pin });
     }
 
     if (tokenType === 'community_capacity') {
@@ -106,29 +106,45 @@ export default async function(req) {
       if (community.owner_id !== user.id) {
         return Response.json({ error: 'Action restreinte au propriétaire' }, { status: 403 });
       }
-      // Étendre la capacité — on ne modifie pas le schéma, on note dans les perks
+      // Étendre la capacité directement sur la communauté
+      await base44.asServiceRole.entities.Community.update(targetId, { capacity_limit: 1000 });
       const newTokens = { ...tokens, community_capacity: available - 1 };
       const newPerks = { ...perks, tokens: newTokens };
-      newPerks.community_capacity_for = targetId;
       await base44.asServiceRole.entities.User.update(user.id, { perks: newPerks });
       return Response.json({ success: true, message: 'Capacité communauté étendue à 1000 membres !', remainingTokens: newTokens.community_capacity });
     }
 
     if (tokenType === 'community_premium_design') {
-      // Désigne la communauté comme premium design — nécessite selection
-      if (!targetId) return Response.json({ error: 'Communauté requise' }, { status: 400 });
+      if (!targetId || targetId === 'request') return Response.json({ error: 'Communauté requise' }, { status: 400 });
+      let community;
+      try { community = await base44.asServiceRole.entities.Community.get(targetId); } catch {
+        return Response.json({ error: 'Communauté introuvable' }, { status: 404 });
+      }
+      if (community.owner_id !== user.id) {
+        return Response.json({ error: 'Action restreinte au propriétaire' }, { status: 403 });
+      }
+      // Appliquer le design premium directement sur la communauté
+      await base44.asServiceRole.entities.Community.update(targetId, { is_premium: true });
       const newTokens = { ...tokens, community_premium_design: available - 1 };
       const newPerks = { ...perks, tokens: newTokens };
-      newPerks.premium_design_community_id = targetId;
       await base44.asServiceRole.entities.User.update(user.id, { perks: newPerks });
-      return Response.json({ success: true, message: 'Design premium appliqué !', remainingTokens: newTokens.community_premium_design });
+      return Response.json({ success: true, message: 'Design premium appliqué à votre communauté !', remainingTokens: newTokens.community_premium_design });
     }
 
     if (tokenType === 'community_space' || tokenType === 'sponsored_event') {
-      // Ces tokens nécessitent une action manuelle — on les conserve et notifie l'admin
       const newTokens = { ...tokens, [tokenType]: available - 1 };
       const newPerks = { ...perks, tokens: newTokens };
       await base44.asServiceRole.entities.User.update(user.id, { perks: newPerks });
+      // Notifier l'admin
+      try {
+        await base44.asServiceRole.entities.Notification.create({
+          user_email: 'contact.astuceson@gmail.com',
+          type: 'system',
+          title: tokenType === 'community_space' ? '🎧 Demande de Space communautaire' : '📢 Demande d\'événement sponsorisé',
+          content: `${user.display_name || user.username} (${user.email}) demande: ${tokenType}. Communauté: ${targetId}`,
+          sender_name: user.display_name || user.username,
+        });
+      } catch {}
       return Response.json({ success: true, message: 'Demande transmise — notre équipe vous contactera.', remainingTokens: newTokens[tokenType] });
     }
 

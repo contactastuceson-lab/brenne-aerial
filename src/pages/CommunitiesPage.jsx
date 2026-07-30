@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import CommunityDialog from '@/components/community/CommunityDialog';
-import { Plus, Users, Lock, Globe, Loader2 } from 'lucide-react';
+import { Plus, Users, Lock, Globe, Loader2, Pin, Crown } from 'lucide-react';
 
 export default function CommunitiesPage() {
   const qc = useQueryClient();
@@ -14,7 +14,17 @@ export default function CommunitiesPage() {
 
   const { data: communities = [], isLoading } = useQuery({
     queryKey: ['communities'],
-    queryFn: () => base44.entities.Community.list('-members_count', 50),
+    queryFn: async () => {
+      const list = await base44.entities.Community.list('-members_count', 50);
+      // Tri : épinglées et non expirées en premier, puis par membres
+      return (list || []).sort((a, b) => {
+        const aPinned = a.is_pinned && a.pinned_until && new Date(a.pinned_until).getTime() > Date.now();
+        const bPinned = b.is_pinned && b.pinned_until && new Date(b.pinned_until).getTime() > Date.now();
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
+        return (b.members_count || 0) - (a.members_count || 0);
+      });
+    },
     enabled: !!user?.id,
   });
 
@@ -51,13 +61,19 @@ export default function CommunitiesPage() {
                   {!c.cover_url && <span className="font-grotesk font-bold text-primary">{(c.name || 'C')[0]}</span>}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {c.is_pinned && c.pinned_until && new Date(c.pinned_until).getTime() > Date.now() && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-400 bg-amber-400/10 border border-amber-400/30 px-1.5 py-0.5 rounded-full"><Pin className="w-2.5 h-2.5" /> Épinglée</span>
+                    )}
+                    {c.is_premium && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-1.5 py-0.5 rounded-full"><Crown className="w-2.5 h-2.5" /> Premium</span>
+                    )}
                     <span className="font-grotesk font-bold text-[15px] truncate">{c.name}</span>
-                    {c.type === 'closed' ? <Lock className="w-3 h-3 text-amber-400" /> : <Globe className="w-3 h-3 text-emerald-400" />}
+                    {c.type === 'closed' ? <Lock className="w-3 h-3 text-amber-400 flex-shrink-0" /> : <Globe className="w-3 h-3 text-emerald-400 flex-shrink-0" />}
                     {isMember && <span className="text-[10px] font-semibold text-primary bg-primary/10 border border-primary/30 px-1.5 py-0.5 rounded-full">Membre</span>}
                   </div>
                   {c.description && <p className="font-inter text-xs text-muted-foreground line-clamp-1 mt-0.5">{c.description}</p>}
-                  <p className="font-mono text-[10px] text-muted-foreground/60 mt-0.5">{c.members_count || 0} membre{(c.members_count || 0) > 1 ? 's' : ''} · par @{c.owner_username || 'eza'}</p>
+                  <p className="font-mono text-[10px] text-muted-foreground/60 mt-0.5">{c.members_count || 0}/{c.capacity_limit || 100} membres · par @{c.owner_username || 'eza'}</p>
                 </div>
               </button>
             );

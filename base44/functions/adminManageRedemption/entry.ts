@@ -209,6 +209,62 @@ export default async function(req) {
       });
       return Response.json({ success: true, message: 'Récompense rouverte (pending)' });
 
+    } else if (action === 'reset_all') {
+      // ── Reset global : vide les perks de tous les utilisateurs + réinitialise
+      //    toutes les communautés (unpin, capacité, premium) + rejette toutes les
+      //    réclamations de récompense en cours.
+      let usersReset = 0;
+      let hasMoreUsers = true;
+      while (hasMoreUsers) {
+        const res = await base44.asServiceRole.entities.User.updateMany(
+          {},
+          { $set: { perks: {} } }
+        );
+        usersReset += (res as any)?.modified_count || 0;
+        hasMoreUsers = (res as any)?.has_more === true;
+      }
+
+      let communitiesReset = 0;
+      let hasMoreComm = true;
+      while (hasMoreComm) {
+        const res = await base44.asServiceRole.entities.Community.updateMany(
+          {},
+          { $set: { is_pinned: false, pinned_until: null, is_premium: false, capacity_limit: 100 } }
+        );
+        communitiesReset += (res as any)?.modified_count || 0;
+        hasMoreComm = (res as any)?.has_more === true;
+      }
+
+      // Rejeter toutes les réclamations de récompense
+      let redemptionsReset = 0;
+      let hasMoreRed = true;
+      while (hasMoreRed) {
+        const res = await base44.asServiceRole.entities.RewardRedemption.updateMany(
+          { status: { $in: ['pending', 'fulfilled'] } },
+          { $set: { status: 'rejected', admin_notes: 'Reset global par admin' } }
+        );
+        redemptionsReset += (res as any)?.modified_count || 0;
+        hasMoreRed = (res as any)?.has_more === true;
+      }
+
+      waitUntil(
+        sendEzaEmail(base44, {
+          to: user.email,
+          title: 'Reset global effectué',
+          subject: '🔄 Reset global du système de récompenses',
+          body: `Bonjour **${user.full_name || user.email}**,\n\nUn reset global du système de récompenses a été effectué.\n\n- **Utilisateurs réinitialisés :** ${usersReset}\n- **Communautés réinitialisées :** ${communitiesReset}\n- **Réclamations rejetées :** ${redemptionsReset}\n\nTous les perks, tokens, et effets communauté ont été retirés.\n\n— L'équipe eza`,
+          tagline: 'Administration',
+        }).catch(() => {})
+      );
+
+      return Response.json({
+        success: true,
+        message: `Reset global — ${usersReset} utilisateur(s), ${communitiesReset} communauté(s), ${redemptionsReset} réclamation(s)`,
+        usersReset,
+        communitiesReset,
+        redemptionsReset,
+      });
+
     } else {
       return Response.json({ error: 'Action inconnue' }, { status: 400 });
     }

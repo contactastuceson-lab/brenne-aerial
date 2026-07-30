@@ -75,7 +75,34 @@ export const REWARD_EFFECTS: Record<string, RewardEffect> = {
   community_space:          { type: 'token', token: { key: 'community_space', count: 1, label: 'Space communautaire' } },
 };
 
-// Reverse a reward's effects on the user (remove badges, perks, tokens).
+// Community token keys that have a Community-entity effect to reverse
+const COMMUNITY_TOKEN_KEYS = ['community_pin', 'community_capacity', 'community_premium_design'];
+
+// Reverse a community-level effect (is_pinned, capacity_limit, is_premium) on all
+// communities owned by the user. Called when revoking a community-type reward.
+async function reverseCommunityEffect(base44: any, userId: string, tokenKey: string): Promise<string> {
+  try {
+    const communities = await base44.asServiceRole.entities.Community.filter({ owner_id: userId });
+    if (!communities || communities.length === 0) return 'aucune communauté possédée';
+
+    let patch: Record<string, any>;
+    if (tokenKey === 'community_pin') patch = { is_pinned: false, pinned_until: null };
+    else if (tokenKey === 'community_capacity') patch = { capacity_limit: 100 };
+    else if (tokenKey === 'community_premium_design') patch = { is_premium: false };
+    else return 'aucun effet communauté à inverser';
+
+    let count = 0;
+    for (const c of communities) {
+      try { await base44.asServiceRole.entities.Community.update(c.id, patch); count++; } catch {}
+    }
+    return `${count} communauté(s) réinitialisée(s)`;
+  } catch (e: any) {
+    return 'erreur communauté: ' + (e?.message || 'unknown');
+  }
+}
+
+// Reverse a reward's effects on the user (remove badges, perks, tokens) AND on
+// community entities for community-type rewards.
 // Called by adminManageRedemption when an admin rejects/revokes a reward.
 export async function reverseRewardEffect(base44: any, userId: string, rewardId: string): Promise<{ reversed: boolean; details: string }> {
   const effect = REWARD_EFFECTS[rewardId];
@@ -116,6 +143,15 @@ export async function reverseRewardEffect(base44: any, userId: string, rewardId:
     if (tokens[tk.key] === 0) delete tokens[tk.key];
     perks.tokens = tokens;
     removed.push(`${tk.count} token(s) ${tk.key}`);
+    // Community tokens also have a Community-entity effect to reverse
+    if (COMMUNITY_TOKEN_KEYS.includes(tk.key)) {
+      try {
+        const commInfo = await reverseCommunityEffect(base44, userId, tk.key);
+        removed.push(`effet communauté: ${commInfo}`);
+      } catch (e: any) {
+        removed.push(`erreur communauté: ${e?.message || 'unknown'}`);
+      }
+    }
   } else {
     return { reversed: false, details: 'Type manuel — aucun effet appliqué à inverser' };
   }

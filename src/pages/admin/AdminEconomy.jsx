@@ -145,6 +145,8 @@ function CreditAdjuster() {
 }
 
 function EconomieTab() {
+  const qc = useQueryClient();
+  const [resetting, setResetting] = useState(false);
   const { data: referrals = [] } = useQuery({
     queryKey: ['admin-referrals'],
     queryFn: () => base44.entities.Referral.list('-created_date', 500),
@@ -153,6 +155,20 @@ function EconomieTab() {
     queryKey: ['admin-redemptions'],
     queryFn: () => base44.entities.RewardRedemption.list('-created_date', 500),
   });
+
+  const handleResetAll = async () => {
+    if (!confirm('⚠️ RESET GLOBAL\n\nCette action va :\n• Vider les perks/tokens de TOUS les utilisateurs\n• Réinitialiser TOUTES les communautés (unpin, capacité 100, premium retiré)\n• Rejeter TOUTES les réclamations en cours\n\nIRREVERSIBLE. Continuer ?')) return;
+    if (!confirm('Dernière confirmation — êtes-vous absolument sûr ?')) return;
+    setResetting(true);
+    try {
+      const res = await base44.functions.invoke('adminManageRedemption', { action: 'reset_all' });
+      if (res.data?.error) { toast.error(res.data.error); return; }
+      toast.success(res.data?.message || 'Reset global effectué');
+      qc.invalidateQueries({ queryKey: ['admin-referrals'] });
+      qc.invalidateQueries({ queryKey: ['admin-redemptions'] });
+    } catch { toast.error('Erreur lors du reset'); }
+    setResetting(false);
+  };
 
   const totalCreditsAwarded = referrals.reduce((s, r) => s + (r.credits_earned || 0), 0);
   const totalCreditsRedeemed = redemptions.reduce((s, r) => s + (r.cost || 0), 0);
@@ -179,17 +195,37 @@ function EconomieTab() {
           <p className="font-grotesk font-semibold text-sm">Règles de gain (crédits par action de filleul)</p>
         </div>
         <div className="divide-y divide-border/60">
-          {EARNING_RULES.map((rule, i) => (
-            <div key={i} className="flex items-center justify-between px-4 py-2.5">
-              <p className="font-inter text-sm text-foreground/80">{rule.label}</p>
-              <span className="font-mono text-sm font-bold text-amber-400">+{rule.credits} cr</span>
-            </div>
-          ))}
+         {EARNING_RULES.map((rule, i) => (
+           <div key={i} className="flex items-center justify-between px-4 py-2.5">
+             <p className="font-inter text-sm text-foreground/80">{rule.label}</p>
+             <span className="font-mono text-sm font-bold text-amber-400">+{rule.credits} cr</span>
+           </div>
+         ))}
         </div>
-      </div>
-    </div>
-  );
-}
+        </div>
+
+        {/* Danger zone — Reset global */}
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/5 overflow-hidden">
+        <div className="px-4 py-3 border-b border-red-500/20 flex items-center gap-2">
+        <Trash2 className="w-4 h-4 text-red-400" />
+        <p className="font-grotesk font-semibold text-sm text-red-400">Zone de danger — Reset global</p>
+        </div>
+        <div className="p-4">
+        <p className="font-inter text-xs text-muted-foreground mb-3">
+          Réinitialise tout le système de récompenses : vide les perks/tokens de tous les utilisateurs,
+          réinitialise toutes les communautés (unpin, capacité 100, premium retiré) et rejette toutes
+          les réclamations en cours. <strong className="text-red-400">Irréversible.</strong>
+        </p>
+        <Button onClick={handleResetAll} disabled={resetting}
+          className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-2">
+          {resetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          {resetting ? 'Reset en cours…' : 'Reset global'}
+        </Button>
+        </div>
+        </div>
+        </div>
+        );
+        }
 
 function ParrainageTab() {
   const qc = useQueryClient();

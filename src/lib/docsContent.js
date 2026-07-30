@@ -894,13 +894,13 @@ export const DOC_TOPICS = [
     ],
   },
   {
-    slug: 'economie',
+    slug: 'economie-credits',
     icon: 'Coins',
-    title: "Parrainage, Boutique & Crédits",
-    tagline: "Économie Eza, récompenses et tokens",
+    title: "Crédits & Parrainage",
+    tagline: "La monnaie interne Eza et le programme de parrainage",
     color: '#f59e0b',
     isNew: true,
-    intro: "EZA possède sa propre économie interne basée sur les crédits. Les utilisateurs gagnent des crédits en parrainant des amis, puis les dépensent dans la Boutique contre des récompenses : abonnements, badges, boosts de visibilité, fonctionnalités premium, tokens et expériences exclusives.",
+    intro: "Les crédits Eza sont la monnaie interne de la plateforme. Ils se gagnent exclusivement via le programme de parrainage : invitez vos amis, gagnez des crédits à chaque étape de leur parcours, puis dépensez-les dans la Boutique.",
     sections: [
       {
         title: "Le système de crédits",
@@ -948,8 +948,30 @@ export const DOC_TOPICS = [
         ],
       },
       {
-        title: "La Boutique",
-        body: "La Boutique (/boutique) est le magasin où les crédits s'échangent contre des récompenses. Le catalogue est organisé en 6 catégories : Abonnements, Badges & Vérifications, Boosts & Visibilité, Fonctionnalités, Exclusivités et Communauté. Chaque article affiche son coût en crédits et son type de traitement (instantané, token ou manuel).",
+        title: "La page /parrainage",
+        body: "La page dédiée au parrainage (/parrainage) centralise tout ce dont un utilisateur a besoin pour inviter ses amis : son code, son lien de partage, son solde de crédits et la liste de ses filleuls.",
+        bullets: [
+          "Code de parrainage et lien de partage copiables.",
+          "Solde de crédits affiché en temps réel.",
+          "Liste des filleuls (Referral) avec statut.",
+          "Règles de gain affichées pour référence.",
+          "Invitation par email possible.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'economie-boutique',
+    icon: 'Gift',
+    title: "La Boutique",
+    tagline: "Catalogue des récompenses échangeables",
+    color: '#38aadc',
+    isNew: true,
+    intro: "La Boutique (/boutique) est le magasin où les crédits s'échangent contre des récompenses. Le catalogue est organisé en 6 catégories : Abonnements, Badges, Boosts, Fonctionnalités, Exclusivités et Communauté.",
+    sections: [
+      {
+        title: "Présentation de la Boutique",
+        body: "La Boutique affiche en haut de page le solde de crédits, les perks actifs et les tokens disponibles. Le catalogue est filtrable par catégorie. Chaque article indique son coût en crédits et son type de traitement (instantané, token ou manuel).",
         bullets: [
           "/boutique — interface grand public.",
           "6 catégories de récompenses.",
@@ -1040,6 +1062,17 @@ export const DOC_TOPICS = [
           "Tokens consommés via l'interface de la communauté.",
         ],
       },
+    ],
+  },
+  {
+    slug: 'economie-tokens',
+    icon: 'Award',
+    title: "Tokens & Perks",
+    tagline: "Effets consommables et avantages actifs",
+    color: '#1dd8b4',
+    isNew: true,
+    intro: "Les tokens sont des unités consommables et les perks sont les avantages actifs d'un utilisateur. Comprendre la différence entre les trois types de traitement (auto, token, manuel) est essentiel pour tirer le meilleur parti de l'économie Eza.",
+    sections: [
       {
         title: "Types de traitement",
         body: "Chaque récompense a un type de traitement qui détermine comment elle est honorée. Le type est défini dans le catalogue partagé (base44/shared/rewardEffects.ts) et respecté à la fois par la Boutique et par l'administration.",
@@ -1079,6 +1112,17 @@ export const DOC_TOPICS = [
           "getPublicUsers expose les perks pour l'affichage public.",
         ],
       },
+    ],
+  },
+  {
+    slug: 'economie-admin',
+    icon: 'Shield',
+    title: "Gestion & Sécurité",
+    tagline: "Administration, révocation et RLS de l'économie",
+    color: '#fb7185',
+    isNew: true,
+    intro: "L'administration gère l'économie Eza via le tableau de bord AdminEconomy : statistiques, ajustement des crédits, gestion des parrainages et cycle de vie complet des récompenses (honoré, refusé, révoqué, remboursé).",
+    sections: [
       {
         title: "Réclamation (RewardRedemption)",
         body: "Chaque achat en Boutique crée un enregistrement RewardRedemption qui trace l'utilisateur, la récompense, le coût, le type de traitement et le statut. L'utilisateur peut consulter son historique de réclamations en bas de la Boutique.",

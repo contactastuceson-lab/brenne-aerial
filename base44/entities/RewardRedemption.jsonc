@@ -1,0 +1,78 @@
+{
+  "name": "RewardRedemption",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nom de l'utilisateur"
+    },
+    "item_id": {
+      "type": "string",
+      "description": "Identifiant de la r\u00e9compense"
+    },
+    "item_label": {
+      "type": "string",
+      "description": "Libell\u00e9 de la r\u00e9compense"
+    },
+    "item_category": {
+      "type": "string",
+      "description": "Cat\u00e9gorie de la r\u00e9compense"
+    },
+    "cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Co\u00fbt en cr\u00e9dits"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "fulfilled",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "pending = en attente, fulfilled = honor\u00e9e, rejected = refus\u00e9e"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Notes admin"
+    }
+  },
+  "required": [
+    "user_email",
+    "item_id",
+    "item_label",
+    "cost"
+  ],
+  "rls": {
+    "create": {
+      "data.user_email": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

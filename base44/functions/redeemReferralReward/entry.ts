@@ -12,7 +12,7 @@ export default async function(req) {
     let body;
     try { body = await req.json(); } catch { return Response.json({ error: 'Payload invalide' }, { status: 400 }); }
 
-    const { rewardId, rewardLabel, cost } = body || {};
+    const { rewardId, rewardLabel, rewardCategory, cost } = body || {};
     if (!rewardId || !cost) return Response.json({ error: 'Récompense invalide' }, { status: 400 });
 
     const currentCredits = user.referral_credits || 0;
@@ -20,22 +20,35 @@ export default async function(req) {
       return Response.json({ error: 'Crédits insuffisants', needed: cost, available: currentCredits }, { status: 400 });
     }
 
-    // Deduct credits
+    // Deduct credits (service role for atomicity)
     const newCredits = currentCredits - cost;
     await base44.asServiceRole.entities.User.update(user.id, {
       referral_credits: newCredits,
     });
 
-    // Create admin notification for fulfillment
-    await base44.asServiceRole.entities.Notification.create({
-      user_email: ADMIN_EMAIL,
-      type: 'system',
-      title: '🎁 Récompense de parrainage réclamée',
-      content: `${user.display_name || user.username} (${user.email}) a réclamé : ${rewardLabel} pour ${cost} crédits.\n\nCrédits restants : ${newCredits}`,
-      sender_name: user.display_name || user.full_name || user.username,
+    // Create redemption record (user context — RLS allows self create)
+    await base44.entities.RewardRedemption.create({
+      user_email: user.email,
+      user_name: user.display_name || user.full_name || user.username,
+      item_id: rewardId,
+      item_label: rewardLabel,
+      item_category: rewardCategory || 'autre',
+      cost,
+      status: 'pending',
     });
 
-    // Notify the user
+    // Notify admin
+    waitUntil(
+      base44.asServiceRole.entities.Notification.create({
+        user_email: ADMIN_EMAIL,
+        type: 'system',
+        title: '🎁 Récompense réclamée',
+        content: `${user.display_name || user.username} (${user.email}) a réclamé : ${rewardLabel} pour ${cost} crédits. Crédits restants : ${newCredits}.`,
+        sender_name: user.display_name || user.username,
+      }).catch(() => {})
+    );
+
+    // Email confirmation to user
     waitUntil(
       base44.integrations.Core.SendEmail({
         to: user.email,

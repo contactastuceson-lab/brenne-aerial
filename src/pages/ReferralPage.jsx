@@ -2,29 +2,33 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Gift, Copy, Check, Mail, Users, Coins, Sparkles, Trophy,
-  Crown, Gem, Star, CheckCircle, Loader2, Share2, Award,
-  TrendingUp, UserPlus, Zap, Lock,
+  Crown, Loader2, Share2, Award, TrendingUp, UserPlus, Zap,
+  UserCircle, MessageCircle, Heart, Video, Landmark, Calendar,
+  AtSign, ArrowRight, Tag, Star,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 import { applySeoMeta } from '@/lib/seo';
 
 const CREDITS_PER_REFERRAL = 50;
 
 const EARNING_METHODS = [
   { icon: UserPlus, label: "Filleul s'inscrit", credits: 50, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30' },
-  { icon: CheckCircle, label: 'Filleul publie son 1er post', credits: 20, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/30' },
+  { icon: UserCircle, label: 'Filleul complète son profil', credits: 10, color: 'text-cyan-400', bg: 'bg-cyan-400/10', border: 'border-cyan-400/30' },
+  { icon: MessageCircle, label: 'Filleul publie son 1er post', credits: 20, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/30' },
+  { icon: Heart, label: 'Filleul reçoit 100 likes', credits: 30, color: 'text-pink-400', bg: 'bg-pink-400/10', border: 'border-pink-400/30' },
   { icon: Award, label: 'Filleul obtient un badge', credits: 30, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/30' },
+  { icon: Check, label: 'Filleul devient vérifié', credits: 40, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30' },
+  { icon: Users, label: 'Filleul rejoint une communauté', credits: 15, color: 'text-teal-400', bg: 'bg-teal-400/10', border: 'border-teal-400/30' },
+  { icon: Video, label: 'Filleul crée son 1er Space', credits: 25, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
+  { icon: MessageCircle, label: 'Filleul participe au forum', credits: 15, color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/30' },
   { icon: Crown, label: 'Filleul souscrit Premium', credits: 100, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/30' },
-];
-
-const REWARDS = [
-  { id: 'premium_month', label: '1 mois Premium gratuit', cost: 50, icon: Sparkles, color: 'text-sky-400', border: 'border-sky-400/30', bg: 'bg-sky-400/10' },
-  { id: 'verified_badge', label: 'Badge Vérifié offert', cost: 100, icon: CheckCircle, color: 'text-sky-400', border: 'border-sky-400/30', bg: 'bg-sky-400/10' },
-  { id: 'boost_posts', label: 'Boost de 3 publications', cost: 150, icon: Star, color: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
-  { id: 'business_month', label: '1 mois Business offert', cost: 200, icon: Crown, color: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
-  { id: 'pro_badge', label: 'Badge Pro offert', cost: 300, icon: Gem, color: 'text-emerald-400', border: 'border-emerald-400/30', bg: 'bg-emerald-400/10' },
-  { id: 'vip_status', label: 'Statut VIP pendant 1 mois', cost: 500, icon: Trophy, color: 'text-yellow-400', border: 'border-yellow-400/30', bg: 'bg-yellow-400/10' },
+  { icon: Crown, label: 'Filleul souscrit Business', credits: 150, color: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/30' },
+  { icon: Landmark, label: 'Filleul souscrit Enterprise', credits: 200, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/30' },
+  { icon: UserPlus, label: 'Filleul parraine un autre membre', credits: 20, color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/30' },
+  { icon: Calendar, label: 'Filleul reste actif 30 jours', credits: 50, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/30' },
+  { icon: AtSign, label: 'Filleul est mentionné dans un post', credits: 10, color: 'text-sky-400', bg: 'bg-sky-400/10', border: 'border-sky-400/30' },
 ];
 
 export default function ReferralPage() {
@@ -36,7 +40,6 @@ export default function ReferralPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [copied, setCopied] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [redeeming, setRedeeming] = useState(null);
 
   useEffect(() => {
     applySeoMeta({
@@ -65,7 +68,7 @@ export default function ReferralPage() {
       if (data?.success) {
         toast.success(`Parrainage validé ! ${data.referrerName} a reçu ${CREDITS_PER_REFERRAL} crédits.`);
       } else if (data?.alreadyProcessed) {
-        // Silent — already processed
+        // Silent
       } else if (data?.error && !data.error.includes('vous-même') && !data.error.includes('invalide')) {
         toast.error(data.error);
       }
@@ -75,7 +78,6 @@ export default function ReferralPage() {
   }, []);
 
   const init = useCallback(async () => {
-    // Capture ref code from URL
     const params = new URLSearchParams(window.location.search);
     const refFromUrl = params.get('ref');
     if (refFromUrl) {
@@ -95,11 +97,9 @@ export default function ReferralPage() {
       const refs = await base44.entities.Referral.filter({ referrer_email: me.email });
       setReferrals(refs || []);
 
-      // Process pending referral from localStorage
       const pendingRef = localStorage.getItem('eza_ref_code');
       if (pendingRef && pendingRef !== me.username) {
         await processPendingReferral(pendingRef);
-        // Refresh after processing
         const refreshed = await base44.auth.me();
         setUser(refreshed);
         setCredits(refreshed.referral_credits || 0);
@@ -152,33 +152,6 @@ export default function ReferralPage() {
     }
   };
 
-  const handleRedeem = async (reward) => {
-    if (credits < reward.cost) {
-      toast.error(`Il vous faut ${reward.cost} crédits (vous en avez ${credits})`);
-      return;
-    }
-    if (!confirm(`Échanger ${reward.cost} crédits contre "${reward.label}" ?`)) return;
-    setRedeeming(reward.id);
-    try {
-      const res = await base44.functions.invoke('redeemReferralReward', {
-        rewardId: reward.id,
-        rewardLabel: reward.label,
-        cost: reward.cost,
-      });
-      const data = res.data || res;
-      if (data?.success) {
-        toast.success(`${reward.label} réclamé ! Notre équipe traite votre demande.`);
-        setCredits(data.remainingCredits);
-        await refreshData();
-      } else if (data?.error) {
-        toast.error(data.error);
-      }
-    } catch {
-      toast.error('Erreur lors de la réclamation');
-    }
-    setRedeeming(null);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -209,7 +182,7 @@ export default function ReferralPage() {
             </button>
           </div>
           <div className="grid grid-cols-2 gap-3 mt-10 max-w-lg">
-            {EARNING_METHODS.map((m, i) => {
+            {EARNING_METHODS.slice(0, 4).map((m, i) => {
               const Icon = m.icon;
               return (
                 <div key={i} className={`flex items-center gap-2 p-3 rounded-xl border ${m.border} ${m.bg}`}>
@@ -307,18 +280,18 @@ export default function ReferralPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="mb-6">
           <h2 className="font-grotesk font-bold text-sm text-foreground mb-4 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-400" /> Comment gagner des crédits
+            <Zap className="w-4 h-4 text-amber-400" /> Comment gagner des crédits ({EARNING_METHODS.length} situations)
           </h2>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {EARNING_METHODS.map((m, i) => {
               const Icon = m.icon;
               return (
-                <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border ${m.border} ${m.bg}`}>
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${m.bg} border ${m.border}`}>
-                    <Icon className={`w-4 h-4 ${m.color}`} />
+                <div key={i} className={`flex items-center gap-2.5 p-2.5 rounded-xl border ${m.border} ${m.bg}`}>
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border ${m.border}`}>
+                    <Icon className={`w-3.5 h-3.5 ${m.color}`} />
                   </div>
-                  <p className="flex-1 font-inter text-sm text-foreground/80">{m.label}</p>
-                  <span className={`font-mono text-sm font-bold ${m.color}`}>+{m.credits}</span>
+                  <p className="flex-1 font-inter text-xs text-foreground/80 leading-tight">{m.label}</p>
+                  <span className={`font-mono text-xs font-bold ${m.color} flex-shrink-0`}>+{m.credits}</span>
                 </div>
               );
             })}
@@ -351,15 +324,9 @@ export default function ReferralPage() {
                     <p className="font-mono text-[10px] text-muted-foreground/50 truncate">{r.referred_email}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {r.status === 'validated' && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/30">Validé</span>
-                    )}
-                    {r.status === 'rewarded' && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30">Récompensé</span>
-                    )}
-                    {r.status === 'pending' && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">En attente</span>
-                    )}
+                    {r.status === 'validated' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/30">Validé</span>}
+                    {r.status === 'rewarded' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30">Récompensé</span>}
+                    {r.status === 'pending' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">En attente</span>}
                     {r.credits_earned > 0 && <span className="font-mono text-xs font-bold text-sky-400">+{r.credits_earned}</span>}
                   </div>
                 </div>
@@ -368,47 +335,24 @@ export default function ReferralPage() {
           )}
         </motion.div>
 
-        {/* Rewards shop */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-grotesk font-bold text-sm text-foreground flex items-center gap-2">
-              <Gift className="w-4 h-4 text-primary" /> Boutique de récompenses
-            </h2>
-            <span className="font-mono text-xs text-muted-foreground">{credits} crédits</span>
+        {/* Boutique CTA */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          className="rounded-2xl border border-primary/30 bg-primary/5 p-6 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-3 sky-glow">
+            <Tag className="w-7 h-7 text-primary" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {REWARDS.map(reward => {
-              const Icon = reward.icon;
-              const canAfford = credits >= reward.cost;
-              const isRedeeming = redeeming === reward.id;
-              return (
-                <div key={reward.id} className={`rounded-2xl border ${reward.border} ${reward.bg} p-4 flex flex-col`}>
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border ${reward.border}`} style={{ background: 'rgba(255,255,255,0.04)' }}>
-                      <Icon className={`w-5 h-5 ${reward.color}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-grotesk font-bold text-sm text-foreground">{reward.label}</p>
-                      <p className={`font-mono text-xs font-bold ${reward.color}`}>{reward.cost} crédits</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleRedeem(reward)}
-                    disabled={!canAfford || isRedeeming}
-                    className={`w-full py-2.5 rounded-xl font-grotesk font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
-                      canAfford ? 'bg-foreground text-background hover:bg-foreground/90' : 'bg-muted/50 text-muted-foreground/50 cursor-not-allowed'
-                    }`}>
-                    {isRedeeming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (
-                      canAfford ? <><Gift className="w-3.5 h-3.5" /> Réclamer</> : <><Lock className="w-3.5 h-3.5" /> {reward.cost - credits} cr manquants</>
-                    )}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+          <h2 className="font-grotesk font-bold text-lg text-foreground mb-1">Boutique de récompenses</h2>
+          <p className="font-inter text-sm text-muted-foreground mb-1">
+            Échangez vos <span className="font-bold text-primary">{credits} crédits</span> contre des récompenses exclusives.
+          </p>
+          <p className="font-inter text-xs text-muted-foreground/60 mb-5">
+            Abonnements, badges, boosts, exclusivités et bien plus — plus de 40 récompenses à découvrir.
+          </p>
+          <Link to="/boutique" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground font-grotesk font-bold text-sm hover:bg-primary/90 transition-all">
+            Explorer la boutique <ArrowRight className="w-4 h-4" />
+          </Link>
         </motion.div>
 
-        {/* Processing notification */}
         {processing && (
           <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-card border border-border shadow-xl flex items-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin text-primary" />

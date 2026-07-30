@@ -56,6 +56,7 @@ import AdminSiteConfig from "@/pages/admin/AdminSiteConfig";
 import AdminPDGSpace from "@/pages/admin/AdminPDGSpace";
 import AdminDataManager from "@/pages/admin/AdminDataManager";
 import AdminBilling from "@/pages/admin/AdminBilling";
+import AdminEconomy from "@/pages/admin/AdminEconomy";
 import AdminStats from "@/pages/admin/AdminStats";
 import AdminAnalytics from "@/pages/admin/AdminAnalytics";
 import AdminUpdates from "@/pages/admin/AdminUpdates";
@@ -99,6 +100,7 @@ import SpaceRoomPage from "@/pages/SpaceRoomPage";
 import SpacesPage from "@/pages/SpacesPage";
 import WifiPortalPage from "@/pages/WifiPortalPage";
 import ReferralPage from "@/pages/ReferralPage";
+import BoutiquePage from "@/pages/BoutiquePage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -178,6 +180,7 @@ const AuthenticatedApp = () => {
           <Route path="/space/:id" element={<SpaceRoomPage />} />
           <Route path="/spaces" element={<SpacesPage />} />
           <Route path="/parrainage" element={<ReferralPage />} />
+          <Route path="/boutique" element={<BoutiquePage />} />
           <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />
@@ -222,6 +225,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/stats" element={<AdminStats />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
         <Route path="/admin/billing" element={<AdminBilling />} />
+        <Route path="/admin/economie" element={<AdminEconomy />} />
 
       </Route>
 

@@ -1,0 +1,307 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import {
+  TrendingUp, Users, Gift, Coins, Loader2, RefreshCw,
+  Check, X, Clock, Award, Zap,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+
+const TABS = [
+  { id: 'economie', label: 'Économie', icon: TrendingUp },
+  { id: 'parrainage', label: 'Parrainage', icon: Users },
+  { id: 'boutique', label: 'Boutique', icon: Gift },
+];
+
+const REFERRAL_STATUS = {
+  pending: { label: 'En attente', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' },
+  validated: { label: 'Validé', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' },
+  rewarded: { label: 'Récompensé', color: 'text-sky-400 bg-sky-400/10 border-sky-400/30' },
+};
+
+const REDEMPTION_STATUS = {
+  pending: { label: 'En attente', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' },
+  fulfilled: { label: 'Honorée', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' },
+  rejected: { label: 'Refusée', color: 'text-red-400 bg-red-400/10 border-red-400/30' },
+};
+
+const EARNING_RULES = [
+  { label: "Filleul s'inscrit", credits: 50 },
+  { label: 'Filleul complète son profil', credits: 10 },
+  { label: 'Filleul publie son 1er post', credits: 20 },
+  { label: 'Filleul reçoit 100 likes', credits: 30 },
+  { label: 'Filleul obtient un badge', credits: 30 },
+  { label: 'Filleul devient vérifié', credits: 40 },
+  { label: 'Filleul rejoint une communauté', credits: 15 },
+  { label: 'Filleul crée son 1er Space', credits: 25 },
+  { label: 'Filleul participe au forum', credits: 15 },
+  { label: 'Filleul souscrit Premium', credits: 100 },
+  { label: 'Filleul souscrit Business', credits: 150 },
+  { label: 'Filleul souscrit Enterprise', credits: 200 },
+  { label: 'Filleul parraine un autre membre', credits: 20 },
+  { label: 'Filleul reste actif 30 jours', credits: 50 },
+  { label: 'Filleul est mentionné dans un post', credits: 10 },
+];
+
+function StatCard({ icon: Icon, label, value, color }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 ${color}`}>
+        <Icon className="w-4 h-4" />
+      </div>
+      <p className="font-grotesk font-black text-2xl text-foreground">{value}</p>
+      <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
+function EconomieTab() {
+  const { data: referrals = [] } = useQuery({
+    queryKey: ['admin-referrals'],
+    queryFn: () => base44.entities.Referral.list('-created_date', 500),
+  });
+  const { data: redemptions = [] } = useQuery({
+    queryKey: ['admin-redemptions'],
+    queryFn: () => base44.entities.RewardRedemption.list('-created_date', 500),
+  });
+
+  const totalCreditsAwarded = referrals.reduce((s, r) => s + (r.credits_earned || 0), 0);
+  const totalCreditsRedeemed = redemptions.reduce((s, r) => s + (r.cost || 0), 0);
+  const pendingRedemptions = redemptions.filter(r => r.status === 'pending');
+  const uniqueReferrers = new Set(referrals.map(r => r.referrer_email)).size;
+
+  return (
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard icon={Users} label="Parrains actifs" value={uniqueReferrers} color="bg-sky-400/10 text-sky-400" />
+        <StatCard icon={Coins} label="Crédits distribués" value={totalCreditsAwarded} color="bg-amber-400/10 text-amber-400" />
+        <StatCard icon={Gift} label="Crédits échangés" value={totalCreditsRedeemed} color="bg-emerald-400/10 text-emerald-400" />
+        <StatCard icon={Clock} label="Réclamations en attente" value={pendingRedemptions.length} color="bg-orange-400/10 text-orange-400" />
+      </div>
+
+      {/* Earning rules */}
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+          <Zap className="w-4 h-4 text-amber-400" />
+          <p className="font-grotesk font-semibold text-sm">Règles de gain (crédits par action de filleul)</p>
+        </div>
+        <div className="divide-y divide-border/60">
+          {EARNING_RULES.map((rule, i) => (
+            <div key={i} className="flex items-center justify-between px-4 py-2.5">
+              <p className="font-inter text-sm text-foreground/80">{rule.label}</p>
+              <span className="font-mono text-sm font-bold text-amber-400">+{rule.credits} cr</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ParrainageTab() {
+  const qc = useQueryClient();
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  const { data: referrals = [], isLoading } = useQuery({
+    queryKey: ['admin-referrals'],
+    queryFn: () => base44.entities.Referral.list('-created_date', 500),
+  });
+
+  const filtered = statusFilter === 'all' ? referrals : referrals.filter(r => r.status === statusFilter);
+
+  return (
+    <div className="space-y-4">
+      {/* Filter */}
+      <div className="flex gap-1.5 flex-wrap">
+        {['all', 'pending', 'validated', 'rewarded'].map(s => (
+          <button key={s} onClick={() => setStatusFilter(s)}
+            className={`px-3 py-1.5 rounded-full text-xs font-grotesk font-bold border transition-all ${
+              statusFilter === s ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'
+            }`}>
+            {s === 'all' ? 'Tous' : REFERRAL_STATUS[s]?.label}
+          </button>
+        ))}
+        <Button variant="ghost" size="icon" className="h-8 w-8 ml-auto"
+          onClick={() => qc.invalidateQueries({ queryKey: ['admin-referrals'] })}>
+          <RefreshCw className="w-3.5 h-3.5" />
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-10"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground/50 text-sm">Aucun parrainage trouvé</div>
+      ) : (
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="max-h-[60vh] overflow-y-auto divide-y divide-border/60">
+            {filtered.map(r => {
+              const s = REFERRAL_STATUS[r.status] || REFERRAL_STATUS.pending;
+              return (
+                <div key={r.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <span className="font-grotesk font-bold text-xs text-primary">
+                      {(r.referred_name || r.referred_email || '?')[0]?.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-inter text-sm text-foreground truncate">
+                      <span className="text-muted-foreground">Parrain:</span> {r.referrer_name}
+                    </p>
+                    <p className="font-inter text-xs text-muted-foreground/70 truncate">
+                      Filleul: {r.referred_name || r.referred_email}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono border ${s.color}`}>{s.label}</span>
+                    {r.credits_earned > 0 && <span className="font-mono text-xs font-bold text-amber-400">+{r.credits_earned}</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BoutiqueTab() {
+  const qc = useQueryClient();
+  const [statusFilter, setStatusFilter] = useState('pending');
+  const [updating, setUpdating] = useState(null);
+
+  const { data: redemptions = [], isLoading } = useQuery({
+    queryKey: ['admin-redemptions'],
+    queryFn: () => base44.entities.RewardRedemption.list('-created_date', 500),
+  });
+
+  const filtered = statusFilter === 'all' ? redemptions : redemptions.filter(r => r.status === statusFilter);
+
+  const updateStatus = async (id, status) => {
+    setUpdating(id);
+    try {
+      await base44.entities.RewardRedemption.update(id, { status });
+      toast.success(status === 'fulfilled' ? 'Réclamation honorée' : 'Réclamation refusée');
+      qc.invalidateQueries({ queryKey: ['admin-redemptions'] });
+    } catch {
+      toast.error('Erreur lors de la mise à jour');
+    }
+    setUpdating(null);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-1.5 flex-wrap">
+        {['pending', 'fulfilled', 'rejected', 'all'].map(s => (
+          <button key={s} onClick={() => setStatusFilter(s)}
+            className={`px-3 py-1.5 rounded-full text-xs font-grotesk font-bold border transition-all ${
+              statusFilter === s ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'
+            }`}>
+            {s === 'all' ? 'Toutes' : REDEMPTION_STATUS[s]?.label}
+          </button>
+        ))}
+        <Button variant="ghost" size="icon" className="h-8 w-8 ml-auto"
+          onClick={() => qc.invalidateQueries({ queryKey: ['admin-redemptions'] })}>
+          <RefreshCw className="w-3.5 h-3.5" />
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-10"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground/50 text-sm">Aucune réclamation</div>
+      ) : (
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="max-h-[60vh] overflow-y-auto divide-y divide-border/60">
+            {filtered.map(r => {
+              const s = REDEMPTION_STATUS[r.status] || REDEMPTION_STATUS.pending;
+              const isUpdating = updating === r.id;
+              return (
+                <div key={r.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Gift className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-inter text-sm text-foreground truncate">{r.item_label}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground/60 truncate">
+                      {r.user_name} · {r.user_email} · {r.cost} crédits
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono border ${s.color}`}>{s.label}</span>
+                    {r.status === 'pending' && (
+                      <div className="flex gap-1">
+                        <button onClick={() => updateStatus(r.id, 'fulfilled')} disabled={isUpdating}
+                          className="w-7 h-7 rounded-lg bg-emerald-400/10 border border-emerald-400/30 flex items-center justify-center hover:bg-emerald-400/20 transition-all disabled:opacity-50">
+                          {isUpdating ? <Loader2 className="w-3 h-3 animate-spin text-emerald-400" /> : <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                        </button>
+                        <button onClick={() => updateStatus(r.id, 'rejected')} disabled={isUpdating}
+                          className="w-7 h-7 rounded-lg bg-red-400/10 border border-red-400/30 flex items-center justify-center hover:bg-red-400/20 transition-all disabled:opacity-50">
+                          <X className="w-3.5 h-3.5 text-red-400" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function AdminEconomy() {
+  const [tab, setTab] = useState('economie');
+
+  return (
+    <div className="pt-16 md:pt-20 min-h-screen pb-20">
+      <div className="max-w-5xl mx-auto px-4 lg:px-8">
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 mb-6">
+          <div className="w-11 h-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+            <TrendingUp className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="font-grotesk font-bold text-xl md:text-2xl">Économie</h1>
+            <p className="font-inter text-xs text-muted-foreground mt-0.5">
+              Gérez le système de crédits, parrainages et récompenses.
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-2 mb-5 -mx-4 px-4 md:mx-0 md:px-0">
+          {TABS.map(t => {
+            const Icon = t.icon;
+            const active = tab === t.id;
+            return (
+              <button key={t.id} onClick={() => setTab(t.id)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-full font-inter text-sm whitespace-nowrap flex-shrink-0 border transition-all ${
+                  active ? 'bg-primary text-primary-foreground border-primary font-medium' : 'border-border text-muted-foreground hover:text-foreground hover:bg-secondary/40'
+                }`}>
+                <Icon className="w-3.5 h-3.5" /> {t.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Content */}
+        <AnimatePresence mode="wait">
+          <motion.div key={tab}
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}>
+            {tab === 'economie' && <EconomieTab />}
+            {tab === 'parrainage' && <ParrainageTab />}
+            {tab === 'boutique' && <BoutiqueTab />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}

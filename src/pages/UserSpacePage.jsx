@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
-  UserCircle, Flag, Award, CreditCard, Network, Loader2,
+  UserCircle, Flag, Award, CreditCard, Network, Loader2, Gift,
   ChevronRight, RefreshCw, Inbox,
 } from 'lucide-react';
 import ReportTracking from '@/components/dashboard/ReportTracking';
@@ -11,12 +11,14 @@ import CertificationTracking from '@/components/dashboard/CertificationTracking'
 import BillingTab from '@/components/client/BillingTab';
 import MyAffiliationsTab from '@/components/client/MyAffiliationsTab';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const TABS = [
   { id: 'reports',     label: 'Signalements',  icon: Flag },
   { id: 'certifs',      label: 'Certifications', icon: Award },
   { id: 'billing',     label: 'Facturation',   icon: CreditCard },
   { id: 'affiliations', label: 'Affiliations', icon: Network },
+  { id: 'referral',     label: 'Parrainage',  icon: Gift },
 ];
 
 const REPORT_STATUS = {
@@ -245,6 +247,19 @@ export default function UserSpacePage() {
             {tab === 'billing' && (
               <div className="rounded-2xl border border-border bg-card p-4">
                 <BillingTab />
+              </div>
+            )}
+            {tab === 'referral' && (
+              <div className="rounded-2xl border border-border bg-card p-6 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4 sky-glow">
+                  <Gift className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="font-grotesk font-bold text-lg mb-1">Programme de parrainage Eza</h3>
+                <p className="font-inter text-sm text-muted-foreground mb-1">Vous avez <span className="font-bold text-primary">{user.referral_credits || 0} crédits</span> de parrainage.</p>
+                <p className="font-inter text-xs text-muted-foreground mb-5">Invitez vos amis et échangez vos crédits contre des récompenses exclusives.</p>
+                <Link to="/parrainage" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-grotesk font-bold text-sm hover:bg-primary/90 transition-all">
+                  Gérer mon parrainage
+                </Link>
               </div>
             )}
             {tab === 'affiliations' && (

@@ -27,6 +27,7 @@ Deno.serve(async (req) => {
     badges_eligible: u.badges_eligible !== undefined ? u.badges_eligible : true,
     badge_ineligibility_reason: u.badge_ineligibility_reason || null,
     last_seen: u.last_seen || null,
+    perks: u.perks || {},
   }));
 
   // Filter out banned/suspended users from public view

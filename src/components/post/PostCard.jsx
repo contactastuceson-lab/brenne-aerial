@@ -349,8 +349,15 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
 
         {/* Pinned label */}
         {pinned && (
-          <div className="flex items-center gap-1 text-[12px] text-muted-foreground/60 mb-1">
+          <div className="flex items-center gap-1 text-[12px] text-amber-400/80 mb-1">
             <Pin className="w-3 h-3" /> Épinglé
+          </div>
+        )}
+
+        {/* Highlight label (boost boutique) */}
+        {highlighted && (
+          <div className="flex items-center gap-1 text-[12px] text-cyan-400 mb-1">
+            <Star className="w-3 h-3 fill-cyan-400" /> À la une
           </div>
         )}
 

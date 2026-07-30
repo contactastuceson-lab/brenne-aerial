@@ -193,14 +193,34 @@ export default function DiscoverPage() {
 
   const getFollowersCount = (email) => allFollows.filter(f => f.following_email === email).length;
 
+  // Vérifie si un perk temporel est actif (récompense boutique non expirée)
+  const isPerkActive = (perks, key) => {
+    const val = perks?.[key];
+    if (!val) return false;
+    if (val === true) return true;
+    return new Date(val).getTime() > Date.now();
+  };
+
   const realFiltered = allUsers
     .filter(u => u.email !== user.email)
     .filter(u =>
       !search ||
       u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-      u.email?.toLowerCase().includes(search.toLowerCase())
+      u.email?.toLowerCase().includes(search.toLowerCase()) ||
+      u.username?.toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) => {
+      // 1) Profils à la une (récompense boutique) — toujours en premier
+      const aFeat = isPerkActive(a.perks, 'featured_until') ? 1 : 0;
+      const bFeat = isPerkActive(b.perks, 'featured_until') ? 1 : 0;
+      if (aFeat !== bFeat) return bFeat - aFeat;
+      // 2) Top explorateur (récompense boutique) — priorité dans les recherches
+      if (search) {
+        const aTop = isPerkActive(a.perks, 'top_explorer_until') ? 1 : 0;
+        const bTop = isPerkActive(b.perks, 'top_explorer_until') ? 1 : 0;
+        if (aTop !== bTop) return bTop - aTop;
+      }
+      // 3) Tri classique
       if (sortBy === 'popular') return getFollowersCount(b.email) - getFollowersCount(a.email);
       if (sortBy === 'verified') {
         return (a.verifications?.includes('supreme') ? 0 : 1) - (b.verifications?.includes('supreme') ? 0 : 1);
@@ -399,6 +419,11 @@ export default function DiscoverPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 text-sm font-semibold text-foreground truncate">
                         <span className="truncate">{profile.display_name || profile.full_name}</span>
+                        {isPerkActive(profile.perks, 'featured_until') && (
+                          <span className="flex items-center gap-0.5 flex-shrink-0 font-mono text-[9px] text-orange-400 bg-orange-400/10 border border-orange-400/30 px-1.5 py-0.5 rounded-full">
+                            <Star className="w-2.5 h-2.5 fill-orange-400" /> À la une
+                          </span>
+                        )}
                         {isSupreme && <span className="text-[11px]">👑</span>}
                         <span className="relative z-10 flex-shrink-0">
                           <VerificationIcons verifications={profile.verifications} size="sm" user={profile} />
@@ -494,6 +519,12 @@ export default function DiscoverPage() {
                       <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'linear-gradient(135deg, #92400e, #d97706)', boxShadow: '0 2px 8px rgba(245,158,11,0.4)' }}>
                         <span style={{ fontSize: '10px' }}>👑</span>
                         <span className="font-mono text-[9px] font-bold text-yellow-100 uppercase tracking-widest">Suprême</span>
+                      </div>
+                    )}
+                    {isPerkActive(profile.perks, 'featured_until') && (
+                      <div className="absolute top-2 right-12 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-400/40 backdrop-blur-sm">
+                        <Star className="w-2.5 h-2.5 fill-orange-400 text-orange-400" />
+                        <span className="font-mono text-[8px] font-bold text-orange-300 uppercase tracking-wider">À la une</span>
                       </div>
                     )}
                     <div className="h-24 relative overflow-hidden">

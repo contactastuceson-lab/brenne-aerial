@@ -205,11 +205,13 @@ export default function HomeFeed({ user }) {
           const engagementScore = (p.likes_count || 0) * 4 + (p.replies_count || 0) * 8 + (p.views_count || 0) * 0.05;
           // Médias
           const mediaBoost = (p.media_urls?.length > 0) ? 8 : 0;
+          // Boost de publication (récompense boutique) — priorité massive dans le feed
+          const highlightBoost = (p.is_highlight) ? 120 : 0;
           // Variabilité stable par session (évite l'ordre identique pour tous)
           const seededRandom = ((sessionSeed * (i + 1) * 9301 + 49297) % 233280) / 233280;
           const randomBoost = seededRandom * 6;
 
-          return { ...p, algoScore: engagementScore + recencyScore + mediaBoost + randomBoost };
+          return { ...p, algoScore: engagementScore + recencyScore + mediaBoost + highlightBoost + randomBoost };
         })
         .sort((a, b) => b.algoScore - a.algoScore);
     }

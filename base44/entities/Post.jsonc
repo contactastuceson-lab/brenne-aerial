@@ -192,8 +192,10 @@
     "author_id"
   ],
   "rls": {
-    "create": true,
-    "read": true,
+    "create": {
+      "data.author_id": "{{user.id}}"
+    },
+    "read": null,
     "update": {
       "$or": [
         {

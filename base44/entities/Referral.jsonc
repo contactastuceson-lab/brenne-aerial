@@ -62,9 +62,6 @@
           "data.referrer_email": "{{user.email}}"
         },
         {
-          "data.referred_email": "{{user.email}}"
-        },
-        {
           "user_condition": {
             "role": "admin"
           }

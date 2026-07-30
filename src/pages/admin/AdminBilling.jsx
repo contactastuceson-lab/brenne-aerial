@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import PerkSubscriptionsTab from '@/components/admin/billing/PerkSubscriptionsTab';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -168,7 +169,8 @@ export default function AdminBilling() {
   );
 
   const tabs = [
-    { key: 'subscriptions', label: 'Abonnements', count: stats.total },
+    { key: 'perks', label: 'Abonnements Eza' },
+    { key: 'subscriptions', label: 'Abonnements Stripe', count: stats.total },
     { key: 'invoices', label: 'Factures', count: stats.total_invoices },
   ];
 
@@ -223,7 +225,8 @@ export default function AdminBilling() {
         ))}
       </div>
 
-      {/* Filters */}
+      {/* Filters (Stripe tabs only) */}
+      {tab !== 'perks' && (
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
@@ -243,9 +246,12 @@ export default function AdminBilling() {
           </div>
         )}
       </div>
+      )}
 
       {/* Content */}
-      {isLoading ? (
+      {tab === 'perks' ? (
+        <PerkSubscriptionsTab />
+      ) : isLoading ? (
         <div className="space-y-2">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="bg-card border border-border rounded-xl p-4 h-20 animate-pulse" />

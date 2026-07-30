@@ -6,6 +6,7 @@ import { ExternalLink, CreditCard, FileText, RefreshCw, AlertCircle, CheckCircle
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
+import MySubscriptionCard from '@/components/boutique/MySubscriptionCard';
 
 const STATUS_LABELS = {
   active: { label: 'Actif', color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/30', icon: CheckCircle },
@@ -32,17 +33,22 @@ export default function BillingTab() {
   const [error, setError] = useState(null);
   const [cancelling, setCancelling] = useState(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [me, setMe] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await base44.functions.invoke('getMySubscriptions', {});
+      const [res, user] = await Promise.all([
+        base44.functions.invoke('getMySubscriptions', {}),
+        base44.auth.me().catch(() => null),
+      ]);
       if (res.data?.error) {
         setError(res.data.error);
       } else {
         setData(res.data);
       }
+      setMe(user);
     } catch (e) {
       setError(e?.message || 'Service de facturation indisponible');
     } finally {
@@ -121,10 +127,20 @@ export default function BillingTab() {
         </div>
       </div>
 
-      {/* Abonnements */}
+      {/* Abonnement Eza (perk-based) */}
+      {me && (
+        <div>
+          <p className="font-inter text-xs text-muted-foreground uppercase tracking-wider font-medium mb-3">
+            Mon abonnement Eza
+          </p>
+          <MySubscriptionCard perks={me.perks} onCancelled={fetchData} />
+        </div>
+      )}
+
+      {/* Abonnements Stripe */}
       <div>
         <p className="font-inter text-xs text-muted-foreground uppercase tracking-wider font-medium mb-3">
-          Mes abonnements ({subscriptions.length})
+          Abonnements Stripe ({subscriptions.length})
         </p>
         {subscriptions.length === 0 ? (
           <div className="p-6 bg-card border border-dashed border-border rounded-2xl text-center">

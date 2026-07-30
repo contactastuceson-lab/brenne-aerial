@@ -18,6 +18,7 @@ import { fr } from 'date-fns/locale';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 import PostCard from '@/components/post/PostCard';
 import { notify } from '@/lib/notificationHelper';
+import PerkBadges, { getPerkEffects, PerkParticles } from '@/components/profile/ActivePerks';
 
 const BADGE_CONFIG = {
   'Fondateur': { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -254,6 +255,7 @@ export default function PublicProfilePage() {
   const isSupreme = user?.verifications?.includes('supreme');
   const isPremiumProfile = isSupreme || user?.verifications?.includes('pro') || user?.verifications?.includes('certified');
   const roleCfg = ROLE_CONFIG[user?.role];
+  const perkFx = getPerkEffects(user?.perks || {});
 
   const statusColors = {
     active: 'text-green-400 bg-green-400/10 border-green-400/30',
@@ -394,13 +396,16 @@ export default function PublicProfilePage() {
                 className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
                 style={isSupreme
                   ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
-                  : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
+                  : perkFx.accentRing
+                    ? { border: `3px solid ${perkFx.accentRing}`, boxShadow: `0 0 0 2px ${perkFx.accentRing}33, 0 0 24px ${perkFx.accentRing}55`, background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
+                    : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
                 }
               >
+                {perkFx.hasParticles && <PerkParticles color={perkFx.accentRing || '#22d3ee'} />}
                 {user.avatar_url ? (
-                  <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                  <img src={user.avatar_url} alt="" className="w-full h-full object-cover relative z-[1]" />
                 ) : (
-                  <span className="font-grotesk font-bold text-4xl text-white drop-shadow-sm">
+                  <span className="font-grotesk font-bold text-4xl text-white drop-shadow-sm relative z-[1]">
                     {user.full_name?.[0]?.toUpperCase() || '?'}
                   </span>
                 )}
@@ -420,7 +425,7 @@ export default function PublicProfilePage() {
             </div>
 
             {/* Name + username */}
-            <h1 className="mb-1 flex flex-wrap items-center gap-1 font-grotesk text-2xl font-bold sm:text-3xl" style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}>
+            <h1 className="mb-1 flex flex-wrap items-center gap-1 font-grotesk text-2xl font-bold sm:text-3xl" style={isSupreme ? { background: 'linear-gradient(90deg,#f59e0b,#fde68a,#b45309)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : perkFx.hasAnimatedBadge ? { background: 'linear-gradient(110deg, hsl(var(--foreground)) 0%, #22d3ee 30%, hsl(var(--foreground)) 60%)', backgroundSize: '200% 100%', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', animation: 'shimmer 3s linear infinite' } : {}}>
               <button
                 type="button"
                 onClick={() => setAffiliationOpen(true)}
@@ -509,6 +514,9 @@ export default function PublicProfilePage() {
                 })}
               </div>
             )}
+
+            {/* Avantages boutique (perks actifs) */}
+            <PerkBadges perks={user?.perks || {}} />
 
             {/* Mention : non-éligibilité aux badges */}
             {user.badges_eligible === false && (

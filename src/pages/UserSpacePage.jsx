@@ -4,18 +4,20 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   UserCircle, Flag, Award, CreditCard, Network, Loader2, Gift,
-  ChevronRight, RefreshCw, Inbox,
+  ChevronRight, RefreshCw, Inbox, Sparkles, TrendingUp, Eye, Heart, MessageCircle,
 } from 'lucide-react';
 import ReportTracking from '@/components/dashboard/ReportTracking';
 import CertificationTracking from '@/components/dashboard/CertificationTracking';
 import BillingTab from '@/components/client/BillingTab';
 import MyAffiliationsTab from '@/components/client/MyAffiliationsTab';
+import PerkBadges, { getActivePerks } from '@/components/profile/ActivePerks';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 const TABS = [
   { id: 'reports',     label: 'Signalements',  icon: Flag },
   { id: 'certifs',      label: 'Certifications', icon: Award },
+  { id: 'perks',       label: 'Avantages',    icon: Sparkles },
   { id: 'billing',     label: 'Facturation',   icon: CreditCard },
   { id: 'affiliations', label: 'Affiliations', icon: Network },
   { id: 'referral',     label: 'Parrainage',  icon: Gift },
@@ -161,6 +163,93 @@ function CertifsTab({ user, selectedId, onSelect }) {
   );
 }
 
+function PerksTab({ user }) {
+  const perks = user?.perks || {};
+  const active = getActivePerks(perks);
+  const hasAnalytics = perks.analytics_until && new Date(perks.analytics_until).getTime() > Date.now();
+
+  const [stats, setStats] = useState(null);
+  useEffect(() => {
+    if (!hasAnalytics || !user?.id) return;
+    (async () => {
+      try {
+        const posts = await base44.entities.Post.filter({ author_id: user.id }, '-created_date', 100);
+        const totalViews = posts.reduce((s, p) => s + (p.views_count || 0), 0);
+        const totalLikes = posts.reduce((s, p) => s + (p.likes_count || 0), 0);
+        const totalReplies = posts.reduce((s, p) => s + (p.replies_count || 0), 0);
+        setStats({ posts: posts.length, totalViews, totalLikes, totalReplies });
+      } catch {}
+    })();
+  }, [hasAnalytics, user?.id]);
+
+  return (
+    <div className="space-y-4">
+      {/* Active perks badges */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="w-4 h-4 text-primary" />
+          <h3 className="font-grotesk font-bold text-sm">Mes avantages actifs</h3>
+        </div>
+        {active.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="font-inter text-sm text-muted-foreground">Aucun avantage actif pour le moment.</p>
+            <Link to="/boutique" className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-grotesk font-bold text-sm hover:bg-primary/90 transition-all">
+              Découvrir la boutique
+            </Link>
+          </div>
+        ) : (
+          <PerkBadges perks={perks} size="md" />
+        )}
+      </div>
+
+      {/* Analytics panel (only if analytics_adv perk active) */}
+      {hasAnalytics && (
+        <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/5 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="w-4 h-4 text-cyan-400" />
+            <h3 className="font-grotesk font-bold text-sm text-cyan-400">Analytics avancées</h3>
+            <span className="ml-auto font-mono text-[10px] text-muted-foreground/60">
+              {Math.max(0, Math.ceil((new Date(perks.analytics_until).getTime() - Date.now()) / 86400000))}j restants
+            </span>
+          </div>
+          {stats ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: 'Publications', value: stats.posts, icon: Sparkles, color: 'text-primary' },
+                { label: 'Vues totales', value: stats.totalViews, icon: Eye, color: 'text-cyan-400' },
+                { label: "J'aimes", value: stats.totalLikes, icon: Heart, color: 'text-rose-400' },
+                { label: 'Réponses', value: stats.totalReplies, icon: MessageCircle, color: 'text-blue-400' },
+              ].map(s => {
+                const Icon = s.icon;
+                return (
+                  <div key={s.label} className="rounded-xl border border-border bg-card/60 p-3 text-center">
+                    <Icon className={`w-4 h-4 mx-auto mb-1.5 ${s.color}`} />
+                    <p className="font-grotesk font-black text-2xl text-foreground">{s.value.toLocaleString('fr-FR')}</p>
+                    <p className="font-inter text-[10px] text-muted-foreground mt-0.5">{s.label}</p>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-cyan-400" /></div>
+          )}
+        </div>
+      )}
+
+      {/* Link to boutique */}
+      <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5 text-center">
+        <p className="font-grotesk font-bold text-sm mb-1">Gagnez plus d'avantages</p>
+        <p className="font-inter text-xs text-muted-foreground mb-4">
+          Vous avez <span className="font-bold text-primary">{user?.referral_credits || 0} crédits</span> à dépenser.
+        </p>
+        <Link to="/boutique" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-grotesk font-bold text-sm hover:bg-primary/90 transition-all">
+          Ouvrir la boutique
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function UserSpacePage() {
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
@@ -244,6 +333,7 @@ export default function UserSpacePage() {
             transition={{ duration: 0.15 }}>
             {tab === 'reports' && <ReportsTab user={user} selectedId={selReport} onSelect={setSelReport} />}
             {tab === 'certifs' && <CertifsTab user={user} selectedId={selCertif} onSelect={setSelCertif} />}
+            {tab === 'perks' && <PerksTab user={user} />}
             {tab === 'billing' && (
               <div className="rounded-2xl border border-border bg-card p-4">
                 <BillingTab />

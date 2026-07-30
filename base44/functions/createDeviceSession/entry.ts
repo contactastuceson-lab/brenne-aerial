@@ -7,8 +7,10 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { user_email, device_name, device_type, browser, os, fingerprint } = body;
+    let { user_email, device_name, device_type, browser, os, fingerprint } = body;
 
+    // IDOR fix: force user_email to the authenticated user's email — ignore any client-supplied value
+    user_email = user?.email;
     if (!user_email) return Response.json({ error: 'user_email requis' }, { status: 400 });
 
     const now = new Date().toISOString();

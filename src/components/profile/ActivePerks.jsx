@@ -120,6 +120,38 @@ export function PerkParticles({ color = '#22d3ee' }) {
 export default function PerkBadges({ perks = {}, size = 'sm' }) {
   const active = getActivePerks(perks);
   if (active.length === 0) return null;
+
+  // Grille riche (carte "Avantages boutique" du profil public)
+  if (size === 'md') {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+        {active.map(p => {
+          const Icon = p.icon;
+          return (
+            <div
+              key={p.key}
+              className="flex items-center gap-2 rounded-xl px-2.5 py-2.5 border transition-all hover:bg-white/[0.03]"
+              style={{ borderColor: `${p.ring}28`, background: '#111827' }}
+            >
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: `${p.ring}14`, boxShadow: `0 0 12px ${p.ring}22` }}
+              >
+                <Icon className={`w-4 h-4 ${p.color}`} />
+              </div>
+              <div className="min-w-0">
+                <p className={`font-grotesk font-bold text-[11px] truncate ${p.color}`}>{p.label}</p>
+                <p className="font-mono text-[8px] uppercase tracking-wider text-muted-foreground/50 mt-0.5">
+                  {p.permanent ? 'Permanent' : `${p.daysLeft}j restant`}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   const pad = size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-xs';
   return (
     <div className="flex flex-wrap gap-1.5">

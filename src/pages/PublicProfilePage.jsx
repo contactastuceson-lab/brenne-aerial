@@ -18,7 +18,7 @@ import { fr } from 'date-fns/locale';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 import PostCard from '@/components/post/PostCard';
 import { notify } from '@/lib/notificationHelper';
-import PerkBadges, { getPerkEffects, PerkParticles } from '@/components/profile/ActivePerks';
+import PerkBadges, { getPerkEffects, getActivePerks, PerkParticles } from '@/components/profile/ActivePerks';
 
 const BADGE_CONFIG = {
   'Fondateur': { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -539,7 +539,14 @@ export default function PublicProfilePage() {
             )}
 
             {/* Avantages boutique (perks actifs) */}
-            <PerkBadges perks={user?.perks || {}} />
+            <div className="mb-4 rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] p-3.5">
+              <div className="flex items-center gap-1.5 mb-3">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                <h3 className="font-grotesk font-bold text-[11px] text-cyan-400 uppercase tracking-wider">Avantages boutique</h3>
+                <span className="ml-auto font-mono text-[9px] text-muted-foreground/50">{getActivePerks(user?.perks || {}).length} actif{getActivePerks(user?.perks || {}).length > 1 ? 's' : ''}</span>
+              </div>
+              <PerkBadges perks={user?.perks || {}} size="md" />
+            </div>
 
             {/* Mention : non-éligibilité aux badges */}
             {user.badges_eligible === false && (
@@ -606,18 +613,18 @@ export default function PublicProfilePage() {
             )}
 
             {/* Stats row */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
-                <p className="font-grotesk font-bold text-xl text-foreground">{followers.length}</p>
-                <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonné{followers.length > 1 ? 's' : ''}</p>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              <div className="rounded-2xl border border-border bg-card px-3 py-3.5 text-center hover-lift">
+                <p className="font-grotesk font-black text-2xl text-foreground leading-none">{followers.length}</p>
+                <p className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60 mt-2">Abonné{followers.length > 1 ? 's' : ''}</p>
               </div>
-              <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
-                <p className="font-grotesk font-bold text-xl text-foreground">{followingCount}</p>
-                <p className="font-inter text-xs text-muted-foreground mt-0.5">Abonnements</p>
+              <div className="rounded-2xl border border-border bg-card px-3 py-3.5 text-center hover-lift">
+                <p className="font-grotesk font-black text-2xl text-foreground leading-none">{followingCount}</p>
+                <p className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60 mt-2">Abonnements</p>
               </div>
-              <div className="bg-secondary/50 border border-border rounded-xl p-3 text-center">
-                <p className="font-grotesk font-bold text-xl text-foreground">{userPosts.length}</p>
-                <p className="font-inter text-xs text-muted-foreground mt-0.5">Post{userPosts.length > 1 ? 's' : ''}</p>
+              <div className="rounded-2xl border border-border bg-card px-3 py-3.5 text-center hover-lift">
+                <p className="font-grotesk font-black text-2xl text-foreground leading-none">{userPosts.length}</p>
+                <p className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60 mt-2">Post{userPosts.length > 1 ? 's' : ''}</p>
               </div>
             </div>
 

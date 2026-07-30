@@ -28,6 +28,12 @@ const REDEMPTION_STATUS = {
   rejected: { label: 'Refusée', color: 'text-red-400 bg-red-400/10 border-red-400/30' },
 };
 
+const FULFILLMENT_TYPE = {
+  auto: { label: 'Auto', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' },
+  token: { label: 'Token', color: 'text-sky-400 bg-sky-400/10 border-sky-400/30' },
+  manual: { label: 'Manuel', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' },
+};
+
 const EARNING_RULES = [
   { label: "Filleul s'inscrit", credits: 50 },
   { label: 'Filleul complète son profil', credits: 10 },
@@ -375,6 +381,11 @@ function BoutiqueTab() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
+                    {r.fulfillment_type && (
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-mono border ${(FULFILLMENT_TYPE[r.fulfillment_type] || FULFILLMENT_TYPE.manual).color}`}>
+                        {(FULFILLMENT_TYPE[r.fulfillment_type] || FULFILLMENT_TYPE.manual).label}
+                      </span>
+                    )}
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono border ${s.color}`}>{s.label}</span>
                     {r.status === 'pending' && (
                       <div className="flex gap-1">

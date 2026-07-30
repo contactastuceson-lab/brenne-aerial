@@ -123,6 +123,111 @@
       "type": "number",
       "default": 0,
       "description": "Cr\u00e9dits de parrainage Eza gagn\u00e9s"
+    },
+    "perks": {
+      "type": "object",
+      "description": "Avantages issus de la boutique : dates d'expiration, flags et tokens utilisables",
+      "properties": {
+        "featured_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "top_explorer_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "vip_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "premium_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "business_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "enterprise_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "analytics_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "scheduled_posts_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "early_access_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "storage_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "custom_colors": {
+          "type": "boolean"
+        },
+        "custom_animated_badge": {
+          "type": "boolean"
+        },
+        "custom_notif_sound": {
+          "type": "boolean"
+        },
+        "particle_effects": {
+          "type": "boolean"
+        },
+        "custom_watermark": {
+          "type": "boolean"
+        },
+        "founder_number": {
+          "type": "number"
+        },
+        "founder_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tokens": {
+          "type": "object",
+          "properties": {
+            "boost": {
+              "type": "number",
+              "default": 0
+            },
+            "pin_24h": {
+              "type": "number",
+              "default": 0
+            },
+            "pin_7d": {
+              "type": "number",
+              "default": 0
+            },
+            "community_pin": {
+              "type": "number",
+              "default": 0
+            },
+            "community_capacity": {
+              "type": "number",
+              "default": 0
+            },
+            "community_premium_design": {
+              "type": "number",
+              "default": 0
+            },
+            "community_space": {
+              "type": "number",
+              "default": 0
+            },
+            "sponsored_event": {
+              "type": "number",
+              "default": 0
+            }
+          }
+        }
+      }
     }
   },
   "required": [

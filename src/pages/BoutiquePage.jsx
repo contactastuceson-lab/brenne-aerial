@@ -5,12 +5,13 @@ import {
   Star, Gem, Trophy, Rocket, Zap, Camera, Video, MessageCircle,
   Bell, Palette, Award, Heart, Flame, Shield, Eye, Megaphone,
   Coffee, Music, BookOpen, Headphones, Smartphone, Bot, Lock,
-  Loader2, Coins, CheckCircle, ArrowRight, Tag,
+  Loader2, Coins, CheckCircle, ArrowRight, Tag, Clock, Ticket,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { applySeoMeta } from '@/lib/seo';
+import UseTokenDialog from '@/components/boutique/UseTokenDialog';
 
 const CATEGORIES = {
   abonnements: { label: 'Abonnements', icon: Crown, color: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
@@ -19,6 +20,29 @@ const CATEGORIES = {
   features: { label: 'Fonctionnalités', icon: Settings, color: 'text-cyan-400', border: 'border-cyan-400/30', bg: 'bg-cyan-400/10' },
   exclusivites: { label: 'Exclusivités', icon: Sparkles, color: 'text-yellow-400', border: 'border-yellow-400/30', bg: 'bg-yellow-400/10' },
   communaute: { label: 'Communauté', icon: Users, color: 'text-emerald-400', border: 'border-emerald-400/30', bg: 'bg-emerald-400/10' },
+};
+
+// Type de traitement affiché sur chaque carte
+const FULFILLMENT_BADGE = {
+  auto: { label: 'Instantané', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30', icon: Zap },
+  token: { label: 'Token', color: 'text-sky-400 bg-sky-400/10 border-sky-400/30', icon: Ticket },
+  manual: { label: 'Manuel', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30', icon: Clock },
+};
+
+// Map rewardId -> fulfillment type (doit correspondre au backend)
+const ITEM_FULFILLMENT = {
+  premium_1m: 'auto', premium_3m: 'auto', premium_1y: 'auto', business_1m: 'auto', business_3m: 'auto', enterprise_1m: 'auto',
+  badge_verified: 'auto', badge_pro: 'auto', badge_certified: 'auto', badge_official: 'auto', badge_ambassador: 'auto',
+  badge_scholar: 'auto', badge_donor: 'auto', badge_beta: 'auto', badge_mentor: 'auto',
+  profile_featured_7d: 'auto', profile_featured_30d: 'auto', top_explorer_30d: 'auto',
+  boost_1: 'token', boost_3: 'token', boost_10: 'token', post_pinned_24h: 'token', post_pinned_7d: 'token',
+  analytics_adv: 'auto', scheduled_posts: 'auto', storage_5gb: 'auto', custom_colors: 'auto',
+  custom_animated_badge: 'auto', custom_notif_sound: 'auto', particle_effects: 'auto', custom_watermark: 'auto',
+  vip_1m: 'auto', early_access: 'auto', founder_cert: 'auto',
+  call_pdg: 'manual', studio_visit: 'manual', tshirt_eza: 'manual', hoodie_eza: 'manual',
+  stickers_pack: 'manual', feature_naming: 'manual', vip_playlist: 'manual',
+  vip_community: 'token', community_1k: 'token', pin_community: 'token', sponsored_event: 'token',
+  community_premium_design: 'token', community_space: 'token',
 };
 
 const SHOP_ITEMS = [
@@ -84,6 +108,48 @@ const SHOP_ITEMS = [
 
 const CATEGORY_ORDER = ['abonnements', 'badges', 'boosts', 'features', 'exclusivites', 'communaute'];
 
+// Affichage des perks actifs
+const PERK_LABELS = {
+  premium_until: { label: 'Premium', icon: Crown, color: 'text-amber-400' },
+  business_until: { label: 'Business', icon: Crown, color: 'text-amber-400' },
+  enterprise_until: { label: 'Enterprise', icon: Trophy, color: 'text-yellow-400' },
+  vip_until: { label: 'Statut VIP', icon: Trophy, color: 'text-yellow-400' },
+  featured_until: { label: 'Profil à la une', icon: Star, color: 'text-orange-400' },
+  top_explorer_until: { label: 'Top explorateur', icon: TrendingUp, color: 'text-orange-400' },
+  analytics_until: { label: 'Analytics avancées', icon: TrendingUp, color: 'text-cyan-400' },
+  scheduled_posts_until: { label: 'Posts programmés illimités', icon: Bell, color: 'text-cyan-400' },
+  early_access_until: { label: 'Accès anticipé', icon: Rocket, color: 'text-yellow-400' },
+  storage_until: { label: 'Stockage étendu', icon: Camera, color: 'text-cyan-400' },
+  custom_colors: { label: 'Couleurs personnalisées', icon: Palette, color: 'text-cyan-400' },
+  custom_animated_badge: { label: 'Badge animé', icon: Sparkles, color: 'text-cyan-400' },
+  custom_notif_sound: { label: 'Son notif personnalisé', icon: Bell, color: 'text-cyan-400' },
+  particle_effects: { label: 'Effets de particules', icon: Sparkles, color: 'text-cyan-400' },
+  custom_watermark: { label: 'Watermark', icon: Shield, color: 'text-cyan-400' },
+};
+
+const TOKEN_LABELS = {
+  boost: { label: 'Boost de post', icon: Zap, color: 'text-orange-400', usable: true },
+  pin_24h: { label: 'Épingler 24h', icon: Eye, color: 'text-sky-400', usable: true },
+  pin_7d: { label: 'Épingler 7j', icon: Eye, color: 'text-indigo-400', usable: true },
+  community_pin: { label: 'Épingler communauté', icon: Eye, color: 'text-emerald-400', usable: false },
+  community_capacity: { label: 'Capacité 1000', icon: Users, color: 'text-emerald-400', usable: false },
+  community_premium_design: { label: 'Design premium communauté', icon: Palette, color: 'text-emerald-400', usable: false },
+  community_space: { label: 'Space communautaire', icon: Headphones, color: 'text-emerald-400', usable: false },
+  sponsored_event: { label: 'Événement sponsorisé', icon: Megaphone, color: 'text-emerald-400', usable: false },
+};
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
+function daysLeft(iso) {
+  if (!iso) return 0;
+  const ms = new Date(iso).getTime() - Date.now();
+  return Math.max(0, Math.ceil(ms / 86400000));
+}
+
 export default function BoutiquePage() {
   const [user, setUser] = useState(null);
   const [credits, setCredits] = useState(0);
@@ -92,6 +158,7 @@ export default function BoutiquePage() {
   const [activeCategory, setActiveCategory] = useState('abonnements');
   const [redeeming, setRedeeming] = useState(null);
   const [redemptions, setRedemptions] = useState([]);
+  const [tokenDialog, setTokenDialog] = useState(null); // { type, count }
 
   useEffect(() => {
     applySeoMeta({
@@ -115,6 +182,16 @@ export default function BoutiquePage() {
     setLoading(false);
   }, []);
 
+  const refreshUser = async () => {
+    try {
+      const me = await base44.auth.me();
+      setUser(me);
+      setCredits(me.referral_credits || 0);
+      const reds = await base44.entities.RewardRedemption.filter({ user_email: me.email });
+      setRedemptions(reds || []);
+    } catch {}
+  };
+
   const handleRedeem = async (item) => {
     if (credits < item.cost) {
       toast.error(`Il vous faut ${item.cost} crédits (vous en avez ${credits})`);
@@ -131,12 +208,8 @@ export default function BoutiquePage() {
       });
       const data = res.data || res;
       if (data?.success) {
-        toast.success(`${item.label} réclamé ! Notre équipe traite votre demande.`);
-        setCredits(data.remainingCredits);
-        const me = await base44.auth.me();
-        setCredits(me.referral_credits || 0);
-        const reds = await base44.entities.RewardRedemption.filter({ user_email: me.email });
-        setRedemptions(reds || []);
+        toast.success(data.message || `${item.label} réclamé !`);
+        await refreshUser();
       } else if (data?.error) {
         toast.error(data.error);
       }
@@ -179,7 +252,32 @@ export default function BoutiquePage() {
     );
   }
 
-  const pendingRedemptions = redemptions.filter(r => r.status === 'pending');
+  const perks = user?.perks || {};
+  const tokens = perks.tokens || {};
+  const pendingRedemptions = redemptions.filter(r => r.status === 'pending' && r.fulfillment_type === 'manual');
+
+  // Construire la liste des perks actifs (dates non expirées + flags permanents)
+  const activePerks = [];
+  for (const [key, meta] of Object.entries(PERK_LABELS)) {
+    const val = perks[key];
+    if (val === true) {
+      activePerks.push({ key, ...meta, permanent: true });
+    } else if (val && typeof val === 'string') {
+      const dleft = daysLeft(val);
+      if (dleft > 0) activePerks.push({ key, ...meta, until: val, daysLeft: dleft });
+    }
+  }
+  if (perks.founder_number) {
+    activePerks.push({ key: 'founder', label: `Membre fondateur #${perks.founder_number}`, icon: Crown, color: 'text-yellow-400', permanent: true });
+  }
+
+  // Construire la liste des tokens disponibles
+  const activeTokens = [];
+  for (const [key, count] of Object.entries(tokens)) {
+    if (count > 0 && TOKEN_LABELS[key]) {
+      activeTokens.push({ key, count, ...TOKEN_LABELS[key] });
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -204,12 +302,66 @@ export default function BoutiquePage() {
           </div>
         </motion.div>
 
-        {/* Pending redemptions */}
+        {/* Active perks */}
+        {activePerks.length > 0 && (
+          <div className="mb-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4">
+            <p className="font-grotesk font-bold text-sm text-foreground mb-3 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-400" /> Mes avantages actifs
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {activePerks.map(p => {
+                const Icon = p.icon;
+                return (
+                  <div key={p.key} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card/60 border border-border">
+                    <Icon className={`w-3.5 h-3.5 ${p.color}`} />
+                    <span className="font-inter text-xs text-foreground">{p.label}</span>
+                    {p.permanent
+                      ? <span className="font-mono text-[9px] text-muted-foreground/50">permanent</span>
+                      : <span className="font-mono text-[9px] text-muted-foreground/60">{p.daysLeft}j restants</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Tokens disponibles */}
+        {activeTokens.length > 0 && (
+          <div className="mb-6 rounded-2xl border border-sky-400/20 bg-sky-400/5 p-4">
+            <p className="font-grotesk font-bold text-sm text-foreground mb-3 flex items-center gap-2">
+              <Ticket className="w-4 h-4 text-sky-400" /> Mes tokens utilisables
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {activeTokens.map(t => {
+                const Icon = t.icon;
+                return (
+                  <div key={t.key} className="flex items-center gap-3 p-2.5 rounded-lg bg-card/60 border border-border">
+                    <div className="w-8 h-8 rounded-lg bg-sky-400/10 flex items-center justify-center flex-shrink-0">
+                      <Icon className={`w-4 h-4 ${t.color}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-inter text-xs text-foreground truncate">{t.label}</p>
+                      <p className="font-mono text-[10px] text-muted-foreground/60">{t.count} disponible{t.count > 1 ? 's' : ''}</p>
+                    </div>
+                    {t.usable && (
+                      <button onClick={() => setTokenDialog({ type: t.key, count: t.count })}
+                        className="px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/30 text-primary font-grotesk font-bold text-[11px] hover:bg-primary/20 transition-all flex-shrink-0">
+                        Utiliser
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Pending manual redemptions */}
         {pendingRedemptions.length > 0 && (
           <div className="flex items-center gap-2 p-3 rounded-xl border border-amber-400/30 bg-amber-400/8 mb-6">
-            <CheckCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <Clock className="w-4 h-4 text-amber-400 flex-shrink-0" />
             <p className="font-inter text-xs text-muted-foreground">
-              {pendingRedemptions.length} réclamation(s) en cours de traitement par notre équipe.
+              {pendingRedemptions.length} demande(s) en traitement par notre équipe.
             </p>
           </div>
         )}
@@ -240,6 +392,9 @@ export default function BoutiquePage() {
             const Icon = item.icon;
             const canAfford = credits >= item.cost;
             const isRedeeming = redeeming === item.id;
+            const fulfillment = ITEM_FULFILLMENT[item.id] || 'manual';
+            const fb = FULFILLMENT_BADGE[fulfillment];
+            const FBIcon = fb.icon;
             return (
               <div key={item.id} className={`rounded-2xl border ${cat.border} ${cat.bg} p-4 flex flex-col`}>
                 <div className="flex items-start gap-3 mb-3">
@@ -250,6 +405,11 @@ export default function BoutiquePage() {
                     <p className="font-grotesk font-bold text-sm text-foreground leading-tight">{item.label}</p>
                     <p className="font-inter text-[11px] text-muted-foreground mt-0.5 leading-snug">{item.desc}</p>
                   </div>
+                </div>
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono border ${fb.color}`}>
+                    <FBIcon className="w-2.5 h-2.5" /> {fb.label}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between mt-auto pt-2">
                   <div className="flex items-center gap-1.5">
@@ -290,28 +450,43 @@ export default function BoutiquePage() {
         {/* My redemptions */}
         {redemptions.length > 0 && (
           <div className="mt-8">
-            <h2 className="font-grotesk font-bold text-sm text-foreground mb-4">Mes réclamations ({redemptions.length})</h2>
+            <h2 className="font-grotesk font-bold text-sm text-foreground mb-4">Historique des réclamations ({redemptions.length})</h2>
             <div className="space-y-2">
-              {redemptions.map(r => (
-                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Gift className="w-4 h-4 text-primary" />
+              {redemptions.slice(0, 20).map(r => {
+                const fb = FULFILLMENT_BADGE[r.fulfillment_type] || FULFILLMENT_BADGE.manual;
+                return (
+                  <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Gift className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-inter text-sm text-foreground truncate">{r.item_label}</p>
+                      <p className="font-mono text-[10px] text-muted-foreground/50">{r.cost} crédits</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${fb.color}`}>{fb.label}</span>
+                      {r.status === 'pending' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30">En attente</span>}
+                      {r.status === 'fulfilled' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/30">Actif</span>}
+                      {r.status === 'rejected' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-400/10 text-red-400 border border-red-400/30">Refusée</span>}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-inter text-sm text-foreground truncate">{r.item_label}</p>
-                    <p className="font-mono text-[10px] text-muted-foreground/50">{r.cost} crédits</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    {r.status === 'pending' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30">En attente</span>}
-                    {r.status === 'fulfilled' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/30">Honorée</span>}
-                    {r.status === 'rejected' && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-400/10 text-red-400 border border-red-400/30">Refusée</span>}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
       </div>
+
+      {/* Use token dialog */}
+      {tokenDialog && (
+        <UseTokenDialog
+          open={true}
+          onClose={() => setTokenDialog(null)}
+          tokenType={tokenDialog.type}
+          count={tokenDialog.count}
+          onUsed={refreshUser}
+        />
+      )}
     </div>
   );
 }

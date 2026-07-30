@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Email de l'utilisateur"
     },
+    "user_id": {
+      "type": "string",
+      "description": "ID de l'utilisateur"
+    },
     "user_name": {
       "type": "string",
       "description": "Nom de l'utilisateur"
@@ -27,6 +31,25 @@
       "default": 0,
       "description": "Co\u00fbt en cr\u00e9dits"
     },
+    "fulfillment_type": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "token",
+        "manual"
+      ],
+      "default": "manual",
+      "description": "auto = appliqu\u00e9 automatiquement, token = l'utilisateur utilise un token plus tard, manual = action admin requise"
+    },
+    "token_type": {
+      "type": "string",
+      "description": "Type de token si fulfillment_type = token (boost, pin_24h, pin_7d, ...)"
+    },
+    "token_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de tokens accord\u00e9s"
+    },
     "status": {
       "type": "string",
       "enum": [
@@ -36,6 +59,11 @@
       ],
       "default": "pending",
       "description": "pending = en attente, fulfilled = honor\u00e9e, rejected = refus\u00e9e"
+    },
+    "applied_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date \u00e0 laquelle l'effet a \u00e9t\u00e9 appliqu\u00e9 (auto) ou le token utilis\u00e9"
     },
     "admin_notes": {
       "type": "string",

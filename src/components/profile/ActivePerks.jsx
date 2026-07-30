@@ -11,7 +11,7 @@ function daysLeft(iso) {
   return Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000));
 }
 function isActive(v) {
-  if (v === true) return true;
+  if (v === true || v === null) return true;
   if (v && typeof v === 'string') return new Date(v).getTime() > Date.now();
   return false;
 }
@@ -40,7 +40,7 @@ export function getActivePerks(perks = {}) {
   const out = [];
   for (const def of PERK_BADGES) {
     const v = perks[def.key];
-    if (def.permanent ? v === true : isActive(v)) {
+    if (def.permanent ? (v === true || v === null) : isActive(v)) {
       out.push({
         key: def.key,
         label: def.label,
@@ -67,23 +67,25 @@ export function getActivePerks(perks = {}) {
 }
 
 // ── Visual effects derived from active perks ───────────────────────────────
+const flag = (v) => v === true || v === null;
+
 export function getPerkEffects(perks = {}) {
   const cust = perks?.customization || {};
   return {
-    hasParticles: perks.particle_effects === true,
-    hasCustomColor: perks.custom_colors === true,
-    hasAnimatedBadge: perks.custom_animated_badge === true,
+    hasParticles: flag(perks.particle_effects),
+    hasCustomColor: flag(perks.custom_colors),
+    hasAnimatedBadge: flag(perks.custom_animated_badge),
     isVip: isActive(perks.vip_until),
     isPremium: isActive(perks.premium_until),
     isBusiness: isActive(perks.business_until),
     isEnterprise: isActive(perks.enterprise_until),
     isFeatured: isActive(perks.featured_until),
-    badgeText: perks.custom_animated_badge === true ? (cust.badgeText || '') : '',
+    badgeText: flag(perks.custom_animated_badge) ? (cust.badgeText || '') : '',
     accentRing: isActive(perks.vip_until) ? '#facc15'
       : isActive(perks.premium_until) ? '#38bdf8'
       : isActive(perks.business_until) ? '#f59e0b'
       : isActive(perks.enterprise_until) ? '#818cf8'
-      : perks.custom_colors === true ? (cust.accentColor || '#22d3ee')
+      : flag(perks.custom_colors) ? (cust.accentColor || '#22d3ee')
       : null,
     particleColor: cust.particleColor || null,
   };

@@ -23,7 +23,8 @@ export function getCustomization(perks = {}) {
 
 export function isPerkActive(perks = {}, key) {
   const v = perks?.[key];
-  if (v === true) return true;
+  // true ou null (flag permanent sans expiration) = actif ; undefined = non débloqué
+  if (v === true || v === null) return true;
   if (v && typeof v === 'string') return new Date(v).getTime() > Date.now();
   return false;
 }

@@ -100,6 +100,15 @@ const CSS_BASE = `
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Access control: mass email sending is reserved for high-privilege admins.
+    // Prevents anonymous attackers from using this endpoint as a spam relay.
+    let caller = null;
+    try { caller = await base44.auth.me(); } catch (_) {}
+    if (!caller || !['admin', 'owner', 'pdg_adjoint'].includes(caller.role)) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await req.json();
     const data = body.payload ?? body;
     const { mode, settingKey, enabled, downServices = [], upServices = [] } = data;

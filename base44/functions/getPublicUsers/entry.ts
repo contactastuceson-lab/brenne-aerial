@@ -3,6 +3,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
+  // Email/phone are sensitive PII: only expose them to authenticated members.
+  // Anonymous callers (public profile browsing) get profile fields without
+  // contact info, preventing mass PII harvesting.
+  let caller = null;
+  try { caller = await base44.auth.me(); } catch (_) {}
+
   // Use service role to list all users (bypasses User entity security rules)
   const users = await base44.asServiceRole.entities.User.list();
 
@@ -12,14 +18,13 @@ Deno.serve(async (req) => {
     full_name: u.full_name,
     display_name: u.display_name || u.full_name,
     username: u.username || null,
-    email: u.email,
+    ...(caller ? { email: u.email } : {}),
     role: u.role,
     avatar_url: u.avatar_url || null,
     cover_url: u.cover_url || null,
     bio: u.bio || null,
     location: u.location || null,
     website: u.website || null,
-    phone: u.phone || null,
     badges: u.badges || [],
     verifications: u.verifications || [],
     verified_status: u.verified_status || 'no',

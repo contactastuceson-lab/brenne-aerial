@@ -1,8 +1,8 @@
-import { Book, Zap, Users, MessageSquare, MessagesSquare, Map, FileText, User, Award, Network, Crown, Bell, Smartphone, Lock, Database, Palette, Shield, Code2 } from 'lucide-react';
+import { Book, Zap, Users, MessageSquare, MessagesSquare, Map, FileText, User, Award, Network, Crown, Bell, Smartphone, Lock, Database, Palette, Shield, Code2, Coins, Gift } from 'lucide-react';
 
 const MAP = {
   Book, Zap, Users, MessageSquare, MessagesSquare, Map, FileText, User,
-  Award, Network, Crown, Bell, Smartphone, Lock, Database, Palette, Shield, Code2,
+  Award, Network, Crown, Bell, Smartphone, Lock, Database, Palette, Shield, Code2, Coins, Gift,
 };
 
 export default function DocIcon({ name, className, style }) {

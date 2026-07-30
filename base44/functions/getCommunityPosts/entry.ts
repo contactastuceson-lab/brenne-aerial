@@ -5,8 +5,8 @@ export default async function(req) {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    const url = new URL(req.url);
-    const communityId = url.searchParams.get('communityId');
+    const body = await req.json().catch(() => ({}));
+    const communityId = body.communityId;
     if (!communityId) return Response.json({ error: 'communityId requis' }, { status: 400 });
 
     const community = await base44.asServiceRole.entities.Community.get(communityId).catch(() => null);

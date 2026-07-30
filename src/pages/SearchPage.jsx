@@ -7,6 +7,7 @@ import SearchInput from '@/components/search/SearchInput';
 import SearchUserResult from '@/components/search/SearchUserResult';
 import SearchPostResult from '@/components/search/SearchPostResult';
 import SearchTagResult from '@/components/search/SearchTagResult';
+import { getTierRank } from '@/lib/subscriptionGating';
 
 function Section({ title, children }) {
   return <section className="border-b border-border/60"><h2 className="px-4 pt-5 pb-2 font-grotesk font-bold text-lg">{title}</h2>{children}</section>;
@@ -26,7 +27,10 @@ export default function SearchPage() {
   const matchingUsers = useMemo(() => {
     if (!normalized) return [];
     const all = [...users, ...sampleProfiles.map(p => ({ ...p, is_sample: true }))];
-    return all.filter(u => `${u.username || ''} ${u.display_name || ''} ${u.full_name || ''}`.toLowerCase().includes(normalized)).slice(0, 12);
+    return all
+      .filter(u => `${u.username || ''} ${u.display_name || ''} ${u.full_name || ''}`.toLowerCase().includes(normalized))
+      .sort((a, b) => getTierRank(b.perks) - getTierRank(a.perks))
+      .slice(0, 12);
   }, [users, sampleProfiles, normalized]);
   const matchingPosts = useMemo(() => normalized ? posts.filter(post => `${post.content || ''} ${post.author_username || ''} ${post.author_display_name || ''}`.toLowerCase().includes(normalized)).slice(0, 30) : posts.slice(0, 20), [posts, normalized]);
   const matchingTags = useMemo(() => (normalized ? tags.filter(item => item.tag.includes(normalized)) : tags).slice(0, 10), [tags, normalized]);

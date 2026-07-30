@@ -16,6 +16,7 @@ import FeatureDisabled from '@/components/shared/FeatureDisabled';
 import EmployeeProfileModal from '@/components/admin/EmployeeProfileModal';
 import { POLES } from '@/lib/employeeRoles';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
+import { getTierRank } from '@/lib/subscriptionGating';
 
 function getAvatarGradient(name = '') {
   const GRADIENTS = [
@@ -214,13 +215,17 @@ export default function DiscoverPage() {
       const aFeat = isPerkActive(a.perks, 'featured_until') ? 1 : 0;
       const bFeat = isPerkActive(b.perks, 'featured_until') ? 1 : 0;
       if (aFeat !== bFeat) return bFeat - aFeat;
-      // 2) Top explorateur (récompense boutique) — priorité dans les recherches
+      // 2) Palier d'abonnement (Enterprise > Business > Premium) — priorité visibilité
+      const aTier = getTierRank(a.perks);
+      const bTier = getTierRank(b.perks);
+      if (aTier !== bTier) return bTier - aTier;
+      // 3) Top explorateur (récompense boutique) — priorité dans les recherches
       if (search) {
         const aTop = isPerkActive(a.perks, 'top_explorer_until') ? 1 : 0;
         const bTop = isPerkActive(b.perks, 'top_explorer_until') ? 1 : 0;
         if (aTop !== bTop) return bTop - aTop;
       }
-      // 3) Tri classique
+      // 4) Tri classique
       if (sortBy === 'popular') return getFollowersCount(b.email) - getFollowersCount(a.email);
       if (sortBy === 'verified') {
         return (a.verifications?.includes('supreme') ? 0 : 1) - (b.verifications?.includes('supreme') ? 0 : 1);

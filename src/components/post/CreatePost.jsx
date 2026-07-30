@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Image, X, Loader2, Globe, Users, BarChart3, BadgeCheck, ShieldCheck, CalendarClock, FileEdit } from 'lucide-react';
+import { Image, X, Loader2, Globe, Users, BarChart3, BadgeCheck, ShieldCheck, CalendarClock, FileEdit, Megaphone } from 'lucide-react';
 import { toast } from 'sonner';
 import { extractHashtags, extractMentions } from '@/lib/hashtags';
 import { compressImage } from '@/lib/imageUtils';
@@ -9,8 +9,10 @@ import PollCreator from '@/components/post/PollCreator';
 import MentionAutocomplete, { useMentionAutocomplete } from '@/components/post/MentionAutocomplete';
 import { notify } from '@/lib/notificationHelper';
 import { isRestricted, isActionBlocked, RESTRICTED_TOAST } from '@/lib/accountStatus';
+import { getScheduledPostsLimit, hasScheduledPostsUnlimited, getSponsoredPostsQuota } from '@/lib/subscriptionGating';
 
 const MAX_CHARS = 280;
+const FREE_SCHEDULED_LIMIT = 5;
 
 const VIS_LABELS = { public: 'Tout le monde', followers: 'Abonnés', certified: 'Certifiés', eza_circle: 'Cercle EZA' };
 const VIS_ORDER = ['public', 'followers', 'certified', 'eza_circle'];
@@ -57,15 +59,41 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
   const [poll, setPoll] = useState(null);
   const [scheduleAt, setScheduleAt] = useState('');
   const [showSchedule, setShowSchedule] = useState(false);
+  const [sponsored, setSponsored] = useState(false);
+  const [scheduledThisMonth, setScheduledThisMonth] = useState(null); // null = unknown
   const fileRef = useRef(null);
   const textareaRef = useRef(null);
 
   const { suggestions, mentionQuery, selectSuggestion } = useMentionAutocomplete(content, textareaRef, setContent);
 
+  const perks = user?.perks || {};
+  const sponsoredQuota = getSponsoredPostsQuota(perks);
+  const unlimitedSchedule = hasScheduledPostsUnlimited(perks);
+  const scheduleLimit = getScheduledPostsLimit(perks);
+  const canSponsor = sponsoredQuota > 0;
+
   const uploading = uploadProgress !== null;
   const remaining = MAX_CHARS - content.length;
   const hasPoll = poll && poll.options.filter(o => o.text.trim()).length >= 2;
-  const canPost = content.trim().length > 0 && !posting && remaining >= 0;
+
+  // Compte les posts déjà programmés ce mois-ci (pour limiter sans Premium)
+  useEffect(() => {
+    if (!focused || unlimitedSchedule) return;
+    (async () => {
+      try {
+        const start = new Date();
+        start.setDate(1); start.setHours(0,0,0,0);
+        const mine = await base44.entities.Post.filter({ author_id: user.id, is_draft: true }, '-created_date', 200);
+        const count = (mine || []).filter(p => p.scheduled_at && new Date(p.scheduled_at) >= start && new Date(p.scheduled_at) > new Date()).length;
+        setScheduledThisMonth(count);
+      } catch { setScheduledThisMonth(0); }
+    })();
+  }, [focused, unlimitedSchedule, user?.id]);
+
+  const scheduleRemaining = unlimitedSchedule ? Infinity : Math.max(0, (scheduleLimit || FREE_SCHEDULED_LIMIT) - (scheduledThisMonth || 0));
+  const scheduleBlocked = !unlimitedSchedule && scheduleRemaining <= 0;
+
+  const canPost = content.trim().length > 0 && !posting && remaining >= 0 && (!scheduleAt || !scheduleBlocked);
 
   const handleMediaUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -179,6 +207,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
         views_count: 0,
         visibility,
       };
+      if (sponsored) postData.is_sponsored = true;
       if (replyTo) {
         postData.reply_to_id = replyTo.id;
         postData.reply_to_author_username = replyTo.author_username;
@@ -219,6 +248,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
       setFocused(false);
       setScheduleAt('');
       setShowSchedule(false);
+      setSponsored(false);
       onPost?.();
     } catch {
       toast.error('Erreur lors de la publication');
@@ -304,10 +334,14 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
                 {VIS_LABELS[visibility]}
               </button>
               <button
-                onClick={() => setShowSchedule(s => !s)}
+                onClick={() => { if (scheduleBlocked) { toast.error(`Limite de ${scheduleLimit} posts programmés/mois atteinte. Passez Premium pour illimité.`); return; } setShowSchedule(s => !s); }}
                 className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-colors ${showSchedule ? 'text-amber-400 border-amber-400/40 bg-amber-400/10' : 'text-muted-foreground border-border hover:bg-white/6'}`}
               >
                 <CalendarClock className="w-3 h-3" /> Programmer
+                {!unlimitedSchedule && scheduledThisMonth !== null && (
+                  <span className="font-mono text-[9px] opacity-60">{scheduleRemaining} restant</span>
+                )}
+                {unlimitedSchedule && <span className="font-mono text-[9px] text-emerald-400">∞</span>}
               </button>
               {showSchedule && (
                 <input
@@ -316,6 +350,15 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
                   onChange={e => setScheduleAt(e.target.value)}
                   className="bg-secondary/50 border border-border rounded-full px-2.5 py-0.5 text-xs text-foreground focus:outline-none focus:border-primary/50"
                 />
+              )}
+              {canSponsor && !replyTo && (
+                <button
+                  onClick={() => setSponsored(s => !s)}
+                  className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-colors ${sponsored ? 'text-amber-400 border-amber-400/40 bg-amber-400/10' : 'text-amber-400/70 border-amber-400/20 hover:bg-amber-400/5'}`}
+                  title={sponsoredQuota === Infinity ? 'Publication sponsorisée — illimitée (Enterprise)' : `Publication sponsorisée — ${sponsoredQuota} gratuites ce mois (Business)`}
+                >
+                  <Megaphone className="w-3 h-3" /> Sponsorisé
+                </button>
               )}
             </div>
           )}

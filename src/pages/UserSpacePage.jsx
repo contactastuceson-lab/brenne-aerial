@@ -15,6 +15,7 @@ import PerkCustomizationPanel from '@/components/profile/PerkCustomizationPanel'
 import CreditPill from '@/components/boutique/CreditPill';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { hasAdvancedAnalytics } from '@/lib/subscriptionGating';
 
 const TABS = [
   { id: 'reports',     label: 'Signalements',  icon: Flag },
@@ -168,7 +169,7 @@ function CertifsTab({ user, selectedId, onSelect }) {
 function PerksTab({ user, onRefresh }) {
   const perks = user?.perks || {};
   const active = getActivePerks(perks);
-  const hasAnalytics = perks.analytics_until && new Date(perks.analytics_until).getTime() > Date.now();
+  const hasAnalytics = hasAdvancedAnalytics(perks);
 
   const [stats, setStats] = useState(null);
   useEffect(() => {

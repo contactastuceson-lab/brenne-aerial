@@ -98,6 +98,7 @@ import CommunityDetailPage from "@/pages/CommunityDetailPage";
 import SpaceRoomPage from "@/pages/SpaceRoomPage";
 import SpacesPage from "@/pages/SpacesPage";
 import WifiPortalPage from "@/pages/WifiPortalPage";
+import ReferralPage from "@/pages/ReferralPage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -176,6 +177,7 @@ const AuthenticatedApp = () => {
           <Route path="/community/:id" element={<CommunityDetailPage />} />
           <Route path="/space/:id" element={<SpaceRoomPage />} />
           <Route path="/spaces" element={<SpacesPage />} />
+          <Route path="/parrainage" element={<ReferralPage />} />
           <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />

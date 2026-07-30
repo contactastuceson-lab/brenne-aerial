@@ -118,6 +118,11 @@
     },
     "ui_preferences": {
       "type": "object"
+    },
+    "referral_credits": {
+      "type": "number",
+      "default": 0,
+      "description": "Cr\u00e9dits de parrainage Eza gagn\u00e9s"
     }
   },
   "required": [

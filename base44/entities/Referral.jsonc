@@ -11,17 +11,22 @@
     },
     "referral_code": {
       "type": "string",
-      "description": "Code unique de parrainage"
+      "description": "Code unique de parrainage (username du parrain)"
     },
     "referred_name": {
       "type": "string",
-      "description": "Nom du filleul (rempli quand il utilise le lien)"
+      "description": "Nom du filleul (rempli quand il rejoint la plateforme)"
     },
     "referred_email": {
-      "type": "string"
+      "type": "string",
+      "description": "Email du filleul"
     },
     "referred_phone": {
       "type": "string"
+    },
+    "referred_user_id": {
+      "type": "string",
+      "description": "ID de l'utilisateur filleul"
     },
     "mission_description": {
       "type": "string",
@@ -30,7 +35,7 @@
     "credits_earned": {
       "type": "number",
       "default": 0,
-      "description": "Cr\u00e9dits vol gagn\u00e9s (en minutes)"
+      "description": "Cr\u00e9dits Eza gagn\u00e9s par le parrain"
     },
     "status": {
       "type": "string",
@@ -49,5 +54,47 @@
     "referrer_email",
     "referrer_name",
     "referral_code"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.referrer_email": "{{user.email}}"
+        },
+        {
+          "data.referred_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.referrer_email": "{{user.email}}"
+        },
+        {
+          "data.referred_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

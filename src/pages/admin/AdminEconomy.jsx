@@ -4,34 +4,23 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   TrendingUp, Users, Gift, Coins, Loader2, RefreshCw,
-  Check, X, Clock, Award, Zap, Trash2, Plus, Minus, Search,
+  Check, Clock, Award, Zap, Trash2, Plus, Minus, Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import RecompensesTab from '@/components/admin/economy/RecompensesTab';
 
 const TABS = [
   { id: 'economie', label: 'Économie', icon: TrendingUp },
   { id: 'parrainage', label: 'Parrainage', icon: Users },
-  { id: 'boutique', label: 'Boutique', icon: Gift },
+  { id: 'recompenses', label: 'Récompenses', icon: Gift },
 ];
 
 const REFERRAL_STATUS = {
   pending: { label: 'En attente', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' },
   validated: { label: 'Validé', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' },
   rewarded: { label: 'Récompensé', color: 'text-sky-400 bg-sky-400/10 border-sky-400/30' },
-};
-
-const REDEMPTION_STATUS = {
-  pending: { label: 'En attente', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' },
-  fulfilled: { label: 'Honorée', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' },
-  rejected: { label: 'Refusée', color: 'text-red-400 bg-red-400/10 border-red-400/30' },
-};
-
-const FULFILLMENT_TYPE = {
-  auto: { label: 'Auto', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' },
-  token: { label: 'Token', color: 'text-sky-400 bg-sky-400/10 border-sky-400/30' },
-  manual: { label: 'Manuel', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' },
 };
 
 const EARNING_RULES = [
@@ -307,113 +296,6 @@ function ParrainageTab() {
   );
 }
 
-function BoutiqueTab() {
-  const qc = useQueryClient();
-  const [statusFilter, setStatusFilter] = useState('pending');
-  const [updating, setUpdating] = useState(null);
-
-  const { data: redemptions = [], isLoading } = useQuery({
-    queryKey: ['admin-redemptions'],
-    queryFn: () => base44.entities.RewardRedemption.list('-created_date', 500),
-  });
-
-  const filtered = statusFilter === 'all' ? redemptions : redemptions.filter(r => r.status === statusFilter);
-
-  const updateStatus = async (id, status) => {
-    setUpdating(id);
-    try {
-      await base44.entities.RewardRedemption.update(id, { status });
-      toast.success(status === 'fulfilled' ? 'Réclamation honorée' : 'Réclamation refusée');
-      qc.invalidateQueries({ queryKey: ['admin-redemptions'] });
-    } catch {
-      toast.error('Erreur lors de la mise à jour');
-    }
-    setUpdating(null);
-  };
-
-  const removeRedemption = async (id) => {
-    if (!confirm('Supprimer cette réclamation ?')) return;
-    setUpdating(id);
-    try {
-      await base44.entities.RewardRedemption.delete(id);
-      toast.success('Réclamation supprimée');
-      qc.invalidateQueries({ queryKey: ['admin-redemptions'] });
-    } catch { toast.error('Erreur'); }
-    setUpdating(null);
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex gap-1.5 flex-wrap">
-        {['pending', 'fulfilled', 'rejected', 'all'].map(s => (
-          <button key={s} onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1.5 rounded-full text-xs font-grotesk font-bold border transition-all ${
-              statusFilter === s ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'
-            }`}>
-            {s === 'all' ? 'Toutes' : REDEMPTION_STATUS[s]?.label}
-          </button>
-        ))}
-        <Button variant="ghost" size="icon" className="h-8 w-8 ml-auto"
-          onClick={() => qc.invalidateQueries({ queryKey: ['admin-redemptions'] })}>
-          <RefreshCw className="w-3.5 h-3.5" />
-        </Button>
-      </div>
-
-      {isLoading ? (
-        <div className="flex justify-center py-10"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground/50 text-sm">Aucune réclamation</div>
-      ) : (
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
-          <div className="max-h-[60vh] overflow-y-auto divide-y divide-border/60">
-            {filtered.map(r => {
-              const s = REDEMPTION_STATUS[r.status] || REDEMPTION_STATUS.pending;
-              const isUpdating = updating === r.id;
-              return (
-                <div key={r.id} className="flex items-center gap-3 px-4 py-3">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Gift className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-inter text-sm text-foreground truncate">{r.item_label}</p>
-                    <p className="font-mono text-[10px] text-muted-foreground/60 truncate">
-                      {r.user_name} · {r.user_email} · {r.cost} crédits
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {r.fulfillment_type && (
-                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-mono border ${(FULFILLMENT_TYPE[r.fulfillment_type] || FULFILLMENT_TYPE.manual).color}`}>
-                        {(FULFILLMENT_TYPE[r.fulfillment_type] || FULFILLMENT_TYPE.manual).label}
-                      </span>
-                    )}
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono border ${s.color}`}>{s.label}</span>
-                    {r.status === 'pending' && (
-                      <div className="flex gap-1">
-                        <button onClick={() => updateStatus(r.id, 'fulfilled')} disabled={isUpdating}
-                          className="w-7 h-7 rounded-lg bg-emerald-400/10 border border-emerald-400/30 flex items-center justify-center hover:bg-emerald-400/20 transition-all disabled:opacity-50">
-                          {isUpdating ? <Loader2 className="w-3 h-3 animate-spin text-emerald-400" /> : <Check className="w-3.5 h-3.5 text-emerald-400" />}
-                        </button>
-                        <button onClick={() => updateStatus(r.id, 'rejected')} disabled={isUpdating}
-                          className="w-7 h-7 rounded-lg bg-red-400/10 border border-red-400/30 flex items-center justify-center hover:bg-red-400/20 transition-all disabled:opacity-50">
-                          <X className="w-3.5 h-3.5 text-red-400" />
-                        </button>
-                      </div>
-                    )}
-                    <button onClick={() => removeRedemption(r.id)} disabled={isUpdating} title="Supprimer"
-                      className="w-7 h-7 rounded-lg bg-red-400/10 border border-red-400/30 flex items-center justify-center hover:bg-red-400/20 transition-all disabled:opacity-50">
-                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function AdminEconomy() {
   const [tab, setTab] = useState('economie');
 
@@ -457,7 +339,7 @@ export default function AdminEconomy() {
             transition={{ duration: 0.15 }}>
             {tab === 'economie' && <EconomieTab />}
             {tab === 'parrainage' && <ParrainageTab />}
-            {tab === 'boutique' && <BoutiqueTab />}
+            {tab === 'recompenses' && <RecompensesTab />}
           </motion.div>
         </AnimatePresence>
       </div>

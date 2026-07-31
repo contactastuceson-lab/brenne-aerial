@@ -8,6 +8,7 @@ import { fr } from 'date-fns/locale';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { extractHashtags } from '@/lib/hashtags';
 import CreditPill from '@/components/boutique/CreditPill';
+import AdSlot from '@/components/feed/AdSlot';
 
 const TRENDING = [
   { tag: 'communauté',    count: 284, rise: '+18%' },
@@ -263,7 +264,11 @@ export default function HomeRightSidebar() {
         <CreditPill />
       </div>
       <SuggestedUsers users={suggestedUsers} />
+      {/* Pub intrusive dans le sidebar */}
+      <div className="mb-4"><AdSlot placement="sidebar" /></div>
       <TrendingSection trendingTags={trendingTags} />
+      {/* Deuxième pub dans le sidebar */}
+      <div className="mb-4"><AdSlot placement="sidebar" /></div>
 
       {/* Footer */}
       <div className="px-2 pb-6 mt-2">

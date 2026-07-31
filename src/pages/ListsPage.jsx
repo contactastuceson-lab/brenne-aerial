@@ -5,6 +5,7 @@ import PostCard from '@/components/post/PostCard';
 import ListDialog from '@/components/lists/ListDialog';
 import { Plus, List as ListIcon, Lock, Globe, Trash2, Pencil, Users, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import AdSlot from '@/components/feed/AdSlot';
 
 export default function ListsPage() {
   const qc = useQueryClient();
@@ -56,6 +57,8 @@ export default function ListsPage() {
           <Plus className="w-3.5 h-3.5" /> Nouvelle
         </button>
       </div>
+
+      <div className="px-4 py-3"><AdSlot placement="feed_banner" /></div>
 
       <div className="px-4 py-3 flex gap-2 overflow-x-auto scrollbar-hide">
         {isLoading ? (

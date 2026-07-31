@@ -8,6 +8,7 @@ import { getCategoryMeta } from '@/lib/communityCategories';
 import { ArrowLeft, Lock, Globe, Users, Loader2, Send, LogIn, LogOut, MessageCircle, Pin, Crown, ImagePlus, Settings, Shield, Hash } from 'lucide-react';
 import { toast } from 'sonner';
 import { applySeoMeta, getCommunitySeoData } from '@/lib/seo';
+import AdSlot from '@/components/feed/AdSlot';
 
 export default function CommunityDetailPage() {
   const { id } = useParams();
@@ -243,6 +244,9 @@ export default function CommunityDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Pub intrusive */}
+      <div className="px-4 py-3"><AdSlot placement="feed_banner" /></div>
 
       {/* Content by tab */}
       {tab === 'posts' && (

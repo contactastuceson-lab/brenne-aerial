@@ -6,6 +6,7 @@ import PostCard from '@/components/post/PostCard';
 import HomePostCard from '@/components/home/HomePostCard';
 import CreatePost from '@/components/post/CreatePost';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
+import AdSlot from '@/components/feed/AdSlot';
 import { applySeoMeta, getPostSeoData } from '@/lib/seo';
 
 export default function PostDetailPage() {
@@ -87,6 +88,9 @@ export default function PostDetailPage() {
 
           {/* Main post */}
           <HomePostCard post={post} currentUser={currentUser} />
+
+          {/* Pub intrusive */}
+          <div className="px-4 py-3 border-b border-zinc-800/60"><AdSlot placement="between_posts" /></div>
 
           {/* Reply composer */}
           {currentUser && (

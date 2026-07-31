@@ -19,6 +19,7 @@ import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 import PostCard from '@/components/post/PostCard';
 import { notify } from '@/lib/notificationHelper';
 import PerkBadges, { getPerkEffects, getActivePerks, PerkParticles } from '@/components/profile/ActivePerks';
+import AdSlot from '@/components/feed/AdSlot';
 
 const BADGE_CONFIG = {
   'Fondateur': { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/30' },
@@ -662,6 +663,9 @@ export default function PublicProfilePage() {
               )}
             </div>
           </div>
+
+          {/* Pub intrusive */}
+          <div className="px-4 py-3 border-b border-border/40"><AdSlot placement="feed_banner" /></div>
 
           {/* Profile Tabs — style X */}
           <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border/40 flex">

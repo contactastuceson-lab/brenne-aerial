@@ -6,6 +6,7 @@ import CommunityDialog from '@/components/community/CommunityDialog';
 import CreditPill from '@/components/boutique/CreditPill';
 import { COMMUNITY_CATEGORIES, getCategoryMeta } from '@/lib/communityCategories';
 import { Plus, Users, Lock, Globe, Loader2, Pin, Crown, Search, MessageCircle } from 'lucide-react';
+import AdSlot from '@/components/feed/AdSlot';
 
 export default function CommunitiesPage() {
   const qc = useQueryClient();
@@ -107,6 +108,9 @@ export default function CommunitiesPage() {
           </div>
         )}
       </div>
+
+      {/* Pub intrusive */}
+      <div className="px-4 py-3"><AdSlot placement="feed_banner" /></div>
 
       {/* List */}
       {isLoading ? (

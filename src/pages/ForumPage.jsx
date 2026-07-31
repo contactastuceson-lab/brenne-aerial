@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Search, Filter, Megaphone, X, Hash } from 'lucide-react';
 import ExternalLinkModal from '@/components/forum/ExternalLinkModal.jsx';
+import AdSlot from '@/components/feed/AdSlot';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const CATEGORIES = [
@@ -182,6 +183,9 @@ export default function ForumPage() {
             <p className="text-sm text-amber-100 flex-1">{announcement.announcement_text || announcement.title}</p>
           </div>
         )}
+
+        {/* Pub intrusive */}
+        <div className="px-1 pb-2"><AdSlot placement="feed_banner" /></div>
 
         {/* List */}
         <div className="space-y-2">

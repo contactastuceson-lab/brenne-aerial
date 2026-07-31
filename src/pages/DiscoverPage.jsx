@@ -17,6 +17,7 @@ import EmployeeProfileModal from '@/components/admin/EmployeeProfileModal';
 import { POLES } from '@/lib/employeeRoles';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 import { getTierRank } from '@/lib/subscriptionGating';
+import AdSlot from '@/components/feed/AdSlot';
 
 function getAvatarGradient(name = '') {
   const GRADIENTS = [
@@ -333,6 +334,9 @@ export default function DiscoverPage() {
               )}
             </div>
           </div>
+
+          {/* Pub intrusive */}
+          <div className="mb-6"><AdSlot placement="feed_banner" /></div>
 
           {/* Team tab - pole filters */}
           {activeTab === 'team' && (
@@ -687,6 +691,7 @@ export default function DiscoverPage() {
 
       {/* Right sidebar */}
       <aside className="hidden xl:flex flex-col w-[300px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-4 px-3" style={{ scrollbarWidth: 'none' }}>
+        <AdSlot placement="sidebar" />
         <HomeRightSidebar />
       </aside>
     </div>

@@ -6,6 +6,7 @@ import CreateSpaceDialog from '@/components/spaces/CreateSpaceDialog';
 import CreditPill from '@/components/boutique/CreditPill';
 import { usePageEnabled } from '@/hooks/usePageEnabled';
 import { useAuth } from '@/lib/AuthContext';
+import AdSlot from '@/components/feed/AdSlot';
 
 export default function SpacesPage() {
   const { user } = useAuth();
@@ -34,6 +35,7 @@ export default function SpacesPage() {
         </div>
       </div>
       <div className="p-4">
+        <AdSlot placement="feed_banner" />
         <SpacesModule user={user} embedded />
       </div>
       <CreateSpaceDialog

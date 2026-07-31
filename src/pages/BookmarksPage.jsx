@@ -6,6 +6,7 @@ import { Bookmark, Loader2, FileEdit, Trash2, Send, CalendarClock } from 'lucide
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import AdSlot from '@/components/feed/AdSlot';
 
 export default function BookmarksPage() {
   const qc = useQueryClient();
@@ -88,6 +89,8 @@ export default function BookmarksPage() {
           </button>
         </div>
       </div>
+
+      <div className="px-4 py-3 border-b border-border/40"><AdSlot placement="feed_banner" /></div>
 
       {loading ? (
         <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>

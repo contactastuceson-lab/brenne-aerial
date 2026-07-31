@@ -8,6 +8,7 @@ import ConversationList from '@/components/messaging/ConversationList';
 import MessageThread from '@/components/messaging/MessageThread';
 import MessageRequestsPanel from '@/components/messaging/MessageRequestsPanel';
 import FeatureDisabled from '@/components/shared/FeatureDisabled';
+import AdSlot from '@/components/feed/AdSlot';
 
 function getConversationId(emailA, emailB) {
   return [emailA, emailB].sort().join('_');
@@ -88,6 +89,9 @@ export default function MessagesPage() {
               </button>
             </div>
           </div>
+
+          {/* Pub intrusive */}
+          <div className="mb-3"><AdSlot placement="feed_banner" /></div>
 
           {activeTab === 'conversations' ? (
             <ConversationList

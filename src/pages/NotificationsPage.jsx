@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Bell, Heart, MessageCircle, UserPlus, CheckCircle, AtSign, CheckCheck, Trash2 } from 'lucide-react';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
+import AdSlot from '@/components/feed/AdSlot';
 
 const TYPE_CONFIG = {
   LIKE: {
@@ -173,6 +174,9 @@ export default function NotificationsPage() {
               </button>
             ))}
           </div>
+
+          {/* Pub intrusive */}
+          <div className="px-4 py-3 border-b border-border/40"><AdSlot placement="feed_banner" /></div>
 
           {/* Notifications list */}
           {isLoading ? (

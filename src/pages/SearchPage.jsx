@@ -8,6 +8,7 @@ import SearchUserResult from '@/components/search/SearchUserResult';
 import SearchPostResult from '@/components/search/SearchPostResult';
 import SearchTagResult from '@/components/search/SearchTagResult';
 import { getTierRank } from '@/lib/subscriptionGating';
+import AdSlot from '@/components/feed/AdSlot';
 
 function Section({ title, children }) {
   return <section className="border-b border-border/60"><h2 className="px-4 pt-5 pb-2 font-grotesk font-bold text-lg">{title}</h2>{children}</section>;
@@ -37,6 +38,7 @@ export default function SearchPage() {
   return (
     <main className="w-full max-w-[680px] min-h-screen md:border-r md:border-zinc-800/60">
       <SearchInput value={query} onChange={setQuery} />
+      <div className="px-4 py-3 border-b border-border/40"><AdSlot placement="feed_banner" /></div>
       {!matchingUsers.length && !matchingPosts.length && normalized ? <div className="py-24 text-center"><SearchIcon className="w-9 h-9 mx-auto mb-3 text-muted-foreground/40" /><p className="font-grotesk font-bold">Aucun résultat pour « {query} »</p></div> : <>
         {matchingUsers.length > 0 && <Section title="Profils">{matchingUsers.map(user => <SearchUserResult key={user.id} user={user} />)}</Section>}
         {matchingTags.length > 0 && <Section title={normalized ? 'Hashtags' : 'Tendances'}>{matchingTags.map(item => <SearchTagResult key={item.tag} {...item} />)}</Section>}

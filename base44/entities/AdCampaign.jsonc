@@ -72,7 +72,7 @@
         "ended"
       ],
       "default": "draft",
-      "description": "Statut de la campagne"
+      "description": "Statut de la campagne \u2014 draft = en attente de validation admin, active = en ligne"
     },
     "starts_at": {
       "type": "string",
@@ -86,7 +86,7 @@
     },
     "owner_id": {
       "type": "string",
-      "description": "ID du cr\u00e9ateur (admin)"
+      "description": "ID du cr\u00e9ateur (admin ou business)"
     }
   },
   "required": [
@@ -102,14 +102,28 @@
     },
     "read": true,
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     }
   }
 }

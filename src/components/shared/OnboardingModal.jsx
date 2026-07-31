@@ -4,19 +4,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
-import { Camera, ChevronRight, ChevronLeft, Check, Plane, MapPin, Phone, User, Sparkles, FileText, Shield } from 'lucide-react';
+import { Camera, ChevronRight, ChevronLeft, Check, MapPin, User, Sparkles, FileText, Shield, Gift, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const PROJECT_TYPES = ['Événement (mariage, concert...)', 'Inspection (toiture, bâtiment)', 'Suivi de chantier', 'Immobilier / promotion', 'Communication entreprise', 'Photographie aérienne', 'Autre'];
-const SECTORS = ['Particulier', 'Artisan / TPE', 'PME / Entreprise', 'Collectivité / Mairie', 'Association', 'Promoteur immobilier', 'Autre'];
-const HOW_FOUND = ['Bouche à oreille', 'Google / Internet', 'Réseaux sociaux', 'Recommandation pro', 'Autre'];
+const EZA_LOGO = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/80278201e_1782606023373-Photoroom.png';
+
+const INTERESTS = [
+  'Tech', 'Business', 'Entrepreneuriat', 'Finance', 'Immobilier', 'Art & Création',
+  'Musique', 'Gaming', 'Sport', 'Formation', 'Social', 'Photographie', 'Vidéo',
+  'Mode', 'Voyages', 'Cuisine', 'Développement personnel',
+];
+
+const JOIN_REASONS = [
+  'Créer du contenu', 'Découvrir des communautés', 'Développer mon réseau pro',
+  'Promouvoir mon activité', 'Échanger en Spaces', 'Suivre l’actualité EZA',
+  'Participer au parrainage',
+];
 
 const STEPS = [
-  { id: 'welcome', title: 'Bienvenue !', subtitle: 'Personnalisons votre profil en quelques secondes' },
-  { id: 'identity', title: 'Votre identité', subtitle: 'Nom et username visibles sur votre profil' },
-  { id: 'contact', title: 'Coordonnées', subtitle: 'Pour vous contacter plus facilement' },
-  { id: 'project', title: 'Votre projet', subtitle: 'Quelques infos pour mieux vous accompagner' },
-  { id: 'done', title: 'C\'est parti !', subtitle: 'Votre profil est prêt' },
+  { id: 'welcome', title: 'Bienvenue sur EZA', subtitle: 'Personnalisons votre profil en quelques secondes' },
+  { id: 'identity', title: 'Votre identité', subtitle: 'Votre nom et username visibles sur EZA' },
+  { id: 'interests', title: 'Vos centres d’intérêt', subtitle: 'Pour vous proposer le meilleur feed' },
+  { id: 'done', title: 'C‘est parti !', subtitle: 'Votre profil EZA est prêt' },
 ];
 
 export default function OnboardingModal({ user, onComplete }) {
@@ -29,16 +38,15 @@ export default function OnboardingModal({ user, onComplete }) {
     username: user?.username || '',
     bio: user?.bio || '',
     location: user?.location || '',
-    phone: user?.phone || '',
-    project_types: [],
-    sector: '',
-    how_found: '',
+    interests: user?.interests || [],
+    join_reasons: user?.join_reasons || [],
+    referral_code: user?.referral_code || '',
   });
   const [usernameError, setUsernameError] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   const set = (key, val) => setForm(p => ({ ...p, [key]: val }));
-  const toggleProjectType = (i) => set('project_types', form.project_types.includes(i) ? form.project_types.filter(x => x !== i) : [...form.project_types, i]);
+  const toggle = (key, val) => set(key, form[key].includes(val) ? form[key].filter(x => x !== val) : [...form[key], val]);
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -50,47 +58,28 @@ export default function OnboardingModal({ user, onComplete }) {
   };
 
   const validateUsername = async (username) => {
-    if (!username || username.length < 3) {
-      setUsernameError('Au minimum 3 caractères');
-      return false;
-    }
-    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-      setUsernameError('Lettres, chiffres, - et _ uniquement');
-      return false;
-    }
-    // Check if username is unique
+    if (!username || username.length < 3) { setUsernameError('Au minimum 3 caractères'); return false; }
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) { setUsernameError('Lettres, chiffres, - et _ uniquement'); return false; }
     try {
       const result = await base44.functions.invoke('checkUsernameAvailable', { username });
-      if (!result.data.available) {
-        setUsernameError('Ce username est déjà pris');
-        return false;
-      }
-    } catch (err) {
-      setUsernameError('Erreur de vérification');
-      return false;
-    }
+      if (!result.data.available) { setUsernameError('Ce username est déjà pris'); return false; }
+    } catch { setUsernameError('Erreur de vérification'); return false; }
     setUsernameError('');
     return true;
   };
 
   const handleFinish = async () => {
     setSaving(true);
-    // Only validate username if user changed it from the original
     if (form.username && form.username !== (user?.username || '')) {
       const isValid = await validateUsername(form.username);
-      if (!isValid) {
-        setSaving(false);
-        return;
-      }
+      if (!isValid) { setSaving(false); return; }
     }
-    // Ensure display_name is set, default to full_name if empty
     const dataToUpdate = {
       ...form,
       display_name: form.display_name || user?.full_name || '',
       onboarding_completed: true,
     };
     await base44.auth.updateMe(dataToUpdate);
-    // Send welcome email (best effort, don't block)
     base44.functions.invoke('sendWelcomeEmail', {}).catch(() => {});
     setSaving(false);
     onComplete();
@@ -98,13 +87,19 @@ export default function OnboardingModal({ user, onComplete }) {
 
   const canNext = () => {
     if (step === 0) return termsAccepted;
-    if (step === 1) return true; // avatar + bio optional
-    if (step === 2) return true; // phone optional
-    if (step === 3) return true;
+    if (step === 1) return form.display_name.trim().length > 0 && form.username.trim().length >= 3;
+    if (step === 2) return true;
     return true;
   };
 
   const progress = (step / (STEPS.length - 1)) * 100;
+
+  const Chip = ({ active, onClick, children }) => (
+    <button onClick={onClick}
+      className={`px-3 py-1.5 rounded-full border font-inter text-xs transition-all ${active ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:border-primary/40'}`}>
+      {children}
+    </button>
+  );
 
   return (
     <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex items-center justify-center p-4">
@@ -113,17 +108,11 @@ export default function OnboardingModal({ user, onComplete }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
-        {/* Progress bar */}
         <div className="h-1 bg-secondary">
-          <motion.div
-            className="h-full bg-primary"
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.4 }}
-          />
+          <motion.div className="h-full bg-primary" animate={{ width: `${progress}%` }} transition={{ duration: 0.4 }} />
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-8">
-          {/* Step indicator */}
           <div className="flex items-center gap-2 mb-6">
             {STEPS.map((s, i) => (
               <div key={s.id} className={`flex-1 h-0.5 rounded-full transition-colors ${i <= step ? 'bg-primary' : 'bg-border'}`} />
@@ -144,51 +133,44 @@ export default function OnboardingModal({ user, onComplete }) {
               {/* STEP 0 — Welcome + CGU */}
               {step === 0 && (
                 <div className="text-center py-2 space-y-5">
-                  <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto">
-                    <Plane className="w-10 h-10 text-primary" />
+                  <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto overflow-hidden">
+                    <img src={EZA_LOGO} alt="EZA" className="w-14 h-14 object-contain" />
                   </div>
                   <p className="font-inter text-sm text-muted-foreground max-w-xs mx-auto">
-                    Bienvenue sur <strong className="text-foreground">Brenne Aerial</strong> ! Prenez 1 minute pour compléter votre profil et rejoindre la communauté.
+                    Bienvenue sur <strong className="text-foreground">EZA</strong> — votre écosystème social et professionnel. Prenez 1 minute pour configurer votre profil.
                   </p>
-                  {/* CGU acceptance */}
                   <div className={`text-left rounded-xl border p-4 transition-all ${termsAccepted ? 'border-primary/40 bg-primary/5' : 'border-border bg-secondary/40'}`}>
                     <label className="flex items-start gap-3 cursor-pointer select-none">
-                      <div
-                        onClick={() => setTermsAccepted(v => !v)}
-                        className={`mt-0.5 w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${termsAccepted ? 'bg-primary border-primary' : 'border-border bg-background'}`}
-                      >
+                      <div onClick={() => setTermsAccepted(v => !v)}
+                        className={`mt-0.5 w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${termsAccepted ? 'bg-primary border-primary' : 'border-border bg-background'}`}>
                         {termsAccepted && <Check className="w-3 h-3 text-primary-foreground" />}
                       </div>
                       <span className="font-inter text-sm text-foreground/80 leading-relaxed">
-                        J'accepte les{' '}
+                        J’accepte les{' '}
                         <Link to="/legal/terms" target="_blank" className="text-primary underline hover:opacity-80 inline-flex items-center gap-0.5">
-                          <FileText className="w-3 h-3" /> Conditions d'utilisation
+                          <FileText className="w-3 h-3" /> Conditions d’utilisation
                         </Link>{' '}
                         et la{' '}
                         <Link to="/legal/privacy" target="_blank" className="text-primary underline hover:opacity-80 inline-flex items-center gap-0.5">
                           <Shield className="w-3 h-3" /> Politique de confidentialité
                         </Link>{' '}
-                        de Brenne Aerial.
+                        d’EZA.
                       </span>
                     </label>
                   </div>
-                  {!termsAccepted && (
-                    <p className="font-inter text-xs text-muted-foreground">Vous devez accepter les conditions pour continuer.</p>
-                  )}
+                  {!termsAccepted && <p className="font-inter text-xs text-muted-foreground">Vous devez accepter les conditions pour continuer.</p>}
                 </div>
               )}
 
               {/* STEP 1 — Identity */}
               {step === 1 && (
                 <div className="space-y-4">
-                  {/* Avatar */}
                   <div className="flex flex-col items-center gap-3">
                     <label className="cursor-pointer group relative">
                       <div className="w-24 h-24 rounded-2xl bg-secondary border-2 border-dashed border-border group-hover:border-primary/50 overflow-hidden flex items-center justify-center transition-all">
                         {form.avatar_url
                           ? <img src={form.avatar_url} className="w-full h-full object-cover" alt="" />
-                          : <User className="w-10 h-10 text-muted-foreground" />
-                        }
+                          : <User className="w-10 h-10 text-muted-foreground" />}
                         {uploadingAvatar && (
                           <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
                             <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -203,7 +185,7 @@ export default function OnboardingModal({ user, onComplete }) {
                     <p className="font-inter text-xs text-muted-foreground">Photo de profil (optionnel)</p>
                   </div>
                   <div>
-                    <label className="font-inter text-xs text-muted-foreground mb-1 block">Nom d'affichage</label>
+                    <label className="font-inter text-xs text-muted-foreground mb-1 block">Nom d’affichage <span className="text-primary">*</span></label>
                     <Input value={form.display_name} onChange={e => set('display_name', e.target.value)} placeholder="Ex: Jean Dupont" className="bg-secondary border-border" />
                   </div>
                   <div>
@@ -219,88 +201,56 @@ export default function OnboardingModal({ user, onComplete }) {
                     <label className="font-inter text-xs text-muted-foreground mb-1 block">Localisation (ville, région)</label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input value={form.location} onChange={e => set('location', e.target.value)} placeholder="Ex: Guéret, Creuse" className="bg-secondary border-border pl-9" />
+                      <Input value={form.location} onChange={e => set('location', e.target.value)} placeholder="Ex: Paris, France" className="bg-secondary border-border pl-9" />
                     </div>
                   </div>
                   <div>
                     <label className="font-inter text-xs text-muted-foreground mb-1 block">Courte bio (optionnel)</label>
-                    <Textarea value={form.bio} onChange={e => set('bio', e.target.value)} placeholder="Parlez-nous de vous..." className="bg-secondary border-border resize-none h-20" />
+                    <Textarea value={form.bio} onChange={e => set('bio', e.target.value)} placeholder="Parlez-nous de vous…" className="bg-secondary border-border resize-none h-20" />
                   </div>
                 </div>
               )}
 
-              {/* STEP 2 — Contact */}
+              {/* STEP 2 — Interests */}
               {step === 2 && (
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
-                    <label className="font-inter text-xs text-muted-foreground mb-1 block">Numéro de téléphone</label>
+                    <label className="font-inter text-xs text-muted-foreground mb-2 block">Vos centres d’intérêt <span className="text-muted-foreground/60">(plusieurs possibles)</span></label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {INTERESTS.map(p => <Chip key={p} active={form.interests.includes(p)} onClick={() => toggle('interests', p)}>{p}</Chip>)}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-inter text-xs text-muted-foreground mb-2 block">Pourquoi rejoignez-vous EZA ?</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {JOIN_REASONS.map(r => <Chip key={r} active={form.join_reasons.includes(r)} onClick={() => toggle('join_reasons', r)}>{r}</Chip>)}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-inter text-xs text-muted-foreground mb-1 block">Code de parrainage (optionnel)</label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="06 12 34 56 78" className="bg-secondary border-border pl-9" type="tel" />
+                      <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input value={form.referral_code} onChange={e => set('referral_code', e.target.value)} placeholder="username du parrain" className="bg-secondary border-border pl-9" />
                     </div>
-                  </div>
-                  <div>
-                    <label className="font-inter text-xs text-muted-foreground mb-1 block">Adresse e-mail</label>
-                    <Input value={user?.email || ''} disabled className="bg-muted border-border opacity-60" />
-                    <p className="font-inter text-xs text-muted-foreground mt-1">Votre email est lié à votre compte</p>
+                    <p className="font-inter text-xs text-muted-foreground mt-1">Un parrain vous a invité ? Indiquez son @username pour le créditer.</p>
                   </div>
                 </div>
               )}
 
-              {/* STEP 3 — Project */}
+              {/* STEP 3 — Done */}
               {step === 3 && (
-                <div className="space-y-3">
-                  <div>
-                    <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Quel type de projet vous intéresse ? <span className="text-muted-foreground">(plusieurs possibles)</span></label>
-                    <div className="flex flex-wrap gap-1.5">
-                      {PROJECT_TYPES.map(p => (
-                        <button key={p} onClick={() => toggleProjectType(p)}
-                          className={`px-3 py-1.5 rounded-full border font-inter text-xs transition-all ${form.project_types.includes(p) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:border-primary/40'}`}>
-                          {p}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Vous représentez…</label>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {SECTORS.map(s => (
-                        <button key={s} onClick={() => set('sector', s)}
-                          className={`px-3 py-2 rounded-xl border font-inter text-sm transition-all ${form.sector === s ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:border-primary/40'}`}>
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="font-inter text-xs text-muted-foreground mb-1.5 block">Comment avez-vous connu Brenne Aerial ?</label>
-                    <div className="flex flex-wrap gap-1.5">
-                      {HOW_FOUND.map(h => (
-                        <button key={h} onClick={() => set('how_found', h)}
-                          className={`px-3 py-1.5 rounded-full border font-inter text-xs transition-all ${form.how_found === h ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:border-primary/40'}`}>
-                          {h}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 4 — Done */}
-              {step === 4 && (
                 <div className="text-center py-4 space-y-4">
                   <div className="w-20 h-20 rounded-2xl bg-green-400/10 border border-green-400/20 flex items-center justify-center mx-auto">
-                    <Check className="w-10 h-10 text-green-400" />
+                    <CheckCircle2 className="w-10 h-10 text-green-400" />
                   </div>
                   <p className="font-inter text-sm text-muted-foreground max-w-xs mx-auto">
-                    Votre profil est configuré ! Vous pouvez maintenant profiter de toutes les fonctionnalités de la plateforme.
+                    Votre profil EZA est configuré ! Publiez, échangez en Spaces, rejoignez des communautés et développez votre réseau.
                   </p>
                 </div>
               )}
             </motion.div>
           </AnimatePresence>
 
-          {/* Navigation */}
           <div className="flex items-center justify-between mt-8 gap-3">
             {step > 0 && step < STEPS.length - 1 ? (
               <Button variant="outline" size="sm" className="border-border gap-1.5" onClick={() => setStep(s => s - 1)}>
@@ -320,7 +270,7 @@ export default function OnboardingModal({ user, onComplete }) {
             )}
             {step === STEPS.length - 1 && (
               <Button onClick={handleFinish} disabled={saving} className="bg-primary text-primary-foreground gap-1.5 ml-auto">
-                {saving ? <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" /> : <><Check className="w-4 h-4" /> Accéder à la plateforme</>}
+                {saving ? <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" /> : <><Check className="w-4 h-4" /> Accéder à EZA</>}
               </Button>
             )}
           </div>

@@ -4,7 +4,8 @@ import {
   Home, Compass, MessageCircle, MoreHorizontal, X, Search,
   Bell, User, LogOut, LayoutDashboard, Bookmark,
   Users, FileText, Calendar, Settings, Heart, Shield,
-  Building2, Star, Award, Plus, Camera, List, Radio
+  Building2, Star, Award, Plus, Camera, List, Radio,
+  ShoppingBag, Wallet, Gift, BookOpen, Newspaper, Info
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -19,21 +20,49 @@ const MAIN_TABS = [
   { to: null,        icon: MoreHorizontal,label: 'Plus',   isMore: true },
 ];
 
-const MORE_ITEMS = [
-  { to: '/notifications',        icon: Bell,         label: 'Notifications',  color: 'text-primary' },
-  { to: '/profile',              icon: User,         label: 'Mon profil',      color: 'text-primary' },
-  { to: '/bookmarks',            icon: Bookmark,    label: 'Signets',         color: 'text-amber-400' },
-  { to: '/communities',          icon: Users,       label: 'Communautés',     color: 'text-emerald-400' },
-  { to: '/lists',                icon: List,        label: 'Listes',          color: 'text-sky-400' },
-  { to: '/spaces',               icon: Radio,       label: 'Spaces',          color: 'text-red-400' },
-  { to: '/discover',             icon: Compass,      label: 'Explorer',        color: 'text-cyan-400' },
-  { to: '/forum',                icon: FileText,     label: 'Forum',           color: 'text-blue-400' },
-  { to: '/business',             icon: Building2,    label: 'Business',        color: 'text-cyan-400' },
-  { to: '/ecosysteme',           icon: Star,         label: 'Écosystème',      color: 'text-orange-400' },
-  { to: '/enor',                 icon: Award,        label: 'Enor',            color: 'text-amber-300' },
-  { to: '/portfolio',            icon: Camera,       label: 'Portfolio',       color: 'text-purple-400' },
-  { to: '/donation',             icon: Heart,        label: 'Soutenir',        color: 'text-red-400' },
-  { to: '/legal/privacy',        icon: Shield,       label: 'Confidentialité', color: 'text-slate-400' },
+const NAV_SECTIONS = [
+  {
+    title: 'Compte',
+    items: [
+      { to: '/profile',        icon: User,            label: 'Mon profil',        color: 'text-primary' },
+      { to: '/espace',         icon: LayoutDashboard,  label: 'Espace utilisateur', color: 'text-cyan-400' },
+      { to: '/notifications',  icon: Bell,            label: 'Notifications',      color: 'text-amber-400' },
+      { to: '/bookmarks',     icon: Bookmark,        label: 'Signets',           color: 'text-amber-300' },
+      { to: '/lists',         icon: List,            label: 'Listes',           color: 'text-sky-400' },
+    ],
+  },
+  {
+    title: 'Communauté',
+    items: [
+      { to: '/communities',   icon: Users,           label: 'Communautés',   color: 'text-emerald-400' },
+      { to: '/spaces',        icon: Radio,           label: 'Spaces',         color: 'text-red-400' },
+      { to: '/forum',         icon: FileText,        label: 'Forum',          color: 'text-blue-400' },
+      { to: '/discover',      icon: Compass,         label: 'Explorer',       color: 'text-cyan-400' },
+      { to: '/search',        icon: Search,          label: 'Rechercher',     color: 'text-slate-300' },
+    ],
+  },
+  {
+    title: 'EZA',
+    items: [
+      { to: '/ecosysteme',    icon: Star,            label: 'Écosystème',     color: 'text-orange-400' },
+      { to: '/enor',          icon: Award,           label: 'Enor',           color: 'text-amber-300' },
+      { to: '/portfolio',     icon: Camera,          label: 'Portfolio',      color: 'text-purple-400' },
+      { to: '/business',      icon: Building2,       label: 'Business',       color: 'text-cyan-400' },
+      { to: '/boutique',      icon: ShoppingBag,      label: 'Boutique',       color: 'text-pink-400' },
+      { to: '/banque',        icon: Wallet,           label: 'Banque',         color: 'text-emerald-300' },
+      { to: '/parrainage',    icon: Gift,            label: 'Parrainage',     color: 'text-rose-400' },
+    ],
+  },
+  {
+    title: 'Ressources',
+    items: [
+      { to: '/documentation', icon: BookOpen,        label: 'Documentation',  color: 'text-blue-300' },
+      { to: '/blog',          icon: Newspaper,        label: 'Blog',           color: 'text-indigo-400' },
+      { to: '/about',         icon: Info,             label: 'À propos',       color: 'text-slate-300' },
+      { to: '/donation',      icon: Heart,            label: 'Soutenir',       color: 'text-red-400' },
+      { to: '/legal/privacy', icon: Shield,           label: 'Confidentialité',color: 'text-slate-400' },
+    ],
+  },
 ];
 
 export default function BottomTabBar() {
@@ -164,23 +193,27 @@ export default function BottomTabBar() {
                   </div>
                 )}
 
-                {/* All links */}
-                <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/40 mb-3 px-1">Navigation complète</p>
-                <div className="grid grid-cols-3 gap-2 mb-5">
-                  {MORE_ITEMS.map(item => {
-                    const Icon = item.icon;
-                    return (
-                      <Link key={item.to} to={item.to} onClick={() => setShowMore(false)}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all border ${
-                          isActive(item.to) ? 'border-primary/30 bg-primary/10' : 'border-white/6 bg-white/3 hover:bg-white/6'
-                        }`}
-                      >
-                        <Icon className={`w-4.5 h-4.5 ${item.color}`} style={{ width: 18, height: 18 }} />
-                        <span className="font-inter text-[10px] text-muted-foreground text-center leading-tight">{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
+                {/* All links — sections thématiques */}
+                {NAV_SECTIONS.map((section) => (
+                  <div key={section.title} className="mb-5">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/45 mb-2 px-1">{section.title}</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {section.items.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <Link key={item.to} to={item.to} onClick={() => setShowMore(false)}
+                            className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all border ${
+                              isActive(item.to) ? 'border-primary/30 bg-primary/10' : 'border-white/6 bg-white/3 hover:bg-white/6'
+                            }`}
+                          >
+                            <Icon className={item.color} style={{ width: 18, height: 18 }} />
+                            <span className="font-inter text-[10px] text-muted-foreground text-center leading-tight">{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
 
                 {user && (
                   <button onClick={() => { base44.auth.logout('/'); setShowMore(false); }}

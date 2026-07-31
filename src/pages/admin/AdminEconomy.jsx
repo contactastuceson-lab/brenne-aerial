@@ -99,8 +99,8 @@ function CreditAdjuster() {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+    <div className="rounded-2xl border border-border bg-card">
+      <div className="px-4 py-3 border-b border-border flex items-center gap-2 rounded-t-2xl">
         <Coins className="w-4 h-4 text-amber-400" />
         <p className="font-grotesk font-semibold text-sm">Ajuster les crédits d'un utilisateur</p>
       </div>
@@ -121,7 +121,7 @@ function CreditAdjuster() {
             <div className="absolute right-2.5 top-1/2 -translate-y-1/2"><Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground/50" /></div>
           )}
           {!found && query.trim().length >= 1 && (
-            <div className="absolute z-20 left-0 right-0 mt-1 rounded-xl border border-border bg-popover shadow-lg overflow-hidden max-h-60 overflow-y-auto">
+            <div className="absolute z-[60] left-0 right-0 mt-1 rounded-xl border border-border bg-popover shadow-xl overflow-hidden max-h-60 overflow-y-auto">
               {suggestions.length === 0 ? (
                 <p className="px-3 py-2.5 text-xs text-muted-foreground/60">Aucun utilisateur</p>
               ) : suggestions.map(u => (

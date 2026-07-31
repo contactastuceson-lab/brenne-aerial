@@ -13,13 +13,20 @@ type RewardEffect = {
 };
 
 export const REWARD_EFFECTS: Record<string, RewardEffect> = {
-  // ── Abonnements (auto — flags temporels) ──
-  premium_1m:    { type: 'auto', apply: { verifications: ['verified'], perks: { premium_until: MONTH } } },
-  premium_3m:   { type: 'auto', apply: { verifications: ['verified'], perks: { premium_until: 90 } } },
-  premium_1y:   { type: 'auto', apply: { verifications: ['verified'], perks: { premium_until: YEAR } } },
-  business_1m:  { type: 'auto', apply: { verifications: ['pro'], perks: { business_until: MONTH } } },
-  business_3m:  { type: 'auto', apply: { verifications: ['pro'], perks: { business_until: 90 } } },
-  enterprise_1m:{ type: 'auto', apply: { verifications: ['certified'], perks: { enterprise_until: MONTH } } },
+  // ── Abonnements Premium (bleu Verified OU vert Pro — plus cher) ──
+  premium_1m:       { type: 'auto', apply: { verifications: ['verified'], perks: { premium_until: MONTH } } },
+  premium_3m:       { type: 'auto', apply: { verifications: ['verified'], perks: { premium_until: 90 } } },
+  premium_1y:       { type: 'auto', apply: { verifications: ['verified'], perks: { premium_until: YEAR } } },
+  premium_pro_1m:   { type: 'auto', apply: { verifications: ['pro'], perks: { premium_until: MONTH } } },
+  premium_pro_3m:   { type: 'auto', apply: { verifications: ['pro'], perks: { premium_until: 90 } } },
+  premium_pro_1y:   { type: 'auto', apply: { verifications: ['pro'], perks: { premium_until: YEAR } } },
+  // ── Abonnements Business (jaune Certifié OU violet Officiel — plus cher) ──
+  business_1m:           { type: 'auto', apply: { verifications: ['certified'], perks: { business_until: MONTH } } },
+  business_3m:           { type: 'auto', apply: { verifications: ['certified'], perks: { business_until: 90 } } },
+  business_official_1m:  { type: 'auto', apply: { verifications: ['official'], perks: { business_until: MONTH } } },
+  business_official_3m:  { type: 'auto', apply: { verifications: ['official'], perks: { business_until: 90 } } },
+  // ── Enterprise (Officiel + perks — requiert preuves, géré par submitEnterpriseProofs) ──
+  enterprise_1m: { type: 'auto', apply: { verifications: ['official', 'certified'], perks: { enterprise_until: MONTH } } },
 
   // ── Badges (auto — ajout aux verifications) ──
   badge_verified:    { type: 'auto', apply: { verifications: ['verified'] } },

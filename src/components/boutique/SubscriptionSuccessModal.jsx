@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Crown, Trophy, Sparkles, CheckCircle2, ArrowRight, Zap } from 'lucide-react';
+import { X, Crown, Trophy, Gem, Shield, Sparkles, CheckCircle2, ArrowRight, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import confetti from 'canvas-confetti';
 
@@ -29,6 +29,30 @@ const SUB_INFO = {
       'Effets de particules sur le profil',
     ],
   },
+  premium_pro: {
+    label: 'Premium Pro',
+    icon: Gem,
+    glow: 'rgba(34, 197, 94, 0.55)',
+    glowSoft: 'rgba(34, 197, 94, 0.15)',
+    iconBg: 'bg-emerald-400/10',
+    iconBorder: 'border-emerald-400/40',
+    iconColor: 'text-emerald-400',
+    badgeBg: 'bg-emerald-400/10',
+    badgeBorder: 'border-emerald-400/30',
+    textGradient: 'bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-400 bg-clip-text text-transparent',
+    ringColor: '#22c55e',
+    confetti: ['#22c55e', '#4ade80', '#86efac', '#fbbf24', '#38bdf8'],
+    tagline: "Premium sublimé par le badge Pro — statut professionnel affirmé.",
+    perks: [
+      'Badge Pro \u2713',
+      'Aucune publicité dans toute l\u2019application',
+      'Publications sponsorisées illimitées',
+      'Couleurs de profil personnalisées',
+      'Badge animé personnalisé',
+      'Effets de particules sur le profil',
+      'Statut professionnel reconnu',
+    ],
+  },
   business: {
     label: 'Business',
     icon: Crown,
@@ -50,6 +74,29 @@ const SUB_INFO = {
       'Publications sponsorisées Business',
       'Espace business dédié avec gestion des affiliations',
       'Priorité d\u2019affichage dans le feed',
+    ],
+  },
+  business_official: {
+    label: 'Business Officiel',
+    icon: Shield,
+    glow: 'rgba(168, 85, 247, 0.55)',
+    glowSoft: 'rgba(168, 85, 247, 0.15)',
+    iconBg: 'bg-purple-400/10',
+    iconBorder: 'border-purple-400/40',
+    iconColor: 'text-purple-400',
+    badgeBg: 'bg-purple-400/10',
+    badgeBorder: 'border-purple-400/30',
+    textGradient: 'bg-gradient-to-r from-purple-400 via-fuchsia-300 to-purple-400 bg-clip-text text-transparent',
+    ringColor: '#a855f7',
+    confetti: ['#a855f7', '#c084fc', '#e9d5ff', '#fbbf24', '#38bdf8'],
+    tagline: "Business officiel — votre entité reconnue avec le badge violet.",
+    perks: [
+      'Badge Officiel \u2713',
+      'Tous les avantages Business inclus',
+      'Création de campagnes publicitaires Eza Ads',
+      'Espace business dédié avec gestion des affiliations',
+      'Priorité d\u2019affichage dans le feed',
+      'Statut d\u2019entité officielle reconnue',
     ],
   },
   enterprise: {
@@ -102,14 +149,18 @@ const SUB_INFO = {
 
 const ITEM_TYPE_MAP = {
   premium_1m: 'premium', premium_3m: 'premium', premium_1y: 'premium',
+  premium_pro_1m: 'premium_pro', premium_pro_3m: 'premium_pro', premium_pro_1y: 'premium_pro',
   business_1m: 'business', business_3m: 'business',
+  business_official_1m: 'business_official', business_official_3m: 'business_official',
   enterprise_1m: 'enterprise',
   vip_1m: 'vip',
 };
 
 const DURATION_LABELS = {
   premium_1m: '1 mois', premium_3m: '3 mois', premium_1y: '12 mois',
+  premium_pro_1m: '1 mois', premium_pro_3m: '3 mois', premium_pro_1y: '12 mois',
   business_1m: '1 mois', business_3m: '3 mois',
+  business_official_1m: '1 mois', business_official_3m: '3 mois',
   enterprise_1m: '1 mois', vip_1m: '1 mois',
 };
 

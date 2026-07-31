@@ -147,10 +147,14 @@ export default async function(req) {
       premium_1m: { tier: 'Premium', duration: '1 mois', badge: 'Verified' },
       premium_3m: { tier: 'Premium', duration: '3 mois', badge: 'Verified' },
       premium_1y: { tier: 'Premium', duration: '12 mois', badge: 'Verified' },
-      business_1m: { tier: 'Business', duration: '1 mois', badge: 'Pro' },
-      business_3m: { tier: 'Business', duration: '3 mois', badge: 'Pro' },
-      enterprise_1m: { tier: 'Enterprise', duration: '1 mois', badge: 'Certified' },
-      vip_1m: { tier: 'VIP', duration: '1 mois', badge: 'Official' },
+      premium_pro_1m: { tier: 'Premium Pro', duration: '1 mois', badge: 'Pro' },
+      premium_pro_3m: { tier: 'Premium Pro', duration: '3 mois', badge: 'Pro' },
+      premium_pro_1y: { tier: 'Premium Pro', duration: '12 mois', badge: 'Pro' },
+      business_1m: { tier: 'Business', duration: '1 mois', badge: 'Certifié' },
+      business_3m: { tier: 'Business', duration: '3 mois', badge: 'Certifié' },
+      business_official_1m: { tier: 'Business Officiel', duration: '1 mois', badge: 'Officiel' },
+      business_official_3m: { tier: 'Business Officiel', duration: '3 mois', badge: 'Officiel' },
+      vip_1m: { tier: 'VIP', duration: '1 mois', badge: 'Officiel' },
     };
     const subTier = SUB_TIERS[rewardId];
 

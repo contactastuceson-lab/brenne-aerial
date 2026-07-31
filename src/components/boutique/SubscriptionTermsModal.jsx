@@ -8,8 +8,13 @@ const DURATION_LABELS = {
   premium_1m: '1 mois',
   premium_3m: '3 mois',
   premium_1y: '12 mois',
+  premium_pro_1m: '1 mois',
+  premium_pro_3m: '3 mois',
+  premium_pro_1y: '12 mois',
   business_1m: '1 mois',
   business_3m: '3 mois',
+  business_official_1m: '1 mois',
+  business_official_3m: '3 mois',
   enterprise_1m: '1 mois',
   vip_1m: '1 mois',
 };

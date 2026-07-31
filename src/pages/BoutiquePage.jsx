@@ -16,6 +16,7 @@ import UseCommunityTokenDialog from '@/components/boutique/UseCommunityTokenDial
 import BuyCreditsSection from '@/components/boutique/BuyCreditsSection';
 import SubscriptionTermsModal from '@/components/boutique/SubscriptionTermsModal';
 import SubscriptionSuccessModal from '@/components/boutique/SubscriptionSuccessModal';
+import EnterpriseProofDialog from '@/components/boutique/EnterpriseProofDialog';
 
 const CATEGORIES = {
   abonnements: { label: 'Abonnements', icon: Crown, color: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
@@ -33,6 +34,14 @@ const FULFILLMENT_BADGE = {
   manual: { label: 'Manuel', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30', icon: Clock },
 };
 
+// Badge de vérification attribué par chaque abonnement (choix Premium/Business)
+const BADGE_TIER_META = {
+  verified: { label: 'Badge Verified', color: 'text-sky-400 bg-sky-400/10 border-sky-400/30' },
+  pro: { label: 'Badge Pro', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' },
+  certified: { label: 'Badge Certifié', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' },
+  official: { label: 'Badge Officiel', color: 'text-purple-400 bg-purple-400/10 border-purple-400/30' },
+};
+
 // Map rewardId -> verification key (pour refléter l'état actif / révocation admin)
 const BADGE_VERIFICATION_MAP = {
   badge_verified: 'verified',
@@ -48,7 +57,11 @@ const BADGE_VERIFICATION_MAP = {
 
 // Map rewardId -> fulfillment type (doit correspondre au backend)
 const ITEM_FULFILLMENT = {
-  premium_1m: 'auto', premium_3m: 'auto', premium_1y: 'auto', business_1m: 'auto', business_3m: 'auto', enterprise_1m: 'auto',
+  premium_1m: 'auto', premium_3m: 'auto', premium_1y: 'auto',
+  premium_pro_1m: 'auto', premium_pro_3m: 'auto', premium_pro_1y: 'auto',
+  business_1m: 'auto', business_3m: 'auto',
+  business_official_1m: 'auto', business_official_3m: 'auto',
+  enterprise_1m: 'manual',
   badge_verified: 'auto', badge_pro: 'auto', badge_certified: 'auto', badge_official: 'auto', badge_ambassador: 'auto',
   badge_scholar: 'auto', badge_donor: 'auto', badge_beta: 'auto', badge_mentor: 'auto',
   profile_featured_7d: 'auto', profile_featured_30d: 'auto', top_explorer_30d: 'auto',
@@ -63,13 +76,22 @@ const ITEM_FULFILLMENT = {
 };
 
 const SHOP_ITEMS = [
-  // ── Abonnements ──
-  { id: 'premium_1m', label: '1 mois Premium', desc: 'Accès Premium complet pendant 1 mois', cost: 50, category: 'abonnements', icon: Sparkles },
-  { id: 'premium_3m', label: '3 mois Premium', desc: 'Premium pendant 3 mois — 13% de réduction', cost: 130, category: 'abonnements', icon: Sparkles },
-  { id: 'premium_1y', label: '1 an Premium', desc: 'Premium pendant 12 mois — 25% de réduction', cost: 450, category: 'abonnements', icon: Crown },
-  { id: 'business_1m', label: '1 mois Business', desc: 'Tous les avantages Business pendant 1 mois', cost: 200, category: 'abonnements', icon: Crown },
-  { id: 'business_3m', label: '3 mois Business', desc: 'Business pendant 3 mois', cost: 550, category: 'abonnements', icon: Crown },
-  { id: 'enterprise_1m', label: '1 mois Enterprise', desc: 'Le plan ultime pour institutions', cost: 500, category: 'abonnements', icon: Trophy },
+  // ── Premium (badge bleu Verified) ──
+  { id: 'premium_1m', label: 'Premium 1 mois — Badge Verified', desc: 'Premium + badge bleu Verified pendant 1 mois', cost: 50, category: 'abonnements', icon: Sparkles, badgeTier: 'verified' },
+  { id: 'premium_3m', label: 'Premium 3 mois — Badge Verified', desc: 'Premium + badge bleu Verified pendant 3 mois', cost: 130, category: 'abonnements', icon: Sparkles, badgeTier: 'verified' },
+  { id: 'premium_1y', label: 'Premium 12 mois — Badge Verified', desc: 'Premium + badge bleu Verified pendant 12 mois', cost: 450, category: 'abonnements', icon: Crown, badgeTier: 'verified' },
+  // ── Premium Pro (badge vert Pro — plus cher) ──
+  { id: 'premium_pro_1m', label: 'Premium Pro 1 mois — Badge Pro', desc: 'Premium + badge vert Pro (statut professionnel) pendant 1 mois', cost: 120, category: 'abonnements', icon: Gem, badgeTier: 'pro' },
+  { id: 'premium_pro_3m', label: 'Premium Pro 3 mois — Badge Pro', desc: 'Premium + badge vert Pro pendant 3 mois', cost: 320, category: 'abonnements', icon: Gem, badgeTier: 'pro' },
+  { id: 'premium_pro_1y', label: 'Premium Pro 12 mois — Badge Pro', desc: 'Premium + badge vert Pro pendant 12 mois — économisez', cost: 1100, category: 'abonnements', icon: Gem, badgeTier: 'pro' },
+  // ── Business (badge jaune Certifié) ──
+  { id: 'business_1m', label: 'Business 1 mois — Badge Certifié', desc: 'Business + badge jaune Certifié pendant 1 mois', cost: 250, category: 'abonnements', icon: Crown, badgeTier: 'certified' },
+  { id: 'business_3m', label: 'Business 3 mois — Badge Certifié', desc: 'Business + badge jaune Certifié pendant 3 mois', cost: 680, category: 'abonnements', icon: Crown, badgeTier: 'certified' },
+  // ── Business Officiel (badge violet Officiel — plus cher) ──
+  { id: 'business_official_1m', label: 'Business Officiel 1 mois — Badge Officiel', desc: 'Business + badge violet Officiel (entité reconnue) pendant 1 mois', cost: 450, category: 'abonnements', icon: Shield, badgeTier: 'official' },
+  { id: 'business_official_3m', label: 'Business Officiel 3 mois — Badge Officiel', desc: 'Business + badge violet Officiel pendant 3 mois', cost: 1200, category: 'abonnements', icon: Shield, badgeTier: 'official' },
+  // ── Enterprise (badge Officiel + justificatifs requis) ──
+  { id: 'enterprise_1m', label: 'Enterprise 1 mois — Justificatifs requis', desc: 'Enterprise + badge Officiel — nécessite validation de votre organisation (IA + admin)', cost: 600, category: 'abonnements', icon: Trophy, badgeTier: 'official', requiresProofs: true },
 
   // ── Badges & Vérifications ──
   { id: 'badge_verified', label: 'Badge Vérifié', desc: 'Coche de vérification bleue', cost: 100, category: 'badges', icon: BadgeCheck },
@@ -178,6 +200,7 @@ export default function BoutiquePage() {
   const [tokenDialog, setTokenDialog] = useState(null); // { type, count }
   const [termsItem, setTermsItem] = useState(null); // item en attente d'acceptation des conditions
   const [successItem, setSuccessItem] = useState(null); // item souscrit avec succès → écran de confirmation
+  const [proofItem, setProofItem] = useState(null); // item Enterprise en attente de preuves
 
   useEffect(() => {
     applySeoMeta({
@@ -455,10 +478,20 @@ export default function BoutiquePage() {
                     <p className="font-inter text-[11px] text-muted-foreground mt-0.5 leading-snug">{item.desc}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 mb-2">
+                <div className="flex items-center gap-1.5 mb-2 flex-wrap">
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono border ${fb.color}`}>
                     <FBIcon className="w-2.5 h-2.5" /> {fb.label}
                   </span>
+                  {item.badgeTier && BADGE_TIER_META[item.badgeTier] && (
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono border ${BADGE_TIER_META[item.badgeTier].color}`}>
+                      {BADGE_TIER_META[item.badgeTier].label}
+                    </span>
+                  )}
+                  {item.requiresProofs && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono border border-yellow-400/30 bg-yellow-400/10 text-yellow-400">
+                      <Shield className="w-2.5 h-2.5" /> Preuves requises
+                    </span>
+                  )}
                   {alreadyOwned && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono border border-emerald-400/30 bg-emerald-400/10 text-emerald-400">
                       <CheckCircle className="w-2.5 h-2.5" /> Activé
@@ -565,6 +598,10 @@ export default function BoutiquePage() {
           onAccept={async () => {
             const item = termsItem;
             setTermsItem(null);
+            if (item.requiresProofs) {
+              setProofItem(item);
+              return;
+            }
             await doRedeem(item);
           }}
         />
@@ -575,6 +612,17 @@ export default function BoutiquePage() {
         <SubscriptionSuccessModal
           item={successItem}
           onClose={() => setSuccessItem(null)}
+        />
+      )}
+
+      {/* Dialogue de preuves Enterprise */}
+      {proofItem && (
+        <EnterpriseProofDialog
+          open={true}
+          cost={proofItem.cost}
+          credits={credits}
+          onClose={() => setProofItem(null)}
+          onUsed={refreshUser}
         />
       )}
     </div>

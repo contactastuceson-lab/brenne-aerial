@@ -5,7 +5,9 @@ import {
   Eye, EyeOff, Trash2, ShieldCheck, Clock, Loader2, RefreshCw,
   Settings, Crown, BadgeCheck, BarChart3, UserCheck, LogIn,
   ChevronRight, Globe, Lock, Sparkles, Edit3, Save, X, MoreVertical, AlertTriangle,
+  Megaphone,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -551,6 +553,14 @@ export default function BusinessSpacePage() {
                 <span className="hidden sm:inline">{label}</span>
               </button>
             ))}
+            <Link
+              to="/business/ads"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-inter transition-all bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+              title="Mes campagnes publicitaires"
+            >
+              <Megaphone className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Publicité</span>
+            </Link>
           </div>
         </div>
       </div>

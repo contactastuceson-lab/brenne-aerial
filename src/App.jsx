@@ -82,6 +82,7 @@ import PublicProfilePage from "@/pages/PublicProfilePage";
 import EnorBiographyPage from "@/pages/EnorBiographyPage";
 import EcosystemePage from "@/pages/EcosystemePage";
 import BusinessSpacePage from "@/pages/BusinessSpacePage";
+import BusinessAdsPage from "@/pages/BusinessAdsPage";
 import PostDetailPage from "@/pages/PostDetailPage";
 import PremiumPage from "@/pages/PremiumPage";
 import NotificationsPage from "@/pages/NotificationsPage";
@@ -168,6 +169,7 @@ const AuthenticatedApp = () => {
           <Route path="/enor" element={<EnorBiographyPage />} />
           <Route path="/ecosysteme" element={<EcosystemePage />} />
           <Route path="/business" element={<BusinessSpacePage />} />
+          <Route path="/business/ads" element={<BusinessAdsPage />} />
           <Route path="/post/:id" element={<PostDetailPage />} />
           <Route path="/premium" element={<PremiumPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />

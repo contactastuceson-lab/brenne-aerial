@@ -73,6 +73,11 @@
       "default": 0,
       "description": "Cr\u00e9dits restants sur la campagne \u2014 quand \u00e0 0, la campagne est mise en pause auto"
     },
+    "estimated_reach": {
+      "type": "number",
+      "default": 0,
+      "description": "Port\u00e9e estim\u00e9e en vues (budget \u00d7 50 vues / cr\u00e9dit) \u2014 comme Promouvoir TikTok"
+    },
     "auto_paused_reason": {
       "type": "string",
       "description": "Raison de la mise en pause automatique (ex: credits_insufficient)"

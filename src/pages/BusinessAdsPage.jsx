@@ -143,7 +143,7 @@ export default function BusinessAdsPage() {
         </div>
         <div className="text-xs text-muted-foreground leading-relaxed">
           <p className="text-foreground font-medium text-sm mb-1">Comment ça marche</p>
-          Créez votre campagne → elle est soumise à validation admin → une fois approuvée, elle apparaît dans l'app avec suivi des impressions et clics en temps réel. Modifiez le contenu à tout moment (re-validation si elle était en ligne).
+          Votre budget en crédits Eza achète une <span className="text-amber-400 font-bold">portée réelle</span> : 1 crédit ≈ 50 vues. Plus le budget journalier est élevé, plus votre annonce s'affiche souvent (priorité pondérée). Création → validation admin → diffusion sur tout l'écosystème Eza avec suivi des vues et clics en temps réel.
         </div>
       </div>
 
@@ -227,6 +227,9 @@ export default function BusinessAdsPage() {
                       <MousePointerClick className="w-3 h-3" /> {formatNum(c.clicks || 0)}
                     </span>
                     <span className="font-mono text-[10px] text-amber-400">{ctr}% CTR</span>
+                    <span className="inline-flex items-center gap-1 font-mono text-[10px] text-amber-400">
+                      <TrendingUp className="w-3 h-3" /> ≈ {formatNum(c.estimated_reach || 0)} vues
+                    </span>
                     <span className="font-mono text-[10px] text-muted-foreground">
                       Solde : <span className={c.credits_remaining > 0 ? 'text-green-400' : 'text-orange-400 font-bold'}>{c.credits_remaining ?? 0}</span>/{c.daily_budget || 0}/j
                     </span>
@@ -507,9 +510,26 @@ function BusinessCampaignForm({ campaign, availableCredits, onClose, onSaved }) 
           <Field label="Budget journalier (crédits Eza / jour)">
             <Input type="number" min={1} value={form.daily_budget} onChange={e => set('daily_budget', e.target.value)} placeholder="10" />
             <p className="mt-1.5 text-[10px] font-mono text-muted-foreground">
-              Déduit chaque jour du solde de la campagne. Quand le solde est insuffisant, la campagne est mise en pause automatiquement.
+              Déduit chaque jour du solde de la campagne. Plus il est élevé, plus votre annonce s'affiche souvent. Quand le solde est insuffisant, la campagne est mise en pause automatiquement.
             </p>
           </Field>
+
+          {/* Portée estimée — modèle type Promouvoir TikTok */}
+          <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3 flex items-center gap-3">
+            <TrendingUp className="w-5 h-5 text-amber-400 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="font-mono text-[10px] text-muted-foreground">Portée estimée (vues)</p>
+              <p className="font-grotesk font-black text-lg text-amber-400">
+                ≈ {formatNum((Number(form.budget_credits) || 0) * 50)}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="font-mono text-[10px] text-muted-foreground">Durée</p>
+              <p className="font-grotesk font-bold text-sm">
+                ≈ {Math.max(1, Math.floor((Number(form.budget_credits) || 0) / Math.max(1, Number(form.daily_budget) || 1)))} j
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="flex gap-2 p-5 border-t border-border">

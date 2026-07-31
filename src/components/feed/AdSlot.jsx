@@ -57,7 +57,15 @@ const AdSlot = memo(function AdSlot({ placement = 'feed_banner', className = '' 
                (a.credits_remaining == null || a.credits_remaining > 0)
         );
         if (eligible.length === 0) return;
-        const chosen = eligible[Math.floor(Math.random() * eligible.length)];
+        // Sélection pondérée par budget journalier : plus le budget est élevé,
+        // plus la campagne a de chances d'être affichée (modèle type Promouvoir).
+        const totalWeight = eligible.reduce((s, a) => s + Math.max(1, a.daily_budget || 1), 0);
+        let roll = Math.random() * totalWeight;
+        let chosen = eligible[0];
+        for (const a of eligible) {
+          roll -= Math.max(1, a.daily_budget || 1);
+          if (roll <= 0) { chosen = a; break; }
+        }
         setAd(chosen);
         base44.entities.AdCampaign.update(chosen.id, {
           impressions: (chosen.impressions || 0) + 1,

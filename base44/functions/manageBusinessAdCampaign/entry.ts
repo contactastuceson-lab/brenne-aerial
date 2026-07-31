@@ -92,6 +92,9 @@ export default async function(req) {
       const newCredits = currentCredits - budget;
       await base44.asServiceRole.entities.User.update(user.id, { referral_credits: newCredits });
 
+      // Portée estimée : 1 crédit Eza ≈ 50 vues (modèle type « Promouvoir TikTok »)
+      const estimatedReach = budget * 50;
+
       const campaign = await base44.asServiceRole.entities.AdCampaign.create({
         title: title.trim(),
         advertiser_name: advertiser_name || user.display_name || user.full_name || '',
@@ -107,6 +110,7 @@ export default async function(req) {
         budget_credits: budget,
         credits_remaining: budget,
         daily_budget: daily,
+        estimated_reach: estimatedReach,
         impressions: 0,
         clicks: 0,
         owner_id: user.id,
@@ -199,11 +203,13 @@ export default async function(req) {
       await base44.asServiceRole.entities.User.update(user.id, { referral_credits: newCredits });
 
       const newRemaining = (Number(campaign.credits_remaining) || 0) + rechargeAmount;
+      const newBudgetTotal = (Number(campaign.budget_credits) || 0) + rechargeAmount;
       // Si la campagne était en pause auto (crédits épuisés), la repasser en active
       const newStatus = campaign.auto_paused_reason || campaign.status === 'paused' ? 'active' : campaign.status;
       const updated = await base44.asServiceRole.entities.AdCampaign.update(campaignId, {
         credits_remaining: newRemaining,
-        budget_credits: (Number(campaign.budget_credits) || 0) + rechargeAmount,
+        budget_credits: newBudgetTotal,
+        estimated_reach: newBudgetTotal * 50,
         status: newStatus,
         auto_paused_reason: null,
       });

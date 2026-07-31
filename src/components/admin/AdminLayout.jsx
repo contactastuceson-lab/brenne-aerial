@@ -32,16 +32,6 @@ const NAV_GROUPS = [
     ]
   },
   {
-    label: 'Commercial',
-    minLevel: 60,
-    items: [
-      { path: '/admin/quotes', icon: FileText, label: 'Devis', minLevel: 60 },
-      { path: '/admin/appointments', icon: Calendar, label: 'Planning', minLevel: 60 },
-      { path: '/admin/blocked-days', icon: Ban, label: 'Jours bloqués', minLevel: 60 },
-      { path: '/admin/client-files', icon: FolderOpen, label: 'Fichiers Clients', minLevel: 60 },
-    ]
-  },
-  {
     label: 'Business & Finance',
     minLevel: 70,
     items: [

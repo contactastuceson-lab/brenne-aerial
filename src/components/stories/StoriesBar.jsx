@@ -90,8 +90,8 @@ export default function StoriesBar({ user: userProp }) {
 
   return (
     <>
-      <div className="w-full max-w-xl mx-auto">
-        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar px-1 py-3 rounded-2xl">
+      <div className="w-full max-w-[680px] mx-auto">
+        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar px-1 py-3">
           {loading ? (
             <div className="flex gap-3 px-1 py-2 w-full">
               {[0, 1, 2, 3, 4].map((i) => (

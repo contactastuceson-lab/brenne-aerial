@@ -39,6 +39,24 @@
     "website": {
       "type": "string"
     },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Centres d'int\u00e9r\u00eat s\u00e9lectionn\u00e9s \u00e0 l'onboarding"
+    },
+    "join_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Raisons de rejoindre EZA (onboarding)"
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "Code de parrainage saisi \u00e0 l'onboarding"
+    },
     "avatar_url": {
       "type": "string"
     },

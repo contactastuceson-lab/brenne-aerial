@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 import { Camera, ChevronRight, ChevronLeft, Check, MapPin, User, Sparkles, FileText, Shield, Gift, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -70,19 +71,25 @@ export default function OnboardingModal({ user, onComplete }) {
 
   const handleFinish = async () => {
     setSaving(true);
-    if (form.username && form.username !== (user?.username || '')) {
-      const isValid = await validateUsername(form.username);
-      if (!isValid) { setSaving(false); return; }
+    try {
+      if (form.username && form.username !== (user?.username || '')) {
+        const isValid = await validateUsername(form.username);
+        if (!isValid) { setSaving(false); setStep(1); toast.error(usernameError || 'Username invalide'); return; }
+      }
+      const dataToUpdate = {
+        ...form,
+        display_name: form.display_name || user?.full_name || '',
+        onboarding_completed: true,
+      };
+      await base44.auth.updateMe(dataToUpdate);
+      base44.functions.invoke('sendWelcomeEmail', {}).catch(() => {});
+      onComplete();
+    } catch (err) {
+      console.error('Onboarding finish error:', err);
+      toast.error(err?.message || 'Erreur lors de l’enregistrement du profil');
+    } finally {
+      setSaving(false);
     }
-    const dataToUpdate = {
-      ...form,
-      display_name: form.display_name || user?.full_name || '',
-      onboarding_completed: true,
-    };
-    await base44.auth.updateMe(dataToUpdate);
-    base44.functions.invoke('sendWelcomeEmail', {}).catch(() => {});
-    setSaving(false);
-    onComplete();
   };
 
   const canNext = () => {

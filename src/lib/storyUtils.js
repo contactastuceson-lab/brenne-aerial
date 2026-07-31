@@ -64,6 +64,9 @@ export function timeAgo(story) {
   return "à l'instant";
 }
 
+// Emojis de réaction rapide (façon Instagram)
+export const QUICK_REACTION_EMOJIS = ['❤️', '🔥', '😂', '👏', '💯', '🙌'];
+
 // Dégradés de fond pour les stories texte
 export const TEXT_GRADIENTS = [
   { key: 'sunset', label: 'Sunset', css: 'linear-gradient(135deg,#FF512F 0%,#DD2476 100%)' },

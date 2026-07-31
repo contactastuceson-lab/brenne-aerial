@@ -1,0 +1,76 @@
+{
+  "name": "StoryReaction",
+  "type": "object",
+  "properties": {
+    "story_id": {
+      "type": "string",
+      "description": "ID de la story concern\u00e9e"
+    },
+    "story_author_id": {
+      "type": "string",
+      "description": "ID de l'auteur de la story (snapshot)"
+    },
+    "author_id": {
+      "type": "string",
+      "description": "ID de l'utilisateur qui r\u00e9agit"
+    },
+    "author_email": {
+      "type": "string",
+      "description": "Email (snapshot)"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Nom (snapshot)"
+    },
+    "author_username": {
+      "type": "string",
+      "description": "Username (snapshot)"
+    },
+    "author_avatar": {
+      "type": "string",
+      "description": "Avatar (snapshot)"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "like",
+        "reply"
+      ],
+      "description": "like = j'aime, reply = r\u00e9ponse/r\u00e9action emoji"
+    },
+    "emoji": {
+      "type": "string",
+      "description": "Emoji de r\u00e9action rapide (pour reply)"
+    },
+    "text": {
+      "type": "string",
+      "description": "Texte de la r\u00e9ponse (pour reply)"
+    }
+  },
+  "required": [
+    "story_id",
+    "author_id",
+    "kind"
+  ],
+  "rls": {
+    "create": {
+      "data.author_id": "{{user.id}}"
+    },
+    "read": true,
+    "update": {
+      "data.author_id": "{{user.id}}"
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.author_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

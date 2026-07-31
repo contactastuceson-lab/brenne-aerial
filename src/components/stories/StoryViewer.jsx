@@ -1,15 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Eye, ChevronUp } from 'lucide-react';
+import { X, Volume2, VolumeX } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { storyDuration, timeAgo, gradientByKey } from '@/lib/storyUtils';
+import StoryActionBar from './StoryActionBar';
 
 export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser, onClose, onViewsChanged }) {
   const [authorIdx, setAuthorIdx] = useState(() => Math.min(startAuthorIndex, groups.length - 1));
   const [storyIdx, setStoryIdx] = useState(0);
   const [progress, setProgress] = useState(0);
   const [viewersOpen, setViewersOpen] = useState(false);
+  const [muted, setMuted] = useState(false);
   const rafRef = useRef(null);
   const startRef = useRef(0);
   const pausedRef = useRef(false);
@@ -80,6 +82,20 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [story?.id]);
 
+  // Applique le mute sur la vidéo
+  useEffect(() => { if (videoRef.current) videoRef.current.muted = muted; }, [muted, story?.id]);
+
+  // Navigation clavier (flèches + Échap)
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+      else if (e.key === 'ArrowRight') advance();
+      else if (e.key === 'ArrowLeft') prev();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [advance, prev, onClose]);
+
   if (!group || !story) return null;
 
   const viewers = Array.isArray(story.viewers) ? story.viewers : [];
@@ -105,7 +121,7 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
           src={story.media_url}
           autoPlay
           playsInline
-          muted={false}
+          muted={muted}
           className="w-full h-full object-cover"
           onTimeUpdate={(e) => {
             const v = e.currentTarget;
@@ -199,53 +215,21 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
                 <p className="font-mono text-[9px] text-white/60">{timeAgo(story)}</p>
               </div>
             </div>
-            <button onClick={onClose} className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
-              <X className="w-5 h-5 text-white" />
-            </button>
+            <div className="flex items-center gap-1">
+              {story.media_type === 'video' && (
+                <button onClick={() => setMuted((m) => !m)} className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+                  {muted ? <VolumeX className="w-5 h-5 text-white" /> : <Volume2 className="w-5 h-5 text-white" />}
+                </button>
+              )}
+              <button onClick={onClose} className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Own story: viewers count + list */}
-        {isOwn && (
-          <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-auto">
-            <div className="bg-gradient-to-t from-black/80 to-transparent pt-8 pb-4 px-4">
-              <button
-                onClick={() => setViewersOpen((v) => !v)}
-                className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-              >
-                <Eye className="w-4 h-4 text-white" />
-                <span className="font-grotesk font-bold text-sm text-white">{viewers.length}</span>
-                <span className="font-inter text-xs text-white/70">vues</span>
-                <ChevronUp className={`w-4 h-4 text-white/70 transition-transform ${viewersOpen ? '' : 'rotate-180'}`} />
-              </button>
-
-              {viewersOpen && (
-                <div className="mt-3 max-h-48 overflow-y-auto rounded-xl bg-black/60 border border-white/10 divide-y divide-white/10">
-                  {viewers.length === 0 ? (
-                    <p className="px-3 py-3 font-inter text-xs text-white/50 text-center">Aucune vue pour l'instant</p>
-                  ) : (
-                    viewers.map((v) => (
-                      <div key={v.id} className="flex items-center gap-2.5 px-3 py-2">
-                        <div className="w-7 h-7 rounded-full bg-white/10 overflow-hidden flex-shrink-0">
-                          {v.avatar ? (
-                            <img src={v.avatar} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="w-full h-full flex items-center justify-center font-grotesk font-bold text-[10px] text-white">
-                              {(v.name || v.username || '?')[0]}
-                            </span>
-                          )}
-                        </div>
-                        <span className="font-inter text-xs text-white/90 truncate">
-                          {v.username || v.name || 'Utilisateur'}
-                        </span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Actions : j'aime, réactions emoji, réponses (ou vues/réponses + suppression si propre story) */}
+        <StoryActionBar story={story} group={group} currentUser={currentUser} isOwn={isOwn} onClose={onClose} onDeleted={onClose} />
       </div>
     </div>,
     document.body

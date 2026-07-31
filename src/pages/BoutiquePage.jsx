@@ -18,6 +18,7 @@ import SubscriptionTermsModal from '@/components/boutique/SubscriptionTermsModal
 import SubscriptionSuccessModal from '@/components/boutique/SubscriptionSuccessModal';
 import EnterpriseProofDialog from '@/components/boutique/EnterpriseProofDialog';
 import SubscriptionChoiceDialog from '@/components/boutique/SubscriptionChoiceDialog';
+import VerificationMark from '@/components/ui/VerificationMark';
 
 const CATEGORIES = {
   abonnements: { label: 'Abonnements', icon: Crown, color: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
@@ -42,6 +43,19 @@ const BADGE_TIER_META = {
   certified: { label: 'Badge Certifié', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' },
   official: { label: 'Badge Officiel', color: 'text-purple-400 bg-purple-400/10 border-purple-400/30' },
   government: { label: 'Badge Gouvernement', color: 'text-zinc-300 bg-zinc-500/20 border-zinc-400/50' },
+};
+
+// Type de badge SVG (VerificationMark) à afficher pour chaque récompense de la catégorie badges
+const BADGE_SVG_TYPE = {
+  badge_verified: 'verified',
+  badge_pro: 'pro',
+  badge_certified: 'certified',
+  badge_official: 'official',
+  badge_ambassador: 'ambassador',
+  badge_scholar: 'scholar',
+  badge_donor: 'donor',
+  badge_beta: 'beta',
+  badge_mentor: 'mentor',
 };
 
 // Map rewardId -> verification key (pour refléter l'état actif / révocation admin)
@@ -492,7 +506,11 @@ export default function BoutiquePage() {
               <div key={item.id} className={`rounded-2xl border ${cat.border} ${cat.bg} p-4 flex flex-col ${alreadyOwned ? 'ring-1 ring-emerald-400/40' : ''}`}>
                 <div className="flex items-start gap-3 mb-3">
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border ${cat.border}`} style={{ background: 'rgba(255,255,255,0.04)' }}>
-                    <Icon className={`w-5 h-5 ${cat.color}`} />
+                    {BADGE_SVG_TYPE[item.id] ? (
+                      <VerificationMark type={BADGE_SVG_TYPE[item.id]} size="28px" marginLeft="0" />
+                    ) : (
+                      <Icon className={`w-5 h-5 ${cat.color}`} />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-grotesk font-bold text-sm text-foreground leading-tight">{item.label}</p>

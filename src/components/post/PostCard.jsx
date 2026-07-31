@@ -305,7 +305,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
                 <MoreHorizontal className="w-4 h-4" />
               </button>
               {menuOpen && (
-                <div className="absolute right-0 top-7 z-50 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
+                <div className="absolute right-0 top-7 z-50 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-visible [&>button:first-child]:rounded-t-xl [&>button:last-child]:rounded-b-xl">
                   {!post.reply_to_id && (
                     <button
                       onClick={e => { e.stopPropagation(); setMenuOpen(false); handleTogglePin(e); }}

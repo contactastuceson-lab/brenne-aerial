@@ -143,14 +143,14 @@ export default async function(req) {
 
     // Email confirmation — branded eza template
     // Email spécial "Bienvenue dans [Tier]" pour les abonnements
-    const SUB_TIERS: Record<string, { tier: string; duration: string }> = {
-      premium_1m: { tier: 'Premium', duration: '1 mois' },
-      premium_3m: { tier: 'Premium', duration: '3 mois' },
-      premium_1y: { tier: 'Premium', duration: '12 mois' },
-      business_1m: { tier: 'Business', duration: '1 mois' },
-      business_3m: { tier: 'Business', duration: '3 mois' },
-      enterprise_1m: { tier: 'Enterprise', duration: '1 mois' },
-      vip_1m: { tier: 'VIP', duration: '1 mois' },
+    const SUB_TIERS: Record<string, { tier: string; duration: string; badge: string }> = {
+      premium_1m: { tier: 'Premium', duration: '1 mois', badge: 'Verified' },
+      premium_3m: { tier: 'Premium', duration: '3 mois', badge: 'Verified' },
+      premium_1y: { tier: 'Premium', duration: '12 mois', badge: 'Verified' },
+      business_1m: { tier: 'Business', duration: '1 mois', badge: 'Pro' },
+      business_3m: { tier: 'Business', duration: '3 mois', badge: 'Pro' },
+      enterprise_1m: { tier: 'Enterprise', duration: '1 mois', badge: 'Certified' },
+      vip_1m: { tier: 'VIP', duration: '1 mois', badge: 'Official' },
     };
     const subTier = SUB_TIERS[rewardId];
 
@@ -161,7 +161,7 @@ export default async function(req) {
           to: user.email,
           title: `Bienvenue dans ${subTier.tier}`,
           subject: `✨ Vous êtes maintenant membre ${subTier.tier} sur Eza`,
-          body: `Bonjour **${user.display_name || user.username}**,\n\nFélicitations — votre abonnement **${subTier.tier}** est désormais **actif** sur votre compte Eza.\n\n**Durée :** ${subTier.duration}\n**Crédits dépensés :** ${cost}\n**Crédits restants :** ${newCredits}\n\nVos avantages sont immédiatement disponibles sur l'ensemble de l'écosystème Eza. Profitez d'une expérience sans publicité, de publications sponsorisées, et de bien plus encore selon votre tier.\n\nPour gérer vos avantages, rendez-vous dans votre **Espace Utilisateur**.\n\nMerci de votre confiance,\n— L'équipe eza`,
+          body: `Bonjour **${user.display_name || user.username}**,\n\nFélicitations — votre abonnement **${subTier.tier}** est désormais **actif** sur votre compte Eza.\n\n**Durée :** ${subTier.duration}\n**Badge attribué :** ${subTier.badge}\n**Crédits dépensés :** ${cost}\n**Crédits restants :** ${newCredits}\n\nVotre badge de vérification **${subTier.badge}** est désormais visible sur votre profil. Vos avantages sont immédiatement disponibles sur l'ensemble de l'écosystème Eza. Profitez d'une expérience sans publicité, de publications sponsorisées, et de bien plus encore selon votre tier.\n\nPour gérer vos avantages, rendez-vous dans votre **Espace Utilisateur**.\n\nMerci de votre confiance,\n— L'équipe eza`,
           tagline: 'Abonnement activé',
         }).catch(() => {})
       );

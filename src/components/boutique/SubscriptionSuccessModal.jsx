@@ -20,6 +20,7 @@ const SUB_INFO = {
     confetti: ['#fbbf24', '#f59e0b', '#fde047', '#fef08a', '#38bdf8'],
     tagline: "L'expérience Eza sans publicité, sublimée.",
     perks: [
+      'Badge de vérification Premium \u2713',
       'Aucune publicité dans toute l\u2019application',
       'Publications sponsorisées illimitées',
       'Couleurs de profil personnalisées',
@@ -43,6 +44,7 @@ const SUB_INFO = {
     confetti: ['#f97316', '#fbbf24', '#fb923c', '#fdba74', '#38bdf8'],
     tagline: "Votre marque, propulsée sur tout l'écosystème Eza.",
     perks: [
+      'Badge Pro \u2713',
       'Tous les avantages Premium inclus',
       'Création de campagnes publicitaires Eza Ads',
       'Publications sponsorisées Business',
@@ -65,6 +67,7 @@ const SUB_INFO = {
     confetti: ['#facc15', '#fde047', '#fef08a', '#fbbf24', '#38bdf8'],
     tagline: "Le summum des outils Eza pour organisations ambitieuses.",
     perks: [
+      'Badge Certifié \u2713',
       'Tous les avantages Business inclus',
       'Analytics avancées détaillées',
       'Stockage étendu (5 Go)',
@@ -87,6 +90,7 @@ const SUB_INFO = {
     confetti: ['#fde047', '#facc15', '#fef08a', '#fbbf24', '#ffffff'],
     tagline: "Le statut le plus prestigieux d'Eza. Vous êtes aux sommets.",
     perks: [
+      'Badge Officiel \u2713',
       'Statut VIP — le plus prestigieux d\u2019Eza',
       'Badge exclusif VIP',
       'Priorité maximale dans l\u2019explorateur',

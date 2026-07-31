@@ -14,12 +14,12 @@ type RewardEffect = {
 
 export const REWARD_EFFECTS: Record<string, RewardEffect> = {
   // ── Abonnements (auto — flags temporels) ──
-  premium_1m:    { type: 'auto', apply: { perks: { premium_until: MONTH } } },
-  premium_3m:   { type: 'auto', apply: { perks: { premium_until: 90 } } },
-  premium_1y:   { type: 'auto', apply: { perks: { premium_until: YEAR } } },
-  business_1m:  { type: 'auto', apply: { perks: { business_until: MONTH } } },
-  business_3m:  { type: 'auto', apply: { perks: { business_until: 90 } } },
-  enterprise_1m:{ type: 'auto', apply: { perks: { enterprise_until: MONTH } } },
+  premium_1m:    { type: 'auto', apply: { verifications: ['verified'], perks: { premium_until: MONTH } } },
+  premium_3m:   { type: 'auto', apply: { verifications: ['verified'], perks: { premium_until: 90 } } },
+  premium_1y:   { type: 'auto', apply: { verifications: ['verified'], perks: { premium_until: YEAR } } },
+  business_1m:  { type: 'auto', apply: { verifications: ['pro'], perks: { business_until: MONTH } } },
+  business_3m:  { type: 'auto', apply: { verifications: ['pro'], perks: { business_until: 90 } } },
+  enterprise_1m:{ type: 'auto', apply: { verifications: ['certified'], perks: { enterprise_until: MONTH } } },
 
   // ── Badges (auto — ajout aux verifications) ──
   badge_verified:    { type: 'auto', apply: { verifications: ['verified'] } },
@@ -55,7 +55,7 @@ export const REWARD_EFFECTS: Record<string, RewardEffect> = {
   custom_watermark:      { type: 'auto', apply: { perks: { custom_watermark: null } } },
 
   // ── Exclusivités ──
-  vip_1m:         { type: 'auto', apply: { perks: { vip_until: MONTH } } },
+  vip_1m:         { type: 'auto', apply: { verifications: ['official'], perks: { vip_until: MONTH } } },
   early_access:   { type: 'auto', apply: { perks: { early_access_until: YEAR } } },
   founder_cert:   { type: 'auto', apply: { perks: { founder_number: 0, founder_at: 0 } } },
   call_pdg:       { type: 'manual' },

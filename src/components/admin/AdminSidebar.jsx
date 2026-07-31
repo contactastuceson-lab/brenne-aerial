@@ -28,6 +28,7 @@ const navSections = [
       { key: 'billing', icon: CreditCard, path: '/admin/billing', label: 'Facturation' },
       { key: 'ads', icon: Megaphone, path: '/admin/ads', label: 'Publicité' },
       { key: 'economy', icon: Coins, path: '/admin/economie', label: 'Économie' },
+      { key: 'banque', icon: CreditCard, path: '/admin/banque', label: 'Banque' },
     ]
   },
   {

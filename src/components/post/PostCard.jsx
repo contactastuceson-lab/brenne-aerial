@@ -21,25 +21,9 @@ import { handleIdentityClick } from '@/lib/identityClick';
 import AffiliationModal from '@/components/ui/AffiliationModal';
 import RepostDialog from '@/components/post/RepostDialog';
 import RepostEmbed from '@/components/post/RepostEmbed';
+import StoryAvatar from '@/components/stories/StoryAvatar';
 
 const TRUNCATE_LIMIT = 560;
-
-// Avatar compact
-function Avatar({ src, name, size = 10, onIdentityClick }) {
-  const initial = (name?.[0] || 'U').toUpperCase();
-  const cls = `w-${size} h-${size} rounded-lg overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center flex-shrink-0`;
-  const inner = src
-    ? <img src={src} alt={name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-    : <span className="font-grotesk font-bold text-primary text-sm">{initial}</span>;
-
-  if (onIdentityClick)
-    return (
-      <button type="button" onClick={onIdentityClick} className={`${cls} hover:opacity-80 transition-opacity`}>
-        {inner}
-      </button>
-    );
-  return <div className={cls}>{inner}</div>;
-}
 
 function PostCardSkeleton() {
   return (
@@ -264,7 +248,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
     >
       {/* Left column: avatar + thread line */}
       <div className="flex flex-col items-center flex-shrink-0" style={{ width: 40 }}>
-        <Avatar src={avatarSrc} name={authorName} size={10} onIdentityClick={handleIdentity} />
+        <StoryAvatar authorId={post.author_id} src={avatarSrc} name={authorName} sizeClass="w-10 h-10" roundedClass="rounded-lg" onIdentityClick={handleIdentity} />
         {/* Thread line — shown when part of a thread (isThread) */}
         {isThread && (
           <div className="flex-1 w-0.5 bg-zinc-700/50 my-1 rounded-full" style={{ minHeight: 16 }} />

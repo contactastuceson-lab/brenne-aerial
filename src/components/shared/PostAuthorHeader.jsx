@@ -8,6 +8,7 @@ import { Crown, Globe, Users, Lock, MoreHorizontal } from 'lucide-react';
 
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import AffiliationBadges from '@/components/shared/AffiliationBadges';
+import StoryAvatar from '@/components/stories/StoryAvatar';
 import usePublicUser from '@/hooks/usePublicUser';
 import { parseEntityDate } from '@/lib/entityDate';
 import { formatPostTime } from '@/lib/postTime';
@@ -91,23 +92,13 @@ export default function PostAuthorHeader({
       <div className="flex items-start gap-3 min-w-0 flex-1">
         {/* Avatar — masqué si hideAvatar=true (géré par le parent) */}
         {!hideAvatar && (
-          <div className="relative flex-shrink-0">
-            <div
-              className={`${avatarSize} ${avatarRounded} overflow-hidden border border-white/10`}
-              style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}
-            >
-              {resolvedAvatar ? (
-                <img src={resolvedAvatar} alt={displayName} className="w-full h-full object-cover" />
-              ) : (
-                <div
-                  className="w-full h-full flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, hsl(var(--primary)/0.3) 0%, hsl(var(--accent)/0.2) 100%)' }}
-                >
-                  <span className="font-grotesk font-bold text-primary text-sm">{avatarInitial}</span>
-                </div>
-              )}
-            </div>
-          </div>
+          <StoryAvatar
+            authorId={authorId}
+            src={resolvedAvatar}
+            name={displayName}
+            sizeClass={size === 'sm' ? 'w-9 h-9' : 'w-12 h-12'}
+            roundedClass={avatarRounded}
+          />
         )}
 
         {/* Info */}

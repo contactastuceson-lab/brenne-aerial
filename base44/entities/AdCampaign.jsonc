@@ -61,7 +61,21 @@
     "budget_credits": {
       "type": "number",
       "default": 0,
-      "description": "Budget en cr\u00e9dits Eza"
+      "description": "Budget total initial en cr\u00e9dits Eza (d\u00e9bit\u00e9 du solde business \u00e0 la cr\u00e9ation)"
+    },
+    "daily_budget": {
+      "type": "number",
+      "default": 10,
+      "description": "Budget journalier en cr\u00e9dits Eza \u2014 d\u00e9duit chaque jour de credits_remaining"
+    },
+    "credits_remaining": {
+      "type": "number",
+      "default": 0,
+      "description": "Cr\u00e9dits restants sur la campagne \u2014 quand \u00e0 0, la campagne est mise en pause auto"
+    },
+    "auto_paused_reason": {
+      "type": "string",
+      "description": "Raison de la mise en pause automatique (ex: credits_insufficient)"
     },
     "status": {
       "type": "string",
@@ -72,7 +86,7 @@
         "ended"
       ],
       "default": "draft",
-      "description": "Statut de la campagne \u2014 draft = en attente de validation admin, active = en ligne"
+      "description": "Statut de la campagne \u2014 draft = en attente de validation admin, active = en ligne, paused = en pause (cr\u00e9dits \u00e9puis\u00e9s ou manuel)"
     },
     "starts_at": {
       "type": "string",

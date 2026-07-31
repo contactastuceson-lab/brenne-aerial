@@ -53,7 +53,8 @@ const AdSlot = memo(function AdSlot({ placement = 'feed_banner', className = '' 
         if (done || !all || all.length === 0) return;
         const eligible = all.filter(
           a => (!a.starts_at || new Date(a.starts_at) <= new Date()) &&
-               (!a.ends_at || new Date(a.ends_at) >= new Date())
+               (!a.ends_at || new Date(a.ends_at) >= new Date()) &&
+               (a.credits_remaining == null || a.credits_remaining > 0)
         );
         if (eligible.length === 0) return;
         const chosen = eligible[Math.floor(Math.random() * eligible.length)];

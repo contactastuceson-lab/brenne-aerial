@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import {
   Megaphone, Plus, Trash2, Pencil, Loader2, RefreshCw,
   X, BarChart3, MousePointerClick, Eye, TrendingUp,
-  CheckCircle2, Clock, AlertTriangle, Lock, Crown,
+  CheckCircle2, Clock, AlertTriangle, Lock, Crown, Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +22,7 @@ const PLACEMENTS = [
 const STATUS_CFG = {
   draft: { label: 'En attente', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30', icon: Clock },
   active: { label: 'En ligne', color: 'text-green-400 bg-green-400/10 border-green-400/30', icon: CheckCircle2 },
-  paused: { label: 'En pause', color: 'text-zinc-400 bg-zinc-400/10 border-zinc-400/30', icon: AlertTriangle },
+  paused: { label: 'En pause', color: 'text-orange-400 bg-orange-400/10 border-orange-400/30', icon: AlertTriangle },
   ended: { label: 'Terminée', color: 'text-muted-foreground bg-muted/20 border-border', icon: AlertTriangle },
 };
 
@@ -36,6 +36,7 @@ export default function BusinessAdsPage() {
   const { user, isLoadingAuth } = useAuth();
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [recharging, setRecharging] = useState(null);
   const qc = useQueryClient();
 
   const tierLabel = getActiveTierLabel(user?.perks);
@@ -65,6 +66,16 @@ export default function BusinessAdsPage() {
       toast.success('Campagne supprimée');
       qc.invalidateQueries({ queryKey: ['business-ad-campaigns'] });
     } catch (e) { toast.error(e?.message || 'Erreur'); }
+  };
+
+  const doRecharge = async (c, amount) => {
+    try {
+      const r = await base44.functions.invoke('manageBusinessAdCampaign', { action: 'recharge', campaignId: c.id, amount });
+      const remaining = r?.data?.remainingCredits ?? r?.remainingCredits;
+      toast.success(`Campagne rechargée de ${amount} crédits${remaining != null ? ` — ${remaining} crédits restants` : ''}`);
+      setRecharging(null);
+      qc.invalidateQueries({ queryKey: ['business-ad-campaigns'] });
+    } catch (e) { toast.error(e?.message || 'Erreur rechargement'); }
   };
 
   if (isLoadingAuth) {
@@ -208,7 +219,7 @@ export default function BusinessAdsPage() {
                     {PLACEMENTS.find(p => p.key === c.placement)?.label || c.placement}
                     {c.advertiser_name ? ` · ${c.advertiser_name}` : ''}
                   </p>
-                  <div className="flex items-center gap-3 mt-2">
+                  <div className="flex items-center gap-3 mt-2 flex-wrap">
                     <span className="inline-flex items-center gap-1 font-mono text-[10px] text-cyan-400">
                       <Eye className="w-3 h-3" /> {formatNum(c.impressions || 0)}
                     </span>
@@ -216,9 +227,24 @@ export default function BusinessAdsPage() {
                       <MousePointerClick className="w-3 h-3" /> {formatNum(c.clicks || 0)}
                     </span>
                     <span className="font-mono text-[10px] text-amber-400">{ctr}% CTR</span>
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      Solde : <span className={c.credits_remaining > 0 ? 'text-green-400' : 'text-orange-400 font-bold'}>{c.credits_remaining ?? 0}</span>/{c.daily_budget || 0}/j
+                    </span>
                   </div>
+                  {c.status === 'paused' && c.auto_paused_reason === 'credits_insufficient' && (
+                    <div className="mt-2 rounded-lg bg-orange-400/10 border border-orange-400/20 px-2.5 py-1.5 text-[10px] text-orange-400 font-inter flex items-center gap-1.5">
+                      <Zap className="w-3 h-3 flex-shrink-0" />
+                      Crédits épuisés — rechargez pour remettre en ligne
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
+                  {c.status === 'paused' && (
+                    <button onClick={() => setRecharging(c)} title="Recharger"
+                      className="p-2 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-400 transition-colors">
+                      <Zap className="w-4 h-4" />
+                    </button>
+                  )}
                   <button onClick={() => { setEditing(c); setShowForm(true); }} title="Modifier"
                     className="p-2 rounded-lg hover:bg-secondary/40 text-muted-foreground hover:text-primary transition-colors">
                     <Pencil className="w-4 h-4" />
@@ -244,7 +270,80 @@ export default function BusinessAdsPage() {
           />
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {recharging && (
+          <RechargeModal
+            campaign={recharging}
+            availableCredits={listCredits}
+            onClose={() => setRecharging(null)}
+            onConfirm={(amount) => doRecharge(recharging, amount)}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function RechargeModal({ campaign, availableCredits, onClose, onConfirm }) {
+  const MIN = 50;
+  const [amount, setAmount] = useState(MIN);
+  const [loading, setLoading] = useState(false);
+
+  const confirm = async () => {
+    const n = Number(amount) || 0;
+    if (n < MIN) return;
+    setLoading(true);
+    await onConfirm(n);
+    setLoading(false);
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={onClose}>
+      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl"
+        onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-border">
+          <h2 className="font-grotesk font-bold text-base flex items-center gap-2">
+            <Zap className="w-4 h-4 text-amber-400" /> Recharger
+          </h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="rounded-lg bg-muted/20 border border-border px-3 py-2 text-xs">
+            <p className="font-grotesk font-bold text-sm truncate">{campaign.title}</p>
+            <p className="font-mono text-[10px] text-muted-foreground mt-1">
+              Solde actuel : <span className="text-orange-400 font-bold">{campaign.credits_remaining ?? 0}</span> crédits · Budget/jour : {campaign.daily_budget || 0}
+            </p>
+          </div>
+          <Field label={`Montant à recharger (min ${MIN} crédits)`}>
+            <Input type="number" min={MIN} value={amount} onChange={e => setAmount(e.target.value)} />
+          </Field>
+          {availableCredits != null && (
+            <p className="font-mono text-[10px] text-muted-foreground">
+              Votre solde : <span className={Number(amount) > availableCredits ? 'text-destructive font-bold' : 'text-foreground'}>{availableCredits}</span> crédits
+            </p>
+          )}
+          {Number(amount) > (availableCredits ?? 0) && (
+            <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-[11px] text-destructive">
+              Crédits insuffisants — achetez des crédits sur la boutique.
+            </div>
+          )}
+        </div>
+        <div className="flex gap-2 p-5 border-t border-border">
+          <Button variant="outline" className="flex-1 text-xs" onClick={onClose}>Annuler</Button>
+          <Button className="flex-1 text-xs gap-1.5" onClick={confirm}
+            disabled={loading || Number(amount) < MIN || Number(amount) > (availableCredits ?? 0)}>
+            {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+            Recharger {Number(amount) || 0} crédits
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -263,6 +362,7 @@ function BusinessCampaignForm({ campaign, availableCredits, onClose, onSaved }) 
     starts_at: campaign?.starts_at?.slice(0, 16) || '',
     ends_at: campaign?.ends_at?.slice(0, 16) || '',
     budget_credits: campaign?.budget_credits || MIN_BUDGET,
+    daily_budget: campaign?.daily_budget || 10,
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -295,6 +395,7 @@ function BusinessCampaignForm({ campaign, availableCredits, onClose, onSaved }) 
         starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
         ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
         budget_credits: Number(form.budget_credits) || 0,
+        daily_budget: Number(form.daily_budget) || 10,
       };
       if (isEdit) {
         await base44.functions.invoke('manageBusinessAdCampaign', { action: 'update', campaignId: campaign.id, patch: payload });
@@ -384,7 +485,7 @@ function BusinessCampaignForm({ campaign, availableCredits, onClose, onSaved }) 
               <Input type="datetime-local" value={form.ends_at} onChange={e => set('ends_at', e.target.value)} />
             </Field>
           </div>
-          <Field label={`Budget (crédits Eza)${!isEdit ? ` — minimum ${MIN_BUDGET}` : ''}`}>
+          <Field label={`Budget total (crédits Eza)${!isEdit ? ` — minimum ${MIN_BUDGET}` : ''}`}>
             <Input type="number" min={MIN_BUDGET} value={form.budget_credits} onChange={e => set('budget_credits', e.target.value)} placeholder={String(MIN_BUDGET)} />
             {!isEdit && (
               <div className="mt-2 flex items-center justify-between text-[11px] font-mono">
@@ -396,6 +497,18 @@ function BusinessCampaignForm({ campaign, availableCredits, onClose, onSaved }) 
                 )}
               </div>
             )}
+            {isEdit && campaign?.credits_remaining != null && (
+              <div className="mt-2 flex items-center justify-between text-[11px] font-mono">
+                <span className="text-muted-foreground">Solde restant : <span className="text-amber-400 font-bold">{campaign.credits_remaining}</span> crédits</span>
+                <span className="text-muted-foreground">Budget/jour : <span className="text-foreground font-bold">{form.daily_budget}</span></span>
+              </div>
+            )}
+          </Field>
+          <Field label="Budget journalier (crédits Eza / jour)">
+            <Input type="number" min={1} value={form.daily_budget} onChange={e => set('daily_budget', e.target.value)} placeholder="10" />
+            <p className="mt-1.5 text-[10px] font-mono text-muted-foreground">
+              Déduit chaque jour du solde de la campagne. Quand le solde est insuffisant, la campagne est mise en pause automatiquement.
+            </p>
           </Field>
         </div>
 

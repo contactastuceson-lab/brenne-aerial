@@ -56,13 +56,18 @@ export default async function(req) {
     // Coût obligatoire en crédits Eza — déduit du solde du business.
     const MIN_BUDGET = 50;
     if (action === 'create') {
-      const { title, advertiser_name, image_url, cta_url, cta_label, headline, body: adBody, placement, starts_at, ends_at, budget_credits } = body || {};
+      const { title, advertiser_name, image_url, cta_url, cta_label, headline, body: adBody, placement, starts_at, ends_at, budget_credits, daily_budget } = body || {};
       if (!title || !title.trim()) return Response.json({ error: 'Titre requis' }, { status: 400 });
       if (!placement || !PLACEMENTS.includes(placement)) return Response.json({ error: 'Emplacement invalide' }, { status: 400 });
 
       const budget = Number(budget_credits) || 0;
       if (budget < MIN_BUDGET) {
         return Response.json({ error: `Budget minimum requis : ${MIN_BUDGET} crédits Eza.`, min: MIN_BUDGET }, { status: 400 });
+      }
+
+      const daily = Math.max(MIN_DAILY, Number(daily_budget) || 10);
+      if (daily > budget) {
+        return Response.json({ error: `Le budget journalier (${daily}) ne peut pas dépasser le budget total (${budget}).` }, { status: 400 });
       }
 
       // Vérifier le solde de crédits de l'utilisateur
@@ -99,6 +104,8 @@ export default async function(req) {
         starts_at: starts_at || null,
         ends_at: ends_at || null,
         budget_credits: budget,
+        credits_remaining: budget,
+        daily_budget: daily,
         impressions: 0,
         clicks: 0,
         owner_id: user.id,
@@ -134,7 +141,7 @@ export default async function(req) {
 
       // Le business ne peut pas changer le statut — seul l'admin active
       const allowed = {};
-      for (const k of ['title', 'advertiser_name', 'image_url', 'cta_url', 'cta_label', 'headline', 'body', 'placement', 'starts_at', 'ends_at', 'budget_credits', 'target_hashtags']) {
+      for (const k of ['title', 'advertiser_name', 'image_url', 'cta_url', 'cta_label', 'headline', 'body', 'placement', 'starts_at', 'ends_at', 'budget_credits', 'daily_budget', 'target_hashtags']) {
         if (k in (patch || {})) allowed[k] = patch[k];
       }
       // Si la campagne était active et le business modifie le contenu → repasser en draft pour re-validation
@@ -163,7 +170,59 @@ export default async function(req) {
       return Response.json({ success: true, message: 'Campagne supprimée' });
     }
 
-    return Response.json({ error: 'Action non supportée. Utiliser: list, create, update, delete' }, { status: 400 });
+    // ── RECHARGE : recharger le solde crédits d'une campagne en pause ──
+    if (action === 'recharge') {
+      const { campaignId, amount } = body || {};
+      if (!campaignId) return Response.json({ error: 'campaignId requis' }, { status: 400 });
+      const rechargeAmount = Number(amount) || 0;
+      if (rechargeAmount < MIN_BUDGET) {
+        return Response.json({ error: `Rechargement minimum : ${MIN_BUDGET} crédits.`, min: MIN_BUDGET }, { status: 400 });
+      }
+
+      // Vérifier le solde de crédits de l'utilisateur
+      const currentCredits = Number(user.referral_credits) || 0;
+      if (currentCredits < rechargeAmount) {
+        return Response.json({ error: `Crédits insuffisants. Vous avez ${currentCredits} crédits, rechargement demandé : ${rechargeAmount}.`, needed: rechargeAmount, available: currentCredits }, { status: 400 });
+      }
+
+      let campaign;
+      try { campaign = await base44.asServiceRole.entities.AdCampaign.get(campaignId); } catch {
+        return Response.json({ error: 'Campagne introuvable' }, { status: 404 });
+      }
+      if (campaign.owner_id !== user.id) {
+        return Response.json({ error: 'Vous ne pouvez recharger que vos propres campagnes' }, { status: 403 });
+      }
+
+      // Déduire les crédits du business et recharger la campagne
+      const newCredits = currentCredits - rechargeAmount;
+      await base44.asServiceRole.entities.User.update(user.id, { referral_credits: newCredits });
+
+      const newRemaining = (Number(campaign.credits_remaining) || 0) + rechargeAmount;
+      // Si la campagne était en pause auto (crédits épuisés), la repasser en active
+      const newStatus = campaign.auto_paused_reason || campaign.status === 'paused' ? 'active' : campaign.status;
+      const updated = await base44.asServiceRole.entities.AdCampaign.update(campaignId, {
+        credits_remaining: newRemaining,
+        budget_credits: (Number(campaign.budget_credits) || 0) + rechargeAmount,
+        status: newStatus,
+        auto_paused_reason: null,
+      });
+
+      // Notifier l'admin
+      try {
+        await base44.asServiceRole.entities.Notification.create({
+          user_email: 'contact.astuceson@gmail.com',
+          type: 'system',
+          title: '🔄 Campagne pub rechargée',
+          content: `${user.display_name || user.username} a rechargé la campagne "${campaign.title}" de ${rechargeAmount} crédits. Nouveau solde : ${newRemaining}. Statut : ${newStatus}.`,
+          sender_name: user.display_name || user.username,
+          sender_id: user.id,
+        });
+      } catch {}
+
+      return Response.json({ success: true, data: updated, remainingCredits: newCredits, message: `Campagne rechargée de ${rechargeAmount} crédits. ${newStatus === 'active' ? 'Remise en ligne.' : ''}` });
+    }
+
+    return Response.json({ error: 'Action non supportée. Utiliser: list, create, update, delete, recharge' }, { status: 400 });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

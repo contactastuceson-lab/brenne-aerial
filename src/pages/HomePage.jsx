@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import HomeFeed from '@/components/home/HomeFeed';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
+import StoriesBar from '@/components/stories/StoriesBar';
 
 export default function HomePage() {
   const [user, setUser] = useState(undefined);
@@ -19,8 +20,11 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen">
       {/* Fil central */}
-      <div className="flex-1 flex justify-center min-w-0">
-        <HomeFeed user={user} />
+      <div className="flex-1 flex flex-col min-w-0">
+        <StoriesBar user={user} />
+        <div className="flex justify-center min-w-0 flex-1">
+          <HomeFeed user={user} />
+        </div>
       </div>
 
       {/* Sidebar droite — sticky, scrollable indépendamment */}

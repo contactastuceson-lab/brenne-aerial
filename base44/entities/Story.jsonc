@@ -1,0 +1,90 @@
+{
+  "name": "Story",
+  "type": "object",
+  "properties": {
+    "author_id": {
+      "type": "string",
+      "description": "ID de l'auteur"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Nom de l'auteur (snapshot)"
+    },
+    "author_username": {
+      "type": "string",
+      "description": "Username de l'auteur (snapshot)"
+    },
+    "author_avatar": {
+      "type": "string",
+      "description": "Avatar de l'auteur (snapshot)"
+    },
+    "media_type": {
+      "type": "string",
+      "enum": [
+        "image",
+        "video",
+        "text"
+      ],
+      "description": "Type de m\u00e9dia de la story"
+    },
+    "media_url": {
+      "type": "string",
+      "description": "URL du m\u00e9dia (image/vid\u00e9o upload\u00e9)"
+    },
+    "text": {
+      "type": "string",
+      "description": "Texte / l\u00e9g\u00e8ne (ou story texte seul)"
+    },
+    "background_color": {
+      "type": "string",
+      "description": "D\u00e9grad\u00e9 de fond pour story texte (cl\u00e9)"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date d'expiration (cr\u00e9ation + 24h)"
+    },
+    "viewers": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "default": [],
+      "description": "Liste des viewers {id, name, username, avatar}"
+    }
+  },
+  "required": [
+    "author_id",
+    "media_type"
+  ],
+  "rls": {
+    "create": {
+      "data.author_id": "{{user.id}}"
+    },
+    "read": true,
+    "update": {
+      "$or": [
+        {
+          "data.author_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.author_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

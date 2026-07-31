@@ -105,16 +105,16 @@ export default function SubscriptionChoiceDialog({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4"
         style={{ background: 'rgba(4,10,20,0.82)', backdropFilter: 'blur(6px)' }}
         onClick={onClose}
       >
         <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.97 }}
+          initial={{ opacity: 0, y: 20, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 40, scale: 0.97 }}
+          exit={{ opacity: 0, y: 20, scale: 0.97 }}
           transition={{ type: 'spring', damping: 24, stiffness: 280 }}
-          className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl border border-border bg-card"
+          className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-border bg-card"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

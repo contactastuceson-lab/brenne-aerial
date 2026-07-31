@@ -5,14 +5,38 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { hasPremium } from '@/lib/subscriptionGating';
 
+// Module-level cache: fetch the current user's perks once per page load.
+// Avoids one me() call per AdSlot instance when the AuthContext user is stale.
+let _perksPromise = null;
+function fetchPerksOnce() {
+  if (!_perksPromise) {
+    _perksPromise = base44.auth.me()
+      .then(me => me?.perks || null)
+      .catch(() => null);
+  }
+  return _perksPromise;
+}
+
 // AdSlot — renders an active AdCampaign banner inside the feed or sidebar.
 // Tracks impressions (on view) and clicks (on click) via the entity.
 // Ads are intentionally intrusive (no dismiss, animated, large) to
 // incentivize users to upgrade to a premium tier that removes them.
 // Premium+ subscribers see NO ads at all.
 const AdSlot = memo(function AdSlot({ placement = 'feed_banner', className = '' }) {
-  const { user } = useAuth();
-  const isPremium = hasPremium(user?.perks);
+  const { user, isAuthenticated } = useAuth();
+  const [perks, setPerks] = useState(user?.perks || null);
+
+  // If the AuthContext user already has perks, use them. Otherwise (stale
+  // context after a subscription was granted), fetch fresh perks once.
+  useEffect(() => {
+    if (user?.perks) {
+      setPerks(user.perks);
+    } else if (isAuthenticated) {
+      fetchPerksOnce().then(p => { if (p) setPerks(p); });
+    }
+  }, [user, isAuthenticated]);
+
+  const isPremium = hasPremium(perks);
   const [ad, setAd] = useState(null);
   const [loaded, setLoaded] = useState(false);
 

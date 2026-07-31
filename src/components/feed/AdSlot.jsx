@@ -1,13 +1,14 @@
 import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
-import { Megaphone, X, ExternalLink } from 'lucide-react';
+import { Megaphone, ExternalLink, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 // AdSlot — renders an active AdCampaign banner inside the feed or sidebar.
 // Tracks impressions (on view) and clicks (on click) via the entity.
+// Ads are intentionally intrusive (no dismiss, animated, large) to
+// incentivize users to upgrade to a premium tier that removes them.
 const AdSlot = memo(function AdSlot({ placement = 'feed_banner', className = '' }) {
   const [ad, setAd] = useState(null);
-  const [dismissed, setDismissed] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   // Fetch an active ad for this placement once
@@ -45,55 +46,60 @@ const AdSlot = memo(function AdSlot({ placement = 'feed_banner', className = '' 
     }).catch(() => {});
   };
 
-  if (dismissed || !ad) return null;
+  if (!ad) return null;
 
   const isSidebar = placement === 'sidebar';
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
       className={`relative ${className}`}
     >
-      <div
-        className={`relative rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-400/8 to-primary/5 overflow-hidden ${isSidebar ? 'p-3' : 'p-4'}`}
-        style={{ minHeight: isSidebar ? 'auto' : '88px' }}
+      {/* Pulsing glow border — eye-catching, slightly annoying */}
+      <motion.div
+        animate={{ boxShadow: ['0 0 0px rgba(251,146,60,0)', '0 0 20px rgba(251,146,60,0.35)', '0 0 0px rgba(251,146,60,0)'] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+        className={`relative rounded-2xl border-2 border-amber-400/40 bg-gradient-to-br from-amber-400/10 via-orange-400/6 to-primary/5 overflow-hidden ${isSidebar ? 'p-3' : 'p-5'}`}
+        style={{ minHeight: isSidebar ? 'auto' : '120px' }}
       >
-        {/* Sponsorisé label */}
-        <div className="flex items-center justify-between mb-2">
-          <span className="inline-flex items-center gap-1 text-[9px] font-mono uppercase tracking-wider text-amber-400/80">
-            <Megaphone className="w-2.5 h-2.5" /> Sponsorisé
+        {/* Sponsorisé label — blinking */}
+        <motion.div
+          animate={{ opacity: [1, 0.35, 1] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+          className="flex items-center justify-between mb-3"
+        >
+          <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold">
+            <Megaphone className="w-3 h-3" /> Sponsorisé · EZA Ads
           </span>
-          <button
-            onClick={() => setDismissed(true)}
-            className="text-muted-foreground/60 hover:text-foreground transition-colors"
-            aria-label="Masquer la pub"
-          >
-            <X className="w-3 h-3" />
-          </button>
-        </div>
+          <span className="inline-flex items-center gap-1 text-[9px] font-mono text-muted-foreground/50">
+            <Sparkles className="w-2.5 h-2.5" /> Publicité
+          </span>
+        </motion.div>
 
-        <button onClick={handleClick} className="w-full text-left flex gap-3 group">
+        <button onClick={handleClick} className="w-full text-left flex gap-4 group">
           {ad.image_url && (
-            <div className={`flex-shrink-0 ${isSidebar ? 'w-12 h-12' : 'w-20 h-20'} rounded-xl overflow-hidden bg-muted/20 border border-white/5`}>
+            <div className={`flex-shrink-0 ${isSidebar ? 'w-16 h-16' : 'w-28 h-28'} rounded-xl overflow-hidden bg-muted/20 border border-amber-400/20`}>
               <img src={ad.image_url} alt={ad.advertiser_name || ad.title}
                 className="w-full h-full object-cover" loading="lazy" />
             </div>
           )}
           <div className="flex-1 min-w-0">
             {ad.headline && (
-              <p className="font-grotesk font-bold text-sm text-foreground truncate">{ad.headline}</p>
+              <p className="font-grotesk font-black text-base text-foreground leading-tight">{ad.headline}</p>
             )}
-            <p className="font-inter text-xs text-muted-foreground line-clamp-2 mt-0.5">
+            <p className="font-inter text-sm text-muted-foreground line-clamp-3 mt-1">
               {ad.body || ad.title}
             </p>
-            <span className="inline-flex items-center gap-1 mt-2 text-[11px] font-mono text-primary group-hover:gap-1.5 transition-all">
+            <span className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-amber-400/20 text-amber-400 font-grotesk font-bold text-xs group-hover:bg-amber-400/30 group-hover:gap-2.5 transition-all">
               {ad.cta_label || 'En savoir plus'}
-              <ExternalLink className="w-3 h-3" />
+              <ExternalLink className="w-3.5 h-3.5" />
             </span>
           </div>
         </button>
-      </div>
+
+        {/* No dismiss button — ads cannot be closed (premium removes them) */}
+      </motion.div>
     </motion.div>
   );
 });

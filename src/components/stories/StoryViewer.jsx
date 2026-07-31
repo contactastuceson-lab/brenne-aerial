@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Volume2, VolumeX } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { storyDuration, timeAgo, gradientByKey } from '@/lib/storyUtils';
+import { storyDuration, timeAgo, gradientByKey, filterCss, fontCss } from '@/lib/storyUtils';
 import StoryActionBar from './StoryActionBar';
 
 export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser, onClose, onViewsChanged }) {
@@ -101,13 +101,17 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
   const viewers = Array.isArray(story.viewers) ? story.viewers : [];
 
   const renderContent = () => {
+    const stickers = Array.isArray(story.stickers) ? story.stickers : [];
     if (story.media_type === 'text') {
       return (
         <div
           className="w-full h-full flex items-center justify-center p-8"
           style={{ background: gradientByKey(story.background_color) }}
         >
-          <p className="font-grotesk font-black text-2xl sm:text-4xl text-white text-center leading-snug break-words whitespace-pre-wrap drop-shadow-lg">
+          <p
+            className="font-black text-2xl sm:text-4xl leading-snug break-words whitespace-pre-wrap drop-shadow-lg"
+            style={{ fontFamily: fontCss(story.font), color: story.text_color || '#fff', textAlign: story.text_align || 'center', width: '100%' }}
+          >
             {story.text}
           </p>
         </div>
@@ -123,6 +127,7 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
           playsInline
           muted={muted}
           className="w-full h-full object-cover"
+          style={{ filter: filterCss(story.filter) || undefined }}
           onTimeUpdate={(e) => {
             const v = e.currentTarget;
             elapsedMsRef.current = (v.currentTime || 0) * 1000;
@@ -133,15 +138,23 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
       );
     }
     return (
-      <div className="w-full h-full bg-black flex items-center justify-center">
-        <img src={story.media_url} alt="" className="w-full h-full object-cover" />
+      <div className="w-full h-full bg-black flex items-center justify-center relative">
+        <img src={story.media_url} alt="" className="w-full h-full object-cover" style={{ filter: filterCss(story.filter) || undefined }} />
         {story.text && (
-          <div className="absolute bottom-20 left-0 right-0 px-6">
-            <p className="font-grotesk font-bold text-lg text-white text-center drop-shadow-lg whitespace-pre-wrap break-words">
+          <div className="absolute inset-x-0 px-6" style={{ bottom: '18%', textAlign: story.text_align || 'center' }}>
+            <p
+              className="font-bold text-lg sm:text-xl drop-shadow-lg whitespace-pre-wrap break-words"
+              style={{ fontFamily: fontCss(story.font), color: story.text_color || '#fff' }}
+            >
               {story.text}
             </p>
           </div>
         )}
+        {stickers.map((s, i) => (
+          <span key={i} className="absolute text-3xl sm:text-4xl select-none z-10" style={{ left: `${s.x}%`, top: `${s.y}%`, transform: 'translate(-50%,-50%)' }}>
+            {s.emoji}
+          </span>
+        ))}
       </div>
     );
   };

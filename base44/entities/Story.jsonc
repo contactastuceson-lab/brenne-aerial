@@ -43,6 +43,36 @@
       "type": "string",
       "description": "D\u00e9grad\u00e9 de fond pour story texte (cl\u00e9)"
     },
+    "font": {
+      "type": "string",
+      "description": "Police du texte (cl\u00e9 STORY_FONTS)"
+    },
+    "text_color": {
+      "type": "string",
+      "description": "Couleur du texte"
+    },
+    "text_align": {
+      "type": "string",
+      "enum": [
+        "left",
+        "center",
+        "right"
+      ],
+      "default": "center",
+      "description": "Alignement du texte"
+    },
+    "filter": {
+      "type": "string",
+      "description": "Filtre photo appliqu\u00e9 au m\u00e9dia (cl\u00e9 STORY_FILTERS)"
+    },
+    "stickers": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "default": [],
+      "description": "Stickers emoji {emoji, x, y} en pourcentages"
+    },
     "expires_at": {
       "type": "string",
       "format": "date-time",

@@ -12,6 +12,10 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
   const [viewersOpen, setViewersOpen] = useState(false);
   const rafRef = useRef(null);
   const startRef = useRef(0);
+  const pausedRef = useRef(false);
+  const elapsedMsRef = useRef(0);
+  const pressStartRef = useRef(0);
+  const videoRef = useRef(null);
 
   const group = groups[authorIdx];
   const story = group?.stories[storyIdx];
@@ -36,6 +40,18 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
     else if (authorIdx > 0) { setAuthorIdx(authorIdx - 1); setStoryIdx(0); }
   }, [storyIdx, authorIdx]);
 
+  const pause = useCallback(() => {
+    pausedRef.current = true;
+    if (videoRef.current) videoRef.current.pause();
+  }, []);
+
+  const resume = useCallback(() => {
+    if (!pausedRef.current) return;
+    pausedRef.current = false;
+    if (videoRef.current) videoRef.current.play?.().catch(() => {});
+    startRef.current = Date.now() - elapsedMsRef.current;
+  }, []);
+
   // Reset index when author changes
   useEffect(() => { setStoryIdx(0); setViewersOpen(false); }, [authorIdx]);
 
@@ -51,7 +67,9 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
     const dur = storyDuration(story);
     startRef.current = Date.now();
     const tick = () => {
+      if (pausedRef.current) { rafRef.current = requestAnimationFrame(tick); return; }
       const elapsed = Date.now() - startRef.current;
+      elapsedMsRef.current = elapsed;
       const p = Math.min(1, elapsed / dur);
       setProgress(p);
       if (p < 1) rafRef.current = requestAnimationFrame(tick);
@@ -83,6 +101,7 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
       return (
         <video
           key={story.id}
+          ref={videoRef}
           src={story.media_url}
           autoPlay
           playsInline
@@ -90,6 +109,7 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
           className="w-full h-full object-cover"
           onTimeUpdate={(e) => {
             const v = e.currentTarget;
+            elapsedMsRef.current = (v.currentTime || 0) * 1000;
             if (v.duration) setProgress(v.currentTime / v.duration);
           }}
           onEnded={advance}
@@ -113,8 +133,24 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
   return createPortal(
     <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center">
       {/* Tap zones */}
-      <button className="absolute left-0 top-0 bottom-0 w-1/3 z-20" onClick={prev} aria-label="Précédent" />
-      <button className="absolute right-0 top-0 bottom-0 w-2/3 z-20" onClick={advance} aria-label="Suivant" />
+      <button
+        className="absolute left-0 top-0 bottom-0 w-1/3 z-20 touch-none select-none"
+        onPointerDown={() => { pressStartRef.current = Date.now(); pause(); }}
+        onPointerUp={resume}
+        onPointerLeave={resume}
+        onPointerCancel={resume}
+        onClick={() => { if (Date.now() - pressStartRef.current > 250) return; prev(); }}
+        aria-label="Précédent"
+      />
+      <button
+        className="absolute right-0 top-0 bottom-0 w-2/3 z-20 touch-none select-none"
+        onPointerDown={() => { pressStartRef.current = Date.now(); pause(); }}
+        onPointerUp={resume}
+        onPointerLeave={resume}
+        onPointerCancel={resume}
+        onClick={() => { if (Date.now() - pressStartRef.current > 250) return; advance(); }}
+        aria-label="Suivant"
+      />
 
       {/* Story container */}
       <div className="relative w-full h-full sm:w-[420px] sm:h-[90vh] sm:rounded-2xl overflow-hidden bg-black">

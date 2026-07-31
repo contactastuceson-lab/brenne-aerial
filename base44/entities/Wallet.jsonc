@@ -1,0 +1,56 @@
+{
+  "name": "Wallet",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "ID du propri\u00e9taire du portefeuille"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email du propri\u00e9taire (snapshot)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nom du portefeuille"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "epargne",
+        "depenses",
+        "projet",
+        "custom"
+      ],
+      "default": "custom",
+      "description": "Type de portefeuille"
+    },
+    "balance": {
+      "type": "number",
+      "default": 0,
+      "description": "Solde en cr\u00e9dits Eza"
+    },
+    "color": {
+      "type": "string",
+      "description": "Couleur d'affichage (optionnel)"
+    }
+  },
+  "required": [
+    "owner_id",
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "data.owner_id": "{{user.id}}"
+    },
+    "read": {
+      "data.owner_id": "{{user.id}}"
+    },
+    "update": {
+      "data.owner_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.owner_id": "{{user.id}}"
+    }
+  }
+}

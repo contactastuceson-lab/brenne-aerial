@@ -103,6 +103,7 @@ import SpacesPage from "@/pages/SpacesPage";
 import WifiPortalPage from "@/pages/WifiPortalPage";
 import ReferralPage from "@/pages/ReferralPage";
 import BoutiquePage from "@/pages/BoutiquePage";
+import BanquePage from "@/pages/BanquePage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -184,6 +185,7 @@ const AuthenticatedApp = () => {
           <Route path="/spaces" element={<SpacesPage />} />
           <Route path="/parrainage" element={<ReferralPage />} />
           <Route path="/boutique" element={<BoutiquePage />} />
+          <Route path="/banque" element={<BanquePage />} />
           <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />

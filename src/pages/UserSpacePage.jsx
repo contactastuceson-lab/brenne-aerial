@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import {
   UserCircle, Flag, Award, CreditCard, Network, Loader2, Gift,
   ChevronRight, RefreshCw, Inbox, Sparkles, TrendingUp, Eye, Heart, MessageCircle,
-  Calendar, BarChart3,
+  Calendar, BarChart3, Wallet,
 } from 'lucide-react';
 import ReportTracking from '@/components/dashboard/ReportTracking';
 import CertificationTracking from '@/components/dashboard/CertificationTracking';
@@ -22,6 +22,7 @@ import { Link } from 'react-router-dom';
 import { hasAdvancedAnalytics } from '@/lib/subscriptionGating';
 import SubscriptionTierBanner from '@/components/boutique/SubscriptionTierBanner';
 import { awardDailyLogin } from '@/lib/rewardActions';
+import WalletSummary from '@/components/banque/WalletSummary';
 
 const TABS = [
   { id: 'rewards',     label: 'Récompenses',  icon: Gift },
@@ -33,6 +34,7 @@ const TABS = [
   { id: 'billing',     label: 'Facturation',   icon: CreditCard },
   { id: 'affiliations', label: 'Affiliations', icon: Network },
   { id: 'referral',     label: 'Parrainage',  icon: Gift },
+  { id: 'banque',       label: 'Portefeuille', icon: Wallet },
 ];
 
 const REPORT_STATUS = {
@@ -388,6 +390,7 @@ export default function UserSpacePage() {
                 <MyAffiliationsTab user={user} />
               </div>
             )}
+            {tab === 'banque' && <WalletSummary user={user} />}
           </motion.div>
         </AnimatePresence>
       </div>

@@ -84,7 +84,7 @@ import EcosystemePage from "@/pages/EcosystemePage";
 import BusinessSpacePage from "@/pages/BusinessSpacePage";
 import BusinessAdsPage from "@/pages/BusinessAdsPage";
 import PostDetailPage from "@/pages/PostDetailPage";
-import PremiumPage from "@/pages/PremiumPage";
+
 import NotificationsPage from "@/pages/NotificationsPage";
 import CreatePostPage from "@/pages/CreatePostPage";
 import SearchPage from "@/pages/SearchPage";
@@ -171,7 +171,7 @@ const AuthenticatedApp = () => {
           <Route path="/business" element={<BusinessSpacePage />} />
           <Route path="/business/ads" element={<BusinessAdsPage />} />
           <Route path="/post/:id" element={<PostDetailPage />} />
-          <Route path="/premium" element={<PremiumPage />} />
+
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/create-post" element={<CreatePostPage />} />
           <Route path="/search" element={<SearchPage />} />

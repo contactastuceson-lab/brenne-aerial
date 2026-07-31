@@ -80,7 +80,13 @@ const AdSlot = memo(function AdSlot({ placement = 'feed_banner', className = '' 
 
   const handleClick = () => {
     if (!ad) return;
-    if (ad.cta_url) window.open(ad.cta_url, '_blank', 'noopener,noreferrer');
+    // Publicités maison Eza (owner_id null) → toujours la Boutique
+    const isHouse = !ad.owner_id;
+    if (isHouse) {
+      window.location.href = '/boutique';
+    } else if (ad.cta_url) {
+      window.open(ad.cta_url, '_blank', 'noopener,noreferrer');
+    }
     base44.entities.AdCampaign.update(ad.id, {
       clicks: (ad.clicks || 0) + 1,
     }).catch(() => {});

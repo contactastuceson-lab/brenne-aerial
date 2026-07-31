@@ -24,7 +24,7 @@ const NAV = [
   { icon: List,          label: 'Listes',         to: '/lists' },
   { icon: Camera,        label: 'Portfolio',      to: '/portfolio' },
   { icon: Briefcase,     label: 'Business',       to: '/business', businessOnly: true },
-  { icon: Sparkles,      label: 'Premium',        to: '/premium', premium: true },
+  { icon: Sparkles,      label: 'Boutique',        to: '/boutique', premium: true },
 ];
 
 function NavItem({ icon: Icon, label, to, active, badge, premium }) {

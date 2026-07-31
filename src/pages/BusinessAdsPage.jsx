@@ -45,7 +45,11 @@ export default function BusinessAdsPage() {
     queryKey: ['business-ad-campaigns'],
     queryFn: async () => {
       const r = await base44.functions.invoke('manageBusinessAdCampaign', { action: 'list' });
-      return r?.data || [];
+      // Le backend renvoie { success, data: [...] } — gère les deux niveaux d'enveloppement
+      if (Array.isArray(r?.data)) return r.data;
+      if (Array.isArray(r?.data?.data)) return r.data.data;
+      if (Array.isArray(r)) return r;
+      return [];
     },
     enabled: !!user && canAccess,
     staleTime: 0,

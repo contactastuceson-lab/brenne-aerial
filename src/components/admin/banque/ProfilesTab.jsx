@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Search, Loader2, Wallet as WalletIcon, ArrowLeftRight } from 'lucide-react';
+import { Search, Loader2, Wallet as WalletIcon, ArrowLeftRight, Snowflake, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
@@ -13,6 +13,24 @@ export default function ProfilesTab() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [freezing, setFreezing] = useState(false);
+
+  const toggleFreeze = async () => {
+    if (!selected) return;
+    const u = profile?.user || selected;
+    const frozen = u.account_status === 'frozen';
+    const reason = frozen ? '' : (prompt('Motif du gel du compte ?') || '');
+    if (!frozen && !reason.trim()) return;
+    setFreezing(true);
+    try {
+      const res = await base44.functions.invoke('adminBanque', { action: 'set_account_frozen', userId: selected.id, frozen: !frozen, reason });
+      if (res.data?.error) { toast.error(res.data.error); return; }
+      toast.success(frozen ? 'Compte dégelé' : 'Compte gelé');
+      const p = await base44.functions.invoke('adminBanque', { action: 'user_profile', userId: selected.id });
+      setProfile(p.data);
+    } catch { toast.error('Erreur'); }
+    setFreezing(false);
+  };
 
   const load = async () => {
     if (users.length > 0 || loading) return;
@@ -73,6 +91,26 @@ export default function ProfilesTab() {
                 <p className="font-mono text-[10px] text-muted-foreground/60">Solde principal</p>
                 <p className="font-grotesk font-black text-xl text-amber-400">{profile.user?.referral_credits || 0}</p>
               </div>
+            </div>
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/60">
+              {profile.user?.account_status === 'frozen' ? (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-mono border border-red-400/30 bg-red-400/10 text-red-400">
+                  <Snowflake className="w-3 h-3" /> Compte gelé
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-mono border border-emerald-400/30 bg-emerald-400/10 text-emerald-400">
+                  <ShieldCheck className="w-3 h-3" /> Compte actif
+                </span>
+              )}
+              <button onClick={toggleFreeze} disabled={freezing}
+                className={`ml-auto px-3 py-1.5 rounded-lg text-xs font-grotesk font-bold flex items-center gap-1.5 transition-all disabled:opacity-50 ${
+                  profile.user?.account_status === 'frozen'
+                    ? 'bg-emerald-400/10 border border-emerald-400/30 text-emerald-400 hover:bg-emerald-400/20'
+                    : 'bg-red-400/10 border border-red-400/30 text-red-400 hover:bg-red-400/20'
+                }`}>
+                {freezing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Snowflake className="w-3.5 h-3.5" />}
+                {profile.user?.account_status === 'frozen' ? 'Dégeler le compte' : 'Geler le compte'}
+              </button>
             </div>
           </div>
 

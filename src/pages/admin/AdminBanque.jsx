@@ -8,12 +8,14 @@ import SoldesTab from '@/components/admin/banque/SoldesTab';
 import DistributionTab from '@/components/admin/banque/DistributionTab';
 import ProfilesTab from '@/components/admin/banque/ProfilesTab';
 import RulesTab from '@/components/admin/banque/RulesTab';
+import TransferAdminTab from '@/components/admin/banque/TransferAdminTab';
 
 const TABS = [
   { id: 'overview', label: 'Vue d\'ensemble', icon: Wallet },
   { id: 'wallets', label: 'Portefeuilles', icon: CreditCard },
   { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
   { id: 'soldes', label: 'Soldes', icon: Coins },
+  { id: 'virement', label: 'Virement', icon: ArrowLeftRight },
   { id: 'distribution', label: 'Distribution', icon: Users },
   { id: 'profils', label: 'Profils', icon: UserCircle },
   { id: 'regles', label: 'Règles', icon: SlidersHorizontal },
@@ -60,6 +62,7 @@ export default function AdminBanque() {
             {tab === 'wallets' && <WalletsTab />}
             {tab === 'transactions' && <TransactionsTab />}
             {tab === 'soldes' && <SoldesTab />}
+            {tab === 'virement' && <TransferAdminTab />}
             {tab === 'distribution' && <DistributionTab />}
             {tab === 'profils' && <ProfilesTab />}
             {tab === 'regles' && <RulesTab />}

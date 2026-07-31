@@ -102,9 +102,19 @@
         "active",
         "suspended",
         "banned",
-        "restricted"
+        "restricted",
+        "frozen"
       ],
       "default": "active"
+    },
+    "freeze_reason": {
+      "type": "string",
+      "description": "Motif du gel du compte (account_status = frozen)"
+    },
+    "frozen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date du gel du compte"
     },
     "two_factor_enabled": {
       "type": "boolean",

@@ -24,6 +24,8 @@ export default async function(req) {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Non connecté' }, { status: 401 });
+    if (user.account_status === 'frozen')
+      return Response.json({ error: 'Votre compte est gelé — boutique désactivée' }, { status: 403 });
 
     let body;
     try { body = await req.json(); } catch { return Response.json({ error: 'Payload invalide' }, { status: 400 }); }

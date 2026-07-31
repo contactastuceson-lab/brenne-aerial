@@ -203,6 +203,74 @@ Deno.serve(async (req) => {
       return Response.json({ user: u, wallets: wallets || [], txs: txs || [] });
     }
 
+    // ── Virement admin entre deux comptes ──
+    if (action === 'admin_transfer') {
+      const { fromUserId, toUserId, reason } = body;
+      const amt = Math.floor(Number(body.amount) || 0);
+      if (!fromUserId || !toUserId) return Response.json({ error: 'Expéditeur et destinataire requis' }, { status: 400 });
+      if (fromUserId === toUserId) return Response.json({ error: 'Même compte' }, { status: 400 });
+      if (amt <= 0) return Response.json({ error: 'Montant invalide' }, { status: 400 });
+      const [fromUser, toUser] = await Promise.all([
+        base44.asServiceRole.entities.User.get(fromUserId).catch(() => null),
+        base44.asServiceRole.entities.User.get(toUserId).catch(() => null),
+      ]);
+      if (!fromUser) return Response.json({ error: 'Expéditeur introuvable' }, { status: 404 });
+      if (!toUser) return Response.json({ error: 'Destinataire introuvable' }, { status: 404 });
+      const fromBal = Number(fromUser.referral_credits || 0);
+      if (fromBal < amt) return Response.json({ error: 'Solde insuffisant sur le compte source' }, { status: 400 });
+      const noteText = reason ? `Virement admin : ${String(reason).slice(0, 200)}` : 'Virement admin';
+      const fromLabel = fromUser.display_name || fromUser.full_name || fromUser.email;
+      const toLabel = toUser.display_name || toUser.full_name || toUser.email;
+      await base44.asServiceRole.entities.User.update(fromUserId, { referral_credits: fromBal - amt });
+      await base44.asServiceRole.entities.User.update(toUserId, { referral_credits: Number(toUser.referral_credits || 0) + amt });
+      await base44.asServiceRole.entities.CreditTransaction.bulkCreate([
+        { owner_id: fromUserId, type: 'admin_debit', amount: -amt, counterparty_id: toUserId, counterparty_name: toLabel, note: noteText, status: 'completed' },
+        { owner_id: toUserId, type: 'admin_credit', amount: amt, counterparty_id: fromUserId, counterparty_name: fromLabel, note: noteText, status: 'completed' },
+      ]);
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: fromUser.email, from_name: 'eza — Banque',
+          subject: `eza — ${amt} crédits retirés (virement admin)`,
+          body: `<p>Bonjour,</p><p>Un virement administratif de <strong>${amt} crédits</strong> a été effectué depuis votre compte au profit de <strong>${toLabel}</strong>.</p>${reason ? `<p>Motif : ${String(reason).slice(0,300)}</p>` : ''}<p>Nouveau solde : ${fromBal - amt} crédits.</p>`,
+        });
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: toUser.email, from_name: 'eza — Banque',
+          subject: `eza — ✅ ${amt} crédits crédités (virement admin)`,
+          body: `<p>Bonjour,</p><p>Un virement administratif de <strong>${amt} crédits</strong> a été crédité sur votre compte de la part de <strong>${fromLabel}</strong>.</p>${reason ? `<p>Motif : ${String(reason).slice(0,300)}</p>` : ''}<p>Nouveau solde : ${Number(toUser.referral_credits || 0) + amt} crédits.</p>`,
+        });
+      } catch {}
+      return Response.json({ success: true, amount: amt, fromBalance: fromBal - amt, toBalance: Number(toUser.referral_credits || 0) + amt });
+    }
+
+    // ── Gel / dégel d'un compte entier ──
+    if (action === 'set_account_frozen') {
+      const { userId, frozen, reason } = body;
+      if (!userId) return Response.json({ error: 'userId manquant' }, { status: 400 });
+      const u: any = await base44.asServiceRole.entities.User.get(userId).catch(() => null);
+      if (!u) return Response.json({ error: 'Utilisateur introuvable' }, { status: 404 });
+      const updateData: any = {};
+      if (frozen) {
+        updateData.account_status = 'frozen';
+        updateData.freeze_reason = String(reason || '').slice(0, 500);
+        updateData.frozen_at = new Date().toISOString();
+      } else {
+        updateData.account_status = 'active';
+        updateData.freeze_reason = '';
+        updateData.frozen_at = null;
+      }
+      await base44.asServiceRole.entities.User.update(userId, updateData);
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: u.email, from_name: 'eza',
+          subject: frozen ? `eza — ❄️ Votre compte est gelé` : `eza — ✅ Votre compte est réactivé`,
+          body: frozen
+            ? `<p>Bonjour,</p><p>Votre compte Eza a été <strong>gelé</strong> par l'administration. Les transferts, la boutique, les devis et la plupart des actions sont temporairement désactivés.</p>${reason ? `<p>Motif : ${String(reason).slice(0,500)}</p>` : ''}<p>Pour toute question, contactez le support Eza.</p>`
+            : `<p>Bonjour,</p><p>Votre compte Eza est de nouveau <strong>actif</strong>. Toutes les fonctionnalités sont rétablies.</p>`,
+        });
+      } catch {}
+      return Response.json({ success: true, frozen: !!frozen });
+    }
+
     // ── Règles bancaires ──
     if (action === 'get_rules') {
       return Response.json({ rules: await getBankRules(base44) });

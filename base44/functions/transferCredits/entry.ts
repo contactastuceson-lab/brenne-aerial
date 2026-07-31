@@ -42,6 +42,9 @@ export default async function(req: Request): Promise<Response> {
     const fee = Math.floor(amount * (Number(bankRules.fee_percent) || 0) / 100);
     const netReceived = amount - fee;
 
+    if (user.account_status === 'frozen')
+      return Response.json({ error: 'Votre compte est gelé — transferts désactivés' }, { status: 403 });
+
     const ident = recipientRaw.replace(/^@/, '').toLowerCase();
 
     // Résoudre le destinataire par email ou username
@@ -53,6 +56,8 @@ export default async function(req: Request): Promise<Response> {
     );
     if (!recipient) return Response.json({ error: 'Utilisateur introuvable' }, { status: 404 });
     if (recipient.id === user.id) return Response.json({ error: 'Impossible de se transférer à soi-même' }, { status: 400 });
+    if (recipient.account_status === 'frozen')
+      return Response.json({ error: 'Le compte destinataire est gelé' }, { status: 403 });
 
     // Vérifier le solde source
     let sourceBalance = 0;

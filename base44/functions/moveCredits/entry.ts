@@ -12,6 +12,8 @@ export default async function(req: Request): Promise<Response> {
     const amount = Math.floor(Number(body?.amount) || 0);
     const note = String(body?.note || '').trim();
 
+    if (user.account_status === 'frozen')
+      return Response.json({ error: 'Votre compte est gelé — déplacements désactivés' }, { status: 403 });
     if (!toId) return Response.json({ error: 'Portefeuille destination requis' }, { status: 400 });
     if (fromId === toId) return Response.json({ error: 'Source et destination identiques' }, { status: 400 });
     if (amount <= 0) return Response.json({ error: 'Montant invalide' }, { status: 400 });

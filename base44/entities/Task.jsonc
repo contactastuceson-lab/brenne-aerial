@@ -1,0 +1,55 @@
+{
+  "name": "Task",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre de la t\u00e2che"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description / consignes d\u00e9taill\u00e9es"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "todo",
+        "in_progress",
+        "review",
+        "done"
+      ],
+      "default": "todo",
+      "description": "Statut de la t\u00e2che (colonne Kanban)"
+    },
+    "result": {
+      "type": "string",
+      "description": "R\u00e9sultat / rendu produit par l'IA apr\u00e8s ex\u00e9cution"
+    }
+  },
+  "required": [
+    "title",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

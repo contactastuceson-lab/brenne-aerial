@@ -59,6 +59,7 @@ import AdminBilling from "@/pages/admin/AdminBilling";
 import AdminEconomy from "@/pages/admin/AdminEconomy";
 import AdminAds from "@/pages/admin/AdminAds";
 import AdminBanque from "@/pages/admin/AdminBanque";
+import AdminTasks from "@/pages/admin/AdminTasks";
 import AdminStats from "@/pages/admin/AdminStats";
 import AdminAnalytics from "@/pages/admin/AdminAnalytics";
 import AdminUpdates from "@/pages/admin/AdminUpdates";
@@ -234,6 +235,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/economie" element={<AdminEconomy />} />
         <Route path="/admin/ads" element={<AdminAds />} />
         <Route path="/admin/banque" element={<AdminBanque />} />
+        <Route path="/admin/tasks" element={<AdminTasks />} />
 
       </Route>
 

@@ -51,10 +51,12 @@ const AdSlot = memo(function AdSlot({ placement = 'feed_banner', className = '' 
           10
         );
         if (done || !all || all.length === 0) return;
+        // Pub interne (owner_id null) = campagne maison Eza, toujours visible.
+        // Pub business (owner_id défini) = ne s'affiche que si crédits restants.
         const eligible = all.filter(
           a => (!a.starts_at || new Date(a.starts_at) <= new Date()) &&
                (!a.ends_at || new Date(a.ends_at) >= new Date()) &&
-               (a.credits_remaining == null || a.credits_remaining > 0)
+               (!a.owner_id || a.credits_remaining == null || a.credits_remaining > 0)
         );
         if (eligible.length === 0) return;
         // Sélection pondérée par budget journalier : plus le budget est élevé,

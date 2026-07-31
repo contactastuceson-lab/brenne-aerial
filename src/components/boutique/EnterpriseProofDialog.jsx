@@ -20,7 +20,7 @@ const RESULT_VIEW = {
     bg: 'bg-emerald-400/10',
     border: 'border-emerald-400/30',
     title: 'Demande valid\u00e9e !',
-    desc: 'Le badge Officiel + les avantages Enterprise ont \u00e9t\u00e9 attribu\u00e9s \u00e0 votre compte.',
+    desc: 'Le badge Gouvernement + les avantages Enterprise ont \u00e9t\u00e9 attribu\u00e9s \u00e0 votre compte.',
   },
   rejected: {
     icon: XCircle,
@@ -133,7 +133,7 @@ export default function EnterpriseProofDialog({ open, cost, credits, onClose, on
           {/* Header */}
           <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card z-10">
             <h2 className="font-grotesk font-bold text-base flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-yellow-400" /> Enterprise \u2014 Justificatifs requis
+              <Trophy className="w-4 h-4 text-yellow-400" /> Gouvernement \u2014 Justificatifs requis
             </h2>
             <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1">
               <X className="w-5 h-5" />
@@ -164,7 +164,7 @@ export default function EnterpriseProofDialog({ open, cost, credits, onClose, on
                 <ShieldCheck className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <p className="font-inter text-xs text-foreground leading-relaxed">
-                    Le statut <span className="font-bold text-yellow-400">Enterprise</span> requiert une validation de votre organisation.
+                    Le badge <span className="font-bold text-yellow-400">Gouvernement</span> requiert une validation de votre institution ou entit\u00e9 officielle.
                     Soumettez vos justificatifs \u2014 un agent <span className="font-medium">IA</span> les \u00e9value, puis un <span className="font-medium">administrateur</span> valide si n\u00e9cessaire.
                   </p>
                   <p className="font-mono text-[10px] text-muted-foreground mt-1">
@@ -185,13 +185,13 @@ export default function EnterpriseProofDialog({ open, cost, credits, onClose, on
               {/* Questionnaire */}
               <div className="space-y-3">
                 <p className="font-grotesk font-bold text-xs text-foreground flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-primary" /> Informations de l\u2019organisation
+                  <FileText className="w-3.5 h-3.5 text-primary" /> Informations de l\u2019institution
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="sm:col-span-2">
-                    <Label className="text-xs">Nom de l\u2019entreprise *</Label>
+                    <Label className="text-xs">Nom de l\u2019institution / entit\u00e9 *</Label>
                     <Input value={form.company_name} onChange={e => setForm({ ...form, company_name: e.target.value })}
-                      placeholder="Ex : Eza SARL" className="mt-1" />
+                      placeholder="Ex : Mairie de\u2026, Minist\u00e8re de\u2026" className="mt-1" />
                   </div>
                   <div>
                     <Label className="text-xs">Forme juridique</Label>

@@ -49,14 +49,27 @@ export default async function(req) {
         '-created_date',
         100
       );
-      return Response.json({ success: true, data: all || [], quota });
+      return Response.json({ success: true, data: all || [], quota, credits: Number(user.referral_credits) || 0 });
     }
 
     // ── CREATE : nouvelle campagne (draft) ──
+    // Coût obligatoire en crédits Eza — déduit du solde du business.
+    const MIN_BUDGET = 50;
     if (action === 'create') {
       const { title, advertiser_name, image_url, cta_url, cta_label, headline, body: adBody, placement, starts_at, ends_at, budget_credits } = body || {};
       if (!title || !title.trim()) return Response.json({ error: 'Titre requis' }, { status: 400 });
       if (!placement || !PLACEMENTS.includes(placement)) return Response.json({ error: 'Emplacement invalide' }, { status: 400 });
+
+      const budget = Number(budget_credits) || 0;
+      if (budget < MIN_BUDGET) {
+        return Response.json({ error: `Budget minimum requis : ${MIN_BUDGET} crédits Eza.`, min: MIN_BUDGET }, { status: 400 });
+      }
+
+      // Vérifier le solde de crédits de l'utilisateur
+      const currentCredits = Number(user.referral_credits) || 0;
+      if (currentCredits < budget) {
+        return Response.json({ error: `Crédits insuffisants. Vous avez ${currentCredits} crédits, la campagne coûte ${budget}.`, needed: budget, available: currentCredits }, { status: 400 });
+      }
 
       // Vérifier le quota (campagnes non terminées)
       const existing = await base44.asServiceRole.entities.AdCampaign.filter(
@@ -68,6 +81,10 @@ export default async function(req) {
       if (activeDrafts.length >= quota) {
         return Response.json({ error: `Quota atteint (${quota} campagnes maximum). Supprimez ou terminez une campagne existante.` }, { status: 400 });
       }
+
+      // Déduire les crédits du business
+      const newCredits = currentCredits - budget;
+      await base44.asServiceRole.entities.User.update(user.id, { referral_credits: newCredits });
 
       const campaign = await base44.asServiceRole.entities.AdCampaign.create({
         title: title.trim(),
@@ -81,7 +98,7 @@ export default async function(req) {
         status: 'draft',
         starts_at: starts_at || null,
         ends_at: ends_at || null,
-        budget_credits: Number(budget_credits) || 0,
+        budget_credits: budget,
         impressions: 0,
         clicks: 0,
         owner_id: user.id,
@@ -93,13 +110,13 @@ export default async function(req) {
           user_email: 'contact.astuceson@gmail.com',
           type: 'system',
           title: '📢 Nouvelle campagne pub à valider',
-          content: `${user.display_name || user.username} (${user.email}) a soumis la campagne "${title.trim()}" (${placement}). À valider dans Admin › Publicité.`,
+          content: `${user.display_name || user.username} (${user.email}) a soumis la campagne "${title.trim()}" (${placement}) pour ${budget} crédits. À valider dans Admin › Publicité.`,
           sender_name: user.display_name || user.username,
           sender_id: user.id,
         });
       } catch {}
 
-      return Response.json({ success: true, data: campaign, message: 'Campagne soumise — en attente de validation admin.' });
+      return Response.json({ success: true, data: campaign, remainingCredits: newCredits, message: `Campagne soumise — ${budget} crédits débités. En attente de validation admin.` });
     }
 
     // ── UPDATE : modifier le contenu (statut reste draft sauf si admin) ──

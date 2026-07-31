@@ -45,15 +45,18 @@ export default function BusinessAdsPage() {
     queryKey: ['business-ad-campaigns'],
     queryFn: async () => {
       const r = await base44.functions.invoke('manageBusinessAdCampaign', { action: 'list' });
-      // Le backend renvoie { success, data: [...] } — gère les deux niveaux d'enveloppement
-      if (Array.isArray(r?.data)) return r.data;
-      if (Array.isArray(r?.data?.data)) return r.data.data;
-      if (Array.isArray(r)) return r;
-      return [];
+      // Le backend renvoie { success, data: [...], credits } — gère les deux niveaux d'enveloppement
+      const inner = r?.data ?? r;
+      if (Array.isArray(inner?.data)) return { list: inner.data, credits: inner.credits ?? null };
+      if (Array.isArray(inner)) return { list: inner, credits: null };
+      return { list: [], credits: null };
     },
     enabled: !!user && canAccess,
     staleTime: 0,
   });
+
+  const campaignList = Array.isArray(campaigns?.list) ? campaigns.list : [];
+  const listCredits = campaigns?.credits ?? null;
 
   const remove = async (c) => {
     if (!confirm('Supprimer cette campagne ?')) return;
@@ -89,10 +92,10 @@ export default function BusinessAdsPage() {
     );
   }
 
-  const activeCount = campaigns.filter(c => c.status === 'active').length;
-  const pendingCount = campaigns.filter(c => c.status === 'draft').length;
-  const totalImpressions = campaigns.reduce((s, c) => s + (c.impressions || 0), 0);
-  const totalClicks = campaigns.reduce((s, c) => s + (c.clicks || 0), 0);
+  const activeCount = campaignList.filter(c => c.status === 'active').length;
+  const pendingCount = campaignList.filter(c => c.status === 'draft').length;
+  const totalImpressions = campaignList.reduce((s, c) => s + (c.impressions || 0), 0);
+  const totalClicks = campaignList.reduce((s, c) => s + (c.clicks || 0), 0);
   const ctr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) : '0.0';
 
   return (
@@ -107,10 +110,19 @@ export default function BusinessAdsPage() {
             Diffusez votre marque sur tout l'écosystème Eza · Tier {tierLabel}
           </p>
         </div>
-        <Button size="sm" className="gap-1.5 text-xs h-9"
-          onClick={() => { setEditing(null); setShowForm(true); }}>
-          <Plus className="w-4 h-4" /> Nouvelle campagne
-        </Button>
+        <div className="flex items-center gap-3">
+          {listCredits != null && (
+            <div className="px-3 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center gap-1.5">
+              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <span className="font-mono text-xs font-bold text-amber-400">{listCredits}</span>
+              <span className="font-mono text-[10px] text-amber-400/70">crédits</span>
+            </div>
+          )}
+          <Button size="sm" className="gap-1.5 text-xs h-9"
+            onClick={() => { setEditing(null); setShowForm(true); }}>
+            <Plus className="w-4 h-4" /> Nouvelle campagne
+          </Button>
+        </div>
       </div>
 
       {/* How it works */}
@@ -127,7 +139,7 @@ export default function BusinessAdsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Campagnes', value: campaigns.length, icon: Megaphone, color: 'text-primary' },
+           { label: 'Campagnes', value: campaignList.length, icon: Megaphone, color: 'text-primary' },
           { label: 'En ligne', value: activeCount, icon: CheckCircle2, color: 'text-green-400' },
           { label: 'En attente', value: pendingCount, icon: Clock, color: 'text-amber-400' },
           { label: 'Impressions', value: formatNum(totalImpressions), icon: Eye, color: 'text-cyan-400' },
@@ -161,7 +173,7 @@ export default function BusinessAdsPage() {
       {/* List */}
       {isLoading ? (
         <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-      ) : campaigns.length === 0 ? (
+      ) : campaignList.length === 0 ? (
         <div className="text-center py-16 rounded-2xl border border-border bg-card">
           <Megaphone className="w-8 h-8 text-muted-foreground/40 mx-auto mb-3" />
           <p className="font-grotesk font-bold text-sm">Aucune campagne</p>
@@ -172,7 +184,7 @@ export default function BusinessAdsPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {campaigns.map(c => {
+          {campaignList.map(c => {
             const st = STATUS_CFG[c.status] || STATUS_CFG.draft;
             const StIcon = st.icon;
             const ctr = (c.impressions || 0) > 0 ? ((c.clicks || 0) / c.impressions * 100).toFixed(1) : '0.0';
@@ -226,6 +238,7 @@ export default function BusinessAdsPage() {
         {showForm && (
           <BusinessCampaignForm
             campaign={editing}
+            availableCredits={listCredits}
             onClose={() => { setShowForm(false); setEditing(null); }}
             onSaved={() => { setShowForm(false); setEditing(null); qc.invalidateQueries({ queryKey: ['business-ad-campaigns'] }); }}
           />
@@ -235,8 +248,9 @@ export default function BusinessAdsPage() {
   );
 }
 
-function BusinessCampaignForm({ campaign, onClose, onSaved }) {
+function BusinessCampaignForm({ campaign, availableCredits, onClose, onSaved }) {
   const isEdit = !!campaign;
+  const MIN_BUDGET = 50;
   const [form, setForm] = useState({
     title: campaign?.title || '',
     advertiser_name: campaign?.advertiser_name || '',
@@ -248,7 +262,7 @@ function BusinessCampaignForm({ campaign, onClose, onSaved }) {
     placement: campaign?.placement || 'feed_banner',
     starts_at: campaign?.starts_at?.slice(0, 16) || '',
     ends_at: campaign?.ends_at?.slice(0, 16) || '',
-    budget_credits: campaign?.budget_credits || 0,
+    budget_credits: campaign?.budget_credits || MIN_BUDGET,
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -269,6 +283,11 @@ function BusinessCampaignForm({ campaign, onClose, onSaved }) {
 
   const save = async () => {
     if (!form.title) { toast.error('Titre requis'); return; }
+    const budget = Number(form.budget_credits) || 0;
+    if (!isEdit && budget < MIN_BUDGET) { toast.error(`Budget minimum : ${MIN_BUDGET} crédits Eza`); return; }
+    if (!isEdit && availableCredits != null && budget > availableCredits) {
+      toast.error(`Crédits insuffisants — vous avez ${availableCredits} crédits`); return;
+    }
     setSaving(true);
     try {
       const payload = {
@@ -281,8 +300,9 @@ function BusinessCampaignForm({ campaign, onClose, onSaved }) {
         await base44.functions.invoke('manageBusinessAdCampaign', { action: 'update', campaignId: campaign.id, patch: payload });
         toast.success('Campagne mise à jour');
       } else {
-        await base44.functions.invoke('manageBusinessAdCampaign', { action: 'create', ...payload });
-        toast.success('Campagne soumise — en attente de validation');
+        const r = await base44.functions.invoke('manageBusinessAdCampaign', { action: 'create', ...payload });
+        const remaining = r?.data?.remainingCredits ?? r?.remainingCredits;
+        toast.success(remaining != null ? `Campagne soumise — ${payload.budget_credits} crédits débités (${remaining} restants)` : 'Campagne soumise — en attente de validation');
       }
       onSaved();
     } catch (e) {
@@ -364,8 +384,18 @@ function BusinessCampaignForm({ campaign, onClose, onSaved }) {
               <Input type="datetime-local" value={form.ends_at} onChange={e => set('ends_at', e.target.value)} />
             </Field>
           </div>
-          <Field label="Budget (crédits Eza)">
-            <Input type="number" value={form.budget_credits} onChange={e => set('budget_credits', e.target.value)} placeholder="0" />
+          <Field label={`Budget (crédits Eza)${!isEdit ? ` — minimum ${MIN_BUDGET}` : ''}`}>
+            <Input type="number" min={MIN_BUDGET} value={form.budget_credits} onChange={e => set('budget_credits', e.target.value)} placeholder={String(MIN_BUDGET)} />
+            {!isEdit && (
+              <div className="mt-2 flex items-center justify-between text-[11px] font-mono">
+                <span className="text-muted-foreground">Coût à la soumission : <span className="text-amber-400 font-bold">{Number(form.budget_credits) || 0} crédits</span></span>
+                {availableCredits != null && (
+                  <span className={Number(form.budget_credits) > availableCredits ? 'text-destructive' : 'text-muted-foreground'}>
+                    Solde : {availableCredits}
+                  </span>
+                )}
+              </div>
+            )}
           </Field>
         </div>
 

@@ -14,6 +14,8 @@ import { applySeoMeta } from '@/lib/seo';
 import UseTokenDialog from '@/components/boutique/UseTokenDialog';
 import UseCommunityTokenDialog from '@/components/boutique/UseCommunityTokenDialog';
 import BuyCreditsSection from '@/components/boutique/BuyCreditsSection';
+import SubscriptionTermsModal from '@/components/boutique/SubscriptionTermsModal';
+import SubscriptionSuccessModal from '@/components/boutique/SubscriptionSuccessModal';
 
 const CATEGORIES = {
   abonnements: { label: 'Abonnements', icon: Crown, color: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
@@ -174,6 +176,8 @@ export default function BoutiquePage() {
   const [redeeming, setRedeeming] = useState(null);
   const [redemptions, setRedemptions] = useState([]);
   const [tokenDialog, setTokenDialog] = useState(null); // { type, count }
+  const [termsItem, setTermsItem] = useState(null); // item en attente d'acceptation des conditions
+  const [successItem, setSuccessItem] = useState(null); // item souscrit avec succès → écran de confirmation
 
   useEffect(() => {
     applySeoMeta({
@@ -222,7 +226,16 @@ export default function BoutiquePage() {
       toast.error(`Il vous faut ${item.cost} crédits (vous en avez ${credits})`);
       return;
     }
+    // Les abonnements nécessitent l'acceptation préalable des conditions d'utilisation
+    if (item.category === 'abonnements') {
+      setTermsItem(item);
+      return;
+    }
     if (!confirm(`Échanger ${item.cost} crédits contre "${item.label}" ?`)) return;
+    await doRedeem(item);
+  };
+
+  const doRedeem = async (item) => {
     setRedeeming(item.id);
     try {
       const res = await base44.functions.invoke('redeemReferralReward', {
@@ -235,6 +248,10 @@ export default function BoutiquePage() {
       if (data?.success) {
         toast.success(data.message || `${item.label} réclamé !`);
         await refreshUser();
+        // Écran de confirmation pour les abonnements
+        if (item.category === 'abonnements') {
+          setSuccessItem(item);
+        }
       } else if (data?.error) {
         toast.error(data.error);
       }
@@ -537,6 +554,27 @@ export default function BoutiquePage() {
           tokenType={tokenDialog.type}
           count={tokenDialog.count}
           onUsed={refreshUser}
+        />
+      )}
+
+      {/* Modale d'acceptation des conditions avant souscription */}
+      {termsItem && (
+        <SubscriptionTermsModal
+          item={termsItem}
+          onClose={() => setTermsItem(null)}
+          onAccept={async () => {
+            const item = termsItem;
+            setTermsItem(null);
+            await doRedeem(item);
+          }}
+        />
+      )}
+
+      {/* Écran de confirmation après souscription réussie */}
+      {successItem && (
+        <SubscriptionSuccessModal
+          item={successItem}
+          onClose={() => setSuccessItem(null)}
         />
       )}
     </div>

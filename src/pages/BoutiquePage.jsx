@@ -17,6 +17,7 @@ import BuyCreditsSection from '@/components/boutique/BuyCreditsSection';
 import SubscriptionTermsModal from '@/components/boutique/SubscriptionTermsModal';
 import SubscriptionSuccessModal from '@/components/boutique/SubscriptionSuccessModal';
 import EnterpriseProofDialog from '@/components/boutique/EnterpriseProofDialog';
+import SubscriptionChoiceDialog from '@/components/boutique/SubscriptionChoiceDialog';
 
 const CATEGORIES = {
   abonnements: { label: 'Abonnements', icon: Crown, color: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
@@ -40,6 +41,7 @@ const BADGE_TIER_META = {
   pro: { label: 'Badge Pro', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' },
   certified: { label: 'Badge Certifié', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' },
   official: { label: 'Badge Officiel', color: 'text-purple-400 bg-purple-400/10 border-purple-400/30' },
+  government: { label: 'Badge Gouvernement', color: 'text-zinc-300 bg-zinc-500/20 border-zinc-400/50' },
 };
 
 // Map rewardId -> verification key (pour refléter l'état actif / révocation admin)
@@ -57,6 +59,7 @@ const BADGE_VERIFICATION_MAP = {
 
 // Map rewardId -> fulfillment type (doit correspondre au backend)
 const ITEM_FULFILLMENT = {
+  premium: 'auto', business: 'auto', enterprise: 'manual',
   premium_1m: 'auto', premium_3m: 'auto', premium_1y: 'auto',
   premium_pro_1m: 'auto', premium_pro_3m: 'auto', premium_pro_1y: 'auto',
   business_1m: 'auto', business_3m: 'auto',
@@ -76,22 +79,10 @@ const ITEM_FULFILLMENT = {
 };
 
 const SHOP_ITEMS = [
-  // ── Premium (badge bleu Verified) ──
-  { id: 'premium_1m', label: 'Premium 1 mois — Badge Verified', desc: 'Premium + badge bleu Verified pendant 1 mois', cost: 50, category: 'abonnements', icon: Sparkles, badgeTier: 'verified' },
-  { id: 'premium_3m', label: 'Premium 3 mois — Badge Verified', desc: 'Premium + badge bleu Verified pendant 3 mois', cost: 130, category: 'abonnements', icon: Sparkles, badgeTier: 'verified' },
-  { id: 'premium_1y', label: 'Premium 12 mois — Badge Verified', desc: 'Premium + badge bleu Verified pendant 12 mois', cost: 450, category: 'abonnements', icon: Crown, badgeTier: 'verified' },
-  // ── Premium Pro (badge vert Pro — plus cher) ──
-  { id: 'premium_pro_1m', label: 'Premium Pro 1 mois — Badge Pro', desc: 'Premium + badge vert Pro (statut professionnel) pendant 1 mois', cost: 120, category: 'abonnements', icon: Gem, badgeTier: 'pro' },
-  { id: 'premium_pro_3m', label: 'Premium Pro 3 mois — Badge Pro', desc: 'Premium + badge vert Pro pendant 3 mois', cost: 320, category: 'abonnements', icon: Gem, badgeTier: 'pro' },
-  { id: 'premium_pro_1y', label: 'Premium Pro 12 mois — Badge Pro', desc: 'Premium + badge vert Pro pendant 12 mois — économisez', cost: 1100, category: 'abonnements', icon: Gem, badgeTier: 'pro' },
-  // ── Business (badge jaune Certifié) ──
-  { id: 'business_1m', label: 'Business 1 mois — Badge Certifié', desc: 'Business + badge jaune Certifié pendant 1 mois', cost: 250, category: 'abonnements', icon: Crown, badgeTier: 'certified' },
-  { id: 'business_3m', label: 'Business 3 mois — Badge Certifié', desc: 'Business + badge jaune Certifié pendant 3 mois', cost: 680, category: 'abonnements', icon: Crown, badgeTier: 'certified' },
-  // ── Business Officiel (badge violet Officiel — plus cher) ──
-  { id: 'business_official_1m', label: 'Business Officiel 1 mois — Badge Officiel', desc: 'Business + badge violet Officiel (entité reconnue) pendant 1 mois', cost: 450, category: 'abonnements', icon: Shield, badgeTier: 'official' },
-  { id: 'business_official_3m', label: 'Business Officiel 3 mois — Badge Officiel', desc: 'Business + badge violet Officiel pendant 3 mois', cost: 1200, category: 'abonnements', icon: Shield, badgeTier: 'official' },
-  // ── Enterprise (badge Officiel + justificatifs requis) ──
-  { id: 'enterprise_1m', label: 'Enterprise 1 mois — Justificatifs requis', desc: 'Enterprise + badge Officiel — nécessite validation de votre organisation (IA + admin)', cost: 600, category: 'abonnements', icon: Trophy, badgeTier: 'official', requiresProofs: true },
+  // ── Abonnements (choix du badge via pop-up au clic sur Réclamer) ──
+  { id: 'premium', label: 'Premium', desc: 'Sans pub + choix du badge : Verified (bleu, moins cher) ou Pro (vert, plus cher).', cost: 50, category: 'abonnements', icon: Sparkles, tier: 'premium' },
+  { id: 'business', label: 'Business', desc: 'Outils pro + choix du badge : Certifié (jaune, moins cher) ou Officiel (violet, plus cher).', cost: 250, category: 'abonnements', icon: Crown, tier: 'business' },
+  { id: 'enterprise', label: 'Enterprise — Gouvernement', desc: 'Badge Gouvernement pour institution / entité officielle. Validation par justificatifs (IA + admin).', cost: 600, category: 'abonnements', icon: Trophy, tier: 'enterprise', badgeTier: 'government', requiresProofs: true },
 
   // ── Badges & Vérifications ──
   { id: 'badge_verified', label: 'Badge Vérifié', desc: 'Coche de vérification bleue', cost: 100, category: 'badges', icon: BadgeCheck },
@@ -144,6 +135,27 @@ const SHOP_ITEMS = [
   { id: 'community_premium_design', label: 'Design premium de communauté', desc: 'Apparence premium pour votre communauté', cost: 150, category: 'communaute', icon: Palette },
   { id: 'community_space', label: 'Space communautaire mensuel', desc: 'Un Space audio dédié à votre communauté chaque mois', cost: 180, category: 'communaute', icon: Headphones },
 ];
+
+// Variantes de badge/durée proposées dans le pop-up de choix pour chaque tier
+const TIER_VARIANTS = {
+  premium: [
+    { id: 'premium_1m', label: 'Premium 1 mois', duration: '1 mois', cost: 50, badgeTier: 'verified' },
+    { id: 'premium_3m', label: 'Premium 3 mois', duration: '3 mois', cost: 130, badgeTier: 'verified' },
+    { id: 'premium_1y', label: 'Premium 12 mois', duration: '12 mois', cost: 450, badgeTier: 'verified' },
+    { id: 'premium_pro_1m', label: 'Premium Pro 1 mois', duration: '1 mois', cost: 120, badgeTier: 'pro' },
+    { id: 'premium_pro_3m', label: 'Premium Pro 3 mois', duration: '3 mois', cost: 320, badgeTier: 'pro' },
+    { id: 'premium_pro_1y', label: 'Premium Pro 12 mois', duration: '12 mois', cost: 1100, badgeTier: 'pro' },
+  ],
+  business: [
+    { id: 'business_1m', label: 'Business 1 mois', duration: '1 mois', cost: 250, badgeTier: 'certified' },
+    { id: 'business_3m', label: 'Business 3 mois', duration: '3 mois', cost: 680, badgeTier: 'certified' },
+    { id: 'business_official_1m', label: 'Business Officiel 1 mois', duration: '1 mois', cost: 450, badgeTier: 'official' },
+    { id: 'business_official_3m', label: 'Business Officiel 3 mois', duration: '3 mois', cost: 1200, badgeTier: 'official' },
+  ],
+  enterprise: [
+    { id: 'enterprise_1m', label: 'Enterprise — Gouvernement (1 mois)', duration: '1 mois', cost: 600, badgeTier: 'government', requiresProofs: true },
+  ],
+};
 
 const CATEGORY_ORDER = ['abonnements', 'badges', 'boosts', 'features', 'exclusivites', 'communaute'];
 
@@ -201,6 +213,7 @@ export default function BoutiquePage() {
   const [termsItem, setTermsItem] = useState(null); // item en attente d'acceptation des conditions
   const [successItem, setSuccessItem] = useState(null); // item souscrit avec succès → écran de confirmation
   const [proofItem, setProofItem] = useState(null); // item Enterprise en attente de preuves
+  const [choiceItem, setChoiceItem] = useState(null); // tier (premium/business) → pop-up de choix du badge
 
   useEffect(() => {
     applySeoMeta({
@@ -251,7 +264,15 @@ export default function BoutiquePage() {
     }
     // Les abonnements nécessitent l'acceptation préalable des conditions d'utilisation
     if (item.category === 'abonnements') {
-      setTermsItem(item);
+      // Enterprise → conditions puis preuves (badge Gouvernement)
+      if (item.tier === 'enterprise') {
+        setTermsItem(item);
+      } else if (item.tier) {
+        // Premium / Business → pop-up de choix du badge (puis conditions)
+        setChoiceItem(item);
+      } else {
+        setTermsItem(item);
+      }
       return;
     }
     if (!confirm(`Échanger ${item.cost} crédits contre "${item.label}" ?`)) return;
@@ -501,7 +522,7 @@ export default function BoutiquePage() {
                 <div className="flex items-center justify-between mt-auto pt-2">
                   <div className="flex items-center gap-1.5">
                     <Coins className={`w-3.5 h-3.5 ${cat.color}`} />
-                    <span className={`font-mono text-sm font-bold ${cat.color}`}>{item.cost}</span>
+                    <span className={`font-mono text-sm font-bold ${cat.color}`}>{item.tier ? 'dès ' : ''}{item.cost}</span>
                   </div>
                   {alreadyOwned ? (
                     <span className="px-3 py-1.5 rounded-lg font-grotesk font-bold text-xs flex items-center gap-1.5 bg-emerald-400/10 text-emerald-400 border border-emerald-400/30">
@@ -623,6 +644,22 @@ export default function BoutiquePage() {
           credits={credits}
           onClose={() => setProofItem(null)}
           onUsed={refreshUser}
+        />
+      )}
+
+      {/* Pop-up de choix du badge (Premium / Business) */}
+      {choiceItem && (
+        <SubscriptionChoiceDialog
+          tier={choiceItem.tier}
+          label={choiceItem.label}
+          desc={choiceItem.desc}
+          credits={credits}
+          verifications={user?.verifications || []}
+          onClose={() => setChoiceItem(null)}
+          onChoose={(variant) => {
+            setChoiceItem(null);
+            setTermsItem({ ...variant, category: 'abonnements' });
+          }}
         />
       )}
     </div>

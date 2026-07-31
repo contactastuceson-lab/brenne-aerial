@@ -16,6 +16,7 @@ const DURATION_LABELS = {
   business_official_1m: '1 mois',
   business_official_3m: '3 mois',
   enterprise_1m: '1 mois',
+  enterprise: '1 mois',
   vip_1m: '1 mois',
 };
 

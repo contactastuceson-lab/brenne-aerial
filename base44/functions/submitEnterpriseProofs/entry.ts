@@ -52,7 +52,7 @@ export default async function(req) {
     let aiReason = '';
     let aiConfidence: any = null;
     try {
-      const prompt = `Tu es un agent de validation Enterprise pour la plateforme Eza. \u00c9value si la demande suivante provient d'une organisation l\u00e9gitime et m\u00e9rite le statut Enterprise (badge Officiel).
+      const prompt = `Tu es un agent de validation Enterprise pour la plateforme Eza. \u00c9value si la demande suivante provient d'une institution ou organisation l\u00e9gitime et m\u00e9rite le statut Enterprise (badge Gouvernement).
 
 Demande soumise:
 - Nom de l'entreprise: ${questionnaire.company_name}
@@ -97,8 +97,7 @@ R\u00e9ponds en JSON uniquement.`;
     if (aiDecision === 'approved') {
       const perks = { ...(user.perks || {}) };
       const verifs = [...(user.verifications || [])];
-      if (!verifs.includes('official')) verifs.push('official');
-      if (!verifs.includes('certified')) verifs.push('certified');
+      if (!verifs.includes('government')) verifs.push('government');
       const baseDate = perks.enterprise_until && new Date(perks.enterprise_until) > new Date()
         ? new Date(perks.enterprise_until) : new Date();
       baseDate.setDate(baseDate.getDate() + MONTH);
@@ -114,7 +113,7 @@ R\u00e9ponds en JSON uniquement.`;
         to: user.email,
         title: 'Bienvenue dans Enterprise',
         subject: '\u2705 Votre statut Enterprise est actif sur Eza',
-        body: `Bonjour **${user.display_name || user.username}**,\n\nF\u00e9licitations \u2014 votre demande Enterprise a \u00e9t\u00e9 **valid\u00e9e** par notre agent IA et votre statut est d\u00e9sormais **actif**.\n\n**Badge attribu\u00e9 :** Officiel\n**Dur\u00e9e :** 1 mois\n**Cr\u00e9dits d\u00e9pens\u00e9s :** ${ENTERPRISE_COST}\n**Cr\u00e9dits restants :** ${newCredits}\n\nVotre badge de v\u00e9rification **Officiel** est d\u00e9sormais visible sur votre profil. Vos avantages Enterprise (analytics avanc\u00e9es, stockage \u00e9tendu, acc\u00e8s anticip\u00e9) sont disponibles imm\u00e9diatement.\n\nPour g\u00e9rer vos avantages, rendez-vous dans votre **Espace Utilisateur**.\n\nMerci de votre confiance,\n\u2014 L'\u00e9quipe eza`,
+        body: `Bonjour **${user.display_name || user.username}**,\n\nF\u00e9licitations \u2014 votre demande Enterprise a \u00e9t\u00e9 **valid\u00e9e** par notre agent IA et votre statut est d\u00e9sormais **actif**.\n\n**Badge attribu\u00e9 :** Gouvernement\n**Dur\u00e9e :** 1 mois\n**Cr\u00e9dits d\u00e9pens\u00e9s :** ${ENTERPRISE_COST}\n**Cr\u00e9dits restants :** ${newCredits}\n\nVotre badge de v\u00e9rification **Gouvernement** est d\u00e9sormais visible sur votre profil. Vos avantages Enterprise (analytics avanc\u00e9es, stockage \u00e9tendu, acc\u00e8s anticip\u00e9) sont disponibles imm\u00e9diatement.\n\nPour g\u00e9rer vos avantages, rendez-vous dans votre **Espace Utilisateur**.\n\nMerci de votre confiance,\n\u2014 L'\u00e9quipe eza`,
         tagline: 'Enterprise activ\u00e9',
       }).catch(() => {}));
 
@@ -123,7 +122,7 @@ R\u00e9ponds en JSON uniquement.`;
         decision: 'approved',
         reason: aiReason,
         remainingCredits: newCredits,
-        message: 'Demande Enterprise valid\u00e9e par IA ! Badge Officiel attribu\u00e9.',
+        message: 'Demande Enterprise valid\u00e9e par IA ! Badge Gouvernement attribu\u00e9.',
       });
     }
 

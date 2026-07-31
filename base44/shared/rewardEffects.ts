@@ -25,8 +25,8 @@ export const REWARD_EFFECTS: Record<string, RewardEffect> = {
   business_3m:           { type: 'auto', apply: { verifications: ['certified'], perks: { business_until: 90 } } },
   business_official_1m:  { type: 'auto', apply: { verifications: ['official'], perks: { business_until: MONTH } } },
   business_official_3m:  { type: 'auto', apply: { verifications: ['official'], perks: { business_until: 90 } } },
-  // ── Enterprise (Officiel + perks — requiert preuves, géré par submitEnterpriseProofs) ──
-  enterprise_1m: { type: 'auto', apply: { verifications: ['official', 'certified'], perks: { enterprise_until: MONTH } } },
+  // ── Enterprise (Gouvernement + perks — requiert preuves, géré par submitEnterpriseProofs) ──
+  enterprise_1m: { type: 'auto', apply: { verifications: ['government'], perks: { enterprise_until: MONTH } } },
 
   // ── Badges (auto — ajout aux verifications) ──
   badge_verified:    { type: 'auto', apply: { verifications: ['verified'] } },

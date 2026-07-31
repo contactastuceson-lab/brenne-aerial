@@ -73,6 +73,7 @@ export default function CreateStoryDialog({ open, onClose, user, onCreated }) {
       const expiresAt = new Date(Date.now() + STORY_EXPIRY_MS).toISOString();
       const payload = {
         author_id: user?.id,
+        author_email: user?.email || '',
         author_name: user?.full_name || '',
         author_username: user?.username || '',
         author_avatar: user?.avatar_url || '',

@@ -6,6 +6,10 @@
       "type": "string",
       "description": "ID de l'auteur"
     },
+    "author_email": {
+      "type": "string",
+      "description": "Email de l'auteur (snapshot) \u2014 utilis\u00e9 pour filtrer par abonnements"
+    },
     "author_name": {
       "type": "string",
       "description": "Nom de l'auteur (snapshot)"
@@ -33,7 +37,7 @@
     },
     "text": {
       "type": "string",
-      "description": "Texte / l\u00e9g\u00e8ne (ou story texte seul)"
+      "description": "Texte / l\u00e9gende (ou story texte seul)"
     },
     "background_color": {
       "type": "string",

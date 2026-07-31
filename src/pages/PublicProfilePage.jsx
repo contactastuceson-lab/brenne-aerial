@@ -416,14 +416,20 @@ export default function PublicProfilePage() {
                       aria-label="Voir la story"
                       className="flex-shrink-0 relative z-10 active:scale-95 transition-transform"
                     >
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-[3px] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
-                        <div
-                          className="w-full h-full rounded-2xl overflow-hidden flex items-center justify-center relative"
-                          style={{ background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }}
-                        >
-                          {particles}
-                          {avatarInner}
+                      <div className="relative">
+                        <div className="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 opacity-50 animate-pulse blur-[2px]" />
+                        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-[3px] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
+                          <div
+                            className="w-full h-full rounded-2xl overflow-hidden flex items-center justify-center relative"
+                            style={{ background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }}
+                          >
+                            {particles}
+                            {avatarInner}
+                          </div>
                         </div>
+                        <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-mono text-[9px] font-bold shadow-lg whitespace-nowrap">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Story
+                        </span>
                       </div>
                     </button>
                   );

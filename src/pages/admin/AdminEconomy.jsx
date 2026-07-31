@@ -55,25 +55,33 @@ function StatCard({ icon: Icon, label, value, color }) {
 
 function CreditAdjuster() {
   const qc = useQueryClient();
-  const [email, setEmail] = useState('');
+  const [query, setQuery] = useState('');
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
   const [found, setFound] = useState(null);
-  const [searching, setSearching] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
 
-  const searchUser = async () => {
-    if (!email.trim()) return;
-    setSearching(true); setFound(null);
+  // Charge la liste des utilisateurs une fois au focus
+  const loadUsers = async () => {
+    if (allUsers.length > 0 || loading) return;
+    setLoading(true);
     try {
       const res = await base44.functions.invoke('adminGetUsers', {});
-      const users = res.data?.users || [];
-      const u = users.find(x => x.email?.toLowerCase() === email.trim().toLowerCase());
-      if (u) setFound(u);
-      else toast.error('Utilisateur introuvable');
-    } catch { toast.error('Erreur de recherche'); }
-    setSearching(false);
+      setAllUsers(res.data?.users || []);
+    } catch { toast.error('Erreur de chargement'); }
+    setLoading(false);
   };
+
+  const suggestions = query.trim().length >= 1
+    ? allUsers.filter(u => {
+        const q = query.toLowerCase();
+        return (u.email || '').toLowerCase().includes(q)
+          || (u.full_name || '').toLowerCase().includes(q)
+          || (u.display_name || '').toLowerCase().includes(q);
+      }).slice(0, 8)
+    : [];
 
   const apply = async (delta) => {
     if (!found) return;
@@ -84,6 +92,7 @@ function CreditAdjuster() {
       setFound({ ...found, referral_credits: newCredits });
       toast.success(delta >= 0 ? `+${delta} crédits ajoutés (email envoyé)` : `${delta} crédits retirés (email envoyé)`);
       setReason('');
+      setAmount('');
       qc.invalidateQueries({ queryKey: ['admin-referrals'] });
     } catch { toast.error('Erreur'); }
     setApplying(false);
@@ -96,13 +105,44 @@ function CreditAdjuster() {
         <p className="font-grotesk font-semibold text-sm">Ajuster les crédits d'un utilisateur</p>
       </div>
       <div className="p-4 space-y-3">
-        <div className="flex gap-2">
-          <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@utilisateur.fr"
-            className="flex-1" onKeyDown={e => e.key === 'Enter' && searchUser()} />
-          <Button onClick={searchUser} disabled={searching} size="sm" className="flex items-center gap-1.5">
-            {searching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />} Rechercher
-          </Button>
+        {/* Recherche utilisateur (auto-complète) */}
+        <div className="relative">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-muted-foreground/50 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <Input
+              value={found ? `${found.display_name || found.full_name || ''} · ${found.email}` : query}
+              onChange={e => { setFound(null); setQuery(e.target.value); }}
+              onFocus={loadUsers}
+              placeholder="Rechercher par nom ou email…"
+              className="pl-8 text-xs"
+            />
+          </div>
+          {loading && (
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2"><Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground/50" /></div>
+          )}
+          {!found && query.trim().length >= 1 && (
+            <div className="absolute z-20 left-0 right-0 mt-1 rounded-xl border border-border bg-popover shadow-lg overflow-hidden max-h-60 overflow-y-auto">
+              {suggestions.length === 0 ? (
+                <p className="px-3 py-2.5 text-xs text-muted-foreground/60">Aucun utilisateur</p>
+              ) : suggestions.map(u => (
+                <button key={u.id} onClick={() => { setFound(u); setQuery(''); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-secondary/60 text-left border-b border-border/40 last:border-0">
+                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {u.avatar_url ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />
+                      : <span className="font-grotesk font-bold text-[10px] text-primary">{u.full_name?.[0] || '?'}</span>}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-inter text-xs text-foreground truncate">{u.display_name || u.full_name || '—'}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground/60 truncate">{u.email}</p>
+                  </div>
+                  <span className="font-mono text-[10px] text-amber-400 flex-shrink-0">{u.referral_credits || 0} cr</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* Utilisateur sélectionné */}
         {found && (
           <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/40 border border-border">
             <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -117,8 +157,10 @@ function CreditAdjuster() {
               <p className="font-mono text-[10px] text-muted-foreground/60">Solde</p>
               <p className="font-grotesk font-black text-lg text-amber-400">{found.referral_credits || 0}</p>
             </div>
+            <button onClick={() => setFound(null)} className="text-muted-foreground/50 hover:text-foreground text-lg leading-none ml-1">×</button>
           </div>
         )}
+
         {found && (
           <Input value={reason} onChange={e => setReason(e.target.value)} placeholder="Motif (envoyé par email à l'utilisateur)…"
             className="text-xs" />

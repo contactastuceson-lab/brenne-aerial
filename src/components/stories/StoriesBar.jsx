@@ -21,14 +21,21 @@ export default function StoriesBar({ user: userProp }) {
           try { me = await base44.auth.me(); setUser(me); } catch {}
         }
       }
-      const [list, following] = await Promise.all([
+      const [list, following, pubRes] = await Promise.all([
         base44.entities.Story.list('-created_date', 200),
         me?.email ? base44.entities.Follow.filter({ follower_email: me.email }) : Promise.resolve([]),
+        base44.functions.invoke('getPublicUsers', {}).catch(() => []),
       ]);
       const followingEmails = new Set((following || []).map((f) => f.following_email).filter(Boolean));
+      const pubUsers = Array.isArray(pubRes) ? pubRes : pubRes?.data || [];
+      const emailByAuthorId = {};
+      pubUsers.forEach((u) => { if (u?.id) emailByAuthorId[u.id] = u.email; });
       // Ne montrer que les stories de l'utilisateur courant + celles des comptes qu'il suit
       const filtered = (list || []).filter(
-        (s) => s.author_id === me?.id || (s.author_email && followingEmails.has(s.author_email))
+        (s) =>
+          s.author_id === me?.id ||
+          (s.author_email && followingEmails.has(s.author_email)) ||
+          (s.author_id && followingEmails.has(emailByAuthorId[s.author_id]))
       );
       setGroups(groupStoriesByAuthor(filtered));
     } catch {}

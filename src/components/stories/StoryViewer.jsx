@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { X, Eye, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { storyDuration, timeAgo, gradientByKey } from '@/lib/storyUtils';
@@ -117,7 +118,18 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
 
       {/* Story container */}
       <div className="relative w-full h-full sm:w-[420px] sm:h-[90vh] sm:rounded-2xl overflow-hidden bg-black">
-        {renderContent()}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={story.id}
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="absolute inset-0"
+          >
+            {renderContent()}
+          </motion.div>
+        </AnimatePresence>
 
         {/* Top overlay: progress bars + close */}
         <div className="absolute top-0 left-0 right-0 p-3 z-30 pointer-events-none">
@@ -125,7 +137,7 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
             {group.stories.map((_, i) => (
               <div key={i} className="flex-1 h-0.5 rounded-full bg-white/30 overflow-hidden">
                 <div
-                  className="h-full bg-white rounded-full"
+                  className="h-full bg-white rounded-full transition-[width] duration-100 ease-linear"
                   style={{ width: i < storyIdx ? '100%' : i === storyIdx ? `${progress * 100}%` : '0%' }}
                 />
               </div>

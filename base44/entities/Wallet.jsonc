@@ -33,6 +33,11 @@
     "color": {
       "type": "string",
       "description": "Couleur d'affichage (optionnel)"
+    },
+    "frozen": {
+      "type": "boolean",
+      "default": false,
+      "description": "Portefeuille gel\u00e9 par l'administration (transferts bloqu\u00e9s)"
     }
   },
   "required": [

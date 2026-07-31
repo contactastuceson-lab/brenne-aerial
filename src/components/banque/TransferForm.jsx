@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -11,6 +11,17 @@ export default function TransferForm({ user, wallets, onDone }) {
   const [source, setSource] = useState('primary');
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rules, setRules] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const rows = await base44.entities.AppSettings.filter({ key: 'bank_rules' });
+        const r = (rows || [])[0];
+        if (r?.value) setRules(JSON.parse(r.value));
+      } catch {}
+    })();
+  }, []);
 
   const sourceBalance = source === 'primary'
     ? (user?.referral_credits || 0)
@@ -56,7 +67,7 @@ export default function TransferForm({ user, wallets, onDone }) {
             <select value={source} onChange={e => setSource(e.target.value)}
               className="mt-1 w-full h-9 rounded-md border border-input bg-transparent px-2 text-sm text-foreground">
               <option value="primary">Principal ({user?.referral_credits || 0})</option>
-              {wallets.map(w => <option key={w.id} value={w.id}>{w.name} ({w.balance || 0})</option>)}
+              {wallets.map(w => <option key={w.id} value={w.id} disabled={!!w.frozen}>{w.name} ({w.balance || 0}){w.frozen ? ' — gelé' : ''}</option>)}
             </select>
           </div>
           <div>
@@ -73,6 +84,14 @@ export default function TransferForm({ user, wallets, onDone }) {
           Envoyer {amount ? amount + ' crédits' : ''}
         </Button>
         <p className="font-inter text-[11px] text-muted-foreground/50">Disponible sur la source : {sourceBalance} crédits</p>
+        {rules && (rules.fee_percent > 0 || rules.min_transfer > 0 || rules.max_transfer > 0 || rules.daily_max_amount > 0) && (
+          <p className="font-mono text-[10px] text-muted-foreground/60">
+            {rules.min_transfer > 0 && <>min {rules.min_transfer} · </>}
+            {rules.max_transfer > 0 && <>max {rules.max_transfer} · </>}
+            {rules.fee_percent > 0 && <>frais {rules.fee_percent}% · </>}
+            {rules.daily_max_amount > 0 && <>plafond jour {rules.daily_max_amount}</>}
+          </p>
+        )}
       </div>
     </div>
   );

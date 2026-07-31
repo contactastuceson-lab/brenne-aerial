@@ -19,6 +19,7 @@ export default function WalletCard({ wallet, onMove, onDelete }) {
         <div className="flex-1 min-w-0">
           <p className="font-grotesk font-bold text-sm text-foreground truncate">{wallet.name}</p>
           <p className="font-mono text-[10px] text-muted-foreground/60 uppercase">{wallet.type}</p>
+          {wallet.frozen && <span className="mt-1 inline-block px-1.5 py-0.5 rounded-full text-[9px] font-mono border border-sky-400/30 bg-sky-400/10 text-sky-400">Gelé</span>}
         </div>
         {onDelete && (wallet.balance || 0) === 0 && (
           <button onClick={onDelete} className="text-muted-foreground/50 hover:text-destructive transition" title="Supprimer">
@@ -31,8 +32,8 @@ export default function WalletCard({ wallet, onMove, onDelete }) {
           <p className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60">Solde</p>
           <p className={`font-grotesk font-black text-2xl ${meta.color}`}>{wallet.balance || 0}</p>
         </div>
-        <button onClick={onMove} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-foreground/10 text-foreground font-grotesk font-bold text-xs hover:bg-foreground/15 transition">
-          <ArrowLeftRight className="w-3 h-3" /> Déplacer
+        <button onClick={onMove} disabled={!!wallet.frozen} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-foreground/10 text-foreground font-grotesk font-bold text-xs hover:bg-foreground/15 transition disabled:opacity-40 disabled:cursor-not-allowed">
+          <ArrowLeftRight className="w-3 h-3" /> {wallet.frozen ? 'Gelé' : 'Déplacer'}
         </button>
       </div>
     </div>

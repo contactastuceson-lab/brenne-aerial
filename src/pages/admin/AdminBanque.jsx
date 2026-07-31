@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wallet, CreditCard, ArrowLeftRight, Coins } from 'lucide-react';
+import { Wallet, CreditCard, ArrowLeftRight, Coins, Users, UserCircle, SlidersHorizontal } from 'lucide-react';
 import OverviewTab from '@/components/admin/banque/OverviewTab';
 import WalletsTab from '@/components/admin/banque/WalletsTab';
 import TransactionsTab from '@/components/admin/banque/TransactionsTab';
 import SoldesTab from '@/components/admin/banque/SoldesTab';
+import DistributionTab from '@/components/admin/banque/DistributionTab';
+import ProfilesTab from '@/components/admin/banque/ProfilesTab';
+import RulesTab from '@/components/admin/banque/RulesTab';
 
 const TABS = [
   { id: 'overview', label: 'Vue d\'ensemble', icon: Wallet },
   { id: 'wallets', label: 'Portefeuilles', icon: CreditCard },
   { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
   { id: 'soldes', label: 'Soldes', icon: Coins },
+  { id: 'distribution', label: 'Distribution', icon: Users },
+  { id: 'profils', label: 'Profils', icon: UserCircle },
+  { id: 'regles', label: 'Règles', icon: SlidersHorizontal },
 ];
 
 export default function AdminBanque() {
@@ -54,6 +60,9 @@ export default function AdminBanque() {
             {tab === 'wallets' && <WalletsTab />}
             {tab === 'transactions' && <TransactionsTab />}
             {tab === 'soldes' && <SoldesTab />}
+            {tab === 'distribution' && <DistributionTab />}
+            {tab === 'profils' && <ProfilesTab />}
+            {tab === 'regles' && <RulesTab />}
           </motion.div>
         </AnimatePresence>
       </div>

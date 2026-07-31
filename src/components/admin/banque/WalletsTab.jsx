@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
-  Wallet as WalletIcon, Plus, Trash2, Loader2, RefreshCw, Search, Edit2,
+  Wallet as WalletIcon, Plus, Trash2, Loader2, RefreshCw, Search, Edit2, Snowflake,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +38,17 @@ export default function WalletsTab() {
     : wallets;
 
   const refresh = () => qc.invalidateQueries({ queryKey: ['admin-banque-wallets'] });
+
+  const toggleFreeze = async (w) => {
+    setBusy(w.id);
+    try {
+      const res = await base44.functions.invoke('adminBanque', { action: 'set_frozen', walletId: w.id, frozen: !w.frozen });
+      if (res.data?.error) { toast.error(res.data.error); return; }
+      toast.success(w.frozen ? 'Portefeuille débloqué' : 'Portefeuille gelé');
+      refresh();
+    } catch { toast.error('Erreur'); }
+    setBusy(null);
+  };
 
   const saveBalance = async () => {
     if (!editWallet) return;
@@ -101,7 +112,14 @@ export default function WalletsTab() {
                     {w.owner_email || w.owner_id} · {TYPE_LABELS[w.type] || w.type}
                   </p>
                 </div>
-                <span className="font-mono text-sm font-bold text-amber-400 flex-shrink-0">{(w.balance || 0).toLocaleString('fr-FR')} cr</span>
+                {w.frozen && (
+                  <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono border border-sky-400/30 bg-sky-400/10 text-sky-400 flex-shrink-0">Gelé</span>
+                )}
+                <span className={`font-mono text-sm font-bold flex-shrink-0 ${w.frozen ? 'text-muted-foreground' : 'text-amber-400'}`}>{(w.balance || 0).toLocaleString('fr-FR')} cr</span>
+                <button onClick={() => toggleFreeze(w)} disabled={busy === w.id} title={w.frozen ? 'Débloquer' : 'Geler'}
+                  className="w-7 h-7 rounded-lg bg-sky-400/10 border border-sky-400/30 flex items-center justify-center hover:bg-sky-400/20 transition-all">
+                  {busy === w.id ? <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400" /> : <Snowflake className="w-3.5 h-3.5 text-sky-400" />}
+                </button>
                 <button onClick={() => setEditWallet({ ...w, newBalance: w.balance || 0, reason: '' })} disabled={busy === w.id}
                   className="w-7 h-7 rounded-lg bg-secondary/60 border border-border flex items-center justify-center hover:bg-secondary transition-all">
                   <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />

@@ -25,6 +25,7 @@ export default async function(req: Request): Promise<Response> {
     } else {
       const w = (wallets || []).find((x: any) => x.id === fromId);
       if (!w) return Response.json({ error: 'Portefeuille source introuvable' }, { status: 404 });
+      if (w.frozen) return Response.json({ error: `Portefeuille « ${w.name} » gelé par l'administration` }, { status: 400 });
       fromBalance = Number(w.balance || 0);
       fromName = w.name;
     }
@@ -32,6 +33,7 @@ export default async function(req: Request): Promise<Response> {
 
     const toWallet = (wallets || []).find((x: any) => x.id === toId);
     if (!toWallet) return Response.json({ error: 'Portefeuille destination introuvable' }, { status: 404 });
+    if (toWallet.frozen) return Response.json({ error: `Portefeuille destination « ${toWallet.name} » gelé` }, { status: 400 });
     const toName = toWallet.name;
     const toBalance = Number(toWallet.balance || 0);
 

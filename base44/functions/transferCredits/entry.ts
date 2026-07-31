@@ -16,6 +16,32 @@ export default async function(req: Request): Promise<Response> {
     if (!recipientRaw) return Response.json({ error: 'Destinataire requis' }, { status: 400 });
     if (amount <= 0) return Response.json({ error: 'Montant invalide' }, { status: 400 });
 
+    // Règles bancaires (plafonds, frais, limites quotidiennes)
+    let bankRules: any = { min_transfer: 0, max_transfer: 0, fee_percent: 0, daily_max_count: 0, daily_max_amount: 0 };
+    try {
+      const rr = await base44.asServiceRole.entities.AppSettings.filter({ key: 'bank_rules' });
+      const rv = (rr || [])[0];
+      if (rv?.value) bankRules = { ...bankRules, ...JSON.parse(rv.value) };
+    } catch {}
+    if (bankRules.min_transfer > 0 && amount < bankRules.min_transfer)
+      return Response.json({ error: `Montant minimum : ${bankRules.min_transfer} crédits` }, { status: 400 });
+    if (bankRules.max_transfer > 0 && amount > bankRules.max_transfer)
+      return Response.json({ error: `Montant maximum : ${bankRules.max_transfer} crédits` }, { status: 400 });
+    try {
+      if (bankRules.daily_max_count > 0 || bankRules.daily_max_amount > 0) {
+        const since = new Date(Date.now() - 86400000).toISOString();
+        const recent = await base44.asServiceRole.entities.CreditTransaction.filter({ owner_id: user.id, type: 'transfer_out', created_date: { $gte: since } });
+        const rec = recent || [];
+        if (bankRules.daily_max_count > 0 && rec.length >= bankRules.daily_max_count)
+          return Response.json({ error: `Limite quotidienne atteinte (${bankRules.daily_max_count} virements / 24h)` }, { status: 400 });
+        const sum24 = rec.reduce((s: number, t: any) => s + Math.abs(t.amount || 0), 0);
+        if (bankRules.daily_max_amount > 0 && sum24 + amount > bankRules.daily_max_amount)
+          return Response.json({ error: `Limite quotidienne atteinte (${bankRules.daily_max_amount} crédits / 24h)` }, { status: 400 });
+      }
+    } catch {}
+    const fee = Math.floor(amount * (Number(bankRules.fee_percent) || 0) / 100);
+    const netReceived = amount - fee;
+
     const ident = recipientRaw.replace(/^@/, '').toLowerCase();
 
     // Résoudre le destinataire par email ou username
@@ -37,6 +63,7 @@ export default async function(req: Request): Promise<Response> {
       const wallets = await base44.asServiceRole.entities.Wallet.filter({ owner_id: user.id });
       const w = (wallets || []).find((x: any) => x.id === sourceWalletId);
       if (!w) return Response.json({ error: 'Portefeuille source introuvable' }, { status: 404 });
+      if (w.frozen) return Response.json({ error: `Portefeuille « ${w.name} » gelé par l'administration` }, { status: 400 });
       sourceBalance = Number(w.balance || 0);
       sourceWalletName = w.name;
     }
@@ -50,8 +77,8 @@ export default async function(req: Request): Promise<Response> {
       await base44.asServiceRole.entities.Wallet.update(sourceWalletId, { balance: sourceBalance - amount });
     }
 
-    // Créditer le destinataire (compte principal)
-    const newReceiverCredits = Number(recipient.referral_credits || 0) + amount;
+    // Créditer le destinataire (compte principal) — déduction des frais
+    const newReceiverCredits = Number(recipient.referral_credits || 0) + netReceived;
     await base44.asServiceRole.entities.User.update(recipient.id, { referral_credits: newReceiverCredits });
 
     // Ledger : un enregistrement côté expéditeur, un côté destinataire
@@ -73,7 +100,7 @@ export default async function(req: Request): Promise<Response> {
       {
         owner_id: recipient.id,
         type: 'transfer_in',
-        amount,
+        amount: netReceived,
         counterparty_id: user.id,
         counterparty_name: senderLabel,
         counterparty_username: user.username || '',
@@ -101,7 +128,8 @@ export default async function(req: Request): Promise<Response> {
     const senderEsc = esc(senderLabel);
     const recipEsc = esc(recipLabel);
     const noteEsc = esc(note);
-    const noteLine = note ? ` — ${noteEsc}` : '';
+    const feeLine = fee > 0 ? ` (frais ${fee} cr déduits)` : '';
+    const noteLine = note ? ` — ${noteEsc}${feeLine}` : (fee > 0 ? ` —${feeLine}` : '');
     const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     const sourceNewBalance = sourceWalletId === 'primary' ? newSenderCredits : (sourceBalance - amount);
 
@@ -112,7 +140,7 @@ export default async function(req: Request): Promise<Response> {
         <p style="color:#cbd5e1;font-size:15px;line-height:1.6;margin:0 0 16px;">Vous avez reçu un virement de <strong style="color:#f1f5f9;">${amount} crédits Eza</strong> de la part de <strong style="color:#f1f5f9;">${senderEsc}</strong>${noteLine}.</p>
         <div style="background:#0b1220;border:1px solid #1e293b;border-radius:14px;padding:20px;margin:16px 0;text-align:center;">
           <p style="color:#64748b;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">Crédits reçus</p>
-          <p style="font-size:34px;font-weight:800;margin:0;color:#34d399;">＋ ${amount.toLocaleString('fr-FR')} crédits</p>
+          <p style="font-size:34px;font-weight:800;margin:0;color:#34d399;">＋ ${netReceived.toLocaleString('fr-FR')} crédits</p>
           <div style="display:flex;justify-content:center;gap:24px;margin-top:18px;">
             <div><p style="color:#64748b;font-size:10px;margin:0;letter-spacing:1px;text-transform:uppercase;">Nouveau solde</p><p style="color:#34d399;font-size:18px;font-weight:700;margin:4px 0 0;">${newReceiverCredits.toLocaleString('fr-FR')}</p></div>
           </div>
@@ -122,7 +150,7 @@ export default async function(req: Request): Promise<Response> {
       const recipHtml = ezaEmailShell('Crédits reçus', recipContent, { accent: '#34d399', tagline: 'Virement Eza' });
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: recipient.email,
-        subject: `eza — ✅ ${amount} crédits reçus de ${senderEsc}`,
+        subject: `eza — ✅ ${netReceived} crédits reçus de ${senderEsc}`,
         body: recipHtml,
         from_name: 'eza — Banque',
       });

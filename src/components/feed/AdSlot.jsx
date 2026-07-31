@@ -2,12 +2,17 @@ import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
 import { Megaphone, ExternalLink, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import { hasPremium } from '@/lib/subscriptionGating';
 
 // AdSlot — renders an active AdCampaign banner inside the feed or sidebar.
 // Tracks impressions (on view) and clicks (on click) via the entity.
 // Ads are intentionally intrusive (no dismiss, animated, large) to
 // incentivize users to upgrade to a premium tier that removes them.
+// Premium+ subscribers see NO ads at all.
 const AdSlot = memo(function AdSlot({ placement = 'feed_banner', className = '' }) {
+  const { user } = useAuth();
+  const isPremium = hasPremium(user?.perks);
   const [ad, setAd] = useState(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -46,7 +51,7 @@ const AdSlot = memo(function AdSlot({ placement = 'feed_banner', className = '' 
     }).catch(() => {});
   };
 
-  if (!ad) return null;
+  if (isPremium || !ad) return null;
 
   const isSidebar = placement === 'sidebar';
 

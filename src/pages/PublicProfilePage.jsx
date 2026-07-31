@@ -17,6 +17,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 import PostCard from '@/components/post/PostCard';
+import StoryViewer from '@/components/stories/StoryViewer';
+import { groupStoriesByAuthor } from '@/lib/storyUtils';
 import { notify } from '@/lib/notificationHelper';
 import PerkBadges, { getPerkEffects, getActivePerks, PerkParticles } from '@/components/profile/ActivePerks';
 import AdSlot from '@/components/feed/AdSlot';
@@ -92,6 +94,8 @@ export default function PublicProfilePage() {
   const [badgeCounts, setBadgeCounts] = useState({});
   const [allUsers, setAllUsers] = useState([]);
   const [affiliationOpen, setAffiliationOpen] = useState(false);
+  const [storyGroup, setStoryGroup] = useState(null);
+  const [storyViewerOpen, setStoryViewerOpen] = useState(false);
 
   const userAffiliationDescriptor = useMemo(() => user?.id ? { userId: user.id } : null, [user?.id]);
   const { affiliations: userAffiliations } = useOrganizationAffiliations(userAffiliationDescriptor);
@@ -187,12 +191,14 @@ export default function PublicProfilePage() {
         prefillUserCache(fetchedUsers);
         setAllUsers(fetchedUsers);
 
-        const [followersList, followingList, discussions, allPosts] = await Promise.all([
+        const [followersList, followingList, discussions, allPosts, stories] = await Promise.all([
           base44.entities.Follow.filter({ following_email: foundUser.email }),
           base44.entities.Follow.filter({ follower_email: foundUser.email }),
           base44.entities.Discussion.filter({ author_id: foundUser.id }, '-created_date', 5).catch(() => []),
           base44.entities.Post.filter({ author_id: foundUser.id }, '-created_date', 50).catch(() => []),
+          base44.entities.Story.filter({ author_id: foundUser.id }, '-created_date', 50).catch(() => []),
         ]);
+        setStoryGroup(groupStoriesByAuthor(stories)[0] || null);
         setFollowers(followersList);
         setFollowingCount(followingList.length);
         setRecentDiscussions(discussions);
@@ -393,24 +399,50 @@ export default function PublicProfilePage() {
           <div className="relative px-4 -mt-16">
             <div className="flex items-end justify-between gap-4 mb-4">
               {/* Avatar */}
-              <div
-                className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
-                style={isSupreme
-                  ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
-                  : perkFx.accentRing
-                    ? { border: `3px solid ${perkFx.accentRing}`, boxShadow: `0 0 0 2px ${perkFx.accentRing}33, 0 0 24px ${perkFx.accentRing}55`, background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
-                    : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
-                }
-              >
-                {perkFx.hasParticles && <PerkParticles color={perkFx.particleColor || perkFx.accentRing || '#22d3ee'} />}
-                {user.avatar_url ? (
+              {(() => {
+                const avatarInner = user.avatar_url ? (
                   <img src={user.avatar_url} alt="" className="w-full h-full object-cover relative z-[1]" />
                 ) : (
                   <span className="font-grotesk font-bold text-4xl text-white drop-shadow-sm relative z-[1]">
                     {user.full_name?.[0]?.toUpperCase() || '?'}
                   </span>
-                )}
-              </div>
+                );
+                const particles = perkFx.hasParticles && <PerkParticles color={perkFx.particleColor || perkFx.accentRing || '#22d3ee'} />;
+                // Anneau story (carré, façon Instagram) si l'utilisateur a une story active
+                if (storyGroup) {
+                  return (
+                    <button
+                      onClick={() => setStoryViewerOpen(true)}
+                      aria-label="Voir la story"
+                      className="flex-shrink-0 relative z-10 active:scale-95 transition-transform"
+                    >
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-[3px] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
+                        <div
+                          className="w-full h-full rounded-2xl overflow-hidden flex items-center justify-center relative"
+                          style={{ background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }}
+                        >
+                          {particles}
+                          {avatarInner}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                }
+                return (
+                  <div
+                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative z-10"
+                    style={isSupreme
+                      ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
+                      : perkFx.accentRing
+                        ? { border: `3px solid ${perkFx.accentRing}`, boxShadow: `0 0 0 2px ${perkFx.accentRing}33, 0 0 24px ${perkFx.accentRing}55`, background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
+                        : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
+                    }
+                  >
+                    {particles}
+                    {avatarInner}
+                  </div>
+                );
+              })()}
 
               {/* Status badges top right */}
               <div className="flex items-center gap-2 flex-wrap pb-1">
@@ -718,6 +750,15 @@ export default function PublicProfilePage() {
       </div>
 
       <AffiliationModal user={user} open={affiliationOpen} onOpenChange={setAffiliationOpen} />
+
+      {storyViewerOpen && storyGroup && (
+        <StoryViewer
+          groups={[storyGroup]}
+          startAuthorIndex={0}
+          currentUser={currentUser}
+          onClose={() => setStoryViewerOpen(false)}
+        />
+      )}
 
       {/* Right sidebar — sticky, same as HomePage */}
       <div className="hidden xl:flex flex-col w-[300px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto py-4 px-3" style={{ scrollbarWidth: 'none' }}>

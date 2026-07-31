@@ -55,6 +55,7 @@ export default async function(req) {
     // ── CREATE : nouvelle campagne (draft) ──
     // Coût obligatoire en crédits Eza — déduit du solde du business.
     const MIN_BUDGET = 50;
+    const MIN_DAILY = 1;
     if (action === 'create') {
       const { title, advertiser_name, image_url, cta_url, cta_label, headline, body: adBody, placement, starts_at, ends_at, budget_credits, daily_budget } = body || {};
       if (!title || !title.trim()) return Response.json({ error: 'Titre requis' }, { status: 400 });

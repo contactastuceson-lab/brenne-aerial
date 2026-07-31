@@ -102,19 +102,23 @@
         "active",
         "suspended",
         "banned",
-        "restricted",
-        "frozen"
+        "restricted"
       ],
       "default": "active"
     },
-    "freeze_reason": {
-      "type": "string",
-      "description": "Motif du gel du compte (account_status = frozen)"
+    "bank_frozen": {
+      "type": "boolean",
+      "default": false,
+      "description": "Compte bancaire gel\u00e9 par l'administration (virements, d\u00e9placements et boutique d\u00e9sactiv\u00e9s)"
     },
-    "frozen_at": {
+    "bank_freeze_reason": {
+      "type": "string",
+      "description": "Motif du gel du compte bancaire"
+    },
+    "bank_frozen_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Date du gel du compte"
+      "description": "Date du gel du compte bancaire"
     },
     "two_factor_enabled": {
       "type": "boolean",

@@ -4,7 +4,7 @@ import MainSkeleton from '@/components/layout/MainSkeleton';
 import HomeLeftSidebar from '@/components/home/HomeLeftSidebar';
 import { base44 } from '@/api/base44Client';
 import { ShieldAlert, X } from 'lucide-react';
-import { isRestricted, isSuspended, isFrozen, RESTRICTION_LABELS } from '@/lib/accountStatus';
+import { isRestricted, isSuspended, RESTRICTION_LABELS } from '@/lib/accountStatus';
 
 function RestrictedBanner({ user }) {
   const [dismissed, setDismissed] = useState(false);
@@ -15,32 +15,7 @@ function RestrictedBanner({ user }) {
 
   const isS = isSuspended(user);
   const isR = isRestricted(user);
-  const isF = isFrozen(user);
-  if (!isR && !isS && !isF) return null;
-
-  if (isF) {
-    return (
-      <div className="sticky top-0 z-50 border-b border-red-500/40" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.14) 0%, rgba(220,38,38,0.10) 100%)', backdropFilter: 'blur(12px)' }}>
-        <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(239,68,68,0.9), transparent)' }} />
-        <div className="px-4 py-3 flex items-start gap-3">
-          <div className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-base" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}>❄️</div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#ef4444' }} />
-              <span className="font-grotesk font-bold text-sm" style={{ color: '#fca5a5' }}>Compte gelé</span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Votre compte est temporairement gelé par l'administration. Transferts, boutique, devis et actions sont désactivés.
-            </p>
-            {user?.freeze_reason && (
-              <p className="text-xs italic mt-1" style={{ color: '#fca5a5' }}>« {user.freeze_reason} »</p>
-            )}
-            <p className="text-[11px] text-muted-foreground mt-1.5">Contactez le support Eza pour toute question.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (!isR && !isS) return null;
 
   const color = isS ? 'amber' : 'orange';
   const title = isS ? 'Compte suspendu' : 'Compte restreint';

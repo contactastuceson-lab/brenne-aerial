@@ -242,30 +242,28 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, amount: amt, fromBalance: fromBal - amt, toBalance: Number(toUser.referral_credits || 0) + amt });
     }
 
-    // ── Gel / dégel d'un compte entier ──
-    if (action === 'set_account_frozen') {
+    // ── Gel / dégel du compte bancaire d'un utilisateur ──
+    if (action === 'set_bank_frozen') {
       const { userId, frozen, reason } = body;
       if (!userId) return Response.json({ error: 'userId manquant' }, { status: 400 });
       const u: any = await base44.asServiceRole.entities.User.get(userId).catch(() => null);
       if (!u) return Response.json({ error: 'Utilisateur introuvable' }, { status: 404 });
-      const updateData: any = {};
+      const updateData: any = { bank_frozen: !!frozen };
       if (frozen) {
-        updateData.account_status = 'frozen';
-        updateData.freeze_reason = String(reason || '').slice(0, 500);
-        updateData.frozen_at = new Date().toISOString();
+        updateData.bank_freeze_reason = String(reason || '').slice(0, 500);
+        updateData.bank_frozen_at = new Date().toISOString();
       } else {
-        updateData.account_status = 'active';
-        updateData.freeze_reason = '';
-        updateData.frozen_at = null;
+        updateData.bank_freeze_reason = '';
+        updateData.bank_frozen_at = null;
       }
       await base44.asServiceRole.entities.User.update(userId, updateData);
       try {
         await base44.asServiceRole.integrations.Core.SendEmail({
-          to: u.email, from_name: 'eza',
-          subject: frozen ? `eza — ❄️ Votre compte est gelé` : `eza — ✅ Votre compte est réactivé`,
+          to: u.email, from_name: 'eza — Banque',
+          subject: frozen ? `eza — ❄️ Votre compte bancaire est gelé` : `eza — ✅ Votre compte bancaire est réactivé`,
           body: frozen
-            ? `<p>Bonjour,</p><p>Votre compte Eza a été <strong>gelé</strong> par l'administration. Les transferts, la boutique, les devis et la plupart des actions sont temporairement désactivés.</p>${reason ? `<p>Motif : ${String(reason).slice(0,500)}</p>` : ''}<p>Pour toute question, contactez le support Eza.</p>`
-            : `<p>Bonjour,</p><p>Votre compte Eza est de nouveau <strong>actif</strong>. Toutes les fonctionnalités sont rétablies.</p>`,
+            ? `<p>Bonjour,</p><p>Votre <strong>compte bancaire Eza</strong> a été gelé par l'administration. Les virements, déplacements de crédits et achats en boutique sont temporairement désactivés. Le reste de votre compte reste accessible normalement.</p>${reason ? `<p>Motif : ${String(reason).slice(0,500)}</p>` : ''}<p>Pour toute question, contactez le support Eza.</p>`
+            : `<p>Bonjour,</p><p>Votre <strong>compte bancaire Eza</strong> est de nouveau <strong>actif</strong>. Les virements et achats sont rétablis.</p>`,
         });
       } catch {}
       return Response.json({ success: true, frozen: !!frozen });

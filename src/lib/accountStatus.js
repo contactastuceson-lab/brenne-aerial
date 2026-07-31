@@ -18,10 +18,6 @@
  *   - "profile_edit" → modifier son profil
  */
 
-export function isFrozen(user) {
-  return user?.account_status === 'frozen';
-}
-
 export function isRestricted(user) {
   return user?.account_status === 'restricted';
 }
@@ -46,8 +42,8 @@ export function isActive(user) {
  */
 export function isActionBlocked(user, action) {
   if (!user) return false;
-  // Suspendu, banni et gelé = tout bloqué
-  if (isSuspended(user) || isBanned(user) || isFrozen(user)) return true;
+  // Suspendu et banni = tout bloqué
+  if (isSuspended(user) || isBanned(user)) return true;
   if (!isRestricted(user)) return false;
 
   // Restreint : si restrictions[] définies, vérifier la liste

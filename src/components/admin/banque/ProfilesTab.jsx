@@ -18,12 +18,12 @@ export default function ProfilesTab() {
   const toggleFreeze = async () => {
     if (!selected) return;
     const u = profile?.user || selected;
-    const frozen = u.account_status === 'frozen';
-    const reason = frozen ? '' : (prompt('Motif du gel du compte ?') || '');
+    const frozen = !!u.bank_frozen;
+    const reason = frozen ? '' : (prompt('Motif du gel du compte bancaire ?') || '');
     if (!frozen && !reason.trim()) return;
     setFreezing(true);
     try {
-      const res = await base44.functions.invoke('adminBanque', { action: 'set_account_frozen', userId: selected.id, frozen: !frozen, reason });
+      const res = await base44.functions.invoke('adminBanque', { action: 'set_bank_frozen', userId: selected.id, frozen: !frozen, reason });
       if (res.data?.error) { toast.error(res.data.error); return; }
       toast.success(frozen ? 'Compte dégelé' : 'Compte gelé');
       const p = await base44.functions.invoke('adminBanque', { action: 'user_profile', userId: selected.id });
@@ -93,23 +93,23 @@ export default function ProfilesTab() {
               </div>
             </div>
             <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/60">
-              {profile.user?.account_status === 'frozen' ? (
+              {profile.user?.bank_frozen ? (
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-mono border border-red-400/30 bg-red-400/10 text-red-400">
-                  <Snowflake className="w-3 h-3" /> Compte gelé
+                  <Snowflake className="w-3 h-3" /> Banque gelée
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-mono border border-emerald-400/30 bg-emerald-400/10 text-emerald-400">
-                  <ShieldCheck className="w-3 h-3" /> Compte actif
+                  <ShieldCheck className="w-3 h-3" /> Banque active
                 </span>
               )}
               <button onClick={toggleFreeze} disabled={freezing}
                 className={`ml-auto px-3 py-1.5 rounded-lg text-xs font-grotesk font-bold flex items-center gap-1.5 transition-all disabled:opacity-50 ${
-                  profile.user?.account_status === 'frozen'
+                  profile.user?.bank_frozen
                     ? 'bg-emerald-400/10 border border-emerald-400/30 text-emerald-400 hover:bg-emerald-400/20'
                     : 'bg-red-400/10 border border-red-400/30 text-red-400 hover:bg-red-400/20'
                 }`}>
                 {freezing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Snowflake className="w-3.5 h-3.5" />}
-                {profile.user?.account_status === 'frozen' ? 'Dégeler le compte' : 'Geler le compte'}
+                {profile.user?.bank_frozen ? 'Dégeler la banque' : 'Geler la banque'}
               </button>
             </div>
           </div>

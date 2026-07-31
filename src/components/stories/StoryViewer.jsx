@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Eye, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { storyDuration, timeAgo, gradientByKey } from '@/lib/storyUtils';
@@ -108,7 +109,7 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
     );
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center">
       {/* Tap zones */}
       <button className="absolute left-0 top-0 bottom-0 w-1/3 z-20" onClick={prev} aria-label="Précédent" />
@@ -198,6 +199,7 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

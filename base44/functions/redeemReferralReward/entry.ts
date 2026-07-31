@@ -142,21 +142,47 @@ export default async function(req) {
     }
 
     // Email confirmation — branded eza template
-    waitUntil(
-      sendEzaEmail(base44, {
-        to: user.email,
-        title: effect.type === 'auto' ? 'Récompense activée' : effect.type === 'token' ? 'Tokens ajoutés' : 'Récompense réclamée',
-        subject: effect.type === 'auto' ? '✅ Votre récompense Eza est active' : effect.type === 'token' ? '🎫 Tokens ajoutés sur Eza' : '🎁 Récompense réclamée sur Eza',
-        body: `Bonjour **${user.display_name || user.username}**,\n\nVous avez échangé **${cost} crédits** contre :\n\n**${rewardLabel}**\n\n${
-          effect.type === 'auto'
-            ? 'Votre avantage a été **activé automatiquement** et est disponible dès maintenant sur votre compte.'
-            : effect.type === 'token'
-              ? `**${tokenCount} token(s)** ont été ajoutés à votre compte. Rendez-vous sur la **Boutique** pour les utiliser sur vos publications.`
-              : 'Votre demande est en cours de traitement par notre équipe. Vous recevrez une notification dès qu\'elle sera active.'
-        }\n\n- **Crédits restants :** ${newCredits}\n- **Type :** ${effect.type === 'auto' ? 'Instantané' : effect.type === 'token' ? 'Token' : 'Manuel'}\n\nMerci de votre confiance,\n— L'équipe eza`,
-        tagline: 'Boutique & Récompenses',
-      }).catch(() => {})
-    );
+    // Email spécial "Bienvenue dans [Tier]" pour les abonnements
+    const SUB_TIERS: Record<string, { tier: string; duration: string }> = {
+      premium_1m: { tier: 'Premium', duration: '1 mois' },
+      premium_3m: { tier: 'Premium', duration: '3 mois' },
+      premium_1y: { tier: 'Premium', duration: '12 mois' },
+      business_1m: { tier: 'Business', duration: '1 mois' },
+      business_3m: { tier: 'Business', duration: '3 mois' },
+      enterprise_1m: { tier: 'Enterprise', duration: '1 mois' },
+      vip_1m: { tier: 'VIP', duration: '1 mois' },
+    };
+    const subTier = SUB_TIERS[rewardId];
+
+    if (subTier) {
+      // Email "spectacle" de bienvenue dans le tier
+      waitUntil(
+        sendEzaEmail(base44, {
+          to: user.email,
+          title: `Bienvenue dans ${subTier.tier}`,
+          subject: `✨ Vous êtes maintenant membre ${subTier.tier} sur Eza`,
+          body: `Bonjour **${user.display_name || user.username}**,\n\nFélicitations — votre abonnement **${subTier.tier}** est désormais **actif** sur votre compte Eza.\n\n**Durée :** ${subTier.duration}\n**Crédits dépensés :** ${cost}\n**Crédits restants :** ${newCredits}\n\nVos avantages sont immédiatement disponibles sur l'ensemble de l'écosystème Eza. Profitez d'une expérience sans publicité, de publications sponsorisées, et de bien plus encore selon votre tier.\n\nPour gérer vos avantages, rendez-vous dans votre **Espace Utilisateur**.\n\nMerci de votre confiance,\n— L'équipe eza`,
+          tagline: 'Abonnement activé',
+        }).catch(() => {})
+      );
+    } else {
+      // Email générique pour les autres récompenses
+      waitUntil(
+        sendEzaEmail(base44, {
+          to: user.email,
+          title: effect.type === 'auto' ? 'Récompense activée' : effect.type === 'token' ? 'Tokens ajoutés' : 'Récompense réclamée',
+          subject: effect.type === 'auto' ? '✅ Votre récompense Eza est active' : effect.type === 'token' ? '🎫 Tokens ajoutés sur Eza' : '🎁 Récompense réclamée sur Eza',
+          body: `Bonjour **${user.display_name || user.username}**,\n\nVous avez échangé **${cost} crédits** contre :\n\n**${rewardLabel}**\n\n${
+            effect.type === 'auto'
+              ? 'Votre avantage a été **activé automatiquement** et est disponible dès maintenant sur votre compte.'
+              : effect.type === 'token'
+                ? `**${tokenCount} token(s)** ont été ajoutés à votre compte. Rendez-vous sur la **Boutique** pour les utiliser sur vos publications.`
+                : 'Votre demande est en cours de traitement par notre équipe. Vous recevrez une notification dès qu\'elle sera active.'
+          }\n\n- **Crédits restants :** ${newCredits}\n- **Type :** ${effect.type === 'auto' ? 'Instantané' : effect.type === 'token' ? 'Token' : 'Manuel'}\n\nMerci de votre confiance,\n— L'équipe eza`,
+          tagline: 'Boutique & Récompenses',
+        }).catch(() => {})
+      );
+    }
 
     return Response.json({ success: true, remainingCredits: newCredits, message: successMsg, fulfillmentType: effect.type, tokenType, tokenCount });
   } catch (error) {

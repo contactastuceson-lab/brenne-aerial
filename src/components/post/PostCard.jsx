@@ -251,12 +251,12 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
 
   return (
     <motion.article
-      className={`flex gap-3 px-4 pt-3 pb-0 border-b border-zinc-800/50 hover:bg-white/[0.015] active:bg-white/[0.025] cursor-pointer group relative ${menuOpen ? 'z-50' : ''}`}
+      className={`flex gap-3 px-4 pt-3 pb-0 border-b border-zinc-800/50 hover:bg-white/[0.015] active:bg-white/[0.025] cursor-pointer group relative ${menuOpen || confirmDelete || repostOpen ? 'z-50' : ''}`}
       initial={{ opacity: 0, y: 14 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.12 }}
       transition={{ duration: 0.22, ease: 'easeOut' }}
-      style={{ transition: 'background-color 0.1s ease', willChange: 'transform, opacity', zIndex: menuOpen ? 50 : undefined }}
+      style={{ transition: 'background-color 0.1s ease', willChange: 'transform, opacity', zIndex: (menuOpen || confirmDelete || repostOpen) ? 50 : undefined }}
       onClick={openPost}
     >
       {/* Left column: avatar + thread line */}

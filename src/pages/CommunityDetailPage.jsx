@@ -9,6 +9,7 @@ import { ArrowLeft, Lock, Globe, Users, Loader2, Send, LogIn, LogOut, MessageCir
 import { toast } from 'sonner';
 import { applySeoMeta, getCommunitySeoData } from '@/lib/seo';
 import AdSlot from '@/components/feed/AdSlot';
+import { awardCredits } from '@/lib/rewardActions';
 
 export default function CommunityDetailPage() {
   const { id } = useParams();
@@ -52,6 +53,7 @@ export default function CommunityDetailPage() {
       const res = await base44.functions.invoke('joinCommunity', { communityId: id, action });
       if (res.data?.error) { toast.error(res.data.error); return; }
       toast.success(action === 'join' ? 'Bienvenue dans la communauté !' : 'Vous avez quitté');
+      if (action === 'join') awardCredits('join_community', { community_id: id });
       qc.invalidateQueries({ queryKey: ['community-detail', id] });
       qc.invalidateQueries({ queryKey: ['communities'] });
     } catch {

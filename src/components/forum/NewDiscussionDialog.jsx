@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { awardCredits } from '@/lib/rewardActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -62,6 +63,7 @@ export default function NewDiscussionDialog() {
       setCategory('general');
       setOpen(false);
       toast.success('Sujet créé !');
+      awardCredits('create_discussion', {});
     },
     onError: () => {
       toast.error('Erreur lors de la création');

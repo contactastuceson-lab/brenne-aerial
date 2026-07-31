@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { awardDailyLogin } from '@/lib/rewardActions';
 
 function applyTheme(theme) {
   const html = document.documentElement;
@@ -53,6 +54,11 @@ export function PreferencesApplier({ user }) {
       document.documentElement.lang = user.preferences_language;
       window.dispatchEvent(new CustomEvent('language-changed', { detail: { lang: user.preferences_language } }));
     }
+  }, [user?.id]);
+
+  // Bonus de connexion quotidienne — déclenché une fois au chargement de l'utilisateur
+  useEffect(() => {
+    if (user?.id) awardDailyLogin();
   }, [user?.id]);
 
   return null;

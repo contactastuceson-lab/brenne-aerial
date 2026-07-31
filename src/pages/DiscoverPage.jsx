@@ -18,6 +18,7 @@ import { POLES } from '@/lib/employeeRoles';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 import { getTierRank } from '@/lib/subscriptionGating';
 import AdSlot from '@/components/feed/AdSlot';
+import { awardCredits } from '@/lib/rewardActions';
 
 function getAvatarGradient(name = '') {
   const GRADIENTS = [
@@ -162,9 +163,10 @@ export default function DiscoverPage() {
         following_name: targetUser.full_name,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_data, targetUser) => {
       queryClient.invalidateQueries({ queryKey: ['my-follows'] });
       toast.success('Vous suivez maintenant cette personne');
+      awardCredits('follow_user', { target_email: targetUser?.email });
     },
   });
 

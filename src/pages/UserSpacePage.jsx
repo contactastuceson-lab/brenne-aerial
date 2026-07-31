@@ -16,12 +16,15 @@ import AnalyticsDashboard from '@/components/user/AnalyticsDashboard';
 import PerkBadges, { getActivePerks } from '@/components/profile/ActivePerks';
 import PerkCustomizationPanel from '@/components/profile/PerkCustomizationPanel';
 import CreditPill from '@/components/boutique/CreditPill';
+import RewardsDashboard from '@/components/rewards/RewardsDashboard';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { hasAdvancedAnalytics } from '@/lib/subscriptionGating';
 import SubscriptionTierBanner from '@/components/boutique/SubscriptionTierBanner';
+import { awardDailyLogin } from '@/lib/rewardActions';
 
 const TABS = [
+  { id: 'rewards',     label: 'Récompenses',  icon: Gift },
   { id: 'reports',     label: 'Signalements',  icon: Flag },
   { id: 'certifs',      label: 'Certifications', icon: Award },
   { id: 'scheduled',   label: 'Programmés',    icon: Calendar },
@@ -268,7 +271,7 @@ function PerksTab({ user, onRefresh }) {
 export default function UserSpacePage() {
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [tab, setTab] = useState('reports');
+  const [tab, setTab] = useState('rewards');
   const [selReport, setSelReport] = useState(null);
   const [selCertif, setSelCertif] = useState(null);
 
@@ -285,6 +288,11 @@ export default function UserSpacePage() {
   const refreshUser = async () => {
     try { setUser(await base44.auth.me()); } catch {}
   };
+
+  // Bonus de connexion quotidienne automatique
+  useEffect(() => {
+    if (user) awardDailyLogin();
+  }, [user?.id]);
 
   if (!authChecked) {
     return (
@@ -351,6 +359,7 @@ export default function UserSpacePage() {
           <motion.div key={tab}
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}>
+            {tab === 'rewards' && <RewardsDashboard user={user} />}
             {tab === 'reports' && <ReportsTab user={user} selectedId={selReport} onSelect={setSelReport} />}
             {tab === 'certifs' && <CertifsTab user={user} selectedId={selCertif} onSelect={setSelCertif} />}
             {tab === 'scheduled' && <ScheduledPostsManager user={user} />}

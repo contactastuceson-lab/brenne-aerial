@@ -5,6 +5,7 @@ import { X, Loader2, Calendar, Radio, BadgeCheck } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { hasAdminAccess } from '@/lib/roles';
+import { awardCredits } from '@/lib/rewardActions';
 
 export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ export default function CreateSpaceDialog({ open, onClose, user, onCreated }) {
       toast.success(wasNow ? 'Space démarré' : 'Space programmé');
       const createdSpace = data.space;
       setTitle(''); setDescription(''); setScheduleMode('now'); setScheduledAt(''); setOfficial(false);
+      awardCredits('create_space', { space_id: createdSpace?.id });
       onCreated?.(createdSpace);
       onClose?.();
       if (wasNow && createdSpace?.id) navigate(`/space/${createdSpace.id}`);

@@ -1,0 +1,72 @@
+{
+  "name": "RewardLog",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur r\u00e9compens\u00e9"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID de l'utilisateur r\u00e9compens\u00e9"
+    },
+    "action": {
+      "type": "string",
+      "description": "Identifiant de l'action r\u00e9compens\u00e9e (create_post, like_post, daily_login, ...)"
+    },
+    "action_label": {
+      "type": "string",
+      "description": "Libell\u00e9 lisible de l'action"
+    },
+    "credits": {
+      "type": "number",
+      "default": 0,
+      "description": "Cr\u00e9dits Eza accord\u00e9s pour cette action"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Contexte de l'action (post_id, target_user, etc.)"
+    }
+  },
+  "required": [
+    "user_email",
+    "action",
+    "credits"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

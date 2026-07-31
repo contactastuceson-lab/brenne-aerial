@@ -13,6 +13,7 @@ import PollDisplay from '@/components/post/PollDisplay';
 import LazyMedia from '@/components/post/LazyMedia';
 import { notify } from '@/lib/notificationHelper';
 import { isActionBlocked, RESTRICTED_TOAST } from '@/lib/accountStatus';
+import { awardCredits } from '@/lib/rewardActions';
 import { extractHashtags } from '@/lib/hashtags';
 import { parseEntityDate } from '@/lib/entityDate';
 import { formatPostTime } from '@/lib/postTime';
@@ -122,6 +123,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
     likesCountRef.current = newCount;
     try {
       await base44.functions.invoke('togglePostLike', { postId: post.id });
+      if (!wasLiked) awardCredits('like_post', { post_id: post.id });
       // Met à jour le cache TanStack Query pour éviter que le refetch écrase l'état local
       queryClient.setQueriesData({ queryKey: ['home-feed-posts'] }, (old) => {
         if (!Array.isArray(old)) return old;
@@ -145,6 +147,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
     } else {
       navigator.clipboard.writeText(url).then(() => toast.success('Lien copié !'));
     }
+    awardCredits('share_post', { post_id: post.id });
   }, [post.id]);
 
   const handleDeleteConfirm = useCallback(async () => {

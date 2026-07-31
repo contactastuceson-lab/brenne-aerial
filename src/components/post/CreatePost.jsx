@@ -10,6 +10,7 @@ import MentionAutocomplete, { useMentionAutocomplete } from '@/components/post/M
 import { notify } from '@/lib/notificationHelper';
 import { isRestricted, isActionBlocked, RESTRICTED_TOAST } from '@/lib/accountStatus';
 import { getScheduledPostsLimit, hasScheduledPostsUnlimited, getSponsoredPostsQuota } from '@/lib/subscriptionGating';
+import { awardCredits } from '@/lib/rewardActions';
 
 const MAX_CHARS = 280;
 const FREE_SCHEDULED_LIMIT = 5;
@@ -250,6 +251,10 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
       setShowSchedule(false);
       setSponsored(false);
       onPost?.();
+      // Récompense automatique — uniquement pour les publications immédiates
+      if (!scheduleAt) {
+        awardCredits(replyTo ? 'create_reply' : 'create_post', { post_id: created?.id });
+      }
     } catch {
       toast.error('Erreur lors de la publication');
     } finally {

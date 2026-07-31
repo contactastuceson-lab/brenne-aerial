@@ -4,6 +4,7 @@ import { X, Loader2, ImagePlus, Hash, ListChecks, Globe, Lock } from 'lucide-rea
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { COMMUNITY_CATEGORIES, slugify } from '@/lib/communityCategories';
+import { awardCredits } from '@/lib/rewardActions';
 
 export default function CommunityDialog({ open, onClose, user, onSaved, editing }) {
   const [name, setName] = useState(editing?.name || '');
@@ -69,6 +70,7 @@ export default function CommunityDialog({ open, onClose, user, onSaved, editing 
         await base44.entities.Community.create(payload);
         toast.success('Communauté créée');
       }
+      if (!editing) awardCredits('create_community', {});
       onSaved?.();
       onClose();
     } catch {

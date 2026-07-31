@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { ezaEmailShell } from '../../shared/ezaEmails.ts';
 
 const STATUS_LABELS = {
   banned:     { fr: 'banni',     title: 'Compte banni',     emoji: '⛔' },
@@ -257,6 +258,44 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Forbidden: Seuls le PDG et PDG-Adjoint peuvent gérer le rang Suprême' }, { status: 403 });
       }
     }
+    // Détection d'un ajustement manuel de crédits par l'admin → email branded
+    let creditEmailHtml = null;
+    let creditEmailSubject = null;
+    if (data.referral_credits != null && targetUser) {
+      const oldCredits = targetUser.referral_credits || 0;
+      const newCredits = Number(data.referral_credits) || 0;
+      if (newCredits !== oldCredits) {
+        const delta = newCredits - oldCredits;
+        const isCredit = delta > 0;
+        const reason = data.credit_reason ? String(data.credit_reason).trim().slice(0, 500) : null;
+        const adminName = (user?.full_name || user?.email || 'Administration Eza').replace(/</g, '&lt;');
+        const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const accentColor = isCredit ? '#34d399' : '#f87171';
+        const actionLabel = isCredit ? 'Crédit ajouté à votre compte' : 'Débit effectué sur votre compte';
+        const reasonBlock = reason
+          ? `<div style="background:#111827;border:1px solid #1e293b;border-radius:10px;padding:14px 18px;margin:16px 0;"><p style="color:#64748b;font-size:11px;margin:0 0 6px;letter-spacing:1px;text-transform:uppercase;">Motif de l'opération</p><p style="color:#e2e8f0;font-size:14px;margin:0;line-height:1.5;">${reason.replace(/</g, '&lt;')}</p></div>`
+          : '';
+        const contentHtml = `
+          <p style="color:#cbd5e1;font-size:15px;line-height:1.6;margin:0 0 16px;">Bonjour <strong style="color:#f1f5f9;">${(targetUser.full_name || 'Membre').replace(/</g, '&lt;')}</strong>,</p>
+          <p style="color:#cbd5e1;font-size:15px;line-height:1.6;margin:0 0 16px;">Un ajustement manuel de vos crédits Eza vient d'être effectué par <strong style="color:#f1f5f9;">${adminName}</strong> depuis le panneau d'administration.</p>
+          <div style="background:#0b1220;border:1px solid #1e293b;border-radius:14px;padding:20px;margin:16px 0;text-align:center;">
+            <p style="color:#64748b;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">${actionLabel}</p>
+            <p style="font-size:34px;font-weight:800;margin:0;color:${accentColor};">${isCredit ? '＋' : '－'} ${Math.abs(delta).toLocaleString('fr-FR')} crédits</p>
+            <div style="display:flex;justify-content:center;gap:24px;margin-top:18px;">
+              <div><p style="color:#64748b;font-size:10px;margin:0;letter-spacing:1px;text-transform:uppercase;">Solde avant</p><p style="color:#94a3b8;font-size:18px;font-weight:700;margin:4px 0 0;">${oldCredits.toLocaleString('fr-FR')}</p></div>
+              <div style="width:1px;background:#1e293b;"></div>
+              <div><p style="color:#64748b;font-size:10px;margin:0;letter-spacing:1px;text-transform:uppercase;">Nouveau solde</p><p style="color:${accentColor};font-size:18px;font-weight:700;margin:4px 0 0;">${newCredits.toLocaleString('fr-FR')}</p></div>
+            </div>
+          </div>
+          ${reasonBlock}
+          <p style="color:#64748b;font-size:12px;margin:16px 0 0;">Date de l'opération : <strong style="color:#94a3b8;">${dateStr}</strong></p>
+          <p style="color:#64748b;font-size:12px;margin:10px 0 0;">Retrouvez votre solde et votre historique dans la <a href="/boutique" style="color:#38bdf8;text-decoration:none;">Boutique Eza</a>.</p>`;
+        creditEmailHtml = ezaEmailShell(`${isCredit ? 'Crédit ajouté' : 'Débit effectué'}`, contentHtml, { accent: accentColor, tagline: 'Transaction de crédits' });
+        creditEmailSubject = `eza — ${isCredit ? '✅ Crédit ajouté' : '⚠️ Débit effectué'} : ${Math.abs(delta)} crédits`;
+      }
+    }
+    if (data.credit_reason) delete data.credit_reason; // champ transient, ne pas stocker
+
     const updated = await base44.asServiceRole.entities.User.update(id, data);
 
     const restrictedStatuses = ['banned', 'suspended', 'restricted'];
@@ -286,6 +325,18 @@ Deno.serve(async (req) => {
         }
 
         await base44.asServiceRole.integrations.Core.SendEmail({ to: targetUser.email, subject, body: html });
+      } catch(_) {}
+    }
+
+    // Envoi de l'email de transaction de crédits (ajustement admin)
+    if (creditEmailHtml && targetUser?.email) {
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: targetUser.email,
+          subject: creditEmailSubject,
+          body: creditEmailHtml,
+          from_name: 'eza — Direction',
+        });
       } catch(_) {}
     }
 

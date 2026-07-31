@@ -57,6 +57,7 @@ function CreditAdjuster() {
   const qc = useQueryClient();
   const [email, setEmail] = useState('');
   const [amount, setAmount] = useState('');
+  const [reason, setReason] = useState('');
   const [found, setFound] = useState(null);
   const [searching, setSearching] = useState(false);
   const [applying, setApplying] = useState(false);
@@ -79,9 +80,10 @@ function CreditAdjuster() {
     setApplying(true);
     try {
       const newCredits = Math.max(0, (found.referral_credits || 0) + delta);
-      await base44.functions.invoke('adminUpdateUser', { id: found.id, data: { referral_credits: newCredits } });
+      await base44.functions.invoke('adminUpdateUser', { id: found.id, data: { referral_credits: newCredits, credit_reason: reason.trim() || null } });
       setFound({ ...found, referral_credits: newCredits });
-      toast.success(delta >= 0 ? `+${delta} crédits ajoutés` : `${delta} crédits retirés`);
+      toast.success(delta >= 0 ? `+${delta} crédits ajoutés (email envoyé)` : `${delta} crédits retirés (email envoyé)`);
+      setReason('');
       qc.invalidateQueries({ queryKey: ['admin-referrals'] });
     } catch { toast.error('Erreur'); }
     setApplying(false);
@@ -116,6 +118,10 @@ function CreditAdjuster() {
               <p className="font-grotesk font-black text-lg text-amber-400">{found.referral_credits || 0}</p>
             </div>
           </div>
+        )}
+        {found && (
+          <Input value={reason} onChange={e => setReason(e.target.value)} placeholder="Motif (envoyé par email à l'utilisateur)…"
+            className="text-xs" />
         )}
         {found && (
           <div className="flex flex-wrap items-center gap-2">

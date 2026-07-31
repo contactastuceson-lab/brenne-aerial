@@ -11,6 +11,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { applySeoMeta } from '@/lib/seo';
+import BankFreezeBanner from '@/components/banque/BankFreezeBanner';
 import UseTokenDialog from '@/components/boutique/UseTokenDialog';
 import UseCommunityTokenDialog from '@/components/boutique/UseCommunityTokenDialog';
 import BuyCreditsSection from '@/components/boutique/BuyCreditsSection';
@@ -402,6 +403,12 @@ export default function BoutiquePage() {
             </div>
           </div>
         </motion.div>
+
+        {user?.bank_frozen && (
+          <div className="mb-5">
+            <BankFreezeBanner reason={user.bank_freeze_reason} />
+          </div>
+        )}
 
         {/* Buy credits with real money */}
         <BuyCreditsSection />

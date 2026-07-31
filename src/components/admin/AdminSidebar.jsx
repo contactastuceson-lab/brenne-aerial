@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown, CreditCard, Network, Radio, Coins, Megaphone } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown, CreditCard, Network, Radio, Coins, Megaphone, Landmark } from 'lucide-react';
 import { useState } from 'react';
 
 const navSections = [
@@ -9,6 +9,14 @@ const navSections = [
     label: 'Dashboard',
     items: [
       { key: 'stats', icon: BarChart3, path: '/admin', label: 'Dashboard' },
+    ]
+  },
+  {
+    label: 'Business & Finance',
+    items: [
+      { key: 'banque', icon: Landmark, path: '/admin/banque', label: 'Banque' },
+      { key: 'ads', icon: Megaphone, path: '/admin/ads', label: 'Publicité' },
+      { key: 'economy', icon: Coins, path: '/admin/economie', label: 'Économie' },
     ]
   },
   {
@@ -26,9 +34,6 @@ const navSections = [
       { key: 'reports', icon: AlertCircle, path: '/admin/reports', label: 'Signalements' },
       { key: 'donations', icon: Gift, path: '/admin/donations', label: 'Donations' },
       { key: 'billing', icon: CreditCard, path: '/admin/billing', label: 'Facturation' },
-      { key: 'ads', icon: Megaphone, path: '/admin/ads', label: 'Publicité' },
-      { key: 'economy', icon: Coins, path: '/admin/economie', label: 'Économie' },
-      { key: 'banque', icon: CreditCard, path: '/admin/banque', label: 'Banque' },
     ]
   },
   {

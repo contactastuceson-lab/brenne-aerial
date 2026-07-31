@@ -7,6 +7,7 @@ import {
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { applySeoMeta } from '@/lib/seo';
+import BankFreezeBanner from '@/components/banque/BankFreezeBanner';
 import WalletCard from '@/components/banque/WalletCard';
 import TransferForm from '@/components/banque/TransferForm';
 import CreateWalletDialog from '@/components/banque/CreateWalletDialog';
@@ -90,6 +91,12 @@ export default function BanquePage() {
             <p className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60 mt-1">total</p>
           </div>
         </motion.div>
+
+        {user.bank_frozen && (
+          <div className="mb-5">
+            <BankFreezeBanner reason={user.bank_freeze_reason} />
+          </div>
+        )}
 
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-2 mb-5 -mx-4 px-4 md:mx-0 md:px-0">
           {TABS.map(t => {

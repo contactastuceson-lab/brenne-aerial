@@ -5,8 +5,8 @@
 function isPerkActive(perks, key) {
   if (!perks) return false;
   const v = perks[key];
-  if (v === true || v === null) return true;
-  if (typeof v === 'string') return new Date(v).getTime() > Date.now();
+  if (v === true) return true;
+  if (typeof v === 'string' && v) return new Date(v).getTime() > Date.now();
   return false;
 }
 

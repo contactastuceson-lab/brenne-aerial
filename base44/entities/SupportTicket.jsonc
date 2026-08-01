@@ -6,6 +6,36 @@
       "type": "string",
       "description": "Sujet / r\u00e9sum\u00e9 court de la demande"
     },
+    "description": {
+      "type": "string",
+      "description": "Description d\u00e9taill\u00e9e du probl\u00e8me (\u00e9tape 1 du wizard)"
+    },
+    "file_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Pi\u00e8ces jointes (photos, vid\u00e9os, documents) \u2014 URLs upload\u00e9es"
+    },
+    "related_item_id": {
+      "type": "string",
+      "description": "ID de l'\u00e9l\u00e9ment concern\u00e9 (post, discussion) si applicable"
+    },
+    "related_item_type": {
+      "type": "string",
+      "enum": [
+        "post",
+        "conversation",
+        "none"
+      ],
+      "default": "none",
+      "description": "Type d'\u00e9l\u00e9ment concern\u00e9 : post, conversation, ou aucun"
+    },
+    "related_item_label": {
+      "type": "string",
+      "description": "Libell\u00e9 de l'\u00e9l\u00e9ment concern\u00e9 (snapshot)"
+    },
     "user_id": {
       "type": "string",
       "description": "ID de l'utilisateur"
@@ -28,10 +58,11 @@
         "feature",
         "events",
         "moderation",
+        "messaging",
         "other"
       ],
       "default": "other",
-      "description": "Cat\u00e9gorie IA (compte, facturation, cr\u00e9dits, bug, fonctionnalit\u00e9, \u00e9v\u00e9nements, mod\u00e9ration, autre)"
+      "description": "Cat\u00e9gorie IA (compte, facturation, cr\u00e9dits, bug, fonctionnalit\u00e9, \u00e9v\u00e9nements, mod\u00e9ration, messagerie, autre)"
     },
     "priority": {
       "type": "string",
@@ -56,13 +87,23 @@
       "default": "open",
       "description": "open = nouveau, ai_resolved = r\u00e9solu par l'IA, awaiting_human = escalad\u00e9 humain, resolved = r\u00e9solu, closed = ferm\u00e9"
     },
+    "handled_by": {
+      "type": "string",
+      "enum": [
+        "ai",
+        "human",
+        "escalated"
+      ],
+      "default": "ai",
+      "description": "Responsable du traitement : ai, human, ou escalated"
+    },
     "messages": {
       "type": "array",
       "items": {
         "type": "object"
       },
       "default": [],
-      "description": "Fil de conversation : { role: 'user'|'assistant'|'admin', content, at }"
+      "description": "Fil de conversation : { role: 'user'|'assistant'|'admin'|'system', content, at, attachments }"
     },
     "ai_summary": {
       "type": "string",
@@ -79,7 +120,7 @@
     },
     "admin_notes": {
       "type": "string",
-      "description": "Notes admin"
+      "description": "Notes internes admin"
     }
   },
   "required": [

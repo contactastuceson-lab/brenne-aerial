@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Send, Loader2, Ticket, CheckCircle2, Clock, AlertCircle,
-  ArrowLeft, MessageSquare, Bot, User as UserIcon,
+  ArrowLeft, MessageSquare, Bot, User as UserIcon, Paperclip, Hash, MessageCircle, FileText,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -136,6 +136,40 @@ export default function SupportTicketPage() {
           {ticket.ai_summary ? <span className="text-foreground/80 block mt-1">Résumé : {ticket.ai_summary}</span> : null}
         </p>
       </div>
+
+      {/* Métadonnées : élément concerné + pièces jointes */}
+      {(ticket.related_item_type !== 'none' || ticket.file_urls?.length > 0) && (
+        <div className="rounded-xl border border-border bg-secondary/30 p-3 mb-4 space-y-2">
+          {ticket.related_item_type === 'post' && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Hash className="w-3.5 h-3.5 text-primary" />
+              <span>Publication concernée : {ticket.related_item_label || ticket.related_item_id}</span>
+            </div>
+          )}
+          {ticket.related_item_type === 'conversation' && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <MessageCircle className="w-3.5 h-3.5 text-primary" />
+              <span>Discussion : {ticket.related_item_label}</span>
+            </div>
+          )}
+          {ticket.file_urls?.length > 0 && (
+            <div className="flex items-start gap-2">
+              <Paperclip className="w-3.5 h-3.5 text-muted-foreground mt-0.5" />
+              <div className="flex flex-wrap gap-1.5">
+                {ticket.file_urls.map((u) => /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(u) ? (
+                  <a key={u} href={u} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-lg overflow-hidden border border-border">
+                    <img src={u} alt="" className="w-full h-full object-cover" />
+                  </a>
+                ) : (
+                  <a key={u} href={u} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-lg border border-border bg-secondary flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-muted-foreground" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Conversation */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 pb-4 min-h-[200px]">

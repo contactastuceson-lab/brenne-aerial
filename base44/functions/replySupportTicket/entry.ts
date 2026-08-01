@@ -35,6 +35,60 @@ export default async function(req) {
     const history = Array.isArray(ticket.messages) ? ticket.messages : [];
     const newMessages = [...history, { role: 'user', content, at: new Date().toISOString() }];
 
+    // --- CONFIRMATION D'ACTION EN ATTENTE ---
+    // Si une action confirmable est en attente (pending) et que l'utilisateur
+    // répond par une confirmation courte (oui/ok/...) ou un refus (non/annule),
+    // on exécute ou refuse SANS repasser par le LLM (sinon Nexus redemande en boucle).
+    const pending = ticket.pending_action;
+    if (pending && pending.status === 'pending' && pending.type && CONFIRMABLE_ACTIONS.includes(pending.type)) {
+      const lc = content.toLowerCase().trim();
+      const confirmWords = ['oui','ouais','ok','okay','d\'accord','d’accord','je confirme','confirme','confirmé','vas-y','fais-le','je veux bien','parfait','génial','genial','yes','yep','ouep','go','c\'est bon','c’est bon','biensur','bien sûr'];
+      const refuseWords = ['non','nan','annule','annuler','refuse','je refuse','non merci','laisse tomber','stop','pas maintenant'];
+      const isConfirm = confirmWords.some((w) => lc === w || lc.startsWith(w + ' ') || lc.startsWith(w + ',') || lc.startsWith(w + '.'));
+      const isRefuse = refuseWords.some((w) => lc === w || lc.startsWith(w + ' ') || lc.startsWith(w + ',') || lc.startsWith(w + '.'));
+      if (isConfirm || isRefuse) {
+        if (isConfirm) {
+          const actionRes = await executeNexusAction(base44, { type: pending.type, label: pending.label, params: pending.params || {} }, ticket, user);
+          const detail = actionRes.result && actionRes.result.wallet ? `\n\nPortefeuille **${actionRes.result.wallet}** mis à jour.` :
+            actionRes.result && actionRes.result.amount != null ? `\n\n**${actionRes.result.amount} crédits** traités.` : '';
+          const confirmMessages = [...newMessages, {
+            role: 'assistant',
+            content: actionRes.ok
+              ? `✅ **C'est fait** : ${actionRes.label || pending.label}.${detail}\n\nVotre demande est traitée. Avez-vous besoin d'autre chose ?`
+              : `❌ Je n'ai pas pu exécuter l'action (${actionRes.error}). Je laisse le ticket ouvert pour qu'on vérifie ensemble.`,
+            steps: [],
+            action: { type: pending.type, label: pending.label, status: actionRes.ok ? 'executed' : 'failed', result: actionRes, needs_confirmation: true },
+            at: new Date().toISOString(),
+          }];
+          const updatedConf = await base44.entities.SupportTicket.update(ticketId, {
+            pending_action: { ...pending, status: actionRes.ok ? 'executed' : 'failed', result: actionRes, executed_at: new Date().toISOString() },
+            last_action_log: `${actionRes.ok ? '✅' : '❌'} ${actionRes.label || pending.type} — ${new Date().toISOString()}`,
+            messages: confirmMessages,
+            status: actionRes.ok ? 'ai_resolved' : 'open',
+            ai_handled: !!actionRes.ok,
+          }).catch(() => null);
+          await logAutomation(base44, {
+            automation_name: 'nexus_ticket_action', label: `Action Nexus — ${pending.type}`, category: 'system',
+            status: actionRes.ok ? 'success' : 'error',
+            summary: `Ticket #${String(ticketId).slice(-6)} — ${actionRes.label || pending.type} ${actionRes.ok ? 'exécuté (confirmé)' : 'échec'}`,
+            count: 1,
+          }).catch(() => {});
+          return Response.json({ ok: true, ticket: updatedConf || { ...ticket, messages: confirmMessages, pending_action: { ...pending, status: actionRes.ok ? 'executed' : 'failed' } } });
+        }
+        // refus
+        const refuseMessages = [...newMessages, {
+          role: 'assistant',
+          content: `D'accord, j'annule l'action proposée. Que souhaitez-vous faire d'autre ?`,
+          steps: [], at: new Date().toISOString(),
+        }];
+        const updatedRef = await base44.entities.SupportTicket.update(ticketId, {
+          pending_action: { ...pending, status: 'rejected' },
+          messages: refuseMessages,
+        }).catch(() => null);
+        return Response.json({ ok: true, ticket: updatedRef || { ...ticket, messages: refuseMessages, pending_action: { ...pending, status: 'rejected' } } });
+      }
+    }
+
     // --- RECHERCHE CONTEXTUELLE ---
     const researchBits = [];
     let relatedPostData = null;
@@ -128,7 +182,8 @@ INTERDIT (ne jamais proposer → escalate) :
 - Suppression de contenu signalé.
 - Litige financier / fraude (parrainage suspect, double paiement).
 
-Propose une action UNIQUEMENT si elle résout concrètement la demande. Sinon, n'inclus pas "action".`;
+Propose une action UNIQUEMENT si elle résout concrètement la demande. Sinon, n'inclus pas "action".
+Quand tu proposes une action needs_confirmation=true, dis UNE SEULE fois "Je propose de faire X, confirmez par Oui" — ne redemande pas la confirmation si l'utilisateur a déjà répondu. Dès que l'utilisateur dit "oui/ok/confirme", l'action s'exécute automatiquement, ne demande plus rien.`;
 
     const ai = await base44.integrations.Core.InvokeLLM({
       prompt,

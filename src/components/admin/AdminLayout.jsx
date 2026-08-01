@@ -8,7 +8,8 @@ import {
   Award, Heart, Crown, Settings, Briefcase, MoreHorizontal, X, Map,
   FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap,
   SlidersHorizontal, Activity, Radar, CreditCard, Ban, TrendingUp, Network, Star, Coins, Landmark,
-  ClipboardList
+  ClipboardList,
+  QrCode
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
@@ -125,7 +126,7 @@ export default function AdminLayout() {
       const auth = await base44.auth.isAuthenticated();
       if (!auth) { base44.auth.redirectToLogin('/admin'); return; }
       const me = await base44.auth.me();
-      if (!hasAdminAccess(me)) { navigate('/'); return; }
+      if (!hasAdminAccess(me) && me?.role !== 'event_manager') { navigate('/'); return; }
       setUser(me);
       setLoading(false);
     })();
@@ -145,11 +146,25 @@ export default function AdminLayout() {
   const isTopMgmt = userLevel >= 100;
   const roleCfg = ROLE_CONFIG[user?.role] || ROLE_CONFIG.admin;
 
+  const isEventManager = user?.role === 'event_manager';
+
   // Filter groups and items by user level
-  const visibleGroups = NAV_GROUPS
+  let visibleGroups = NAV_GROUPS
     .filter(g => userLevel >= g.minLevel)
     .map(g => ({ ...g, items: g.items.filter(i => userLevel >= i.minLevel) }))
     .filter(g => g.items.length > 0);
+
+  // Les organisateurs d'événements n'ont accès qu'à la gestion des événements + scanner
+  if (isEventManager) {
+    visibleGroups = [{
+      label: 'Événements',
+      minLevel: 50,
+      items: [
+        { path: '/admin/events', icon: Calendar, label: 'Événements', minLevel: 50 },
+        { path: '/admin/scan-tickets', icon: QrCode, label: 'Scanner billets', minLevel: 50 },
+      ],
+    }];
+  }
 
   const visibleNav = visibleGroups.flatMap(g => g.items);
   const bottomNavItems = visibleNav.filter(i => BOTTOM_NAV_PATHS.includes(i.path));

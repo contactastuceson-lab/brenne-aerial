@@ -15,7 +15,8 @@
         "responsable",
         "directeur",
         "conseil_admin",
-        "pdg_adjoint"
+        "pdg_adjoint",
+        "event_manager"
       ],
       "default": "user"
     },

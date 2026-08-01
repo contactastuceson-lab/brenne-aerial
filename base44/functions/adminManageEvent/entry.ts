@@ -167,13 +167,19 @@ export default async function(req) {
           note: `Inscription admin : ${ev.title || ''}`, status: 'completed',
         });
       }
-      await base44.asServiceRole.entities.EventRegistration.create({
+      const newReg = await base44.asServiceRole.entities.EventRegistration.create({
         event_id, event_title: ev.title || '', event_image_url: ev.image_url || '',
         event_start_date: ev.start_date || '', event_city: ev.city || '',
         user_id, user_email: u.email || '', user_name: u.full_name || '',
         user_username: u.username || '', credits_paid: credits, status: 'registered',
         registered_at: new Date().toISOString(),
       });
+      try {
+        const shortCode = (newReg.id || '').replace(/-/g, '').slice(0, 8).toUpperCase();
+        await base44.asServiceRole.entities.EventRegistration.update(newReg.id, {
+          ticket_code: `EZA-${shortCode}`,
+        });
+      } catch {}
       const newIds = [...(ev.registered_ids || []), user_id];
       await base44.asServiceRole.entities.Event.update(event_id, {
         registered_ids: newIds, attendees_count: (ev.attendees_count || 0) + 1,

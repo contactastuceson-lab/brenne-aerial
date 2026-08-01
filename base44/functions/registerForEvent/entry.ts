@@ -65,6 +65,14 @@ export default async function(req) {
       attendees_count: (event.attendees_count || 0) + 1,
     });
 
+    // Code billet court (scanner organisateur)
+    try {
+      const shortCode = (registration.id || '').replace(/-/g, '').slice(0, 8).toUpperCase();
+      await base44.asServiceRole.entities.EventRegistration.update(registration.id, {
+        ticket_code: `EZA-${shortCode}`,
+      });
+    } catch {}
+
     // ── Emails branded ──
     const evCtx = {
       event_id, event_title: event.title || '', event_date: event.start_date || '',

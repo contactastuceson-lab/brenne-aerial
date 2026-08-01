@@ -100,6 +100,15 @@ export const ROLE_CONFIG = {
     border: 'border-primary/30',
     level: 15,
   },
+  event_manager: {
+    label: 'Organisateur',
+    sublabel: "Gestionnaire d'événements",
+    emoji: '🎫',
+    color: 'text-orange-400',
+    bg: 'bg-orange-400/10',
+    border: 'border-orange-400/30',
+    level: 50,
+  },
   user: {
     label: 'Membre',
     sublabel: 'Membre de la communauté',

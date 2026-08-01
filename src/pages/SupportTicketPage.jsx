@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Send, Loader2, CheckCircle2, Clock, AlertCircle,
   ArrowLeft, Bot, User as UserIcon, Paperclip, Hash, MessageCircle, FileText,
-  Lock, ShieldAlert, Tag, UserCog, Wallet,
+  Lock, ShieldAlert, Tag, UserCog, Wallet, XCircle, Zap,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import ReactMarkdown from 'react-markdown';
 import AiSteps from '@/components/support/AiSteps';
+import PendingActionCard from '@/components/support/PendingActionCard';
 
 const CATEGORY_LABELS = {
   account: 'Compte', billing: 'Facturation', credits: 'Crédits', bug: 'Bug technique',
@@ -260,6 +261,12 @@ export default function SupportTicketPage() {
                     <div className="prose-sm text-foreground/90 leading-relaxed [&_p]:mb-1 [&_p:last-child]:mb-0 [&_strong]:text-foreground [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-4 [&_li]:mb-0.5">
                       <ReactMarkdown>{m.content}</ReactMarkdown>
                     </div>
+                    {m.action && (m.action.status === 'executed' || m.action.status === 'failed') && (
+                      <div className={`mt-2 flex items-center gap-1.5 text-[11px] ${m.action.status === 'executed' ? 'text-green-300' : 'text-red-300'}`}>
+                        {m.action.status === 'executed' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                        <span>{m.action.status === 'executed' ? 'Action effectuée' : 'Action échouée'} · {m.action.label || m.action.type}</span>
+                      </div>
+                    )}
                   </div>
                 ) : <p style={{ whiteSpace: 'pre-wrap' }} className="leading-relaxed">{m.content}</p>}
               </div>
@@ -283,6 +290,7 @@ export default function SupportTicketPage() {
             <span>Escaladé : {ticket.escalation_reason}</span>
           </div>
         )}
+        <PendingActionCard ticket={ticket} onDone={load} />
       </div>
 
       {/* Composer */}

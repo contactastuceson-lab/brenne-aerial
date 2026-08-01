@@ -117,13 +117,21 @@
       "type": "string",
       "description": "Label / tag administratif interne (ex: VIP, litige, suivi)"
     },
+    "pending_action": {
+      "type": "object",
+      "description": "Action propos\u00e9e par Nexus : { type, label, params, status: pending|executed|rejected|failed, proposed_at, result }"
+    },
+    "last_action_log": {
+      "type": "string",
+      "description": "Derni\u00e8re action ex\u00e9cut\u00e9e par Nexus (log lisible)"
+    },
     "messages": {
       "type": "array",
       "items": {
         "type": "object"
       },
       "default": [],
-      "description": "Fil de conversation : { role, content, steps, at, attachments }"
+      "description": "Fil de conversation : { role, content, steps, at, attachments, action }"
     },
     "ai_summary": {
       "type": "string",

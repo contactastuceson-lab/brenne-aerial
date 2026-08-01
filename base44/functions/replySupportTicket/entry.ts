@@ -3,6 +3,7 @@ import { sendEzaEmail } from '../../shared/ezaEmails.ts';
 import { logAutomation } from '../../shared/logAutomation.ts';
 import { buildUserContext } from '../../shared/supportUserContext.ts';
 import { EZA_KNOWLEDGE, buildResearchSteps } from '../../shared/supportKnowledge.ts';
+import { executeNexusAction, AUTO_ACTIONS, CONFIRMABLE_ACTIONS } from '../../shared/nexusActions.ts';
 
 // Réponse utilisateur sur un ticket existant : Nexus fait d'abord sa recherche
 // (doc, publication concernée, solde, compte), affiche ses étapes, PUIS répond.
@@ -102,7 +103,32 @@ INTERDIT :
 
 Si l'utilisateur dit "ça marche" / "merci c'est bon" → "answered".
 Si l'utilisateur dit "non ça ne marche pas" ou donne un nouveau détail → "troubleshooting" (ouvre à nouveau, propose autre chose).
-Si l'info demandée est dans la doc → "answered".`;
+Si l'info demandée est dans la doc → "answered".
+
+--- ACTIONS DIRECTES (tu peux proposer d'agir) ---
+Tu peux proposer une action concrète dans "action": { "type", "label", "needs_confirmation": bool, "params": {...} }.
+
+Actions automatiques (needs_confirmation=false) :
+- "recalc_post" { post_id } — recalculer les compteurs d'une publication (bug de likes).
+- "create_default_wallet" — créer le portefeuille par défaut s'il manque.
+- "close_ticket" — fermer le ticket quand résolu confirmé.
+- "reopen_ticket" — rouvrir si l'utilisateur dit "non ça ne marche pas".
+
+Actions avec confirmation (needs_confirmation=true) :
+- "grant_credits" { amount: 1-100, reason } — crédit de courtoisie (max 100).
+- "refund_credits" { amount, reason } — rembourser un achat boutique/événement en crédits.
+- "cancel_event_registration" { registration_id } — annuler une inscription + rembourser crédits.
+- "move_credits" { from_wallet_id, to_wallet_id, amount, reason } — déplacer entre portefeuilles du même utilisateur.
+- "unfreeze_wallet" { wallet_id } — dégeler un portefeuille gelé par erreur.
+
+INTERDIT (ne jamais proposer → escalate) :
+- Suppression de compte / données (RGPD).
+- Remboursement bancaire réel Stripe (seuil dépassé).
+- Ban / sanction modération lourde.
+- Suppression de contenu signalé.
+- Litige financier / fraude (parrainage suspect, double paiement).
+
+Propose une action UNIQUEMENT si elle résout concrètement la demande. Sinon, n'inclus pas "action".`;
 
     const ai = await base44.integrations.Core.InvokeLLM({
       prompt,
@@ -112,6 +138,7 @@ Si l'info demandée est dans la doc → "answered".`;
           reply: { type: 'string' },
           resolution_type: { type: 'string' },
           escalation_reason: { type: 'string' },
+          action: { type: 'object' },
         },
       },
     }).catch((e) => ({ __error: String(e?.message || e) }));
@@ -133,21 +160,40 @@ Si l'info demandée est dans la doc → "answered".`;
     const assignee = escalated ? 'human' : 'ai';
     const handledBy = escalated ? 'escalated' : 'ai';
 
+    // --- ACTION PROPOSÉE PAR NEXUS ---
+    let pendingAction = null;
+    let actionResult = null;
+    let actionType = null;
+    const aiAction = ai && !ai.__error && ai.action && ai.action.type ? ai.action : null;
+    if (aiAction && !escalated && (AUTO_ACTIONS.includes(aiAction.type) || CONFIRMABLE_ACTIONS.includes(aiAction.type))) {
+      actionType = aiAction.type;
+      if (AUTO_ACTIONS.includes(aiAction.type)) {
+        actionResult = await executeNexusAction(base44, aiAction, ticket, user);
+      } else if (CONFIRMABLE_ACTIONS.includes(aiAction.type)) {
+        pendingAction = { ...aiAction, status: 'pending', proposed_at: new Date().toISOString() };
+      }
+    }
+
     const finalMessages = [...newMessages, {
       role: 'assistant',
       content: reply,
       steps: steps.map((s) => ({ ...s, status: 'done' })),
+      action: actionResult ? { type: actionType, label: aiAction?.label || actionResult.label, status: actionResult.ok ? 'executed' : 'failed', result: actionResult } : pendingAction ? { type: pendingAction.type, label: pendingAction.label, status: 'pending', needs_confirmation: true, params: pendingAction.params } : undefined,
       at: new Date().toISOString(),
     }];
 
-    const updated = await base44.entities.SupportTicket.update(ticketId, {
+    const updatePayload = {
       status: newStatus,
       assignee,
       handled_by: handledBy,
       ai_handled: resolved,
       escalation_reason: escalation,
       messages: finalMessages,
-    }).catch(() => null);
+    };
+    if (pendingAction) updatePayload.pending_action = pendingAction;
+    if (actionResult && actionResult.ok) updatePayload.last_action_log = `✅ ${actionResult.label || actionType} — ${new Date().toISOString()}`;
+
+    const updated = await base44.entities.SupportTicket.update(ticketId, updatePayload).catch(() => null);
 
     if (ticket.user_email) {
       await sendEzaEmail(base44, {

@@ -112,13 +112,14 @@ export default async function(req) {
     }
 
     // Événements : Nexus peut inscrire l'utilisateur (action register_event)
+    let upcomingEvents = [];
     if (ticket.category === 'events' || /événement|evenement|event|inscription|inscrire|je m'inscr/i.test(content)) {
       try {
         const all = await base44.asServiceRole.entities.Event.filter({}, 'start_date', 30).catch(() => []);
         const now = Date.now();
-        const upcoming = (all || []).filter((e) => e.status !== 'cancelled' && (!e.end_date || new Date(e.end_date).getTime() >= now) && (!e.capacity || (e.attendees_count || 0) < e.capacity));
-        if (upcoming.length) {
-          researchBits.push(`ÉVÉNEMENTS À VENIR (Nexus peut inscrire l'utilisateur via register_event) :\n${upcoming.slice(0, 8).map((e) => `- ID:${e.id} · « ${e.title} » · ${e.start_date ? e.start_date.slice(0, 10) : '?'} · ${e.price_credits || 0} crédits · ${e.city || ''} · ${e.attendees_count || 0}/${e.capacity || '∞'}`).join('\n')}`);
+        upcomingEvents = (all || []).filter((e) => e.status !== 'cancelled' && (!e.end_date || new Date(e.end_date).getTime() >= now) && (!e.capacity || (e.attendees_count || 0) < e.capacity));
+        if (upcomingEvents.length) {
+          researchBits.push(`ÉVÉNEMENTS À VENIR (Nexus peut inscrire l'utilisateur via register_event) :\n${upcomingEvents.slice(0, 8).map((e) => `- ID:${e.id} · « ${e.title} » · ${e.start_date ? e.start_date.slice(0, 10) : '?'} · ${e.price_credits || 0} crédits · ${e.city || ''} · ${e.attendees_count || 0}/${e.capacity || '∞'}`).join('\n')}`);
         }
       } catch {}
     }
@@ -212,7 +213,15 @@ RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
           reply: { type: 'string' },
           resolution_type: { type: 'string' },
           escalation_reason: { type: 'string' },
-          action: { type: 'object' },
+          action: {
+            type: 'object',
+            properties: {
+              type: { type: 'string', enum: ['recalc_post', 'create_default_wallet', 'close_ticket', 'reopen_ticket', 'grant_credits', 'refund_credits', 'cancel_event_registration', 'move_credits', 'unfreeze_wallet', 'register_event'] },
+              label: { type: 'string' },
+              needs_confirmation: { type: 'boolean' },
+              params: { type: 'object' },
+            },
+          },
         },
       },
     }).catch((e) => ({ __error: String(e?.message || e) }));
@@ -249,6 +258,26 @@ RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
         actionResult = await executeNexusAction(base44, aiAction, ticket, user);
       } else if (CONFIRMABLE_ACTIONS.includes(aiAction.type)) {
         pendingAction = { ...aiAction, status: 'pending', proposed_at: new Date().toISOString() };
+      }
+    }
+
+    // Filet de sécurité : si Nexus décrit un bouton/confirmation en prose SANS
+    // émettre l'objet action (modèle désobéissant), on synthétise l'action
+    // register_event à partir de l'événement cité ou du premier disponible,
+    // pour que la carte de confirmation s'affiche quand même.
+    if (!pendingAction && !actionResult && !escalated && upcomingEvents.length) {
+      const intentRe = /cliquez sur le bouton|bouton de confirmation|confirmez|valider l'op|je vais proc|nouvelle tentative d'inscription|je vais (l')?inscr|inscrire|réeffectuer l'inscription|refaire l'inscription|refait l'inscription/i;
+      if (intentRe.test(reply)) {
+        const cited = upcomingEvents.find((e) => reply.includes(e.title)) || upcomingEvents[0];
+        pendingAction = {
+          type: 'register_event',
+          label: `Inscrire à « ${cited.title} »`,
+          needs_confirmation: true,
+          params: { event_id: cited.id, event_title: cited.title, credits: cited.price_credits || 0 },
+          status: 'pending',
+          proposed_at: new Date().toISOString(),
+        };
+        actionType = 'register_event';
       }
     }
 

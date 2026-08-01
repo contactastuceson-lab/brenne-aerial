@@ -3,7 +3,7 @@
 //   account_deletion, stripe_refund, ban, content_removal, fraud_dispute
 
 export const AUTO_ACTIONS = ['recalc_post', 'create_default_wallet', 'close_ticket', 'reopen_ticket'];
-export const CONFIRMABLE_ACTIONS = ['grant_credits', 'refund_credits', 'cancel_event_registration', 'move_credits', 'unfreeze_wallet'];
+export const CONFIRMABLE_ACTIONS = ['grant_credits', 'refund_credits', 'cancel_event_registration', 'move_credits', 'unfreeze_wallet', 'register_event'];
 export const ALL_ACTIONS = [...AUTO_ACTIONS, ...CONFIRMABLE_ACTIONS];
 
 export const COURTESY_CREDIT_CAP = 100;
@@ -15,6 +15,7 @@ export function describeAction(type, params = {}) {
     case 'cancel_event_registration': return `Annuler l'inscription${params.event_title ? ` à « ${params.event_title} »` : ''} + remboursement`;
     case 'move_credits': return `Déplacer ${params.amount || 0} crédits ${params.from_name || ''} → ${params.to_name || ''}`;
     case 'unfreeze_wallet': return `Dégeler le portefeuille ${params.wallet_name || ''}`;
+    case 'register_event': return `Inscrire à l'événement${params.event_title ? ` « ${params.event_title} »` : ''}${Number(params.credits) > 0 ? ` (${params.credits} crédits)` : ' (gratuit)'}`;
     case 'recalc_post': return `Recalculer les compteurs de la publication`;
     case 'create_default_wallet': return `Créer le portefeuille par défaut`;
     case 'close_ticket': return `Fermer le ticket`;
@@ -114,6 +115,47 @@ export async function executeNexusAction(base44, action, ticket, user) {
       if (w.owner_id !== userId) throw new Error('Portefeuille non assignable');
       await base44.asServiceRole.entities.Wallet.update(w.id, { frozen: false }).catch(() => {});
       return { ok: true, label, result: { wallet: w.name } };
+    }
+
+    if (type === 'register_event') {
+      const eventId = params.event_id || params.id;
+      if (!eventId) throw new Error('event_id requis');
+      const event = await base44.asServiceRole.entities.Event.get(eventId).catch(() => null);
+      if (!event) throw new Error('Événement introuvable');
+      if (event.status === 'cancelled') throw new Error('Événement annulé');
+      const end = event.end_date ? new Date(event.end_date).getTime() : 0;
+      if (end && end < Date.now()) throw new Error('Événement terminé');
+      if (event.capacity > 0 && (event.attendees_count || 0) >= event.capacity) throw new Error('Événement complet');
+      const existing = await base44.asServiceRole.entities.EventRegistration.filter(
+        { event_id: eventId, user_id: userId, status: 'registered' }, '-created_date', 50,
+      ).catch(() => []);
+      if (existing && existing.length) throw new Error('Vous êtes déjà inscrit');
+      const credits = Number(event.price_credits || 0);
+      const balance = Number(user?.referral_credits || 0);
+      if (credits > 0 && balance < credits) throw new Error(`Crédits insuffisants (${balance}/${credits})`);
+      if (credits > 0) {
+        await base44.asServiceRole.entities.User.update(userId, { referral_credits: balance - credits }).catch(() => {});
+        await base44.asServiceRole.entities.CreditTransaction.create({
+          owner_id: userId, type: 'boutique_spend', amount: -credits,
+          note: `Inscription Nexus : ${event.title}`, status: 'completed',
+        }).catch(() => {});
+      }
+      const reg = await base44.asServiceRole.entities.EventRegistration.create({
+        event_id: eventId, event_title: event.title || '', event_image_url: event.image_url || '',
+        event_start_date: event.start_date || '', event_city: event.city || '',
+        user_id: userId, user_email: userEmail, user_name: user?.full_name || '', user_username: user?.username || '',
+        credits_paid: credits, status: 'registered', registered_at: new Date().toISOString(),
+      }).catch(() => null);
+      let ticketCode = null;
+      if (reg) {
+        ticketCode = `EZA-${(reg.id || '').replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+        await base44.asServiceRole.entities.EventRegistration.update(reg.id, { ticket_code: ticketCode }).catch(() => {});
+      }
+      await base44.asServiceRole.entities.Event.update(eventId, {
+        registered_ids: [...(event.registered_ids || []), userId],
+        attendees_count: (event.attendees_count || 0) + 1,
+      }).catch(() => {});
+      return { ok: true, label, result: { event: event.title, credits_paid: credits, ticket_code: ticketCode } };
     }
 
     if (type === 'recalc_post') {

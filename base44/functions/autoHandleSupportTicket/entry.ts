@@ -47,6 +47,18 @@ export default async function(req) {
       }
     }
 
+    // Événements : Nexus peut inscrire l'utilisateur (action register_event côté reply)
+    if (data.category === 'events' || /événement|evenement|event|inscription|inscrire|je m'inscr/i.test(question)) {
+      try {
+        const all = await base44.asServiceRole.entities.Event.filter({}, 'start_date', 30).catch(() => []);
+        const now = Date.now();
+        const upcoming = (all || []).filter((e) => e.status !== 'cancelled' && (!e.end_date || new Date(e.end_date).getTime() >= now) && (!e.capacity || (e.attendees_count || 0) < e.capacity));
+        if (upcoming.length) {
+          researchBits.push(`ÉVÉNEMENTS À VENIR (Nexus peut inscrire l'utilisateur) :\n${upcoming.slice(0, 8).map((e) => `- ID:${e.id} · « ${e.title} » · ${e.start_date ? e.start_date.slice(0, 10) : '?'} · ${e.price_credits || 0} crédits · ${e.city || ''}`).join('\n')}`);
+        }
+      } catch {}
+    }
+
     const prompt = `Tu es NEXUS, l'IA de support eza. Tu viens de lire la documentation${relatedPostData ? ', examiner la publication concernée' : ''}. Tu réponds avec ce contexte.
 
 ${EZA_KNOWLEDGE}
@@ -80,6 +92,7 @@ INTERDIT :
 - Marquer "answered" un bug, une plainte, ou un problème non résolu.
 - Dire "je transmets à l'équipe" si tu peux répondre toi-même avec la doc.
 - Demander à l'utilisateur de réessayer plus tard sans avoir proposé de solution.
+- Dire "je ne peux pas m'inscrire pour vous" — tu PEUX inscrire l'utilisateur à un événement (l'inscription se fait après confirmation sur le ticket). Dis que tu peux le faire et demande lequel si besoin.
 
 Demande de ${userName} :
 """

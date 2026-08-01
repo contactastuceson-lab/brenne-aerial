@@ -111,6 +111,18 @@ export default async function(req) {
       } catch {}
     }
 
+    // Événements : Nexus peut inscrire l'utilisateur (action register_event)
+    if (ticket.category === 'events' || /événement|evenement|event|inscription|inscrire|je m'inscr/i.test(content)) {
+      try {
+        const all = await base44.asServiceRole.entities.Event.filter({}, 'start_date', 30).catch(() => []);
+        const now = Date.now();
+        const upcoming = (all || []).filter((e) => e.status !== 'cancelled' && (!e.end_date || new Date(e.end_date).getTime() >= now) && (!e.capacity || (e.attendees_count || 0) < e.capacity));
+        if (upcoming.length) {
+          researchBits.push(`ÉVÉNEMENTS À VENIR (Nexus peut inscrire l'utilisateur via register_event) :\n${upcoming.slice(0, 8).map((e) => `- ID:${e.id} · « ${e.title} » · ${e.start_date ? e.start_date.slice(0, 10) : '?'} · ${e.price_credits || 0} crédits · ${e.city || ''} · ${e.attendees_count || 0}/${e.capacity || '∞'}`).join('\n')}`);
+        }
+      } catch {}
+    }
+
     const { text: contextText } = await buildUserContext(base44, user.id, user.email);
 
     const conv = newMessages
@@ -176,6 +188,7 @@ Actions avec confirmation (needs_confirmation=true) :
 - "move_credits" { from_wallet_id, to_wallet_id, amount, reason } — déplacer entre portefeuilles du même utilisateur.
 - "unfreeze_wallet" { wallet_id } — dégeler un portefeuille gelé par erreur.
   IMPORTANT : un portefeuille gelé (frozen=true) doit TOUJOURS être traité avec unfreeze_wallet (needs_confirmation=true), JAMAIS escaladé — c'est une action que TU peux faire. N'écris jamais "je ne peux pas débloquer" pour un gel.
+- "register_event" { event_id, event_title, credits } — inscrire l'utilisateur à un événement (débite ses crédits Eza si payant). IMPORTANT : tu PEUX inscrire l'utilisateur toi-même. Ne dis JAMAIS "je ne peux pas m'inscrire pour vous" ou "vous devez le faire vous-même". Utilise l'event_id trouvé dans la recherche. S'il y a plusieurs événements, demande simplement lequel, puis propose register_event.
 
 INTERDIT (ne jamais proposer → escalate) :
 - Suppression de compte / données (RGPD).

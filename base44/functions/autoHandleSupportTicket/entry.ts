@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { sendEzaEmail } from '../../shared/ezaEmails.ts';
 import { logAutomation } from '../../shared/logAutomation.ts';
+import { buildUserContext } from '../../shared/supportUserContext.ts';
 
 // Support IA automatique — déclenché à la création d'un ticket SupportTicket.
 // L'IA catégorise, priorise, rédige une réponse, et soit résout soit escalade vers un humain.
@@ -31,7 +32,11 @@ export default async function(req) {
 
     const userName = data.user_name || data.user_email || 'utilisatrice';
 
+    const { text: contextText } = await buildUserContext(base44, data.user_id, data.user_email).catch(() => ({ text: '' }));
+
     const prompt = `Tu es NEXUS, l'IA de support de la plateforme eza (ezagroup.org). eza est un réseau professionnel/communautaire avec : profil, posts, stories, communities, Spaces (audio live), events, boutique, banque de crédits Eza, parrainage, certifications, badges, abonnements Business/Enterprise.
+
+${contextText}
 
 Analyse la demande ci-dessous et renvoie un JSON STRICT conforme à ce schéma :
 {

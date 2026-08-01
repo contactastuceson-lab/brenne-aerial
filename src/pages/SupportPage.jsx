@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Send, Loader2, Ticket, CheckCircle2, Clock, AlertCircle, MessageSquare } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Sparkles, Send, Loader2, Ticket, CheckCircle2, Clock, AlertCircle, MessageSquare, ChevronRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import ReactMarkdown from 'react-markdown';
 
 const CATEGORY_LABELS = {
   account: 'Compte', billing: 'Facturation', credits: 'Crédits', bug: 'Bug',
-  feature: ' Fonctionnalité', events: 'Événements', moderation: 'Modération', other: 'Autre',
+  feature: 'Fonctionnalité', events: 'Événements', moderation: 'Modération', other: 'Autre',
 };
 
 const STATUS_META = {
@@ -28,13 +27,12 @@ const QUICK_TOPICS = [
 
 export default function SupportPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [pendingReply, setPendingReply] = useState(null);
-  const [openTicketId, setOpenTicketId] = useState(null);
 
   const loadTickets = useCallback(async () => {
     if (!user?.email) return;
@@ -49,29 +47,6 @@ export default function SupportPage() {
   }, [user?.email]);
 
   useEffect(() => { loadTickets(); }, [loadTickets]);
-
-  // Poll the just-created ticket to surface the IA reply
-  useEffect(() => {
-    if (!pendingReply) return;
-    let stop = false;
-    const t = setTimeout(async () => {
-      try {
-        const t2 = await base44.entities.SupportTicket.get(pendingReply).catch(() => null);
-        if (!stop && t2) {
-          setTickets((prev) => prev.map((tk) => tk.id === t2.id ? t2 : tk));
-          if ((t2.messages || []).some((m) => m.role === 'assistant')) {
-            setOpenTicketId(t2.id);
-            setPendingReply(null);
-          } else {
-            setPendingReply(null);
-          }
-        }
-      } catch {
-        setPendingReply(null);
-      }
-    }, 4000);
-    return () => { stop = true; clearTimeout(t); };
-  }, [pendingReply]);
 
   const submit = async () => {
     const msg = message.trim();
@@ -89,8 +64,8 @@ export default function SupportPage() {
         messages: [{ role: 'user', content: msg, at: new Date().toISOString() }],
       });
       setSubject(''); setMessage('');
-      setTickets((prev) => [ticket, ...prev]);
-      setPendingReply(ticket.id);
+      // Ouvre directement la page du ticket — Nexus répondra là-bas
+      navigate(`/support/${ticket.id}`);
     } catch (e) {
       // ignore
     } finally {
@@ -169,69 +144,29 @@ export default function SupportPage() {
         </div>
       ) : (
         <div className="space-y-2.5">
-          <AnimatePresence>
-            {tickets.map((tk) => {
-              const meta = STATUS_META[tk.status] || STATUS_META.open;
-              const SIcon = meta.icon;
-              const isOpen = openTicketId === tk.id;
-              const aiMsg = (tk.messages || []).find((m) => m.role === 'assistant');
-              return (
-                <motion.div key={tk.id} layout
-                  className="rounded-2xl border border-border bg-card overflow-hidden">
-                  <button onClick={() => setOpenTicketId(isOpen ? null : tk.id)}
-                    className="w-full flex items-start gap-3 p-4 text-left">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border ${meta.cls}`}>
-                      <SIcon className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{tk.subject}</p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${meta.cls}`}>{meta.label}</span>
-                        <span className="text-[10px] text-muted-foreground">{CATEGORY_LABELS[tk.category] || '—'}</span>
-                        {pendingReply === tk.id && (
-                          <span className="text-[10px] text-primary flex items-center gap-1">
-                            <Loader2 className="w-3 h-3 animate-spin" /> Nexus analyse…
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }}
-                        className="overflow-hidden border-t border-border">
-                        <div className="p-4 space-y-3">
-                          {(tk.messages || []).map((m, i) => (
-                            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                              <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
-                                m.role === 'user'
-                                  ? 'text-primary-foreground rounded-tr-sm'
-                                  : 'bg-secondary border border-border rounded-tl-sm'
-                              }`}
-                                style={m.role === 'user' ? { background: 'linear-gradient(135deg, hsl(205 90% 48%), hsl(195 80% 40%))' } : {}}>
-                                {m.role !== 'user' ? (
-                                  <ReactMarkdown components={{
-                                    p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
-                                    strong: ({ children }) => <strong className="font-semibold text-primary">{children}</strong>,
-                                  }}>{m.content}</ReactMarkdown>
-                                ) : <p style={{ whiteSpace: 'pre-wrap' }}>{m.content}</p>}
-                              </div>
-                            </div>
-                          ))}
-                          {!aiMsg && pendingReply !== tk.id && (
-                            <p className="text-xs text-muted-foreground pl-1">Nexus prépare une réponse…</p>
-                          )}
-                          {tk.escalation_reason && (
-                            <p className="text-xs text-orange-400/80 pl-1">Escalade : {tk.escalation_reason}</p>
-                          )}
-                        </div>
-                      </motion.div>
+          {tickets.map((tk) => {
+            const meta = STATUS_META[tk.status] || STATUS_META.open;
+            const SIcon = meta.icon;
+            return (
+              <Link key={tk.id} to={`/support/${tk.id}`}
+                className="flex items-start gap-3 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-colors group">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border ${meta.cls}`}>
+                  <SIcon className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{tk.subject}</p>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${meta.cls}`}>{meta.label}</span>
+                    <span className="text-[10px] text-muted-foreground">{CATEGORY_LABELS[tk.category] || '—'}</span>
+                    {(tk.messages || []).length > 0 && (
+                      <span className="text-[10px] text-muted-foreground">{tk.messages.length} message(s)</span>
                     )}
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-primary flex-shrink-0 mt-2" />
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

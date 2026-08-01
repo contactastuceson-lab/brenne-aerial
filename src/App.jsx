@@ -75,6 +75,7 @@ import AdminPortfolio from "@/pages/admin/AdminPortfolio";
 import AdminAffiliations from "@/pages/admin/AdminAffiliations";
 import AdminSupport from "@/pages/admin/AdminSupport";
 import SupportPage from "@/pages/SupportPage";
+import SupportTicketPage from "@/pages/SupportTicketPage";
 import AdminSampleProfiles from "@/pages/admin/AdminSampleProfiles";
 import BlogArticlePage from "@/pages/BlogArticlePage";
 import { Navigate } from "react-router-dom";
@@ -201,6 +202,7 @@ const AuthenticatedApp = () => {
           <Route path="/events/:id" element={<EventDetailPage />} />
           <Route path="/panier" element={<CartPage />} />
           <Route path="/support" element={<SupportPage />} />
+          <Route path="/support/:id" element={<SupportTicketPage />} />
           <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />

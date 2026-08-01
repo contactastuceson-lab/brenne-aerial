@@ -8,8 +8,8 @@ import {
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import ReactMarkdown from 'react-markdown';
 import AiSteps from '@/components/support/AiSteps';
+import NexusMarkdown from '@/components/support/NexusMarkdown';
 import PendingActionCard from '@/components/support/PendingActionCard';
 import EventPickerCard from '@/components/support/EventPickerCard';
 
@@ -263,9 +263,7 @@ export default function SupportTicketPage() {
                     {m.role === 'assistant' && m.steps?.length > 0 && (
                       <AiSteps steps={m.steps} animate={i === messages.length - 1 && !sending} />
                     )}
-                    <div className="prose-sm text-foreground/90 leading-relaxed [&_p]:mb-1 [&_p:last-child]:mb-0 [&_strong]:text-foreground [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-4 [&_li]:mb-0.5">
-                      <ReactMarkdown>{m.content}</ReactMarkdown>
-                    </div>
+                    <NexusMarkdown>{m.content}</NexusMarkdown>
                     {m.action && (m.action.status === 'executed' || m.action.status === 'failed') && (
                       <div className={`mt-2 flex items-center gap-1.5 text-[11px] ${m.action.status === 'executed' ? 'text-green-300' : 'text-red-300'}`}>
                         {m.action.status === 'executed' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}

@@ -2,12 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Loader2, RefreshCw, Sparkles, Bot, Send, ShieldAlert } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import ReactMarkdown from 'react-markdown';
 import SupportKpis from '@/components/admin/support/SupportKpis';
 import PendingActionsPanel from '@/components/admin/support/PendingActionsPanel';
 import ActiveTicketsTable from '@/components/admin/support/ActiveTicketsTable';
 import CreditsRecap from '@/components/admin/support/CreditsRecap';
 import NexusActionLog from '@/components/admin/support/NexusActionLog';
+import NexusMarkdown from '@/components/support/NexusMarkdown';
 
 const CATEGORY_LABELS = {
   account: 'Compte', billing: 'Facturation', credits: 'Crédits', bug: 'Bug',
@@ -168,7 +168,7 @@ export default function AdminSupport() {
                           <Sparkles className="w-2.5 h-2.5" /> {m.action.label || m.action.type}
                         </p>
                       )}
-                      <div className="prose prose-sm prose-invert max-w-none"><ReactMarkdown>{m.content || ''}</ReactMarkdown></div>
+                      <NexusMarkdown>{m.content || ''}</NexusMarkdown>
                     </div>
                   </div>
                 ))}

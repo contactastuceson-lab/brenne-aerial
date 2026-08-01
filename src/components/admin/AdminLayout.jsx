@@ -56,6 +56,7 @@ const NAV_GROUPS = [
       { path: '/admin/reports', icon: Flag, label: 'Signalements', minLevel: 70 },
       { path: '/admin/events', icon: Calendar, label: 'Événements', minLevel: 70 },
       { path: '/admin/scan-tickets', icon: QrCode, label: 'Scanner billets', minLevel: 70 },
+      { path: '/admin/qr-generator', icon: QrCode, label: 'Générateur QR', minLevel: 70 },
       { path: '/admin/donations', icon: Heart, label: 'Donations', minLevel: 70 },
       { path: '/admin/billing', icon: CreditCard, label: 'Facturation', minLevel: 70 },
     ]

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { sendEzaEmail } from '../../shared/ezaEmails.ts';
+import { logAutomation } from '../../shared/logAutomation.ts';
 
 // Tâche planifiée quotidienne : séquence d'onboarding en 3 emails (J1, J3, J7).
 // Fenêtre étroite autour du jour cible pour n'envoyer chaque étape qu'une seule fois.
@@ -32,7 +33,10 @@ export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const users = await base44.asServiceRole.entities.User.list().catch(() => []);
-    if (!users || !users.length) return Response.json({ ok: true, sent: 0 });
+    if (!users || !users.length) {
+      await logAutomation(base44, { automation_name: 'send_onboarding_sequence', label: 'Séquence onboarding J1/J3/J7', category: 'onboarding', status: 'success', summary: 'Aucun utilisateur à onboarder', count: 0 });
+      return Response.json({ ok: true, sent: 0 });
+    }
 
     const now = Date.now();
     const day = 24 * 3600 * 1000;
@@ -54,6 +58,13 @@ export default async function(req) {
         }
       }
     }
+    await logAutomation(base44, {
+      automation_name: 'send_onboarding_sequence', label: 'Séquence onboarding J1/J3/J7', category: 'onboarding',
+      status: 'success',
+      summary: sent > 0 ? `${sent} email(s) d'onboarding envoyés` : 'Aucun utilisateur au jour cible',
+      count: sent,
+    });
+
     return Response.json({ ok: true, sent });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

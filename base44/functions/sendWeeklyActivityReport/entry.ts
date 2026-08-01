@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { sendEzaEmail } from '../../shared/ezaEmails.ts';
+import { logAutomation } from '../../shared/logAutomation.ts';
 
 // Tâche planifiée hebdomadaire (lundi 08h) : envoie à chaque utilisateur actif
 // cette semaine un mini-bilan (publications + crédits Eza gagnés). Cible uniquement
@@ -47,6 +48,13 @@ export default async function(req) {
       sent++;
       if (sent >= 200) break;
     }
+
+    await logAutomation(base44, {
+      automation_name: 'send_weekly_activity_report', label: 'Bilan hebdo utilisateurs', category: 'retention',
+      status: 'success',
+      summary: `${sent} bilan(s) hebdo envoyés (${activeIds.size} utilisateurs actifs)`,
+      count: sent,
+    });
 
     return Response.json({ ok: true, sent, activeUsers: activeIds.size });
   } catch (error) {

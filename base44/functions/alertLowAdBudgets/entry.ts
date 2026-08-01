@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { sendEzaEmail } from '../../shared/ezaEmails.ts';
+import { logAutomation } from '../../shared/logAutomation.ts';
 
 // Tâche planifiée quotidienne : alerte les annonceurs dont la campagne pub active
 // arrive bientôt à court de crédits (≈ 3 jours de budget restant OU ≤ 80% du budget
@@ -14,7 +15,10 @@ export default async function(req) {
       500
     ).catch(() => []);
 
-    if (!active || !active.length) return Response.json({ ok: true, processed: 0, alerted: 0 });
+    if (!active || !active.length) {
+      await logAutomation(base44, { automation_name: 'alert_low_ad_budgets', label: 'Alerte budget pub faible', category: 'ads', status: 'success', summary: 'Aucune campagne active', count: 0 });
+      return Response.json({ ok: true, processed: 0, alerted: 0 });
+    }
 
     let alerted = 0;
     for (const c of active) {
@@ -49,6 +53,13 @@ export default async function(req) {
         alerted++;
       } catch {}
     }
+
+    await logAutomation(base44, {
+      automation_name: 'alert_low_ad_budgets', label: 'Alerte budget pub faible', category: 'ads',
+      status: alerted > 0 ? 'warning' : 'success',
+      summary: alerted > 0 ? `${alerted} campagne(s) alertées (budget faible)` : 'Aucune campagne à risque',
+      count: alerted,
+    });
 
     return Response.json({ ok: true, processed: active.length, alerted });
   } catch (error) {

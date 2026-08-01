@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { secrets } from 'base44:runtime';
 import { sendEzaEmail } from '../../shared/ezaEmails.ts';
+import { logAutomation } from '../../shared/logAutomation.ts';
 
 // Tâche planifiée quotidienne : relance par email les utilisateurs inactifs depuis
 // ~12 mois. Fenêtre étroite (360-372 jours d'inactivité) pour ne relancer chaque
@@ -15,7 +16,10 @@ export default async function(req) {
     const maxOld = new Date(now - 360 * day);
 
     const users = await base44.asServiceRole.entities.User.list().catch(() => []);
-    if (!users || !users.length) return Response.json({ ok: true, sent: 0 });
+    if (!users || !users.length) {
+      await logAutomation(base44, { automation_name: 'sweep_inactive_users', label: 'Relance inactifs 12 mois', category: 'retention', status: 'success', summary: 'Aucun utilisateur à relancer', count: 0 });
+      return Response.json({ ok: true, sent: 0 });
+    }
 
     const appUrl = (secrets.get('APP_URL') || 'https://eza.group').replace(/\/$/, '');
 
@@ -33,6 +37,13 @@ export default async function(req) {
       }).catch(() => {});
       sent++;
     }
+
+    await logAutomation(base44, {
+      automation_name: 'sweep_inactive_users', label: 'Relance inactifs 12 mois', category: 'retention',
+      status: 'success',
+      summary: sent > 0 ? `${sent} email(s) de relance envoyés` : 'Aucun utilisateur dans la fenêtre 360-372j',
+      count: sent,
+    });
 
     return Response.json({ ok: true, sent });
   } catch (error) {

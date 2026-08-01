@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { logAutomation } from '../../shared/logAutomation.ts';
 
 // Automatisation (entity on Post create) : scanne le contenu d'un nouveau post
 // via un LLM et crée un signalement (Report) + notifie les admins si le contenu
@@ -64,6 +65,13 @@ Post à analyser :
         }).catch(() => {})
       )
     );
+
+    await logAutomation(base44, {
+      automation_name: 'moderate_new_post', label: 'Modération auto des nouveaux posts', category: 'moderation',
+      status: 'warning',
+      summary: `Post signalé (${category}) — ${result.reason || 'contenu sensible'}`,
+      details: content.slice(0, 500),
+    });
 
     return Response.json({ ok: true, flagged: true, reason: result.reason, category });
   } catch (error) {

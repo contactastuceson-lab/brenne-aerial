@@ -6,7 +6,7 @@ import {
   Bell, Palette, Award, Heart, Flame, Shield, Eye, Megaphone,
   Coffee, Music, BookOpen, Headphones, Smartphone, Bot, Lock,
   ShoppingBag, GraduationCap, LifeBuoy,
-  Loader2, Coins, CheckCircle, ArrowRight, Tag, Clock, Ticket,
+  Loader2, Coins, CheckCircle, ArrowRight, Tag, Clock, Ticket, ShoppingCart,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ import SubscriptionSuccessModal from '@/components/boutique/SubscriptionSuccessM
 import EnterpriseProofDialog from '@/components/boutique/EnterpriseProofDialog';
 import SubscriptionChoiceDialog from '@/components/boutique/SubscriptionChoiceDialog';
 import VerificationMark from '@/components/ui/VerificationMark';
+import { useCart } from '@/hooks/useCart';
 
 const CATEGORIES = {
   abonnements: { label: 'Abonnements', icon: Crown, color: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
@@ -266,6 +267,12 @@ export default function BoutiquePage() {
   const [successItem, setSuccessItem] = useState(null); // item souscrit avec succès → écran de confirmation
   const [proofItem, setProofItem] = useState(null); // item Enterprise en attente de preuves
   const [choiceItem, setChoiceItem] = useState(null); // tier (premium/business) → pop-up de choix du badge
+  const { addItem: addItemMut } = useCart(user);
+  const addItemToCart = (item) => {
+    if (credits < item.cost) { toast.error(`Il vous faut ${item.cost} crédits`); return; }
+    addItemMut.mutate({ kind: 'reward', ref_id: item.id, label: item.label, image_url: null, price_credits: item.cost, category: item.category });
+    toast.success(`${item.label} ajouté au panier`);
+  };
 
   useEffect(() => {
     applySeoMeta({
@@ -591,16 +598,27 @@ export default function BoutiquePage() {
                       <CheckCircle className="w-3 h-3" /> Acquis
                     </span>
                   ) : (
-                    <button
-                      onClick={() => handleRedeem(item)}
-                      disabled={!canAfford || isRedeeming}
-                      className={`px-3 py-1.5 rounded-lg font-grotesk font-bold text-xs flex items-center gap-1.5 transition-all ${
-                        canAfford ? 'bg-foreground text-background hover:bg-foreground/90' : 'bg-muted/50 text-muted-foreground/50 cursor-not-allowed'
-                      }`}>
-                      {isRedeeming ? <Loader2 className="w-3 h-3 animate-spin" /> : (
-                        canAfford ? <><Gift className="w-3 h-3" /> Réclamer</> : <><Lock className="w-3 h-3" /> {item.cost - credits} cr</>
+                    <div className="flex items-center gap-1.5">
+                      {item.category !== 'abonnements' && (
+                        <button
+                          onClick={() => addItemToCart(item)}
+                          disabled={!canAfford || isRedeeming}
+                          title="Ajouter au panier"
+                          className="px-2 py-1.5 rounded-lg border border-border bg-card hover:bg-secondary/60 font-grotesk font-bold text-xs flex items-center gap-1 transition-all disabled:opacity-50">
+                          <ShoppingCart className="w-3 h-3" />
+                        </button>
                       )}
-                    </button>
+                      <button
+                        onClick={() => handleRedeem(item)}
+                        disabled={!canAfford || isRedeeming}
+                        className={`px-3 py-1.5 rounded-lg font-grotesk font-bold text-xs flex items-center gap-1.5 transition-all ${
+                          canAfford ? 'bg-foreground text-background hover:bg-foreground/90' : 'bg-muted/50 text-muted-foreground/50 cursor-not-allowed'
+                        }`}>
+                        {isRedeeming ? <Loader2 className="w-3 h-3 animate-spin" /> : (
+                          canAfford ? <><Gift className="w-3 h-3" /> Réclamer</> : <><Lock className="w-3 h-3" /> {item.cost - credits} cr</>
+                        )}
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

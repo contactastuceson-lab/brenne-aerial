@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Bell, Heart, MessageCircle, UserPlus, CheckCircle, AtSign, CheckCheck, Trash2 } from 'lucide-react';
+import { Bell, Heart, MessageCircle, UserPlus, CheckCircle, AtSign, CheckCheck, Trash2, Volume2 } from 'lucide-react';
+import { toast } from 'sonner';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 import AdSlot from '@/components/feed/AdSlot';
 
@@ -87,7 +88,24 @@ function NotifCard({ notif, onRead }) {
 export default function NotificationsPage() {
   const [user, setUser] = useState(null);
   const [tab, setTab] = useState('all');
+  const [digestLoading, setDigestLoading] = useState(false);
   const queryClient = useQueryClient();
+
+  const playDigest = async () => {
+    setDigestLoading(true);
+    try {
+      const res = await base44.functions.invoke('generateNotificationsDigest', {});
+      const data = res?.data || res;
+      if (data?.ok && data.audio_url) {
+        new Audio(data.audio_url).play();
+      } else {
+        toast.error(data?.error || 'Aucun résumé disponible');
+      }
+    } catch {
+      toast.error('Erreur lors de la génération vocale');
+    }
+    setDigestLoading(false);
+  };
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -146,6 +164,9 @@ export default function NotificationsPage() {
               )}
             </div>
             <div className="flex items-center gap-2">
+              <button onClick={playDigest} disabled={digestLoading} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-lg hover:bg-white/5 disabled:opacity-50">
+                {digestLoading ? <span className="w-3.5 h-3.5 border border-primary border-t-transparent rounded-full animate-spin" /> : <Volume2 className="w-3.5 h-3.5" />} Résumé vocal
+              </button>
               {unreadCount > 0 && (
                 <button onClick={markAllRead} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-white/5">
                   <CheckCheck className="w-3.5 h-3.5" /> Tout lire

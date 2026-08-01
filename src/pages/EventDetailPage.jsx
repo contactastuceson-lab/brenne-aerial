@@ -7,10 +7,11 @@ import { toast } from "sonner";
 import {
   Calendar, MapPin, Users, Clock, Video, Globe, Building2, ArrowLeft,
   Mic2, Wrench, Users as UsersIcon, Music, Code, Monitor, Image as ImageIcon,
-  Trophy, PartyPopper, Tag, Star, Ticket, ExternalLink, Loader2, Share2, Coins,
+  Trophy, PartyPopper, Tag, Star, Ticket, ExternalLink, Loader2, Share2, Coins, ShoppingCart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EventTicketModal from "@/components/events/EventTicketModal";
+import { useCart } from "@/hooks/useCart";
 
 const CATEGORIES = {
   conference: { label: "Conférence", icon: Mic2, color: "text-sky-400" },
@@ -39,6 +40,7 @@ export default function EventDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addItem } = useCart(user);
   const [ev, setEv] = useState(null);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
@@ -275,6 +277,13 @@ export default function EventDetailPage() {
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-sm font-bold hover:bg-secondary/40">
                   <ExternalLink className="w-4 h-4" /> Billetterie
                 </a>
+              )}
+              {!isPast && (
+                <Button variant="outline" size="lg" className="font-grotesk font-bold"
+                  onClick={() => addItem.mutate({ kind: "event", ref_id: ev.id, label: ev.title, image_url: ev.image_url, price_credits: credits, category: ev.category })}
+                  disabled={!user || isFull || addItem.isPending}>
+                  <ShoppingCart className="w-4 h-4" /> Au panier
+                </Button>
               )}
               {!isPast ? (
                 <Button onClick={handleRegister} disabled={registering || registered || isFull || !user || (credits > 0 && !canAfford)}

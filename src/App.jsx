@@ -111,6 +111,7 @@ import BoutiquePage from "@/pages/BoutiquePage";
 import BanquePage from "@/pages/BanquePage";
 import EventsPage from "@/pages/EventsPage";
 import EventDetailPage from "@/pages/EventDetailPage";
+import CartPage from "@/pages/CartPage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -195,6 +196,7 @@ const AuthenticatedApp = () => {
           <Route path="/banque" element={<BanquePage />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/events/:id" element={<EventDetailPage />} />
+          <Route path="/panier" element={<CartPage />} />
           <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />

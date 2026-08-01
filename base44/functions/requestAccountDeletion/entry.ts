@@ -177,5 +177,24 @@ Deno.serve(async (req) => {
     }
   }
 
+  // Auto-réponse in-app + push au membre (en plus de l'email déjà envoyé)
+  try {
+    await base44.asServiceRole.entities.Notification.create({
+      user_email: user.email,
+      type: 'system',
+      title: '🗑️ Demande de suppression reçue',
+      content: 'Votre demande est en cours de traitement. Un administrateur vous contactera prochainement.',
+      sender_name: 'eza',
+    });
+  } catch {}
+  try {
+    await base44.functions.invoke('sendWebPush', {
+      user_email: user.email,
+      title: 'Demande de suppression reçue',
+      body: 'Votre demande est en cours de traitement par notre équipe.',
+      url: '/espace', tag: 'deletion-request',
+    });
+  } catch {}
+
   return Response.json({ success: true });
 });

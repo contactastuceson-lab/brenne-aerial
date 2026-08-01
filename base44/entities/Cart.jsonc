@@ -1,0 +1,65 @@
+{
+  "name": "Cart",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "ID du propri\u00e9taire du panier"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email du propri\u00e9taire (snapshot)"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "default": [],
+      "description": "Articles du panier : { kind: 'event'|'reward', ref_id, label, image_url, price_credits, qty, category }"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "checked_out",
+        "abandoned"
+      ],
+      "default": "active",
+      "description": "active = en cours, checked_out = valid\u00e9, abandoned = abandonn\u00e9"
+    },
+    "total_credits": {
+      "type": "number",
+      "default": 0,
+      "description": "Total en cr\u00e9dits Eza"
+    },
+    "recovery_notified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Email de r\u00e9cup\u00e9ration d\u00e9j\u00e0 envoy\u00e9 (\u00e9vite le spam)"
+    },
+    "checked_out_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de validation du panier"
+    }
+  },
+  "required": [
+    "owner_id",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "data.owner_id": "{{user.id}}"
+    },
+    "read": {
+      "data.owner_id": "{{user.id}}"
+    },
+    "update": {
+      "data.owner_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.owner_id": "{{user.id}}"
+    }
+  }
+}

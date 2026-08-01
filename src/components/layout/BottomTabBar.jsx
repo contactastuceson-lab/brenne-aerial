@@ -5,7 +5,7 @@ import {
   Bell, User, LogOut, LayoutDashboard, Bookmark,
   Users, FileText, Calendar, Settings, Heart, Shield,
   Building2, Star, Award, Plus, Camera, List, Radio,
-  ShoppingBag, Wallet, Gift, BookOpen, Newspaper, Info
+  ShoppingBag, Wallet, Gift, BookOpen, Newspaper, Info, ShoppingCart
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -50,6 +50,7 @@ const NAV_SECTIONS = [
       { to: '/portfolio',     icon: Camera,          label: 'Portfolio',      color: 'text-purple-400' },
       { to: '/business',      icon: Building2,       label: 'Business',       color: 'text-cyan-400' },
       { to: '/boutique',      icon: ShoppingBag,      label: 'Boutique',       color: 'text-pink-400' },
+      { to: '/panier',        icon: ShoppingCart,     label: 'Panier',         color: 'text-amber-400', cartBadge: true },
       { to: '/banque',        icon: Wallet,           label: 'Banque',         color: 'text-emerald-300' },
       { to: '/parrainage',    icon: Gift,            label: 'Parrainage',     color: 'text-rose-400' },
     ],
@@ -85,6 +86,14 @@ export default function BottomTabBar() {
     refetchInterval: 60000,
     staleTime: 30000,
   });
+
+  const { data: cartData = null } = useQuery({
+    queryKey: ['cart-active', user?.id],
+    queryFn: () => base44.entities.Cart.filter({ owner_id: user.id, status: 'active' }),
+    enabled: !!user?.id,
+    staleTime: 30000,
+  });
+  const cartCount = (cartData?.[0]?.items || []).reduce((s, it) => s + (Number(it.qty) || 1), 0);
 
   const isActive = (path) => {
     if (!path) return false;
@@ -203,11 +212,14 @@ export default function BottomTabBar() {
                         const Icon = item.icon;
                         return (
                           <Link key={item.to} to={item.to} onClick={() => setShowMore(false)}
-                            className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all border ${
+                            className={`relative flex flex-col items-center gap-2 p-3 rounded-2xl transition-all border ${
                               isActive(item.to) ? 'border-primary/30 bg-primary/10' : 'border-white/6 bg-white/3 hover:bg-white/6'
                             }`}
                           >
                             <Icon className={item.color} style={{ width: 18, height: 18 }} />
+                            {item.cartBadge && cartCount > 0 && (
+                              <span className="absolute top-1.5 right-2 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-mono flex items-center justify-center">{cartCount > 9 ? '9+' : cartCount}</span>
+                            )}
                             <span className="font-inter text-[10px] text-muted-foreground text-center leading-tight">{item.label}</span>
                           </Link>
                         );

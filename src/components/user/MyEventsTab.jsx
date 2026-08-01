@@ -3,15 +3,26 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import {
-  Calendar, MapPin, Clock, Coins, Loader2, RefreshCw, Ticket, RotateCcw, CalendarX,
+  Calendar, MapPin, Clock, Coins, Loader2, RefreshCw, Ticket, CalendarX,
+  AlertTriangle, Send, Hourglass,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 const STATUS = {
   registered: { label: 'Inscrit', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' },
   cancelled:  { label: 'Annulé', color: 'text-muted-foreground bg-muted/40 border-border' },
   refunded:   { label: 'Remboursé', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' },
+};
+
+const CANCEL_REQ = {
+  none: null,
+  pending: { label: 'Demande en attente', color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30' },
+  approved: { label: 'Annulation approuvée', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' },
+  rejected: { label: 'Demande refusée', color: 'text-red-400 bg-red-400/10 border-red-400/30' },
 };
 
 function fmtDate(d) {
@@ -22,7 +33,9 @@ function fmtDate(d) {
 
 export default function MyEventsTab({ user }) {
   const qc = useQueryClient();
-  const [cancelling, setCancelling] = useState(null);
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [reason, setReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const { data: regs = [], isLoading } = useQuery({
     queryKey: ['my-event-registrations', user?.id],
@@ -39,21 +52,26 @@ export default function MyEventsTab({ user }) {
 
   const past = useMemo(() => regs.filter(r => !upcoming.includes(r)), [regs, upcoming]);
 
-  const handleCancel = async (reg) => {
-    if (!confirm(`Annuler votre inscription à « ${reg.event_title} » ? Vos ${reg.credits_paid} crédits vous seront rendus.`)) return;
-    setCancelling(reg.id);
+  const openCancel = (reg) => { setCancelTarget(reg); setReason(''); };
+  const submitCancel = async () => {
+    if (!reason.trim()) { toast.error('Veuillez indiquer le motif de votre demande'); return; }
+    setSubmitting(true);
     try {
-      const res = await base44.functions.invoke('cancelMyEventRegistration', { registration_id: reg.id });
-      toast.success(`Inscription annulée${res?.data?.refunded ? ` — ${res.data.refunded} crédits rendus` : ''}`);
+      await base44.functions.invoke('cancelMyEventRegistration', {
+        registration_id: cancelTarget.id, reason: reason.trim(),
+      });
+      toast.success('Demande d\'annulation envoyée — un administrateur l\'examinera');
       qc.invalidateQueries({ queryKey: ['my-event-registrations', user?.id] });
+      setCancelTarget(null);
     } catch (e) {
-      toast.error(e?.response?.data?.error || 'Annulation échouée');
+      toast.error(e?.response?.data?.error || 'Envoi échoué');
     }
-    setCancelling(null);
+    setSubmitting(false);
   };
 
   const renderCard = (reg) => {
     const s = STATUS[reg.status] || STATUS.registered;
+    const creq = CANCEL_REQ[reg.cancel_request_status];
     return (
       <div key={reg.id} className="rounded-2xl border border-border bg-card p-4 flex gap-4">
         <div className="w-16 h-16 rounded-xl overflow-hidden bg-secondary flex-shrink-0">
@@ -71,22 +89,30 @@ export default function MyEventsTab({ user }) {
           <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {fmtDate(reg.event_start_date)}</span>
             {reg.event_city && <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {reg.event_city}</span>}
-            {reg.credits_paid > 0 && (
+            {reg.credits_paid > 0 ? (
               <span className="inline-flex items-center gap-1 font-grotesk font-bold text-amber-400">
                 <Coins className="w-3.5 h-3.5" /> {reg.credits_paid} crédits
               </span>
-            )}
-            {reg.credits_paid === 0 && (
+            ) : (
               <span className="inline-flex items-center gap-1"><Ticket className="w-3.5 h-3.5" /> Gratuit</span>
             )}
           </div>
+
           {reg.status === 'registered' && (
-            <div className="mt-3">
-              <Button size="sm" variant="outline" onClick={() => handleCancel(reg)} disabled={cancelling === reg.id}
-                className="text-muted-foreground hover:text-red-400 hover:border-red-400/30">
-                {cancelling === reg.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
-                Annuler & rembourser
-              </Button>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {creq ? (
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-grotesk font-bold border ${creq.color}`}>
+                  <Hourglass className="w-3.5 h-3.5" /> {creq.label}
+                </span>
+              ) : (
+                <Button size="sm" variant="outline" onClick={() => openCancel(reg)}
+                  className="text-muted-foreground hover:text-red-400 hover:border-red-400/30">
+                  <AlertTriangle className="w-3.5 h-3.5" /> Demander l'annulation
+                </Button>
+              )}
+              {reg.cancel_request_status === 'rejected' && reg.cancel_decision_note && (
+                <p className="text-xs text-muted-foreground">Motif refus : {reg.cancel_decision_note}</p>
+              )}
             </div>
           )}
         </div>
@@ -144,6 +170,32 @@ export default function MyEventsTab({ user }) {
           {past.map(renderCard)}
         </div>
       )}
+
+      {/* Dialog demande d'annulation */}
+      <Dialog open={!!cancelTarget} onOpenChange={(o) => { if (!o) setCancelTarget(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-yellow-400" /> Demande d'annulation</DialogTitle>
+            <DialogDescription>
+              Votre demande sera examinée par un administrateur. {cancelTarget?.credits_paid > 0
+                ? `Si elle est approuvée, vos ${cancelTarget.credits_paid} crédits Eza vous seront rendus.`
+                : 'Vous serez notifié de la décision par email.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-1">
+            <Label>Motif de l'annulation *</Label>
+            <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={4}
+              placeholder="Expliquez pourquoi vous souhaitez annuler votre inscription…" />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setCancelTarget(null)} disabled={submitting}>Fermer</Button>
+            <Button onClick={submitCancel} disabled={submitting || !reason.trim()}>
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              Envoyer la demande
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

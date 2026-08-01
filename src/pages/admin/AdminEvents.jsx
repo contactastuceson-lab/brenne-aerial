@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import {
   Calendar, Users, Loader2, Plus, Pencil, Trash2, Ban, RotateCcw, Search,
-  Coins, Filter,
+  Coins, Filter, Hourglass, Check, X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,6 +71,9 @@ export default function AdminEvents() {
   const [cancelReason, setCancelReason] = useState('');
   const [busy, setBusy] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
+  const [decisionTarget, setDecisionTarget] = useState(null);
+  const [decisionAction, setDecisionAction] = useState('approve');
+  const [decisionNote, setDecisionNote] = useState('');
 
   const loadAll = async () => {
     setLoading(true);
@@ -159,8 +162,38 @@ export default function AdminEvents() {
     setBusy(false);
   };
 
+  const pendingCancelReqs = useMemo(
+    () => registrations.filter((r) => r.cancel_request_status === 'pending'),
+    [registrations]
+  );
+
+  const openDecision = (reg, action) => {
+    setDecisionTarget(reg);
+    setDecisionAction(action);
+    setDecisionNote('');
+  };
+
+  const confirmDecision = async () => {
+    if (!decisionTarget) return;
+    setBusy(true);
+    try {
+      await base44.functions.invoke('adminManageEvent', {
+        action: decisionAction === 'approve' ? 'approve_cancellation' : 'reject_cancellation',
+        registration_id: decisionTarget.id,
+        note: decisionNote,
+      });
+      toast.success(decisionAction === 'approve'
+        ? `Demande approuvée — ${decisionTarget.credits_paid || 0} crédits rendus`
+        : 'Demande refusée — inscription maintenue');
+      setDecisionTarget(null); setDecisionNote('');
+      loadAll();
+    } catch { toast.error('Décision échouée'); }
+    setBusy(false);
+  };
+
   const TABS = [
     { key: 'events', label: 'Événements', icon: Calendar },
+    { key: 'cancellation_requests', label: `Demandes${pendingCancelReqs.length ? ` (${pendingCancelReqs.length})` : ''}`, icon: Hourglass },
     { key: 'registrations', label: 'Inscriptions', icon: Users },
   ];
 
@@ -264,6 +297,72 @@ export default function AdminEvents() {
                           <button onClick={() => handleDelete(ev)} title="Supprimer"
                             className="w-8 h-8 rounded-lg hover:bg-red-500/10 flex items-center justify-center text-muted-foreground hover:text-red-400">
                             <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      ) : tab === 'cancellation_requests' ? (
+        <>
+          <div className="flex items-center gap-2 mb-1">
+            <Hourglass className="w-5 h-5 text-yellow-400" />
+            <h2 className="font-grotesk font-bold text-base">Demandes d'annulation en attente</h2>
+            <span className="text-sm text-muted-foreground">({pendingCancelReqs.length})</span>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Chaque demande doit être examinée et approuvée (remboursement crédits) ou refusée (inscription maintenue).
+            L'utilisateur est notifié par email dans les deux cas.
+          </p>
+
+          {pendingCancelReqs.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground text-sm">Aucune demande en attente.</div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-border">
+              <table className="w-full text-sm">
+                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="text-left p-3 font-bold">Utilisateur</th>
+                    <th className="text-left p-3 font-bold">Événement</th>
+                    <th className="text-left p-3 font-bold">Motif</th>
+                    <th className="text-left p-3 font-bold">Demandé le</th>
+                    <th className="text-left p-3 font-bold">Crédits</th>
+                    <th className="text-right p-3 font-bold">Décision</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {pendingCancelReqs.map((reg) => (
+                    <tr key={reg.id} className="hover:bg-secondary/20">
+                      <td className="p-3">
+                        <p className="font-grotesk font-bold">{reg.user_name || '—'}</p>
+                        <p className="text-xs text-muted-foreground">{reg.user_email}</p>
+                      </td>
+                      <td className="p-3">
+                        <p className="font-grotesk font-bold truncate max-w-[180px]">{reg.event_title}</p>
+                        <p className="text-xs text-muted-foreground">{fmtDate(reg.event_start_date)}</p>
+                      </td>
+                      <td className="p-3 max-w-[260px]">
+                        <p className="text-xs text-muted-foreground line-clamp-3">{reg.cancel_request_reason || '—'}</p>
+                      </td>
+                      <td className="p-3 text-muted-foreground whitespace-nowrap text-xs">{fmtDate(reg.cancel_requested_at)}</td>
+                      <td className="p-3">
+                        <span className="inline-flex items-center gap-1 font-grotesk font-bold text-amber-400">
+                          <Coins className="w-3.5 h-3.5" /> {reg.credits_paid || 0}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1.5 justify-end">
+                          <button onClick={() => openDecision(reg, 'approve')} title="Approuver & rembourser"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-xs font-grotesk font-bold">
+                            <Check className="w-3.5 h-3.5" /> Approuver
+                          </button>
+                          <button onClick={() => openDecision(reg, 'reject')} title="Refuser"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-grotesk font-bold">
+                            <X className="w-3.5 h-3.5" /> Refuser
                           </button>
                         </div>
                       </td>
@@ -413,6 +512,44 @@ export default function AdminEvents() {
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
               Confirmer le remboursement
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Decision dialog (approve/reject cancellation request) */}
+      <Dialog open={!!decisionTarget} onOpenChange={(o) => { if (!o) setDecisionTarget(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{decisionAction === 'approve' ? 'Approuver la demande d\'annulation' : 'Refuser la demande d\'annulation'}</DialogTitle>
+            <DialogDescription>
+              {decisionTarget?.user_name} ({decisionTarget?.user_email}) — « {decisionTarget?.event_title} ».
+              {decisionAction === 'approve'
+                ? ` ${decisionTarget?.credits_paid || 0} crédits Eza seront rendus et l'inscription annulée.`
+                : " L'inscription restera active."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label>Motif de la demande</Label>
+            <div className="rounded-lg bg-secondary/40 p-3 text-xs text-muted-foreground max-h-28 overflow-y-auto">
+              {decisionTarget?.cancel_request_reason || '—'}
+            </div>
+            <Label>Note (optionnel, envoyée à l'utilisateur)</Label>
+            <Textarea value={decisionNote} onChange={(e) => setDecisionNote(e.target.value)} rows={2}
+              placeholder="Message à l'utilisateur…" />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDecisionTarget(null)} disabled={busy}>Fermer</Button>
+            {decisionAction === 'approve' ? (
+              <Button onClick={confirmDecision} disabled={busy} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                Approuver & rembourser
+              </Button>
+            ) : (
+              <Button variant="destructive" onClick={confirmDecision} disabled={busy}>
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                Confirmer le refus
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,6 +1,35 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { sendEventEmail, getAdminEmails } from '../../shared/eventEmails.ts';
 
 const ADMIN_ROLES = ['admin', 'owner', 'pdg_adjoint', 'conseil_admin'];
+
+async function refundReg(base44, reg, note, adminEmail) {
+  if (reg.credits_paid > 0) {
+    const u = await base44.asServiceRole.entities.User.get(reg.user_id);
+    const bal = Number(u?.referral_credits || 0);
+    await base44.asServiceRole.entities.User.update(reg.user_id, {
+      referral_credits: bal + reg.credits_paid,
+    });
+    await base44.asServiceRole.entities.CreditTransaction.create({
+      owner_id: reg.user_id, type: 'reward', amount: reg.credits_paid,
+      note: `Remboursement inscription : ${reg.event_title || ''}`, status: 'completed',
+    });
+  }
+  await base44.asServiceRole.entities.EventRegistration.update(reg.id, {
+    status: 'refunded',
+    cancelled_at: new Date().toISOString(),
+    refund_note: note || '',
+    refunded_by: adminEmail || '',
+  });
+  const ev = await base44.asServiceRole.entities.Event.get(reg.event_id);
+  if (ev) {
+    const newIds = (ev.registered_ids || []).filter((id) => id !== reg.user_id);
+    await base44.asServiceRole.entities.Event.update(reg.event_id, {
+      registered_ids: newIds,
+      attendees_count: Math.max(0, (ev.attendees_count || 0) - 1),
+    });
+  }
+}
 
 export default async function(req) {
   try {
@@ -12,64 +41,88 @@ export default async function(req) {
 
     const body = await req.json().catch(() => ({}));
     const { action } = body || {};
+    const adminEmail = user.email || '';
 
-    if (action === 'refund_registration') {
+    // ── Approuver une demande d'annulation (rembourse + notifie) ──
+    if (action === 'approve_cancellation') {
       const { registration_id, note } = body;
-      if (!registration_id)
-        return Response.json({ error: 'registration_id requis' }, { status: 400 });
-
+      if (!registration_id) return Response.json({ error: 'registration_id requis' }, { status: 400 });
       const reg = await base44.asServiceRole.entities.EventRegistration.get(registration_id);
       if (!reg) return Response.json({ error: 'Inscription introuvable' }, { status: 404 });
-      if (reg.status === 'refunded')
-        return Response.json({ error: 'Inscription déjà remboursée' }, { status: 400 });
-
-      if (reg.credits_paid > 0) {
-        const u = await base44.asServiceRole.entities.User.get(reg.user_id);
-        const bal = Number(u?.referral_credits || 0);
-        await base44.asServiceRole.entities.User.update(reg.user_id, {
-          referral_credits: bal + reg.credits_paid,
-        });
-        await base44.asServiceRole.entities.CreditTransaction.create({
-          owner_id: reg.user_id,
-          type: 'reward',
-          amount: reg.credits_paid,
-          note: `Remboursement inscription : ${reg.event_title || ''}`,
-          status: 'completed',
-        });
-      }
-
+      if (reg.cancel_request_status !== 'pending')
+        return Response.json({ error: 'Aucune demande en attente' }, { status: 400 });
+      await refundReg(base44, reg, note || 'Demande d\'annulation approuvée', adminEmail);
       await base44.asServiceRole.entities.EventRegistration.update(registration_id, {
-        status: 'refunded',
-        cancelled_at: new Date().toISOString(),
-        refund_note: note || '',
-        refunded_by: user.email || '',
+        cancel_request_status: 'approved',
+        cancel_decision_note: note || '',
+        cancel_decided_at: new Date().toISOString(),
+        cancel_decided_by: adminEmail,
       });
+      try {
+        await sendEventEmail(base44, 'cancellation_approved', {
+          event_id: reg.event_id, event_title: reg.event_title || '',
+          event_date: reg.event_start_date || '', event_city: reg.event_city || '',
+          refund_amount: reg.credits_paid || 0, note: note || '',
+        }, reg.user_email);
+      } catch {}
+      return Response.json({ ok: true, refunded: reg.credits_paid || 0 });
+    }
 
-      const ev = await base44.asServiceRole.entities.Event.get(reg.event_id);
-      if (ev) {
-        const newIds = (ev.registered_ids || []).filter((id) => id !== reg.user_id);
-        await base44.asServiceRole.entities.Event.update(reg.event_id, {
-          registered_ids: newIds,
-          attendees_count: Math.max(0, (ev.attendees_count || 0) - 1),
-        });
-      }
-
+    // ── Rejeter une demande d'annulation (garde inscrit + notifie) ──
+    if (action === 'reject_cancellation') {
+      const { registration_id, note } = body;
+      if (!registration_id) return Response.json({ error: 'registration_id requis' }, { status: 400 });
+      const reg = await base44.asServiceRole.entities.EventRegistration.get(registration_id);
+      if (!reg) return Response.json({ error: 'Inscription introuvable' }, { status: 404 });
+      if (reg.cancel_request_status !== 'pending')
+        return Response.json({ error: 'Aucune demande en attente' }, { status: 400 });
+      await base44.asServiceRole.entities.EventRegistration.update(registration_id, {
+        cancel_request_status: 'rejected',
+        cancel_request_reason: reg.cancel_request_reason || '',
+        cancel_decision_note: note || '',
+        cancel_decided_at: new Date().toISOString(),
+        cancel_decided_by: adminEmail,
+      });
+      try {
+        await sendEventEmail(base44, 'cancellation_rejected', {
+          event_id: reg.event_id, event_title: reg.event_title || '',
+          event_date: reg.event_start_date || '', event_city: reg.event_city || '',
+          note: note || '',
+        }, reg.user_email);
+      } catch {}
       return Response.json({ ok: true });
     }
 
-    if (action === 'cancel_registration') {
-      const { registration_id } = body;
-      if (!registration_id)
-        return Response.json({ error: 'registration_id requis' }, { status: 400 });
+    // ── Rembourser une inscription (admin direct) ──
+    if (action === 'refund_registration') {
+      const { registration_id, note } = body;
+      if (!registration_id) return Response.json({ error: 'registration_id requis' }, { status: 400 });
       const reg = await base44.asServiceRole.entities.EventRegistration.get(registration_id);
       if (!reg) return Response.json({ error: 'Inscription introuvable' }, { status: 404 });
-      if (reg.status !== 'registered')
-        return Response.json({ error: 'Inscription non active' }, { status: 400 });
+      if (reg.status === 'refunded') return Response.json({ error: 'Inscription déjà remboursée' }, { status: 400 });
+      await refundReg(base44, reg, note || '', adminEmail);
+      try {
+        await sendEventEmail(base44, 'admin_refund', {
+          event_id: reg.event_id, event_title: reg.event_title || '',
+          event_date: reg.event_start_date || '', event_city: reg.event_city || '',
+          refund_amount: reg.credits_paid || 0, note: note || '',
+        }, reg.user_email);
+      } catch {}
+      return Response.json({ ok: true });
+    }
+
+    // ── Désinscrire sans remboursement (admin direct) ──
+    if (action === 'cancel_registration') {
+      const { registration_id, note } = body;
+      if (!registration_id) return Response.json({ error: 'registration_id requis' }, { status: 400 });
+      const reg = await base44.asServiceRole.entities.EventRegistration.get(registration_id);
+      if (!reg) return Response.json({ error: 'Inscription introuvable' }, { status: 404 });
+      if (reg.status !== 'registered') return Response.json({ error: 'Inscription non active' }, { status: 400 });
       await base44.asServiceRole.entities.EventRegistration.update(registration_id, {
         status: 'cancelled',
         cancelled_at: new Date().toISOString(),
-        refund_note: 'Désinscription admin (sans remboursement)',
-        refunded_by: user.email || '',
+        refund_note: note || 'Désinscription admin (sans remboursement)',
+        refunded_by: adminEmail,
       });
       const ev = await base44.asServiceRole.entities.Event.get(reg.event_id);
       if (ev) {
@@ -79,17 +132,23 @@ export default async function(req) {
           attendees_count: Math.max(0, (ev.attendees_count || 0) - 1),
         });
       }
+      try {
+        await sendEventEmail(base44, 'admin_cancel_registration', {
+          event_id: reg.event_id, event_title: reg.event_title || '',
+          event_date: reg.event_start_date || '', event_city: reg.event_city || '',
+          refund_amount: 0, note: note || '',
+        }, reg.user_email);
+      } catch {}
       return Response.json({ ok: true });
     }
 
+    // ── Inscrire un utilisateur (admin) ──
     if (action === 'admin_register') {
       const { event_id, user_id, charge_credits } = body;
-      if (!event_id || !user_id)
-        return Response.json({ error: 'event_id et user_id requis' }, { status: 400 });
+      if (!event_id || !user_id) return Response.json({ error: 'event_id et user_id requis' }, { status: 400 });
       const ev = await base44.asServiceRole.entities.Event.get(event_id);
       if (!ev) return Response.json({ error: 'Événement introuvable' }, { status: 404 });
-      if (ev.status === 'cancelled')
-        return Response.json({ error: 'Événement annulé' }, { status: 400 });
+      if (ev.status === 'cancelled') return Response.json({ error: 'Événement annulé' }, { status: 400 });
       const existing = await base44.asServiceRole.entities.EventRegistration.filter(
         { event_id, user_id, status: 'registered' }, '-created_date', 50
       );
@@ -101,7 +160,7 @@ export default async function(req) {
       if (credits > 0) {
         const bal = Number(u.referral_credits || 0);
         if (bal < credits)
-          return Response.json({ error: `Crédits insuffisants chez l'utilisateur (${bal}/${credits})` }, { status: 400 });
+          return Response.json({ error: `Crédits insuffisants (${bal}/${credits})` }, { status: 400 });
         await base44.asServiceRole.entities.User.update(user_id, { referral_credits: bal - credits });
         await base44.asServiceRole.entities.CreditTransaction.create({
           owner_id: user_id, type: 'boutique_spend', amount: -credits,
@@ -119,47 +178,36 @@ export default async function(req) {
       await base44.asServiceRole.entities.Event.update(event_id, {
         registered_ids: newIds, attendees_count: (ev.attendees_count || 0) + 1,
       });
+      try {
+        await sendEventEmail(base44, 'admin_registered', {
+          event_id, event_title: ev.title || '', event_date: ev.start_date || '',
+          event_city: ev.city || '', event_format: ev.format, credits,
+        }, u.email);
+      } catch {}
       return Response.json({ ok: true, credits_paid: credits });
     }
 
+    // ── Annuler un événement (rembourse tous + notifie) ──
     if (action === 'cancel_event') {
       const { event_id, reason } = body;
-      if (!event_id)
-        return Response.json({ error: 'event_id requis' }, { status: 400 });
-
+      if (!event_id) return Response.json({ error: 'event_id requis' }, { status: 400 });
       const ev = await base44.asServiceRole.entities.Event.get(event_id);
       if (!ev) return Response.json({ error: 'Événement introuvable' }, { status: 404 });
-      if (ev.status === 'cancelled')
-        return Response.json({ error: 'Événement déjà annulé' }, { status: 400 });
-
+      if (ev.status === 'cancelled') return Response.json({ error: 'Événement déjà annulé' }, { status: 400 });
       const regs = await base44.asServiceRole.entities.EventRegistration.filter(
         { event_id, status: 'registered' }, '-created_date', 500
       );
       let refundedCount = 0;
       for (const reg of regs) {
-        if (reg.credits_paid > 0) {
-          const u = await base44.asServiceRole.entities.User.get(reg.user_id);
-          const bal = Number(u?.referral_credits || 0);
-          await base44.asServiceRole.entities.User.update(reg.user_id, {
-            referral_credits: bal + reg.credits_paid,
-          });
-          await base44.asServiceRole.entities.CreditTransaction.create({
-            owner_id: reg.user_id,
-            type: 'reward',
-            amount: reg.credits_paid,
-            note: `Remboursement (annulation événement) : ${ev.title || ''}`,
-            status: 'completed',
-          });
-        }
-        await base44.asServiceRole.entities.EventRegistration.update(reg.id, {
-          status: 'refunded',
-          cancelled_at: new Date().toISOString(),
-          refund_note: reason || 'Événement annulé',
-          refunded_by: user.email || '',
-        });
+        await refundReg(base44, reg, reason || 'Événement annulé', adminEmail);
         refundedCount++;
+        try {
+          await sendEventEmail(base44, 'event_cancelled', {
+            event_id, event_title: ev.title || '', event_date: ev.start_date || '',
+            event_city: ev.city || '', refund_amount: reg.credits_paid || 0, reason: reason || '',
+          }, reg.user_email);
+        } catch {}
       }
-
       await base44.asServiceRole.entities.Event.update(event_id, {
         status: 'cancelled',
         cancel_reason: reason || '',
@@ -167,7 +215,6 @@ export default async function(req) {
         registered_ids: [],
         attendees_count: 0,
       });
-
       return Response.json({ ok: true, refunded: refundedCount });
     }
 

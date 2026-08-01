@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { sendEventEmail, getAdminEmails } from '../../shared/eventEmails.ts';
 
 export default async function(req) {
   try {
@@ -38,11 +39,8 @@ export default async function(req) {
         referral_credits: balance - credits,
       });
       await base44.asServiceRole.entities.CreditTransaction.create({
-        owner_id: user.id,
-        type: 'boutique_spend',
-        amount: -credits,
-        note: `Inscription événement : ${event.title}`,
-        status: 'completed',
+        owner_id: user.id, type: 'boutique_spend', amount: -credits,
+        note: `Inscription événement : ${event.title}`, status: 'completed',
       });
     }
 
@@ -67,11 +65,20 @@ export default async function(req) {
       attendees_count: (event.attendees_count || 0) + 1,
     });
 
-    return Response.json({
-      ok: true,
-      credits_paid: credits,
-      new_balance: balance - credits,
-    });
+    // ── Emails branded ──
+    const evCtx = {
+      event_id, event_title: event.title || '', event_date: event.start_date || '',
+      event_city: event.city || '', event_format: event.format, credits,
+    };
+    try {
+      await sendEventEmail(base44, 'registration_confirmed', evCtx, user.email);
+      const adminEmails = await getAdminEmails(base44);
+      if (adminEmails.length)
+        await sendEventEmail(base44, 'new_registration',
+          { ...evCtx, user_name: user.full_name || '', user_email: user.email || '' }, adminEmails);
+    } catch {}
+
+    return Response.json({ ok: true, credits_paid: credits, new_balance: balance - credits });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

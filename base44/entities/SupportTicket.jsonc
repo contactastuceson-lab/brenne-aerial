@@ -62,7 +62,7 @@
         "other"
       ],
       "default": "other",
-      "description": "Cat\u00e9gorie IA (compte, facturation, cr\u00e9dits, bug, fonctionnalit\u00e9, \u00e9v\u00e9nements, mod\u00e9ration, messagerie, autre)"
+      "description": "Cat\u00e9gorie (compte, facturation, cr\u00e9dits, bug, fonctionnalit\u00e9, \u00e9v\u00e9nements, mod\u00e9ration, messagerie, autre)"
     },
     "priority": {
       "type": "string",
@@ -85,7 +85,17 @@
         "closed"
       ],
       "default": "open",
-      "description": "open = nouveau, ai_resolved = r\u00e9solu par l'IA, awaiting_human = escalad\u00e9 humain, resolved = r\u00e9solu, closed = ferm\u00e9"
+      "description": "open = en cours, ai_resolved = r\u00e9solu par l'IA (info), awaiting_human = escalad\u00e9 humain, resolved = r\u00e9solu, closed = ferm\u00e9"
+    },
+    "assignee": {
+      "type": "string",
+      "enum": [
+        "ai",
+        "human",
+        "unassigned"
+      ],
+      "default": "unassigned",
+      "description": "Responsable du ticket : ai (Nexus), human (humain), unassigned (non assign\u00e9)"
     },
     "handled_by": {
       "type": "string",
@@ -95,7 +105,16 @@
         "escalated"
       ],
       "default": "ai",
-      "description": "Responsable du traitement : ai, human, ou escalated"
+      "description": "Dernier responsable du traitement (legacy) : ai, human, escalated"
+    },
+    "user_locked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Verrouill\u00e9 par l'utilisateur \u2014 emp\u00eache toute nouvelle r\u00e9ponse tant que non confirm\u00e9"
+    },
+    "admin_label": {
+      "type": "string",
+      "description": "Label / tag administratif interne (ex: VIP, litige, suivi)"
     },
     "messages": {
       "type": "array",
@@ -103,7 +122,7 @@
         "type": "object"
       },
       "default": [],
-      "description": "Fil de conversation : { role: 'user'|'assistant'|'admin'|'system', content, at, attachments }"
+      "description": "Fil de conversation : { role, content, steps, at, attachments }"
     },
     "ai_summary": {
       "type": "string",

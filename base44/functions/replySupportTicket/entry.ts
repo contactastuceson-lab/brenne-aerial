@@ -4,9 +4,12 @@ import { logAutomation } from '../../shared/logAutomation.ts';
 import { buildUserContext } from '../../shared/supportUserContext.ts';
 import { EZA_KNOWLEDGE, buildResearchSteps } from '../../shared/supportKnowledge.ts';
 
-// Réponse utilisateur sur un ticket existant : Nexus fait d'abord de la recherche
+// Réponse utilisateur sur un ticket existant : Nexus fait d'abord sa recherche
 // (doc, publication concernée, solde, compte), affiche ses étapes, PUIS répond.
-// N'escalade que si vraiment nécessaire (bug bloquant, sécurité, remboursement, etc.).
+// Trois résolutions possibles :
+//   - "answered"       : info pure complètement répondue → ticket résolu
+//   - "troubleshooting" : étapes proposées, ticket RESTE OUVERT (attend confirmation)
+//   - "escalate"        : critique uniquement (sécurité, remboursement, bug bloquant, suppression)
 
 export default async function(req) {
   let base44;
@@ -31,12 +34,11 @@ export default async function(req) {
     const history = Array.isArray(ticket.messages) ? ticket.messages : [];
     const newMessages = [...history, { role: 'user', content, at: new Date().toISOString() }];
 
-    // --- RECHERCHE CONTEXTUELLE (ce que Nexus "fait" et affiche) ---
+    // --- RECHERCHE CONTEXTUELLE ---
     const researchBits = [];
     let relatedPostData = null;
     let walletData = null;
 
-    // 1. Publication concernée
     if (ticket.related_item_type === 'post' && ticket.related_item_id) {
       relatedPostData = await base44.asServiceRole.entities.Post.get(ticket.related_item_id).catch(() => null);
       if (relatedPostData) {
@@ -44,7 +46,6 @@ export default async function(req) {
       }
     }
 
-    // 2. Solde / wallet si crédits ou facturation
     if (ticket.category === 'credits' || ticket.category === 'billing') {
       try {
         const wallets = await base44.asServiceRole.entities.Wallet.filter({ owner_id: user.id }).catch(() => []);
@@ -54,10 +55,8 @@ export default async function(req) {
       } catch {}
     }
 
-    // 3. Contexte utilisateur complet
     const { text: contextText } = await buildUserContext(base44, user.id, user.email);
 
-    // 4. Historique condensé
     const conv = newMessages
       .map((m) => (m.role === 'user' ? 'UTILISATEUR' : m.role === 'admin' ? 'ADMIN' : 'NEXUS') + ': ' + (m.content || ''))
       .join('\n');
@@ -81,19 +80,29 @@ ${conv}
 
 Réponds au dernier message. Renvoie un JSON STRICT :
 {
-  "reply": "réponse en français, 2-6 phrases, markdown. Utilise les données de recherche pour personnaliser. Propose TOUJOURS une solution concrète d'abord.",
-  "can_auto_resolve": true|false,
-  "escalation_reason": "raison courte si can_auto_resolve=false, sinon null"
+  "reply": "réponse en français, 2-6 phrases, markdown. Utilise les données de recherche. Propose TOUJOURS une solution concrète d'abord.",
+  "resolution_type": "answered|troubleshooting|escalate",
+  "escalation_reason": "raison courte si resolution_type=escalate, sinon null"
 }
 
-ESCALADE — UNIQUEMENT si :
-- Bug technique bloquant confirmé (pas un simple "ça ne marche pas" vague).
-- Problème de sécurité (compte piraté, données).
-- Demande explicite de remboursement.
-- Demande de suppression de compte.
-- L'utilisateur a déjà insisté 3+ fois sans solution dans l'historique.
+RÈGLES DE RÉSOLUTION (CRITIQUE) :
+- "answered" : tu as répondu COMPLÈTEMENT à une question d'info (comment ça marche, où trouver, combien). L'utilisateur n'a plus rien à faire. → résolu.
+- "troubleshooting" : tu proposes des étapes / une solution, mais l'utilisateur doit TESTER ou CONFIRMER. Le ticket RESTE OUVERT. C'est le cas par défaut pour tout bug ou problème.
+- "escalate" : UNIQUEMENT si :
+    • Sécurité (compte piraté, données, harcèlement).
+    • Demande explicite de remboursement.
+    • Bug bloquant confirmé (core unusable).
+    • Suppression de compte.
+    • L'utilisateur a insisté 3+ fois sans solution dans l'historique.
 
-Si tu peux répondre avec la doc → can_auto_resolve=true. Si c'est une info sur le fonctionnement (crédits, parrainage, events, boutique) → résous. Ne dis JAMAIS "je transmets à l'équipe" si tu peux répondre toi-même.`;
+INTERDIT :
+- Marquer "answered" si l'utilisateur n'a pas confirmé que le bug est résolu.
+- Escalader "par précaution" ou pour un simple "ça ne marche pas" vague.
+- Dire "je transmets à l'équipe" si tu peux répondre toi-même.
+
+Si l'utilisateur dit "ça marche" / "merci c'est bon" → "answered".
+Si l'utilisateur dit "non ça ne marche pas" ou donne un nouveau détail → "troubleshooting" (ouvre à nouveau, propose autre chose).
+Si l'info demandée est dans la doc → "answered".`;
 
     const ai = await base44.integrations.Core.InvokeLLM({
       prompt,
@@ -101,22 +110,28 @@ Si tu peux répondre avec la doc → can_auto_resolve=true. Si c'est une info su
         type: 'object',
         properties: {
           reply: { type: 'string' },
-          can_auto_resolve: { type: 'boolean' },
+          resolution_type: { type: 'string' },
           escalation_reason: { type: 'string' },
         },
       },
     }).catch((e) => ({ __error: String(e?.message || e) }));
 
-    let reply, auto, escalation;
+    let reply, rtype, escalation;
     if (ai?.__error) {
       reply = "J'ai bien reçu votre message. Un membre de l'équipe eza vous répondra sous peu.";
-      auto = false;
-      escalation = 'Erreur de traitement IA';
+      rtype = 'troubleshooting';
+      escalation = null;
     } else {
       reply = ai.reply || "J'ai bien reçu votre message.";
-      auto = ai.can_auto_resolve !== false;
-      escalation = auto ? null : (ai.escalation_reason || 'Nécessite intervention humaine');
+      rtype = (ai.resolution_type === 'answered' || ai.resolution_type === 'escalate') ? ai.resolution_type : 'troubleshooting';
+      escalation = rtype === 'escalate' ? (ai.escalation_reason || 'Nécessite intervention humaine') : null;
     }
+
+    const resolved = rtype === 'answered';
+    const escalated = rtype === 'escalate';
+    const newStatus = escalated ? 'awaiting_human' : (resolved ? 'ai_resolved' : 'open');
+    const assignee = escalated ? 'human' : 'ai';
+    const handledBy = escalated ? 'escalated' : 'ai';
 
     const finalMessages = [...newMessages, {
       role: 'assistant',
@@ -124,11 +139,12 @@ Si tu peux répondre avec la doc → can_auto_resolve=true. Si c'est une info su
       steps: steps.map((s) => ({ ...s, status: 'done' })),
       at: new Date().toISOString(),
     }];
-    const newStatus = auto ? 'ai_resolved' : 'awaiting_human';
 
     const updated = await base44.entities.SupportTicket.update(ticketId, {
       status: newStatus,
-      ai_handled: auto,
+      assignee,
+      handled_by: handledBy,
+      ai_handled: resolved,
       escalation_reason: escalation,
       messages: finalMessages,
     }).catch(() => null);
@@ -136,14 +152,14 @@ Si tu peux répondre avec la doc → can_auto_resolve=true. Si c'est une info su
     if (ticket.user_email) {
       await sendEzaEmail(base44, {
         to: ticket.user_email,
-        subject: auto ? '✅ Suite de votre ticket eza' : '🔄 Votre ticket eza est en cours de traitement',
+        subject: resolved ? '✅ Suite de votre ticket eza' : escalated ? '🔄 Votre ticket eza est transmis à un humain' : '💬 Nexus a répondu à votre ticket',
         title: 'Réponse de Nexus',
-        body: `Bonjour,\n\n${reply}\n\n${auto ? 'Si votre demande n\'est pas résolue, répondez sur le ticket.' : 'L\'équipe eza reprend le dossier.'}\n\n— Nexus, support eza`,
+        body: `Bonjour,\n\n${reply}\n\n${resolved ? 'Si votre demande n\'est pas résolue, répondez sur le ticket pour le rouvrir.' : escalated ? 'L\'équipe eza reprend le dossier sous 24-48h.' : 'Répondez sur le ticket pour confirmer si la solution fonctionne.'}\n\n— Nexus, support eza`,
         tagline: 'eza',
       }).catch(() => {});
     }
 
-    if (!auto) {
+    if (escalated) {
       try {
         const admins = await base44.asServiceRole.entities.User.list().catch(() => []);
         for (const email of (admins || []).filter((u) => u.role === 'admin' || u.role === 'owner').map((u) => u.email).slice(0, 25)) {
@@ -159,11 +175,11 @@ Si tu peux répondre avec la doc → can_auto_resolve=true. Si c'est une info su
     await logAutomation(base44, {
       automation_name: 'reply_support_ticket', label: 'Support IA — réponse utilisateur', category: 'system',
       status: 'success',
-      summary: `Ticket #${String(ticketId).slice(-6)} — ${auto ? 'résolu IA' : 'escaladé'} (${steps.length} étapes de recherche)`,
+      summary: `Ticket #${String(ticketId).slice(-6)} — ${resolved ? 'résolu IA' : escalated ? 'escaladé' : 'répondu (ouvert)'} (${steps.length} étapes)`,
       count: 1,
     }).catch(() => {});
 
-    return Response.json({ ok: true, ticket: updated || { ...ticket, messages: finalMessages, status: newStatus } });
+    return Response.json({ ok: true, ticket: updated || { ...ticket, messages: finalMessages, status: newStatus, assignee } });
   } catch (error) {
     if (base44) {
       await logAutomation(base44, {

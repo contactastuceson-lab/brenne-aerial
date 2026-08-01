@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { waitUntil } from 'base44:runtime';
 
 const ALLOWED_ROLES = ['admin', 'owner', 'pdg_adjoint', 'conseil_admin', 'event_manager'];
 
@@ -70,6 +71,30 @@ export default async function(req) {
       checked_in: true,
       checked_in_at: now,
     });
+
+    // Push + notification de bienvenue au participant (non bloquant)
+    waitUntil(
+      (async () => {
+        try {
+          if (reg.user_email) {
+            await base44.asServiceRole.entities.Notification.create({
+              user_email: reg.user_email,
+              type: 'system',
+              title: `🎟️ Bienvenue à ${reg.event_title || "l'événement"} !`,
+              content: 'Votre billet a été validé. Bon événement !',
+              sender_name: 'Eza Events',
+            }).catch(() => {});
+            await base44.functions.invoke('sendWebPush', {
+              user_email: reg.user_email,
+              title: `Bienvenue à ${reg.event_title || "l'événement"} !`,
+              body: 'Votre billet a été validé. Bon événement !',
+              url: '/espace',
+              tag: 'event-checkin',
+            }).catch(() => {});
+          }
+        } catch {}
+      })()
+    );
 
     return Response.json({
       ok: true,

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Flag, Eye, Check, X, User, MessageCircle, ExternalLink, Search, Zap, AlertCircle, TrendingUp, Shield, Trash2, Mail, Ban } from 'lucide-react';
+import { Flag, Eye, Check, X, User, MessageCircle, ExternalLink, Search, Zap, AlertCircle, TrendingUp, Shield, Trash2, Mail, Ban, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,6 +44,31 @@ export default function AdminReports() {
   const [sortBy, setSortBy] = useState('recent');
   const [adminNotes, setAdminNotes] = useState('');
   const [action, setAction] = useState(null);
+  const [drafting, setDrafting] = useState(false);
+
+  const draftReply = async () => {
+    if (!selected) return;
+    setDrafting(true);
+    try {
+      const ctx = `Raison: ${selected.reason}\nCible: ${selected.target_name || selected.target_email}\nDétails: ${selected.details || ''}\nMessage signalé: ${selected.message_content || ''}`;
+      const res = await base44.functions.invoke('nexusDraftReply', {
+        context: ctx,
+        recipient: selected.reporter_name || selected.reporter_email || "l'utilisateur",
+        tone: 'professionnel, rassurant et ferme si besoin',
+      });
+      const draft = res?.data?.draft ?? res?.draft ?? '';
+      if (draft) {
+        setAdminNotes((prev) => (prev ? prev + '\n\n' : '') + draft);
+        toast.success('✓ Réponse générée par Nexus');
+      } else {
+        toast.error("Nexus n'a pas pu générer de réponse");
+      }
+    } catch {
+      toast.error('Erreur lors de la génération');
+    } finally {
+      setDrafting(false);
+    }
+  };
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['admin-reports'],
@@ -334,7 +359,19 @@ export default function AdminReports() {
 
               {/* Notes */}
               <div>
-                <label className="font-inter text-xs font-semibold text-foreground mb-2 block">Actions & Décisions</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="font-inter text-xs font-semibold text-foreground block">Actions & Décisions</label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="border-primary/30 text-primary text-[11px] gap-1.5 h-7"
+                    onClick={draftReply}
+                    disabled={drafting}
+                  >
+                    {drafting ? <><div className="w-3 h-3 border border-primary border-t-transparent rounded-full animate-spin" /> Nexus…</> : <><Sparkles className="w-3 h-3" /> Générer avec Nexus</>}
+                  </Button>
+                </div>
                 <Textarea
                   value={adminNotes}
                   onChange={e => setAdminNotes(e.target.value)}

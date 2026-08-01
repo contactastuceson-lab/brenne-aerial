@@ -200,6 +200,21 @@
           "type": "string",
           "format": "date-time"
         },
+        "adfree_until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Navigation sans publicit\u00e9 (boutique)"
+        },
+        "priority_support_until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Support prioritaire (boutique)"
+        },
+        "story_archive_until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Acc\u00e8s aux archives story (boutique)"
+        },
         "custom_colors": {
           "type": "boolean"
         },

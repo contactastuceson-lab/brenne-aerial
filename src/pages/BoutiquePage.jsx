@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Gift, Crown, BadgeCheck, TrendingUp, Settings, Sparkles, Users,
+  Gift, Crown, BadgeCheck, TrendingUp, Settings, Sparkles, Users, User,
   Star, Gem, Trophy, Rocket, Zap, Camera, Video, MessageCircle,
   Bell, Palette, Award, Heart, Flame, Shield, Eye, Megaphone,
   Coffee, Music, BookOpen, Headphones, Smartphone, Bot, Lock,
+  ShoppingBag, GraduationCap, LifeBuoy,
   Loader2, Coins, CheckCircle, ArrowRight, Tag, Clock, Ticket,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -28,6 +29,9 @@ const CATEGORIES = {
   features: { label: 'Fonctionnalités', icon: Settings, color: 'text-cyan-400', border: 'border-cyan-400/30', bg: 'bg-cyan-400/10' },
   exclusivites: { label: 'Exclusivités', icon: Sparkles, color: 'text-yellow-400', border: 'border-yellow-400/30', bg: 'bg-yellow-400/10' },
   communaute: { label: 'Communauté', icon: Users, color: 'text-emerald-400', border: 'border-emerald-400/30', bg: 'bg-emerald-400/10' },
+  merch: { label: 'Goodies', icon: ShoppingBag, color: 'text-rose-400', border: 'border-rose-400/30', bg: 'bg-rose-400/10' },
+  experiences: { label: 'Expériences', icon: GraduationCap, color: 'text-fuchsia-400', border: 'border-fuchsia-400/30', bg: 'bg-fuchsia-400/10' },
+  services: { label: 'Services & Fun', icon: LifeBuoy, color: 'text-lime-400', border: 'border-lime-400/30', bg: 'bg-lime-400/10' },
 };
 
 // Type de traitement affiché sur chaque carte
@@ -91,6 +95,10 @@ const ITEM_FULFILLMENT = {
   stickers_pack: 'manual', feature_naming: 'manual', vip_playlist: 'manual',
   vip_community: 'token', community_1k: 'token', pin_community: 'token', sponsored_event: 'token',
   community_premium_design: 'token', community_space: 'token',
+  mug_eza: 'manual', cap_eza: 'manual', totebag_eza: 'manual', poster_eza: 'manual', pins_eza: 'manual', bottle_eza: 'manual',
+  dinner_pdg: 'manual', masterclass: 'manual', backstage_event: 'manual', workshop: 'manual', coaching_1h: 'manual',
+  rename_username: 'manual', custom_url: 'manual', profile_audit: 'manual', shoutout_eza: 'manual', raffle_ticket: 'manual', mystery_box: 'manual',
+  priority_support_1m: 'auto', adfree_1m: 'auto', story_archive_30d: 'auto',
 };
 
 const SHOP_ITEMS = [
@@ -149,6 +157,32 @@ const SHOP_ITEMS = [
   { id: 'sponsored_event', label: 'Événement sponsorisé', desc: 'Sponsorisez un événement communautaire', cost: 300, category: 'communaute', icon: Megaphone },
   { id: 'community_premium_design', label: 'Design premium de communauté', desc: 'Apparence premium pour votre communauté', cost: 150, category: 'communaute', icon: Palette },
   { id: 'community_space', label: 'Space communautaire mensuel', desc: 'Un Space audio dédié à votre communauté chaque mois', cost: 180, category: 'communaute', icon: Headphones },
+
+  // ── Goodies physiques ──
+  { id: 'mug_eza', label: 'Mug Eza', desc: 'Le mug officiel de la communauté — caféz avec style', cost: 250, category: 'merch', icon: Coffee },
+  { id: 'cap_eza', label: 'Casquette Eza', desc: 'Casquette brodée collector de la plateforme', cost: 300, category: 'merch', icon: ShoppingBag },
+  { id: 'totebag_eza', label: 'Tote bag Eza', desc: 'Sac en toile écologique aux couleurs d\'Eza', cost: 180, category: 'merch', icon: ShoppingBag },
+  { id: 'poster_eza', label: 'Poster collector Eza', desc: 'Poster exclusif numéroté et signé', cost: 120, category: 'merch', icon: Sparkles },
+  { id: 'pins_eza', label: 'Pack de pins Eza', desc: 'Pack de 5 pins broche collector', cost: 90, category: 'merch', icon: Star },
+  { id: 'bottle_eza', label: 'Gourde Eza', desc: 'Gourde isotherme 500ml à l\'effigie d\'Eza', cost: 220, category: 'merch', icon: Coffee },
+
+  // ── Expériences ──
+  { id: 'dinner_pdg', label: 'Dîner avec le PDG', desc: 'Un dîner privé avec le PDG d\'Eza (une expérience inoubliable)', cost: 3000, category: 'experiences', icon: MessageCircle },
+  { id: 'masterclass', label: 'Masterclass exclusive', desc: 'Accès à une masterclass donnée par un expert invité', cost: 1200, category: 'experiences', icon: GraduationCap },
+  { id: 'backstage_event', label: 'Accès backstage (événement)', desc: 'Zone VIP coulisses lors d\'un événement Eza', cost: 1500, category: 'experiences', icon: Music },
+  { id: 'workshop', label: 'Atelier création 2h', desc: 'Atelier pratique de 2h avec un membre de l\'équipe', cost: 900, category: 'experiences', icon: BookOpen },
+  { id: 'coaching_1h', label: 'Coaching individuel 1h', desc: 'Session de coaching personnalisée d\'1 heure en visio', cost: 700, category: 'experiences', icon: Users },
+
+  // ── Services & Fun ──
+  { id: 'rename_username', label: 'Changer de username', desc: 'Modification de votre nom d\'utilisateur (sous réserve de disponibilité)', cost: 150, category: 'services', icon: User },
+  { id: 'custom_url', label: 'URL personnalisée', desc: 'Choisissez votre URL de profil personnalisée', cost: 350, category: 'services', icon: Lock },
+  { id: 'profile_audit', label: 'Audit de profil par l\'équipe', desc: 'Analyse complète de votre profil par notre équipe + recommandations', cost: 400, category: 'services', icon: TrendingUp },
+  { id: 'priority_support_1m', label: 'Support prioritaire (1 mois)', desc: 'Vos demandes traitées en priorité pendant 30 jours', cost: 180, category: 'services', icon: LifeBuoy },
+  { id: 'adfree_1m', label: 'Sans publicité (1 mois)', desc: 'Navigation 100% sans pub pendant 30 jours — sans badge', cost: 100, category: 'services', icon: Shield },
+  { id: 'story_archive_30d', label: 'Archives story (30 jours)', desc: 'Accès aux story passées 30 jours au-delà de l\'expiration', cost: 120, category: 'services', icon: BookOpen },
+  { id: 'shoutout_eza', label: 'Shoutout compte officiel', desc: 'Mention de votre profil par le compte officiel Eza', cost: 500, category: 'services', icon: Megaphone },
+  { id: 'raffle_ticket', label: 'Ticket de tombola mensuelle', desc: 'Participez au tirage au sort mensuel — lots Eza à gagner', cost: 50, category: 'services', icon: Ticket },
+  { id: 'mystery_box', label: 'Boîte mystère Eza', desc: 'Une surprise aléatoire parmi nos goodies, perks et expériences', cost: 200, category: 'services', icon: Gift },
 ];
 
 // Variantes de badge/durée proposées dans le pop-up de choix pour chaque tier
@@ -172,7 +206,7 @@ const TIER_VARIANTS = {
   ],
 };
 
-const CATEGORY_ORDER = ['abonnements', 'badges', 'boosts', 'features', 'exclusivites', 'communaute'];
+const CATEGORY_ORDER = ['abonnements', 'badges', 'boosts', 'features', 'exclusivites', 'communaute', 'merch', 'experiences', 'services'];
 
 // Affichage des perks actifs
 const PERK_LABELS = {
@@ -191,6 +225,9 @@ const PERK_LABELS = {
   custom_notif_sound: { label: 'Son notif personnalisé', icon: Bell, color: 'text-cyan-400' },
   particle_effects: { label: 'Effets de particules', icon: Sparkles, color: 'text-cyan-400' },
   custom_watermark: { label: 'Watermark', icon: Shield, color: 'text-cyan-400' },
+  adfree_until: { label: 'Sans publicité', icon: Shield, color: 'text-rose-400' },
+  priority_support_until: { label: 'Support prioritaire', icon: LifeBuoy, color: 'text-lime-400' },
+  story_archive_until: { label: 'Archives story', icon: BookOpen, color: 'text-cyan-400' },
 };
 
 const TOKEN_LABELS = {

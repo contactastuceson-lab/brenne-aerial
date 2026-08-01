@@ -80,6 +80,34 @@ export const REWARD_EFFECTS: Record<string, RewardEffect> = {
   sponsored_event:          { type: 'token', token: { key: 'sponsored_event', count: 1, label: 'Événement sponsorisé' } },
   community_premium_design: { type: 'token', token: { key: 'community_premium_design', count: 1, label: 'Design premium communauté' } },
   community_space:          { type: 'token', token: { key: 'community_space', count: 1, label: 'Space communautaire' } },
+
+  // ── Goodies physiques (manuel) ──
+  mug_eza:        { type: 'manual' },
+  cap_eza:        { type: 'manual' },
+  totebag_eza:    { type: 'manual' },
+  poster_eza:     { type: 'manual' },
+  pins_eza:       { type: 'manual' },
+  bottle_eza:     { type: 'manual' },
+
+  // ── Expériences (manuel) ──
+  dinner_pdg:       { type: 'manual' },
+  masterclass:      { type: 'manual' },
+  backstage_event:  { type: 'manual' },
+  workshop:         { type: 'manual' },
+  coaching_1h:      { type: 'manual' },
+
+  // ── Services numériques ──
+  rename_username:       { type: 'manual' },
+  custom_url:            { type: 'manual' },
+  profile_audit:         { type: 'manual' },
+  priority_support_1m:   { type: 'auto', apply: { perks: { priority_support_until: MONTH } } },
+  adfree_1m:             { type: 'auto', apply: { perks: { adfree_until: MONTH } } },
+  story_archive_30d:     { type: 'auto', apply: { perks: { story_archive_until: 30 } } },
+  shoutout_eza:          { type: 'manual' },
+
+  // ── Fun ──
+  raffle_ticket: { type: 'manual' },
+  mystery_box:   { type: 'manual' },
 };
 
 // Community token keys that have a Community-entity effect to reverse

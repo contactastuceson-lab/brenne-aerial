@@ -20,17 +20,18 @@
     },
     "related_item_id": {
       "type": "string",
-      "description": "ID de l'\u00e9l\u00e9ment concern\u00e9 (post, discussion) si applicable"
+      "description": "ID de l'\u00e9l\u00e9ment concern\u00e9 (post, discussion, portefeuille) si applicable"
     },
     "related_item_type": {
       "type": "string",
       "enum": [
         "post",
         "conversation",
+        "wallet",
         "none"
       ],
       "default": "none",
-      "description": "Type d'\u00e9l\u00e9ment concern\u00e9 : post, conversation, ou aucun"
+      "description": "Type d'\u00e9l\u00e9ment concern\u00e9 : post, conversation, wallet (portefeuille), ou aucun"
     },
     "related_item_label": {
       "type": "string",

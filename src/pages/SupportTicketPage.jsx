@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Send, Loader2, CheckCircle2, Clock, AlertCircle,
   ArrowLeft, Bot, User as UserIcon, Paperclip, Hash, MessageCircle, FileText,
-  Lock, ShieldAlert, Tag, UserCog,
+  Lock, ShieldAlert, Tag, UserCog, Wallet,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -88,7 +88,7 @@ export default function SupportTicketPage() {
     const steps = [{ icon: 'book', label: 'Lecture de la documentation eza' }];
     if (ticket?.related_item_type === 'post') steps.push({ icon: 'post', label: 'Examen de la publication concernée' });
     if (ticket?.related_item_type === 'conversation') steps.push({ icon: 'history', label: 'Analyse de la discussion' });
-    if (['credits', 'billing'].includes(ticket?.category)) steps.push({ icon: 'wallet', label: 'Vérification de votre solde Eza' });
+    if (['credits', 'billing'].includes(ticket?.category) || ticket?.related_item_type === 'wallet') steps.push({ icon: 'wallet', label: 'Vérification de votre solde Eza' });
     if (ticket?.category === 'account') steps.push({ icon: 'user', label: 'Vérification de votre compte' });
     steps.push({ icon: 'search', label: "Recherche d'une solution applicable" });
     return steps;
@@ -199,6 +199,12 @@ export default function SupportTicketPage() {
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <MessageCircle className="w-3.5 h-3.5 text-primary" />
               <span>Discussion : {ticket.related_item_label}</span>
+            </div>
+          )}
+          {ticket.related_item_type === 'wallet' && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Wallet className="w-3.5 h-3.5 text-primary" />
+              <span>Portefeuille concerné : {ticket.related_item_label}</span>
             </div>
           )}
           {ticket.file_urls?.length > 0 && (

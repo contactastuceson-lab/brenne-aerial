@@ -191,7 +191,11 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center">
+    <div
+      className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center select-none"
+      onContextMenu={(e) => e.preventDefault()}
+      onWheel={(e) => { if (e.ctrlKey) e.preventDefault(); }}
+    >
       {/* Tap zones */}
       <button
         className="absolute left-0 top-0 bottom-0 w-1/3 z-20 touch-none select-none"

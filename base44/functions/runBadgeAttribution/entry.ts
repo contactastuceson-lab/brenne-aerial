@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { sendEzaEmail } from '../../shared/ezaEmails.ts';
+import { logAutomation } from '../../shared/logAutomation.ts';
 
 // Tâche planifiée quotidienne : attribution automatique de badges communautaires
 // basée sur l'activité réelle :
@@ -54,6 +55,15 @@ export default async function(req) {
         tagline: 'eza',
       }).catch(() => {});
     }
+
+    await logAutomation(base44, {
+      automation_name: 'run_badge_attribution',
+      label: 'Attribution auto des badges',
+      category: 'badges',
+      status: 'success',
+      summary: `${awarded} badge(s) attribués (${pioneerIds.size} pionniers éligibles)`,
+      count: awarded,
+    });
 
     return Response.json({ ok: true, awarded, pioneers: pioneerIds.size });
   } catch (error) {

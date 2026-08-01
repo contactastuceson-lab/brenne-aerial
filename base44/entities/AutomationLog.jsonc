@@ -1,0 +1,83 @@
+{
+  "name": "AutomationLog",
+  "type": "object",
+  "properties": {
+    "automation_name": {
+      "type": "string",
+      "description": "Identifiant de l'automatisation (nexus_daily_digest, detect_referral_fraud, ...)"
+    },
+    "label": {
+      "type": "string",
+      "description": "Libell\u00e9 lisible"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "digest",
+        "moderation",
+        "fraud",
+        "badges",
+        "cart",
+        "onboarding",
+        "economy",
+        "ads",
+        "retention",
+        "system"
+      ],
+      "default": "system",
+      "description": "Cat\u00e9gorie d'automatisation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "warning",
+        "error"
+      ],
+      "default": "success"
+    },
+    "summary": {
+      "type": "string",
+      "description": "R\u00e9sum\u00e9 court de l'action"
+    },
+    "details": {
+      "type": "string",
+      "description": "D\u00e9tails complets (texte du digest, liste des cas flagu\u00e9s, ...)"
+    },
+    "count": {
+      "type": "number",
+      "description": "Nombre associ\u00e9 (badges attribu\u00e9s, paniers notifi\u00e9s, ...)"
+    },
+    "run_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Horodatage d'ex\u00e9cution"
+    }
+  },
+  "required": [
+    "automation_name",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

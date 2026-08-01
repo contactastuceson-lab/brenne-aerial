@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { waitUntil } from 'base44:runtime';
 import { sendEzaEmail } from '../../shared/ezaEmails.ts';
+import { logAutomation } from '../../shared/logAutomation.ts';
 
 // Récupération des paniers abandonnés : paniers 'active' non modifiés
 // depuis > 24h, sans notification de récupération déjà envoyée.
@@ -55,6 +56,15 @@ export default async function(req) {
       }).catch(() => {});
       notified++;
     }
+
+    await logAutomation(base44, {
+      automation_name: 'recover_abandoned_carts',
+      label: 'Récupération paniers abandonnés',
+      category: 'cart',
+      status: 'success',
+      summary: `${notified} panier(s) relancé(s) (>24h sans activité)`,
+      count: notified,
+    });
 
     return Response.json({ ok: true, notified });
   } catch (error) {

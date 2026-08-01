@@ -5,6 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import UserPicker from './UserPicker';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
+import { Sparkles, Loader2 } from 'lucide-react';
 
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'En attente' },
@@ -20,6 +23,27 @@ export default function AffiliationDialog({ open, onOpenChange, users, affiliate
   const [status, setStatus] = useState('pending');
   const [visibility, setVisibility] = useState('public');
   const [message, setMessage] = useState('');
+  const [drafting, setDrafting] = useState(false);
+
+  const draftReply = async () => {
+    const org = users.find((u) => u.id === organizationId);
+    const affUser = (affiliateUsers || users).find((u) => u.id === userId);
+    const ctx = `Demande d'affiliation eza — Organisation: ${org?.display_name || org?.full_name || ''}\nUtilisateur affilié: ${affUser?.display_name || affUser?.full_name || ''}\nRôle demandé: ${role}\nStatut: ${status}\nVisibilité: ${visibility}`;
+    setDrafting(true);
+    try {
+      const res = await base44.functions.invoke('nexusDraftReply', {
+        context: ctx,
+        recipient: affUser?.display_name || affUser?.full_name || "l'utilisateur",
+        tone: 'professionnel, en ligne avec la charte eza',
+      });
+      const draft = res?.data?.draft ?? res?.draft ?? '';
+      if (draft) { setMessage(draft); toast.success('Réponse générée par Nexus'); }
+      else toast.error("Nexus n'a pas pu générer de réponse");
+    } catch {
+      toast.error('Erreur lors de la génération');
+    }
+    setDrafting(false);
+  };
 
   useEffect(() => {
     if (open) {
@@ -100,8 +124,14 @@ export default function AffiliationDialog({ open, onOpenChange, users, affiliate
             </Select>
           </div>
           <div>
-            <p className="font-inter text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">Message (optionnel)</p>
-            <Textarea value={message} onChange={e => setMessage(e.target.value)} rows={2} placeholder="Message associé à l'invitation" />
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="font-inter text-xs font-semibold text-muted-foreground uppercase tracking-wide">Message (optionnel)</p>
+              <button type="button" onClick={draftReply} disabled={drafting || !organizationId}
+                className="flex items-center gap-1.5 text-[11px] text-primary border border-primary/30 rounded-lg px-2 py-1 hover:bg-primary/10 disabled:opacity-50 transition-all">
+                {drafting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Générer avec Nexus
+              </button>
+            </div>
+            <Textarea value={message} onChange={e => setMessage(e.target.value)} rows={3} placeholder="Message associé à l'invitation (ou réponse générée par Nexus)" />
           </div>
         </div>
 

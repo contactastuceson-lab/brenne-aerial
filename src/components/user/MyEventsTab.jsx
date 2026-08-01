@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import EventTicketModal from '@/components/events/EventTicketModal';
+import { QrCode as QrIcon } from 'lucide-react';
 
 const STATUS = {
   registered: { label: 'Inscrit', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' },
@@ -34,6 +36,7 @@ function fmtDate(d) {
 export default function MyEventsTab({ user }) {
   const qc = useQueryClient();
   const [cancelTarget, setCancelTarget] = useState(null);
+  const [ticketTarget, setTicketTarget] = useState(null);
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -100,6 +103,10 @@ export default function MyEventsTab({ user }) {
 
           {reg.status === 'registered' && (
             <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="default" onClick={() => setTicketTarget(reg)}
+                className="font-grotesk font-bold">
+                <QrIcon className="w-3.5 h-3.5" /> Voir mon billet
+              </Button>
               {creq ? (
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-grotesk font-bold border ${creq.color}`}>
                   <Hourglass className="w-3.5 h-3.5" /> {creq.label}
@@ -196,6 +203,17 @@ export default function MyEventsTab({ user }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {ticketTarget && (
+        <EventTicketModal
+          open={!!ticketTarget}
+          onClose={() => setTicketTarget(null)}
+          registration={ticketTarget}
+          event={{ id: ticketTarget.event_id, title: ticketTarget.event_title, start_date: ticketTarget.event_start_date, city: ticketTarget.event_city, image_url: ticketTarget.event_image_url }}
+          user={user}
+          variant="view"
+        />
+      )}
     </div>
   );
 }

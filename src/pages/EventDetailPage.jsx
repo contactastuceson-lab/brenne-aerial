@@ -10,6 +10,7 @@ import {
   Trophy, PartyPopper, Tag, Star, Ticket, ExternalLink, Loader2, Share2, Coins,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import EventTicketModal from "@/components/events/EventTicketModal";
 
 const CATEGORIES = {
   conference: { label: "Conférence", icon: Mic2, color: "text-sky-400" },
@@ -42,6 +43,7 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
   const [registered, setRegistered] = useState(false);
+  const [ticketReg, setTicketReg] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -70,6 +72,15 @@ export default function EventDetailPage() {
       toast.success(`Inscription confirmée${res?.data?.credits_paid ? ` — ${res.data.credits_paid} crédits débités` : ""} !`);
       setRegistered(true);
       setEv({ ...ev, attendees_count: (ev.attendees_count || 0) + 1, registered_ids: [...(ev.registered_ids || []), user.id] });
+      setTicketReg({
+        id: res?.data?.registration_id || '',
+        event_id: ev.id,
+        event_title: ev.title,
+        event_start_date: ev.start_date,
+        event_city: ev.city,
+        event_image_url: ev.image_url,
+        credits_paid: res?.data?.credits_paid || 0,
+      });
     } catch (e) {
       toast.error(e?.response?.data?.error || "Inscription échouée");
     }
@@ -290,9 +301,20 @@ export default function EventDetailPage() {
 
         {/* Back link */}
         <Link to="/events" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground font-bold">
-          <ArrowLeft className="w-4 h-4" /> Tous les événements
+         <ArrowLeft className="w-4 h-4" /> Tous les événements
         </Link>
-      </div>
-    </div>
-  );
-}
+        </div>
+
+        {ticketReg && (
+        <EventTicketModal
+         open={!!ticketReg}
+         onClose={() => setTicketReg(null)}
+         registration={ticketReg}
+         event={ev}
+         user={user}
+         variant="confirmation"
+        />
+        )}
+        </div>
+        );
+        }

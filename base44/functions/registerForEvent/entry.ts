@@ -44,7 +44,7 @@ export default async function(req) {
       });
     }
 
-    await base44.entities.EventRegistration.create({
+    const registration = await base44.entities.EventRegistration.create({
       event_id,
       event_title: event.title || '',
       event_image_url: event.image_url || '',
@@ -78,7 +78,7 @@ export default async function(req) {
           { ...evCtx, user_name: user.full_name || '', user_email: user.email || '' }, adminEmails);
     } catch {}
 
-    return Response.json({ ok: true, credits_paid: credits, new_balance: balance - credits });
+    return Response.json({ ok: true, credits_paid: credits, new_balance: balance - credits, registration_id: registration.id });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { sendEventEmail, getAdminEmails } from '../../shared/eventEmails.ts';
+import { sendEventEmail, getOrganizerEmails } from '../../shared/eventEmails.ts';
 
 export default async function(req) {
   try {
@@ -38,10 +38,10 @@ export default async function(req) {
     try {
       await sendEventEmail(base44, 'cancellation_request_received',
         { ...evCtx, user_name: user.full_name || '' }, user.email);
-      const adminEmails = await getAdminEmails(base44);
-      if (adminEmails.length)
+      const orgEmails = await getOrganizerEmails(base44, ev);
+      if (orgEmails.length)
         await sendEventEmail(base44, 'cancellation_requested_admin',
-          { ...evCtx, user_name: user.full_name || '', user_email: user.email || '' }, adminEmails);
+          { ...evCtx, user_name: user.full_name || '', user_email: user.email || '' }, orgEmails);
     } catch {}
 
     return Response.json({ ok: true, status: 'pending' });

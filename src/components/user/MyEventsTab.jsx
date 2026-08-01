@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import {
   Calendar, MapPin, Clock, Coins, Loader2, RefreshCw, Ticket, CalendarX,
-  AlertTriangle, Send, Hourglass,
+  AlertTriangle, Send, Hourglass, CheckCircle2, CircleDashed,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -98,6 +98,17 @@ export default function MyEventsTab({ user }) {
               </span>
             ) : (
               <span className="inline-flex items-center gap-1"><Ticket className="w-3.5 h-3.5" /> Gratuit</span>
+            )}
+            {reg.status === 'registered' && (
+              reg.checked_in ? (
+                <span className="inline-flex items-center gap-1 font-grotesk font-bold text-emerald-400">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Billet validé
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-muted-foreground">
+                  <CircleDashed className="w-3.5 h-3.5" /> Billet non validé
+                </span>
+              )
             )}
           </div>
 

@@ -14,6 +14,24 @@ export async function getAdminEmails(base44) {
   }
 }
 
+// Emails des organisateurs d'un événement (créateur + rôle event_manager)
+export async function getOrganizerEmails(base44, event) {
+  const emails = new Set();
+  try {
+    if (event?.organizer_id) {
+      const org = await base44.asServiceRole.entities.User.get(event.organizer_id);
+      if (org?.email) emails.add(org.email);
+    }
+  } catch {}
+  try {
+    const managers = await base44.asServiceRole.entities.User.filter(
+      { role: 'event_manager' }, '-created_date', 50
+    );
+    for (const m of managers || []) if (m.email) emails.add(m.email);
+  } catch {}
+  return [...emails];
+}
+
 function infoRow(label, value) {
   return `<tr>
     <td style="padding:9px 16px;border-bottom:1px solid rgba(56,170,220,0.06);">

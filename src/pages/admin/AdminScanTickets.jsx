@@ -66,10 +66,11 @@ export default function AdminScanTickets() {
   const validate = useCallback(async (payload) => {
     setValidating(true);
     try {
-      const res = await base44.functions.invoke('validateEventTicket', {
+      const raw = await base44.functions.invoke('validateEventTicket', {
         ...payload,
         event_id: selectedEventRef.current || undefined,
       });
+      const res = raw?.data ?? raw ?? {};
       setLastResult(res);
       if (res?.ok) {
         toast.success(`Billet validé — ${res.registration?.user_name || 'Participant'}`);

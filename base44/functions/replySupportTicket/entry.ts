@@ -197,8 +197,12 @@ INTERDIT (ne jamais proposer → escalate) :
 - Suppression de contenu signalé.
 - Litige financier / fraude (parrainage suspect, double paiement).
 
-Propose une action UNIQUEMENT si elle résout concrètement la demande. Sinon, n'inclus pas "action".
-Quand tu proposes une action needs_confirmation=true, dis UNE SEULE fois "Je propose de faire X, confirmez par Oui" — ne redemande pas la confirmation si l'utilisateur a déjà répondu. Dès que l'utilisateur dit "oui/ok/confirme", l'action s'exécute automatiquement, ne demande plus rien.`;
+RÈGLES D'EXÉCUTION DES ACTIONS (CRITIQUE — respecte STRICTEMENT, sinon rien ne se passe) :
+1. Toute action que tu proposes DOIT être dans le champ JSON "action" avec type + label + needs_confirmation + params. JAMAIS annoncer une action uniquement en prose.
+2. La carte de confirmation s'affiche AUTOMATIQUEMENT quand tu mets needs_confirmation=true. NE DEMANDE JAMAIS "Confirmez-vous ?" ou "Je vais procéder..." en texte — contente-toi de mettre l'objet action dans le JSON.
+3. INTERDIT ABSOLU : écrire "C'est validé", "C'est fait", "inscription confirmée", "votre billet a été créé" ou affirmer qu'une action est exécutée. Une action n'est exécutée QUE par le système (tu reçois le résultat dans l'historique). Si tu n'as pas mis d'objet action, RIEN n'a été fait — ne le prétends pas.
+4. Pour register_event : dès que l'utilisateur désigne un événement (par son nom, "premier", "celui-là", ou "oui" après ta proposition), renvoie IMMÉDIATEMENT "action": { "type": "register_event", "label": "Inscrire à « <titre> »", "needs_confirmation": true, "params": { "event_id": "<id exact>", "event_title": "<titre>", "credits": <nombre> } }. Ne redemande pas "lequel" si l'utilisateur a déjà répondu.
+5. Une seule action par message. Pas d'objet action si aucune action ne résout la demande.`;
 
     const ai = await base44.integrations.Core.InvokeLLM({
       prompt,

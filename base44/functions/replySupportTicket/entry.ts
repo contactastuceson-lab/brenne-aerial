@@ -113,15 +113,23 @@ export default async function(req) {
       } catch {}
     }
 
-    // Événements : Nexus peut inscrire l'utilisateur (action register_event)
+    // Événements : Nexus peut inscrire l'utilisateur (register_event)
+    // ET annuler/rembourser une inscription existante (cancel_event_registration).
     let upcomingEvents = [];
-    if (ticket.category === 'events' || /événement|evenement|event|inscription|inscrire|je m'inscr/i.test(content)) {
+    let myRegistrations = [];
+    if (ticket.category === 'events' || /événement|evenement|event|inscription|inscrire|je m'inscr|rembours|annul/i.test(content)) {
       try {
         const all = await base44.asServiceRole.entities.Event.filter({}, 'start_date', 30).catch(() => []);
         const now = Date.now();
         upcomingEvents = (all || []).filter((e) => e.status !== 'cancelled' && (!e.end_date || new Date(e.end_date).getTime() >= now) && (!e.capacity || (e.attendees_count || 0) < e.capacity));
         if (upcomingEvents.length) {
           researchBits.push(`ÉVÉNEMENTS À VENIR (Nexus peut inscrire l'utilisateur via register_event) :\n${upcomingEvents.slice(0, 8).map((e) => `- ID:${e.id} · « ${e.title} » · ${e.start_date ? e.start_date.slice(0, 10) : '?'} · ${e.price_credits || 0} crédits · ${e.city || ''} · ${e.attendees_count || 0}/${e.capacity || '∞'}`).join('\n')}`);
+        }
+        // Inscriptions actives de l'utilisateur — Nexus peut les annuler/rembourser
+        const regs = await base44.asServiceRole.entities.EventRegistration.filter({ user_id: user.id, status: 'registered' }, '-created_date', 50).catch(() => []);
+        myRegistrations = (regs || []).filter((r) => r.status === 'registered');
+        if (myRegistrations.length) {
+          researchBits.push(`INSCRIPTIONS ACTIVES DE L'UTILISATEUR (Nexus peut annuler + rembourser via cancel_event_registration, registration_id requis) :\n${myRegistrations.slice(0, 12).map((r) => `- registration_id:${r.id} · « ${r.event_title || '?'} » · ${r.event_start_date ? r.event_start_date.slice(0, 10) : '?'} · crédits payés: ${r.credits_paid || 0} · billet ${r.ticket_code || ''}`).join('\n')}`);
         }
       } catch {}
     }
@@ -161,10 +169,12 @@ RÈGLES DE RÉSOLUTION (CRITIQUE) :
 - "troubleshooting" : tu proposes des étapes / une solution, mais l'utilisateur doit TESTER ou CONFIRMER. Le ticket RESTE OUVERT. C'est le cas par défaut pour tout bug ou problème.
 - "escalate" : UNIQUEMENT si :
     • Sécurité (compte piraté, données, harcèlement).
-    • Demande explicite de remboursement.
+    • Remboursement bancaire réel (carte Stripe) — PAS les remboursements en crédits Eza.
     • Bug bloquant confirmé (core unusable).
     • Suppression de compte.
+    • Litige / fraude.
     • L'utilisateur a insisté 3+ fois sans solution dans l'historique.
+  NE ESCALADE PAS un remboursement d'événement en crédits Eza : utilise cancel_event_registration (registration_id issu de la recherche) — c'est exactement ce que Nexus sait faire.
 
 INTERDIT :
 - Marquer "answered" si l'utilisateur n'a pas confirmé que le bug est résolu.
@@ -201,7 +211,7 @@ PROPOSE la bonne action PROACTIVEMENT dès que la demande correspond — n'atten
 ▶ ACTIONS AVEC CONFIRMATION (needs_confirmation=true — la carte Oui/Non s'affiche, exécution au clic) :
 - "grant_credits" { amount: 1-100, reason } — créditer des crédits de courtoisie (max 100). QUAND : bug mineur ayant impacté l'utilisateur, geste commercial.
 - "refund_credits" { amount, reason } — rembourser un achat boutique/événement EN CRÉDITS Eza. QUAND : "remboursez-moi" pour un achat crédits/boutique/événement (PAS de remboursement carte Stripe).
-- "cancel_event_registration" { registration_id } — annuler une inscription + rendre les crédits. QUAND : "annule mon inscription à l'événement".
+- "cancel_event_registration" { registration_id } — annuler une inscription + rendre les crédits payés. QUAND : "remboursez mon événement", "annule mon inscription". UTILISE le registration_id EXACT de la section "INSCRIPTIONS ACTIVES" de la recherche. S'il y a plusieurs inscriptions, demande à l'utilisateur de préciser laquelle AVANT de proposer l'action (liste les titres + dates).
 - "move_credits" { from_wallet_id, to_wallet_id, amount, reason } — déplacer des crédits entre les portefeuilles du MÊME utilisateur. QUAND : "transfère de mon wallet épargne vers dépenses".
 - "unfreeze_wallet" { wallet_id } — dégeler un portefeuille VÉRIFIÉ comme gelé (frozen=true lu dans la recherche, avec son wallet_id). Sans wallet_id ou sans gel confirmé → NE PROPOSE PAS l'action. RÈGLE ABSOLUE : un wallet réellement gelé se traite par unfreeze_wallet, JAMAIS par escalade ; mais ne dis jamais "je ne peux pas débloquer" pour un gel non vérifié.
 - "register_event" { event_id, event_title, credits } — inscrire l'utilisateur à un événement (débite ses crédits Eza si payant). RÈGLE ABSOLUE : tu PEUX et tu DOIS inscrire toi-même. Ne dis JAMAIS "je ne peux pas m'inscrire pour vous" ni "vous devez le faire vous-même". Utilise l'event_id exact de la recherche.
@@ -316,6 +326,24 @@ RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
         pendingAction.params = { ...(pendingAction.params || {}), wallet_id: frozenWallets[0].id, wallet_name: frozenWallets[0].name };
       } else {
         // Aucun gel vérifié (ou plusieurs sans précision) → on retire l'action.
+        pendingAction = null;
+        actionType = null;
+      }
+    }
+
+    // Garde-fou cancel_event_registration : sans registration_id, Nexus ne
+    // peut pas annuler. Si une seule inscription active existe, on l'injecte ;
+    // s'il y en a plusieurs sans précision, on retire l'action (Nexus doit
+    // demander à l'utilisateur laquelle).
+    if (pendingAction && pendingAction.type === 'cancel_event_registration') {
+      if (pendingAction.params?.registration_id && myRegistrations.some((r) => r.id === pendingAction.params.registration_id)) {
+        // registration_id valide — on garde.
+      } else if (myRegistrations.length === 1) {
+        const r = myRegistrations[0];
+        pendingAction.params = { ...(pendingAction.params || {}), registration_id: r.id, event_title: r.event_title, credits: r.credits_paid || 0 };
+        if (!pendingAction.label) pendingAction.label = `Annuler l'inscription à « ${r.event_title || '?'} »`;
+      } else if (myRegistrations.length > 1) {
+        // Ambiguïté → on retire pour forcer la demande de précision.
         pendingAction = null;
         actionType = null;
       }

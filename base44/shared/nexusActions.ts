@@ -118,7 +118,17 @@ export async function executeNexusAction(base44, action, ticket, user) {
     }
 
     if (type === 'register_event') {
-      const eventId = params.event_id || params.id;
+      let eventId = params.event_id || params.id;
+      // Filet : si le LLM a omis l'event_id mais fourni un titre, on résout
+      // l'événement par son titre pour éviter l'échec "event_id requis".
+      if (!eventId && params.event_title) {
+        try {
+          const found = await base44.asServiceRole.entities.Event.filter({}, 'start_date', 50).catch(() => []);
+          const match = (found || []).find((e) => e.title === params.event_title)
+            || (found || []).find((e) => (e.title || '').toLowerCase().includes(String(params.event_title).toLowerCase()));
+          if (match) eventId = match.id;
+        } catch {}
+      }
       if (!eventId) throw new Error('event_id requis');
       const event = await base44.asServiceRole.entities.Event.get(eventId).catch(() => null);
       if (!event) throw new Error('Événement introuvable');

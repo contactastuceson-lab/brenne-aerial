@@ -42,7 +42,7 @@ export default async function(req) {
     const pending = ticket.pending_action;
     if (pending && pending.status === 'pending' && pending.type && CONFIRMABLE_ACTIONS.includes(pending.type)) {
       const lc = content.toLowerCase().trim();
-      const confirmWords = ['oui','ouais','ok','okay','d\'accord','d’accord','je suis d\'accord','je suis d’accord','je confirme','confirme','confirmé','confirme-le','vas-y','fais-le','fais le','je veux bien','parfait','génial','genial','yes','yep','ouep','go','c\'est bon','c’est bon','biensur','bien sûr','c\'est oui','allez-y','c\'est validé','ça marche','ca marche','ça marche nickel','je valide'];
+      const confirmWords = ['oui','ouais','ok','okay','d\'accord','d’accord','je suis d\'accord','je suis d’accord','je confirme','confirme','confirmé','confirme-le','vas-y','fais-le','fais le','je veux bien','parfait','génial','genial','yes','yep','ouep','go','c\'est bon','c’est bon','biensur','bien sûr','c\'est oui','allez-y','allez y','allons-y','allons y','c\'est validé','ça marche','ca marche','ça marche nickel','je valide','je veux','ça part','ca part'];
       const refuseWords = ['non','nan','annule','annuler','je refuse','refuse','non merci','laisse tomber','stop','pas maintenant','absolument pas','jamais'];
       const negate = /\b(ne\s|n[''’]\s)/.test(lc) || /\bpas\b/.test(lc);
       const isConfirm = !negate && confirmWords.some((w) => lc.includes(w));
@@ -279,6 +279,15 @@ RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
         };
         actionType = 'register_event';
       }
+    }
+
+    // Enrichissement : un register_event sans event_id est inexécutable.
+    // Si le LLM a émis l'action avec un label mais sans params, on injecte
+    // l'event_id depuis les événements à venir (titre cité ou premier dispo).
+    if (pendingAction && pendingAction.type === 'register_event' && !(pendingAction.params?.event_id) && upcomingEvents.length) {
+      const cited = upcomingEvents.find((e) => (pendingAction.label || '').includes(e.title) || (reply || '').includes(e.title)) || upcomingEvents[0];
+      pendingAction.params = { ...(pendingAction.params || {}), event_id: cited.id, event_title: cited.title, credits: Number(cited.price_credits || 0) };
+      if (!pendingAction.label) pendingAction.label = `Inscrire à « ${cited.title} »`;
     }
 
     const finalMessages = [...newMessages, {

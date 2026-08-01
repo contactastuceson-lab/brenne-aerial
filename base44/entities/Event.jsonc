@@ -1,0 +1,174 @@
+{
+  "name": "Event",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre de l'\u00e9v\u00e9nement"
+    },
+    "slug": {
+      "type": "string",
+      "description": "Slug URL"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description courte (extrait)"
+    },
+    "long_description": {
+      "type": "string",
+      "description": "Description longue (markdown)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "conference",
+        "workshop",
+        "meetup",
+        "concert",
+        "hackathon",
+        "webinar",
+        "expo",
+        "sport",
+        "party",
+        "other"
+      ],
+      "default": "other",
+      "description": "Cat\u00e9gorie th\u00e9matique"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "online",
+        "hybrid",
+        "physical"
+      ],
+      "default": "physical",
+      "description": "Format (en ligne, hybride, pr\u00e9sentiel)"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de d\u00e9but"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de fin"
+    },
+    "location": {
+      "type": "string",
+      "description": "Nom du lieu"
+    },
+    "address": {
+      "type": "string",
+      "description": "Adresse compl\u00e8te"
+    },
+    "city": {
+      "type": "string",
+      "description": "Ville"
+    },
+    "online_link": {
+      "type": "string",
+      "description": "Lien visio (si en ligne / hybride)"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Image de couverture"
+    },
+    "organizer_name": {
+      "type": "string",
+      "description": "Nom de l'organisateur (snapshot)"
+    },
+    "organizer_id": {
+      "type": "string",
+      "description": "ID de l'organisateur"
+    },
+    "capacity": {
+      "type": "number",
+      "default": 0,
+      "description": "Capacit\u00e9 maximale (0 = illimit\u00e9)"
+    },
+    "price": {
+      "type": "number",
+      "default": 0,
+      "description": "Prix en euros"
+    },
+    "is_free": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u00c9v\u00e9nement gratuit"
+    },
+    "attendees_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre d'inscrits"
+    },
+    "registered_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "IDs des utilisateurs inscrits"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "upcoming",
+        "live",
+        "ended",
+        "cancelled"
+      ],
+      "default": "upcoming",
+      "description": "Statut calcul\u00e9 de l'\u00e9v\u00e9nement"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u00c9v\u00e9nement mis en avant"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags / mots-cl\u00e9s"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Site / billetterie externe"
+    }
+  },
+  "required": [
+    "title",
+    "category",
+    "start_date",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.organizer_id": "{{user.id}}"
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

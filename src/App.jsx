@@ -106,6 +106,8 @@ import WifiPortalPage from "@/pages/WifiPortalPage";
 import ReferralPage from "@/pages/ReferralPage";
 import BoutiquePage from "@/pages/BoutiquePage";
 import BanquePage from "@/pages/BanquePage";
+import EventsPage from "@/pages/EventsPage";
+import EventDetailPage from "@/pages/EventDetailPage";
 
 function ExternalRedirect({ to }) {
   useEffect(() => {
@@ -126,7 +128,7 @@ const AuthenticatedApp = () => {
   if (authError?.type === "auth_required") {
     // Allow public routes to render without auth (like TikTok/Instagram public profiles)
     const publicPaths = ['/', '/about', '/blog', '/discover', '/portfolio', '/forum', '/documentation',
-      '/uptime', '/enor', '/legal', '/status', '/donation', '/user', '/s'];
+      '/uptime', '/enor', '/legal', '/status', '/donation', '/user', '/s', '/events'];
     const currentPath = window.location.pathname;
     const isPublicPath = publicPaths.some(p => currentPath === p || currentPath.startsWith(p + '/'))
       || /^\/@?[a-zA-Z0-9_.-]+$/.test(currentPath); // public profile /@username or /username
@@ -188,6 +190,8 @@ const AuthenticatedApp = () => {
           <Route path="/parrainage" element={<ReferralPage />} />
           <Route path="/boutique" element={<BoutiquePage />} />
           <Route path="/banque" element={<BanquePage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/events/:id" element={<EventDetailPage />} />
           <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />

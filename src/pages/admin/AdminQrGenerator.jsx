@@ -56,6 +56,10 @@ export default function AdminQrGenerator() {
     if (p.prefix && !raw.toLowerCase().startsWith(p.prefix.toLowerCase())) {
       return p.prefix + raw;
     }
+    // URL preset: normalise en https:// pour que les scanners l'ouvrent comme un lien
+    if (preset === 0 && !/^(https?:|mailto:|tel:|sms:)/i.test(raw)) {
+      return 'https://' + raw;
+    }
     return raw;
   }, [content, preset]);
 

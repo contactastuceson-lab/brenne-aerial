@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/AuthContext";
 import {
   Calendar, MapPin, Users, Search, Clock, Sparkles, Video, Globe, Building2,
   Mic2, Wrench, Users as UsersIcon, Music, Code, Monitor, Image as ImageIcon,
-  Trophy, PartyPopper, Tag, TrendingUp, ArrowRight, Loader2, Star,
+  Trophy, PartyPopper, Tag, TrendingUp, ArrowRight, Loader2, Star, Coins,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,8 +32,8 @@ const FORMATS = [
 ];
 
 function formatPrice(ev) {
-  if (ev.is_free || ev.price === 0) return "Gratuit";
-  return `${ev.price} €`;
+  if (!ev.price_credits || ev.price_credits === 0) return "Gratuit";
+  return `${ev.price_credits} crédits`;
 }
 
 function formatDay(d) {
@@ -130,7 +130,9 @@ function EventCard({ ev, index }) {
               )}
             </div>
             <div className="flex items-center justify-between pt-1.5 border-t border-border/50">
-              <span className="font-grotesk font-bold text-primary text-sm">{formatPrice(ev)}</span>
+              <span className="font-grotesk font-bold text-amber-400 text-sm inline-flex items-center gap-1">
+                <Coins className="w-3.5 h-3.5" /> {formatPrice(ev)}
+              </span>
               <span className="inline-flex items-center gap-1 text-xs font-bold text-muted-foreground group-hover:text-primary transition-colors">
                 Détails <ArrowRight className="w-3.5 h-3.5" />
               </span>
@@ -275,7 +277,9 @@ export default function EventsPage() {
                             <MapPin className="w-3.5 h-3.5" /> {featured.city}
                           </span>
                         )}
-                        <span className="font-bold">{formatPrice(featured)}</span>
+                        <span className="font-bold inline-flex items-center gap-1 text-amber-400">
+                          <Coins className="w-4 h-4" /> {formatPrice(featured)}
+                        </span>
                       </div>
                     </div>
                   </div>

@@ -53,6 +53,7 @@ const NAV_GROUPS = [
       { path: '/admin/conversations', icon: MessageCircle, label: 'Conversations', minLevel: 70 },
       { path: '/admin/messaging', icon: MessageSquare, label: 'Messagerie', minLevel: 70 },
       { path: '/admin/reports', icon: Flag, label: 'Signalements', minLevel: 70 },
+      { path: '/admin/events', icon: Calendar, label: 'Événements', minLevel: 70 },
       { path: '/admin/donations', icon: Heart, label: 'Donations', minLevel: 70 },
       { path: '/admin/billing', icon: CreditCard, label: 'Facturation', minLevel: 70 },
     ]

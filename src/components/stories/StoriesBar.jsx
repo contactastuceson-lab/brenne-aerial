@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { groupStoriesByAuthor, hasUnseen } from '@/lib/storyUtils';
 import StoryViewer from './StoryViewer';
-import CreateStoryDialog from './CreateStoryDialog';
+import StoryCreator from './StoryCreator';
 
 export default function StoriesBar({ user: userProp }) {
   const [user, setUser] = useState(userProp || null);
@@ -132,7 +132,7 @@ export default function StoriesBar({ user: userProp }) {
         />
       )}
 
-      <CreateStoryDialog
+      <StoryCreator
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         user={user}

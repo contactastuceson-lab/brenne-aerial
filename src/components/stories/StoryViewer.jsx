@@ -4,6 +4,39 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X, Volume2, VolumeX } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { storyDuration, timeAgo, gradientByKey, filterCss, fontCss } from '@/lib/storyUtils';
+
+// Rend un calque riche (texte/emoji/gif/dessin) — compatible anciens stickers {emoji,x,y}
+function renderStoryLayer(l, i) {
+  if (l.type === 'text') {
+    return (
+      <div key={i} className="absolute z-20 select-none pointer-events-none" style={{ left: `${l.x}%`, top: `${l.y}%`, transform: `translate(-50%,-50%) scale(${l.scale ?? 1}) rotate(${l.rotation ?? 0}deg)` }}>
+        <p className="font-black text-center leading-snug break-words whitespace-pre-wrap" style={{ color: l.color || '#fff', fontFamily: fontCss(l.font), textAlign: l.align || 'center', fontSize: 26, textShadow: '0 2px 10px rgba(0,0,0,0.45)', maxWidth: '78vw' }}>
+          {l.content}
+        </p>
+      </div>
+    );
+  }
+  if (l.type === 'gif') {
+    return (
+      <div key={i} className="absolute z-20 select-none pointer-events-none" style={{ left: `${l.x}%`, top: `${l.y}%`, transform: `translate(-50%,-50%) scale(${l.scale ?? 1}) rotate(${l.rotation ?? 0}deg)` }}>
+        <img src={l.url} alt="" className="w-28 h-28 object-contain rounded-lg" />
+      </div>
+    );
+  }
+  if (l.type === 'drawing') {
+    return (
+      <svg key={i} className="absolute inset-0 w-full h-full z-20 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polyline points={l.points.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ')} fill="none" stroke={l.color} strokeWidth={l.size} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      </svg>
+    );
+  }
+  // emoji (nouveau ou legacy)
+  return (
+    <span key={i} className="absolute text-3xl sm:text-4xl select-none z-20 pointer-events-none" style={{ left: `${l.x}%`, top: `${l.y}%`, transform: `translate(-50%,-50%) scale(${l.scale ?? 1}) rotate(${l.rotation ?? 0}deg)` }}>
+      {l.emoji}
+    </span>
+  );
+}
 import StoryActionBar from './StoryActionBar';
 
 export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser, onClose, onViewsChanged }) {
@@ -137,11 +170,13 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
         />
       );
     }
+    const hasLayers = stickers.some((s) => s.type);
     return (
       <div className="w-full h-full bg-black flex items-center justify-center relative">
         <img src={story.media_url} alt="" className="w-full h-full object-cover" style={{ filter: filterCss(story.filter) || undefined }} />
-        {story.text && (
-          <div className="absolute inset-x-0 px-6" style={{ bottom: '18%', textAlign: story.text_align || 'center' }}>
+        {/* Légende legacy (ancien format) si aucun calque typé */}
+        {story.text && !hasLayers && (
+          <div className="absolute inset-x-0 px-6 pointer-events-none" style={{ bottom: '18%', textAlign: story.text_align || 'center' }}>
             <p
               className="font-bold text-lg sm:text-xl drop-shadow-lg whitespace-pre-wrap break-words"
               style={{ fontFamily: fontCss(story.font), color: story.text_color || '#fff' }}
@@ -150,11 +185,7 @@ export default function StoryViewer({ groups, startAuthorIndex = 0, currentUser,
             </p>
           </div>
         )}
-        {stickers.map((s, i) => (
-          <span key={i} className="absolute text-3xl sm:text-4xl select-none z-10" style={{ left: `${s.x}%`, top: `${s.y}%`, transform: 'translate(-50%,-50%)' }}>
-            {s.emoji}
-          </span>
-        ))}
+        {stickers.map((s, i) => renderStoryLayer(s, i))}
       </div>
     );
   };

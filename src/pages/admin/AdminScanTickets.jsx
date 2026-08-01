@@ -115,7 +115,19 @@ export default function AdminScanTickets() {
 
   const startCamera = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
+        });
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'environment' } });
+      }
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -124,18 +136,20 @@ export default function AdminScanTickets() {
       setCameraOn(true);
       activeRef.current = true;
       cooldownRef.current = 0;
+      let lastScan = 0;
       const tick = () => {
         if (!activeRef.current) return;
         const v = videoRef.current, c = canvasRef.current;
-        if (v && c && v.readyState >= 2 && v.videoWidth) {
+        const now = Date.now();
+        if (v && c && v.readyState >= 2 && v.videoWidth && now - lastScan > 120) {
+          lastScan = now;
           const w = v.videoWidth, h = v.videoHeight;
           c.width = w; c.height = h;
-          const ctx = c.getContext('2d');
+          const ctx = c.getContext('2d', { willReadFrequently: true });
           ctx.drawImage(v, 0, 0, w, h);
           const img = ctx.getImageData(0, 0, w, h);
-          const code = jsQR(img.data, w, h, { inversionAttempts: 'dontInvert' });
+          const code = jsQR(img.data, w, h, { inversionAttempts: 'attemptBoth' });
           if (code && code.data) {
-            const now = Date.now();
             if (now - cooldownRef.current > 2500) {
               cooldownRef.current = now;
               try { if (navigator.vibrate) navigator.vibrate(60); } catch {}

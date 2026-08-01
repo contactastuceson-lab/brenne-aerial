@@ -169,6 +169,8 @@ export default function AdminLayout() {
 
   const visibleNav = visibleGroups.flatMap(g => g.items);
   const bottomNavItems = visibleNav.filter(i => BOTTOM_NAV_PATHS.includes(i.path));
+  // Fallback: si la nav filtrée est vide (ex: event_manager), on affiche les premiers items visibles
+  const mobileBottomItems = bottomNavItems.length > 0 ? bottomNavItems : visibleNav.slice(0, 4);
   const isActive = (path) => location.pathname === path || (path !== '/admin' && location.pathname.startsWith(path));
 
   // Role session banners
@@ -328,7 +330,7 @@ export default function AdminLayout() {
       {/* ── MOBILE BOTTOM NAV ── */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-sidebar border-t border-sidebar-border flex items-stretch h-16"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        {bottomNavItems.map(item => {
+        {mobileBottomItems.map(item => {
           const active = isActive(item.path);
           const Icon = item.icon;
           return (

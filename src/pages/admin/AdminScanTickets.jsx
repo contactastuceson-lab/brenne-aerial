@@ -79,6 +79,9 @@ export default function AdminScanTickets() {
         setHistory(h => [{ ok: false, reg: res.registration, at: new Date().toISOString(), error: res.error }, ...h].slice(0, 25));
       } else {
         toast.error(res?.error || 'Billet invalide');
+        if (res?.registration) {
+          setHistory(h => [{ ok: false, reg: res.registration, at: new Date().toISOString(), error: res.error }, ...h].slice(0, 25));
+        }
       }
       return res;
     } catch (e) {

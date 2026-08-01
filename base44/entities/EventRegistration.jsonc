@@ -54,10 +54,24 @@
       "default": "registered",
       "description": "registered = inscrit, cancelled = annul\u00e9 sans remboursement, refunded = rembours\u00e9 (cr\u00e9dits rendus)"
     },
+    "ticket_code": {
+      "type": "string",
+      "description": "Code court du billet (ex: EZA-AB12CD34)"
+    },
     "registered_at": {
       "type": "string",
       "format": "date-time",
       "description": "Date d'inscription"
+    },
+    "checked_in": {
+      "type": "boolean",
+      "default": false,
+      "description": "Billet valid\u00e9 / participant entr\u00e9"
+    },
+    "checked_in_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de validation d'entr\u00e9e"
     },
     "cancelled_at": {
       "type": "string",
@@ -133,13 +147,27 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "event_manager"
+          }
         }
       ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "event_manager"
+          }
+        }
+      ]
     },
     "delete": {
       "user_condition": {

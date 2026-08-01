@@ -166,6 +166,11 @@
           }
         },
         {
+          "user_condition": {
+            "role": "event_manager"
+          }
+        },
+        {
           "data.organizer_id": "{{user.id}}"
         }
       ]

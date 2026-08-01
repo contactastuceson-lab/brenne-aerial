@@ -50,6 +50,7 @@ export const RANGE_MS = {
 // Actions manuelles : chaque fonction automatisée peut être lancée à la demande.
 export const QUICK_ACTIONS = [
   { fn: 'nexusDailyDigest', label: 'Digest Nexus', category: 'digest', metric: (r) => r?.stats ? `${r.stats.nouveaux_utilisateurs} membres · ${r.stats.demandes_remboursement_en_attente ?? 0} remb.` : 'Envoyé' },
+  { fn: 'launchReferralActivation', label: "Campagne d'activation parrainage", category: 'retention', metric: (r) => `${r?.emailed ?? 0} emails envoyés` },
   { fn: 'nexusWeeklyDigest', label: 'Bilan hebdo Nexus', category: 'digest', metric: (r) => `${r?.metrics?.nouveaux_membres ?? 0} membres / sem.` },
   { fn: 'detectReferralFraud', label: 'Anti-fraude parrainage', category: 'fraud', metric: (r) => `${r?.flagged ?? 0} cas` },
   { fn: 'runBadgeAttribution', label: 'Attribution badges', category: 'badges', metric: (r) => `${r?.awarded ?? 0} badges` },

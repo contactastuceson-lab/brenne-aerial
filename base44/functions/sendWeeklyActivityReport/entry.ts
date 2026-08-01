@@ -58,6 +58,10 @@ export default async function(req) {
 
     return Response.json({ ok: true, sent, activeUsers: activeIds.size });
   } catch (error) {
+    await logAutomation(base44, {
+      automation_name: 'send_weekly_activity_report', label: 'Bilan hebdo utilisateurs', category: 'retention',
+      status: 'error', summary: 'Échec du bilan hebdo', details: String(error?.message || error),
+    });
     return Response.json({ error: error.message }, { status: 500 });
   }
 }

@@ -47,6 +47,10 @@ export default async function(req) {
 
     return Response.json({ ok: true, sent });
   } catch (error) {
+    await logAutomation(base44, {
+      automation_name: 'sweep_inactive_users', label: 'Relance inactifs 12 mois', category: 'retention',
+      status: 'error', summary: 'Échec de la relance inactifs', details: String(error?.message || error),
+    });
     return Response.json({ error: error.message }, { status: 500 });
   }
 }

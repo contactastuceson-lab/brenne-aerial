@@ -67,6 +67,10 @@ export default async function(req) {
 
     return Response.json({ ok: true, awarded, pioneers: pioneerIds.size });
   } catch (error) {
+    await logAutomation(base44, {
+      automation_name: 'run_badge_attribution', label: 'Attribution auto des badges', category: 'badges',
+      status: 'error', summary: "Echec attribution des badges", details: String(error?.message || error),
+    });
     return Response.json({ error: error.message }, { status: 500 });
   }
 }

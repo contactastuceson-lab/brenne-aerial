@@ -63,6 +63,10 @@ export default async function(req) {
 
     return Response.json({ ok: true, processed: active.length, alerted });
   } catch (error) {
+    await logAutomation(base44, {
+      automation_name: 'alert_low_ad_budgets', label: 'Alerte budget pub faible', category: 'ads',
+      status: 'error', summary: "Echec alerte budget pub", details: String(error?.message || error),
+    });
     return Response.json({ error: error.message }, { status: 500 });
   }
 }

@@ -67,6 +67,10 @@ export default async function(req) {
 
     return Response.json({ ok: true, sent });
   } catch (error) {
+    await logAutomation(base44, {
+      automation_name: 'send_onboarding_sequence', label: 'Séquence onboarding J1/J3/J7', category: 'onboarding',
+      status: 'error', summary: 'Échec de la séquence onboarding', details: String(error?.message || error),
+    });
     return Response.json({ error: error.message }, { status: 500 });
   }
 }

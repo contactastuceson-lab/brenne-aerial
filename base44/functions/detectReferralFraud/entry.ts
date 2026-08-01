@@ -113,6 +113,10 @@ export default async function(req) {
 
     return Response.json({ ok: true, flagged });
   } catch (error) {
+    await logAutomation(base44, {
+      automation_name: 'detect_referral_fraud', label: 'Anti-fraude parrainage', category: 'fraud',
+      status: 'error', summary: "Echec analyse anti-fraude", details: String(error?.message || error),
+    });
     return Response.json({ error: error.message }, { status: 500 });
   }
 }

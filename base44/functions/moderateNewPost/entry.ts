@@ -75,6 +75,10 @@ Post à analyser :
 
     return Response.json({ ok: true, flagged: true, reason: result.reason, category });
   } catch (error) {
+    await logAutomation(base44, {
+      automation_name: 'moderate_new_post', label: 'Modération auto des nouveaux posts', category: 'moderation',
+      status: 'error', summary: 'Échec de la modération auto', details: String(error?.message || error),
+    });
     return Response.json({ error: error.message }, { status: 500 });
   }
 }

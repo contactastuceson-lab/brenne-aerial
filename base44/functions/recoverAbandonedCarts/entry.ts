@@ -68,6 +68,10 @@ export default async function(req) {
 
     return Response.json({ ok: true, notified });
   } catch (error) {
+    await logAutomation(base44, {
+      automation_name: 'recover_abandoned_carts', label: 'Récupération paniers abandonnés', category: 'cart',
+      status: 'error', summary: 'Échec de la relance paniers', details: String(error?.message || error),
+    });
     return Response.json({ error: error.message }, { status: 500 });
   }
 }

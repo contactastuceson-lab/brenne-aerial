@@ -211,7 +211,11 @@ Quand tu proposes une action needs_confirmation=true, dis UNE SEULE fois "Je pro
       escalation = rtype === 'escalate' ? (ai.escalation_reason || 'Nécessite intervention humaine') : null;
     }
 
-    const resolved = rtype === 'answered';
+    // Si l'utilisateur revient sur un ticket que Nexus avait marqué "ai_resolved",
+    // on le ROUVRE systématiquement — il n'est pas résolu tant que l'utilisateur
+    // n'a pas confirmé. On ne coupe jamais la parole.
+    const reopening = ticket.status === 'ai_resolved' || ticket.status === 'resolved';
+    const resolved = rtype === 'answered' && !reopening;
     const escalated = rtype === 'escalate';
     const newStatus = escalated ? 'awaiting_human' : (resolved ? 'ai_resolved' : 'open');
     const assignee = escalated ? 'human' : 'ai';

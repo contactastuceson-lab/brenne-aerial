@@ -142,9 +142,13 @@ export default function SupportTicketPage() {
   const messages = ticket.messages || [];
   // Statut terminal = le ticket est "fermé normalement" (résolu par Nexus, résolu, ou fermé).
   // On ne peut plus écrire — il faut ouvrir un nouveau ticket.
-  const isClosed = ['ai_resolved', 'resolved', 'closed'].includes(ticket.status);
+  // Seuls les statuts vraiment terminaux bloquent la saisie.
+  // 'ai_resolved' = Nexus pense avoir répondu, mais l'utilisateur peut encore
+  // répondre pour rouvrir / demander un complément (sinon Nexus coupe la parole).
+  const isClosed = ['resolved', 'closed'].includes(ticket.status);
   const isLocked = !!ticket.user_locked;
   const composerDisabled = isClosed || isLocked;
+  const isAiResolved = ticket.status === 'ai_resolved';
 
   return (
     <div className="max-w-3xl mx-auto px-3 md:px-4 py-4 md:py-6 flex flex-col" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
@@ -300,9 +304,14 @@ export default function SupportTicketPage() {
           <p className="text-xs text-amber-200/90">Cette conversation est verrouillée en attendant une confirmation de votre part.</p>
         </div>
       )}
+      {isAiResolved && !isLocked && (
+        <div className="rounded-2xl border border-primary/15 bg-primary/[0.05] p-2.5 text-center text-xs text-muted-foreground sticky bottom-0">
+          Nexus a marqué ce ticket comme résolu · répondez si ce n'est pas réglé.
+        </div>
+      )}
       {isClosed && !isLocked && (
         <div className="rounded-2xl border border-border bg-card p-3 text-center text-xs text-muted-foreground sticky bottom-0">
-          Ce ticket est résolu · fermé. <Link to="/support" className="text-primary hover:underline">Ouvrir un nouveau ticket</Link>
+          Ce ticket est fermé. <Link to="/support" className="text-primary hover:underline">Ouvrir un nouveau ticket</Link>
         </div>
       )}
       {!composerDisabled && (

@@ -17,6 +17,7 @@ import PerkBadges, { getActivePerks } from '@/components/profile/ActivePerks';
 import PerkCustomizationPanel from '@/components/profile/PerkCustomizationPanel';
 import CreditPill from '@/components/boutique/CreditPill';
 import RewardsDashboard from '@/components/rewards/RewardsDashboard';
+import MyEventsTab from '@/components/user/MyEventsTab';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { hasAdvancedAnalytics } from '@/lib/subscriptionGating';
@@ -29,6 +30,7 @@ const TABS = [
   { id: 'reports',     label: 'Signalements',  icon: Flag },
   { id: 'certifs',      label: 'Certifications', icon: Award },
   { id: 'scheduled',   label: 'Programmés',    icon: Calendar },
+  { id: 'events',      label: 'Événements',    icon: Calendar },
   { id: 'analytics',   label: 'Analytics',     icon: BarChart3 },
   { id: 'perks',       label: 'Avantages',    icon: Sparkles },
   { id: 'billing',     label: 'Facturation',   icon: CreditCard },
@@ -365,6 +367,7 @@ export default function UserSpacePage() {
             {tab === 'reports' && <ReportsTab user={user} selectedId={selReport} onSelect={setSelReport} />}
             {tab === 'certifs' && <CertifsTab user={user} selectedId={selCertif} onSelect={setSelCertif} />}
             {tab === 'scheduled' && <ScheduledPostsManager user={user} />}
+            {tab === 'events' && <MyEventsTab user={user} />}
             {tab === 'analytics' && <AnalyticsDashboard user={user} />}
             {tab === 'perks' && <PerksTab user={user} onRefresh={refreshUser} />}
             {tab === 'billing' && (

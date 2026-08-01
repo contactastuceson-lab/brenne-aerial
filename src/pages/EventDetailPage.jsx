@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import {
   Calendar, MapPin, Users, Clock, Video, Globe, Building2, ArrowLeft,
   Mic2, Wrench, Users as UsersIcon, Music, Code, Monitor, Image as ImageIcon,
-  Trophy, PartyPopper, Tag, Star, Ticket, ExternalLink, Loader2, Share2,
+  Trophy, PartyPopper, Tag, Star, Ticket, ExternalLink, Loader2, Share2, Coins,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -66,16 +66,12 @@ export default function EventDetailPage() {
     if (registered) return;
     setRegistering(true);
     try {
-      const newIds = [...(ev.registered_ids || []), user.id];
-      await base44.entities.Event.update(ev.id, {
-        registered_ids: newIds,
-        attendees_count: (ev.attendees_count || 0) + 1,
-      });
-      setEv({ ...ev, registered_ids: newIds, attendees_count: (ev.attendees_count || 0) + 1 });
+      const res = await base44.functions.invoke("registerForEvent", { event_id: ev.id });
+      toast.success(`Inscription confirmée${res?.data?.credits_paid ? ` — ${res.data.credits_paid} crédits débités` : ""} !`);
       setRegistered(true);
-      toast.success("Inscription confirmée !");
-    } catch {
-      toast.error("Inscription échouée");
+      setEv({ ...ev, attendees_count: (ev.attendees_count || 0) + 1, registered_ids: [...(ev.registered_ids || []), user.id] });
+    } catch (e) {
+      toast.error(e?.response?.data?.error || "Inscription échouée");
     }
     setRegistering(false);
   };
@@ -113,6 +109,8 @@ export default function EventDetailPage() {
   const isPast = end < now;
   const isFull = ev.capacity > 0 && (ev.attendees_count || 0) >= ev.capacity;
   const remainingPct = ev.capacity > 0 ? Math.round(((ev.attendees_count || 0) / ev.capacity) * 100) : 0;
+  const credits = ev.price_credits || 0;
+  const canAfford = credits === 0 || (user?.referral_credits || 0) >= credits;
 
   return (
     <div className="min-h-screen bg-background">
@@ -197,7 +195,7 @@ export default function EventDetailPage() {
             <div className="space-y-1">
               <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">Prix</p>
               <p className="text-sm font-grotesk font-bold flex items-center gap-1.5">
-                <Ticket className="w-4 h-4 text-primary" /> {ev.is_free || ev.price === 0 ? "Gratuit" : `${ev.price} €`}
+                <Coins className="w-4 h-4 text-amber-400" /> {credits === 0 ? "Gratuit" : `${credits} crédits`}
               </p>
             </div>
           </div>
@@ -235,8 +233,9 @@ export default function EventDetailPage() {
         <div className="glass-card rounded-3xl border border-border p-6 sm:p-8 space-y-4 sticky bottom-4">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="space-y-1">
-              <p className="text-2xl font-grotesk font-black">
-                {ev.is_free || ev.price === 0 ? "Gratuit" : `${ev.price} €`}
+              <p className="text-2xl font-grotesk font-black flex items-center gap-1.5">
+                <Coins className="w-5 h-5 text-amber-400" />
+                {credits === 0 ? "Gratuit" : `${credits} crédits`}
               </p>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
@@ -248,6 +247,11 @@ export default function EventDetailPage() {
                   </span>
                 )}
               </div>
+              {credits > 0 && user && (
+                <p className="text-xs text-muted-foreground pt-1">
+                  Votre solde : <span className="font-bold text-amber-400">{user.referral_credits || 0} crédits</span>
+                </p>
+              )}
               {ev.capacity > 0 && (
                 <div className="w-full h-1.5 rounded-full bg-secondary/60 overflow-hidden mt-2">
                   <div className={`h-full ${isFull ? "bg-red-500" : "bg-primary"}`} style={{ width: `${Math.min(remainingPct, 100)}%` }} />
@@ -262,10 +266,13 @@ export default function EventDetailPage() {
                 </a>
               )}
               {!isPast ? (
-                <Button onClick={handleRegister} disabled={registering || registered || isFull}
+                <Button onClick={handleRegister} disabled={registering || registered || isFull || !user || (credits > 0 && !canAfford)}
                   size="lg" className="font-grotesk font-bold">
                   {registering ? <Loader2 className="w-4 h-4 animate-spin" /> :
-                    registered ? "Inscrit ✓" : isFull ? "Complet" : "S'inscrire"}
+                    registered ? "Inscrit ✓" :
+                    isFull ? "Complet" :
+                    (credits > 0 && !canAfford) ? "Crédits insuffisants" :
+                    !user ? "Connectez-vous" : "S'inscrire"}
                 </Button>
               ) : (
                 <Button disabled size="lg" variant="secondary" className="font-grotesk font-bold">

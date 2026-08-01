@@ -66,7 +66,7 @@ export default function AdminScanTickets() {
   const validate = useCallback(async (payload) => {
     setValidating(true);
     try {
-      const res = await base44.functions.validateEventTicket({
+      const res = await base44.functions.invoke('validateEventTicket', {
         ...payload,
         event_id: selectedEventRef.current || undefined,
       });

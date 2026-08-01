@@ -42,10 +42,11 @@ export default async function(req) {
     const pending = ticket.pending_action;
     if (pending && pending.status === 'pending' && pending.type && CONFIRMABLE_ACTIONS.includes(pending.type)) {
       const lc = content.toLowerCase().trim();
-      const confirmWords = ['oui','ouais','ok','okay','d\'accord','d’accord','je confirme','confirme','confirmé','vas-y','fais-le','je veux bien','parfait','génial','genial','yes','yep','ouep','go','c\'est bon','c’est bon','biensur','bien sûr'];
-      const refuseWords = ['non','nan','annule','annuler','refuse','je refuse','non merci','laisse tomber','stop','pas maintenant'];
-      const isConfirm = confirmWords.some((w) => lc === w || lc.startsWith(w + ' ') || lc.startsWith(w + ',') || lc.startsWith(w + '.'));
-      const isRefuse = refuseWords.some((w) => lc === w || lc.startsWith(w + ' ') || lc.startsWith(w + ',') || lc.startsWith(w + '.'));
+      const confirmWords = ['oui','ouais','ok','okay','d\'accord','d’accord','je suis d\'accord','je suis d’accord','je confirme','confirme','confirmé','confirme-le','vas-y','fais-le','fais le','je veux bien','parfait','génial','genial','yes','yep','ouep','go','c\'est bon','c’est bon','biensur','bien sûr','c\'est oui','allez-y','c\'est validé','ça marche','ca marche','ça marche nickel','je valide'];
+      const refuseWords = ['non','nan','annule','annuler','je refuse','refuse','non merci','laisse tomber','stop','pas maintenant','absolument pas','jamais'];
+      const negate = /\b(ne\s|n[''’]\s)/.test(lc) || /\bpas\b/.test(lc);
+      const isConfirm = !negate && confirmWords.some((w) => lc.includes(w));
+      const isRefuse = refuseWords.some((w) => lc.includes(w));
       if (isConfirm || isRefuse) {
         if (isConfirm) {
           const actionRes = await executeNexusAction(base44, { type: pending.type, label: pending.label, params: pending.params || {} }, ticket, user);
@@ -174,6 +175,7 @@ Actions avec confirmation (needs_confirmation=true) :
 - "cancel_event_registration" { registration_id } — annuler une inscription + rembourser crédits.
 - "move_credits" { from_wallet_id, to_wallet_id, amount, reason } — déplacer entre portefeuilles du même utilisateur.
 - "unfreeze_wallet" { wallet_id } — dégeler un portefeuille gelé par erreur.
+  IMPORTANT : un portefeuille gelé (frozen=true) doit TOUJOURS être traité avec unfreeze_wallet (needs_confirmation=true), JAMAIS escaladé — c'est une action que TU peux faire. N'écris jamais "je ne peux pas débloquer" pour un gel.
 
 INTERDIT (ne jamais proposer → escalate) :
 - Suppression de compte / données (RGPD).

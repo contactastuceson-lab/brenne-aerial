@@ -159,7 +159,7 @@ export default function StoryCreator({ open, onClose, user, onCreated }) {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[200] bg-black flex flex-col">
+    <div className="fixed inset-0 z-[200] bg-black md:bg-gradient-to-br md:from-zinc-950 md:to-black flex flex-col">
       {/* Barre haute */}
       <div className="flex items-center justify-between px-4 py-3 z-50">
         <button
@@ -176,13 +176,15 @@ export default function StoryCreator({ open, onClose, user, onCreated }) {
         ) : <div className="w-10" />}
       </div>
 
-      {/* Canvas */}
-      <div className="flex-1 flex items-center justify-center px-4 pb-2 min-h-0">
-        <div
-          ref={canvasRef}
-          className="relative w-full aspect-[9/16] max-h-full max-w-[min(100%,calc(86vh*9/16))] rounded-2xl overflow-hidden bg-black mx-auto"
-          onPointerDown={(e) => { if (e.target === e.currentTarget) setSelectedId(null); }}
-        >
+      {/* Canvas + outils (row sur desktop, col sur mobile) */}
+      <div className="flex-1 flex flex-col md:flex-row min-h-0">
+        {/* Zone canvas */}
+        <div className="flex-1 flex items-center justify-center px-3 py-3 min-h-0">
+          <div
+            ref={canvasRef}
+            className="relative h-full aspect-[9/16] max-w-full rounded-2xl overflow-hidden bg-black mx-auto shadow-2xl"
+            onPointerDown={(e) => { if (e.target === e.currentTarget) setSelectedId(null); }}
+          >
           {phase === 'home' && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6">
               <button onClick={() => setPhase('camera')} className="w-full flex flex-col items-center gap-2 py-7 rounded-2xl border-2 border-dashed border-white/25 hover:bg-white/5 transition">
@@ -265,7 +267,7 @@ export default function StoryCreator({ open, onClose, user, onCreated }) {
 
       {/* Barre d'outils (édition) */}
       {phase === 'edit' && (
-        <div className="bg-black/70 backdrop-blur border-t border-white/10 px-3 pt-2 pb-4 space-y-2">
+        <div className="flex-shrink-0 bg-black/70 backdrop-blur border-t border-white/10 px-3 pt-2 pb-4 space-y-2 max-h-[44vh] overflow-y-auto md:w-[360px] md:max-h-none md:border-t-0 md:border-l">
           {selected ? (
             /* Panneau d'édition du calque sélectionné */
             <div className="space-y-2">
@@ -401,6 +403,7 @@ export default function StoryCreator({ open, onClose, user, onCreated }) {
           )}
         </div>
       )}
+      </div>
     </div>,
     document.body
   );

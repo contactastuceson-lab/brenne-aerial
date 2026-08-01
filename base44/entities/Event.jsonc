@@ -91,7 +91,12 @@
     "price": {
       "type": "number",
       "default": 0,
-      "description": "Prix en euros"
+      "description": "Prix indicatif en euros (affichage)"
+    },
+    "price_credits": {
+      "type": "number",
+      "default": 0,
+      "description": "Co\u00fbt d'inscription en cr\u00e9dits Eza (0 = gratuit)"
     },
     "is_free": {
       "type": "boolean",
@@ -138,6 +143,15 @@
     "website_url": {
       "type": "string",
       "description": "Site / billetterie externe"
+    },
+    "cancel_reason": {
+      "type": "string",
+      "description": "Motif d'annulation (admin)"
+    },
+    "cancelled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date d'annulation"
     }
   },
   "required": [

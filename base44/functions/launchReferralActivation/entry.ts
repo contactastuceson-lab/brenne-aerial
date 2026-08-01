@@ -7,7 +7,7 @@ import { logAutomation } from '../../shared/logAutomation.ts';
 // Actions : email personnalisé (code + lien) à chaque membre, annonce in-app, traçage.
 // Déclenchement manuel depuis le tableau de bord Automatisations.
 
-const APP_URL = Deno.env.get('APP_URL') || 'https://eza.group';
+const APP_URL = 'https://ezagroup.org';
 
 const OFFER_BODY = `Cette semaine, eza lance une **campagne d'activation du parrainage**.
 

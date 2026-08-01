@@ -173,7 +173,7 @@ export default function BottomTabBar() {
                   <div className="grid grid-cols-3 gap-2 mb-4">
                     {[
                       { to: '/profile', icon: User, label: 'Profil', color: 'text-primary' },
-                      ...(hasAdminAccess(user) ? [{ to: '/admin', icon: LayoutDashboard, label: 'Admin', color: 'text-purple-400' }] : []),
+                      ...((hasAdminAccess(user) || user?.role === 'event_manager') ? [{ to: '/admin', icon: LayoutDashboard, label: 'Admin', color: 'text-purple-400' }] : []),
                     ].map(item => {
                       const Icon = item.icon;
                       return (

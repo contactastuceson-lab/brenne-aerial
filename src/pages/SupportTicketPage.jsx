@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -8,6 +8,7 @@ import {
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import ReactMarkdown from 'react-markdown';
+import AiSteps from '@/components/support/AiSteps';
 
 const CATEGORY_LABELS = {
   account: 'Compte', billing: 'Facturation', credits: 'Crédits', bug: 'Bug',
@@ -60,6 +61,17 @@ export default function SupportTicketPage() {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [ticket?.messages?.length, loading]);
 
+  // Étapes de recherche affichées en temps réel pendant que Nexus traite
+  const sendingSteps = useMemo(() => {
+    const steps = [{ icon: 'book', label: 'Lecture de la documentation eza' }];
+    if (ticket?.related_item_type === 'post') steps.push({ icon: 'post', label: "Examen de la publication concernée" });
+    if (ticket?.related_item_type === 'conversation') steps.push({ icon: 'history', label: "Analyse de la discussion" });
+    if (['credits', 'billing'].includes(ticket?.category)) steps.push({ icon: 'wallet', label: "Vérification de votre solde Eza" });
+    if (ticket?.category === 'account') steps.push({ icon: 'user', label: "Vérification de votre compte" });
+    steps.push({ icon: 'search', label: "Recherche d'une solution applicable" });
+    return steps;
+  }, [ticket?.related_item_type, ticket?.category]);
+
   const sendReply = async () => {
     const msg = reply.trim();
     if (!msg || sending) return;
@@ -104,6 +116,8 @@ export default function SupportTicketPage() {
   const SIcon = meta.icon;
   const messages = ticket.messages || [];
   const isClosed = ticket.status === 'closed';
+
+
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 md:py-8 flex flex-col" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
@@ -195,25 +209,30 @@ export default function SupportTicketPage() {
               }`}
                 style={m.role === 'user' ? { background: 'linear-gradient(135deg, hsl(205 90% 48%), hsl(195 80% 40%))' } : {}}>
                 {m.role !== 'user' ? (
-                  <ReactMarkdown components={{
-                    p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
-                    strong: ({ children }) => <strong className="font-semibold text-primary">{children}</strong>,
-                    ul: ({ children }) => <ul className="list-disc pl-4 mb-1">{children}</ul>,
-                    li: ({ children }) => <li className="mb-0.5">{children}</li>,
-                  }}>{m.content}</ReactMarkdown>
+                  <div>
+                    {m.role === 'assistant' && m.steps?.length > 0 && (
+                      <AiSteps steps={m.steps} animate={i === messages.length - 1 && !sending} />
+                    )}
+                    <ReactMarkdown components={{
+                      p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+                      strong: ({ children }) => <strong className="font-semibold text-primary">{children}</strong>,
+                      ul: ({ children }) => <ul className="list-disc pl-4 mb-1">{children}</ul>,
+                      li: ({ children }) => <li className="mb-0.5">{children}</li>,
+                    }}>{m.content}</ReactMarkdown>
+                  </div>
                 ) : <p style={{ whiteSpace: 'pre-wrap' }}>{m.content}</p>}
               </div>
             </motion.div>
           ))}
         </AnimatePresence>
         {sending && (
-          <div className="flex justify-start gap-2 items-center">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+          <div className="flex justify-start gap-2 items-start">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-1"
               style={{ background: 'linear-gradient(135deg, hsl(205 90% 48%), hsl(195 80% 40%))' }}>
               <Bot className="w-3.5 h-3.5 text-white" />
             </div>
-            <div className="bg-secondary border border-border rounded-2xl rounded-tl-sm px-3.5 py-2.5">
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            <div className="bg-secondary border border-border rounded-2xl rounded-tl-sm px-3.5 py-2.5 max-w-[80%]">
+              <AiSteps steps={sendingSteps} animate={true} />
             </div>
           </div>
         )}

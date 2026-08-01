@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { sendEzaEmail } from '../../shared/ezaEmails.ts';
 import { logAutomation } from '../../shared/logAutomation.ts';
 import { buildUserContext } from '../../shared/supportUserContext.ts';
+import { EZA_KNOWLEDGE, buildResearchSteps } from '../../shared/supportKnowledge.ts';
 
 // Support IA automatique — déclenché à la création d'un ticket SupportTicket.
 // L'IA catégorise, priorise, rédige une réponse, et soit résout soit escalade vers un humain.
@@ -34,17 +35,33 @@ export default async function(req) {
 
     const { text: contextText } = await buildUserContext(base44, data.user_id, data.user_email).catch(() => ({ text: '' }));
 
-    const prompt = `Tu es NEXUS, l'IA de support de la plateforme eza (ezagroup.org). eza est un réseau professionnel/communautaire avec : profil, posts, stories, communities, Spaces (audio live), events, boutique, banque de crédits Eza, parrainage, certifications, badges, abonnements Business/Enterprise.
+    // --- RECHERCHE CONTEXTUELLE ---
+    let relatedPostData = null;
+    let walletData = null;
+    const researchBits = [];
+
+    if (data.related_item_type === 'post' && data.related_item_id) {
+      relatedPostData = await base44.asServiceRole.entities.Post.get(data.related_item_id).catch(() => null);
+      if (relatedPostData) {
+        researchBits.push(`PUBLICATION CONCERNÉE : auteur ${relatedPostData.author_username || '?'}, contenu : ${(relatedPostData.content || '').slice(0, 300)}, likes ${relatedPostData.likes_count || 0}`);
+      }
+    }
+
+    const prompt = `Tu es NEXUS, l'IA de support eza. Tu viens de lire la documentation${relatedPostData ? ', examiner la publication concernée' : ''}. Tu réponds avec ce contexte.
+
+${EZA_KNOWLEDGE}
 
 ${contextText}
 
-Analyse la demande ci-dessous et renvoie un JSON STRICT conforme à ce schéma :
+${researchBits.length ? '--- RECHERCHE ---\n' + researchBits.join('\n') : ''}
+
+Analyse la demande et renvoie un JSON STRICT :
 {
   "category": "account|billing|credits|bug|feature|events|moderation|other",
   "priority": "low|medium|high|urgent",
   "can_auto_resolve": true|false,
   "summary": "résumé court en français",
-  "reply": "réponse complète, bienveillante et utile en français (2-6 phrases, markdown autorisé). Si résolution auto possible, donne la solution concrète. Sinon, indique que l'équipe humaine prend le relais.",
+  "reply": "réponse 2-6 phrases, markdown, avec une solution concrète tirée de la doc",
   "escalation_reason": "raison courte si can_auto_resolve=false, sinon null"
 }
 
@@ -53,14 +70,7 @@ Demande de ${userName} :
 ${question}
 """
 
-Règles :
-- Compte / mot de passe / email : dirige vers /login, /forgot-password — résolvable si info.
-- Crédits Eza / boutique / parrainage : explique le fonctionnement (gagne des crédits en publiant, en parrainant /parrainage, dépense dans /boutique).
-- Bug technique : escalade (urgent si bloquant).
-- Événements : explique /events et l'inscription par crédits.
-- Modération / signalement : escalade.
-- Demande de fonctionnalité : escalade (low), remercie.
-- Ne jamais promettre de remboursement ni donner d'email direct.`;
+ESCALADE UNIQUEMENT si : bug bloquant confirmé, sécurité, remboursement, suppression de compte. Tout le reste → résous avec la doc. Ne dis jamais "je transmets à l'équipe" si tu peux répondre.`;
 
     const ai = await base44.integrations.Core.InvokeLLM({
       prompt,
@@ -96,6 +106,12 @@ Règles :
     const summary = ai.summary || question.slice(0, 120);
     const status = auto ? 'ai_resolved' : 'awaiting_human';
 
+    const steps = buildResearchSteps({
+      hasRelatedPost: !!relatedPostData,
+      hasRelatedConversation: data.related_item_type === 'conversation',
+      category: cat,
+    }).map((s) => ({ ...s, status: 'done' }));
+
     const updated = await base44.asServiceRole.entities.SupportTicket.update(ticketId, {
       category: cat,
       priority: prio,
@@ -105,7 +121,7 @@ Règles :
       escalation_reason: auto ? undefined : (ai.escalation_reason || 'Nécessite intervention humaine'),
       messages: [
         ...(Array.isArray(data.messages) ? data.messages : []),
-        { role: 'assistant', content: reply, at: new Date().toISOString() },
+        { role: 'assistant', content: reply, steps, at: new Date().toISOString() },
       ],
     }).catch(() => null);
 

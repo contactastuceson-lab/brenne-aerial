@@ -319,11 +319,17 @@ export default function AdminQrGenerator() {
           </div>
 
           {/* Event linker */}
-          {events.length > 0 && (
-            <div className="rounded-2xl border border-border bg-card p-4">
-              <p className="text-xs font-grotesk font-bold mb-2 text-muted-foreground flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5" /> Lier à un événement Eza
-              </p>
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <p className="text-xs font-grotesk font-bold mb-2 text-muted-foreground flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5" /> Lier à un événement Eza
+            </p>
+            {loadingEvents ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" /> Chargement…
+              </div>
+            ) : events.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Aucun événement disponible.</p>
+            ) : (
               <select
                 onChange={(e) => linkEvent(e.target.value)}
                 value=""
@@ -333,8 +339,8 @@ export default function AdminQrGenerator() {
                   <option key={ev.id} value={ev.id}>{ev.title}</option>
                 ))}
               </select>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Content input */}
           <div className="rounded-2xl border border-border bg-card p-4 space-y-2">

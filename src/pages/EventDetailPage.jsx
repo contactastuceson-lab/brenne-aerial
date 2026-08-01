@@ -282,8 +282,9 @@ export default function EventDetailPage() {
                   {registering ? <Loader2 className="w-4 h-4 animate-spin" /> :
                     registered ? "Inscrit ✓" :
                     isFull ? "Complet" :
+                    !user ? "Connectez-vous" :
                     (credits > 0 && !canAfford) ? "Crédits insuffisants" :
-                    !user ? "Connectez-vous" : "S'inscrire"}
+                    "S'inscrire"}
                 </Button>
               ) : (
                 <Button disabled size="lg" variant="secondary" className="font-grotesk font-bold">

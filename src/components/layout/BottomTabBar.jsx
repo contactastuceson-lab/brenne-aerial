@@ -36,6 +36,7 @@ const NAV_SECTIONS = [
     items: [
       { to: '/communities',   icon: Users,           label: 'Communautés',   color: 'text-emerald-400' },
       { to: '/spaces',        icon: Radio,           label: 'Spaces',         color: 'text-red-400' },
+      { to: '/events',        icon: Calendar,        label: 'Événements',     color: 'text-violet-400' },
       { to: '/forum',         icon: FileText,        label: 'Forum',          color: 'text-blue-400' },
       { to: '/discover',      icon: Compass,         label: 'Explorer',       color: 'text-cyan-400' },
       { to: '/search',        icon: Search,          label: 'Rechercher',     color: 'text-slate-300' },

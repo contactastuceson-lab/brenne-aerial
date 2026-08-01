@@ -18,6 +18,7 @@ const NAV = [
   { icon: UserCircle,    label: 'Mon espace',     to: '/espace' },
   { icon: MessageCircle, label: 'Messages',       to: '/messages', badge: true },
   { icon: Radio,        label: 'Spaces',          to: '/spaces' },
+  { icon: Calendar,     label: 'Événements',     to: '/events' },
   { icon: Bookmark,      label: 'Signets',        to: '/bookmarks' },
   { icon: FileText,      label: 'Forum',          to: '/forum' },
   { icon: Users,         label: 'Communautés',    to: '/communities' },

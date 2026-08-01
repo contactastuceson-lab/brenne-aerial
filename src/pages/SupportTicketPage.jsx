@@ -139,7 +139,9 @@ export default function SupportTicketPage() {
   const assignee = ASSIGNEE_META[ticket.assignee] || ASSIGNEE_META.unassigned;
   const AIcon = assignee.icon;
   const messages = ticket.messages || [];
-  const isClosed = ticket.status === 'closed';
+  // Statut terminal = le ticket est "fermé normalement" (résolu par Nexus, résolu, ou fermé).
+  // On ne peut plus écrire — il faut ouvrir un nouveau ticket.
+  const isClosed = ['ai_resolved', 'resolved', 'closed'].includes(ticket.status);
   const isLocked = !!ticket.user_locked;
   const composerDisabled = isClosed || isLocked;
 
@@ -286,7 +288,7 @@ export default function SupportTicketPage() {
       )}
       {isClosed && !isLocked && (
         <div className="rounded-2xl border border-border bg-card p-3 text-center text-xs text-muted-foreground sticky bottom-0">
-          Ticket fermé. <Link to="/support" className="text-primary hover:underline">Ouvrir un nouveau ticket</Link>
+          Ce ticket est résolu · fermé. <Link to="/support" className="text-primary hover:underline">Ouvrir un nouveau ticket</Link>
         </div>
       )}
       {!composerDisabled && (

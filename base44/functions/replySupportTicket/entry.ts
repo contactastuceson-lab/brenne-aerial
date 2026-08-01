@@ -102,12 +102,14 @@ export default async function(req) {
       }
     }
 
-    if (ticket.category === 'credits' || ticket.category === 'billing') {
+    let frozenWallets = [];
+    if (ticket.category === 'credits' || ticket.category === 'billing' || ticket.category === 'events' || /solde|crédit|credit|gel|bloqué|bloque|rembours|portefeuille|wallet|dégel|degel|transf/i.test(content)) {
       try {
         const wallets = await base44.asServiceRole.entities.Wallet.filter({ owner_id: user.id }).catch(() => []);
         walletData = wallets;
         const total = (wallets || []).reduce((s, w) => s + (w.balance || 0), 0);
-        researchBits.push(`SOLDE EZA (vérifié) : ${total} crédits répartis sur ${wallets?.length || 0} wallet(s). Gelé : ${wallets?.some((w) => w.frozen) ? 'oui' : 'non'}.`);
+        frozenWallets = (wallets || []).filter((w) => w.frozen);
+        researchBits.push(`SOLDE EZA (vérifié) : ${total} crédits répartis sur ${wallets?.length || 0} wallet(s). Gelé : ${frozenWallets.length ? 'oui' : 'non'}.${frozenWallets.length ? `\nPORTEFEUILLES GELÉS (frozen=true, wallet_id utilisable pour unfreeze_wallet) :\n${frozenWallets.map((w) => `- ID:${w.id} · « ${w.name} » · solde ${w.balance || 0}`).join('\n')}` : ''}${(wallets || []).length ? `\nDÉTAIL PORTEFEUILLES : ${(wallets || []).map((w) => `« ${w.name} »=${w.balance || 0}${w.frozen ? ' (gelé)' : ''}`).join(', ')}` : ''}`);
       } catch {}
     }
 
@@ -173,6 +175,19 @@ Si l'utilisateur dit "ça marche" / "merci c'est bon" → "answered".
 Si l'utilisateur dit "non ça ne marche pas" ou donne un nouveau détail → "troubleshooting" (ouvre à nouveau, propose autre chose).
 Si l'info demandée est dans la doc → "answered".
 
+--- ANTI-HALLUCINATION (CRITIQUE — TU NE FABRIQUES JAMAIS L'ÉTAT DU COMPTE) ---
+- Tu ne décris QUE ce que tu as réellement vérifié dans la recherche (solde, gel, inscriptions, posts). Si une donnée n'est pas dans la recherche, tu NE l'inventes PAS.
+- INTERDIT d'affirmer "votre solde est bloqué", "votre portefeuille est gelé", "vous êtes inscrit à X" sans avoir lu la donnée correspondante dans la recherche. Si tu n'as pas vérifié, dis "je n'ai pas cette information sous les yeux" et propose d'escalader si nécessaire.
+- N'attribue JAMAIS de cause au problème sans preuve (ex : "votre solde est gelé" sans frozen=true lu dans les données de recherche).
+- Un portefeuille est gelé UNIQUEMENT si la recherche montre un wallet avec frozen=true (section "PORTEFEUILLES GELÉS"). Sans ce constat explicite, NE PROPOSE PAS unfreeze_wallet et NE DIS PAS que le solde est bloqué.
+
+--- SÉCURITÉ DES ACTIONS SENSIBLES (anti-danger) ---
+Les actions unfreeze_wallet, refund_credits, grant_credits, cancel_event_registration, move_credits sont SENSIBLES (impact financier). Règles strictes :
+- Ne les propose JAMAIS spontanément (sans demande explicite de l'utilisateur). Seul register_event peut être proposé proactivement.
+- unfreeze_wallet : UNIQUEMENT si la recherche montre un portefeuille gelé ET que tu as son wallet_id. Sans wallet_id ou sans gel confirmé → NE PROPOSE PAS l'action (ne dis pas non plus "c'est fait").
+- refund_credits / grant_credits : UNIQUEMENT si l'utilisateur a explicitement demandé un remboursement / geste commercial, ET que tu peux justifier le montant à partir de données réelles (crédits payés, solde vérifié). Montant max 100.
+- Si l'utilisateur demande une action que tu ne peux pas exécuter faute de données fiables, n'invente rien : dis ce qu'il te manque ou escalade.
+
 --- TON CATALOGUE D'ACTIONS (tu PEUX et tu DOIS agir) ---
 Toute action se renvoie dans le champ JSON "action": { "type", "label", "needs_confirmation": bool, "params": {...} }.
 PROPOSE la bonne action PROACTIVEMENT dès que la demande correspond — n'attends pas que l'utilisateur la devine.
@@ -188,7 +203,7 @@ PROPOSE la bonne action PROACTIVEMENT dès que la demande correspond — n'atten
 - "refund_credits" { amount, reason } — rembourser un achat boutique/événement EN CRÉDITS Eza. QUAND : "remboursez-moi" pour un achat crédits/boutique/événement (PAS de remboursement carte Stripe).
 - "cancel_event_registration" { registration_id } — annuler une inscription + rendre les crédits. QUAND : "annule mon inscription à l'événement".
 - "move_credits" { from_wallet_id, to_wallet_id, amount, reason } — déplacer des crédits entre les portefeuilles du MÊME utilisateur. QUAND : "transfère de mon wallet épargne vers dépenses".
-- "unfreeze_wallet" { wallet_id } — dégeler un portefeuille gelé par erreur. RÈGLE ABSOLUE : un wallet gelé (frozen=true) se traite TOUJOURS par unfreeze_wallet, JAMAIS par escalade. Ne dis jamais "je ne peux pas débloquer".
+- "unfreeze_wallet" { wallet_id } — dégeler un portefeuille VÉRIFIÉ comme gelé (frozen=true lu dans la recherche, avec son wallet_id). Sans wallet_id ou sans gel confirmé → NE PROPOSE PAS l'action. RÈGLE ABSOLUE : un wallet réellement gelé se traite par unfreeze_wallet, JAMAIS par escalade ; mais ne dis jamais "je ne peux pas débloquer" pour un gel non vérifié.
 - "register_event" { event_id, event_title, credits } — inscrire l'utilisateur à un événement (débite ses crédits Eza si payant). RÈGLE ABSOLUE : tu PEUX et tu DOIS inscrire toi-même. Ne dis JAMAIS "je ne peux pas m'inscrire pour vous" ni "vous devez le faire vous-même". Utilise l'event_id exact de la recherche.
 
 ▶ CE QUE TU NE PEUX PAS FAIRE (→ resolution_type="escalate", transmets à un humain) :
@@ -288,6 +303,22 @@ RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
       const cited = upcomingEvents.find((e) => (pendingAction.label || '').includes(e.title) || (reply || '').includes(e.title)) || upcomingEvents[0];
       pendingAction.params = { ...(pendingAction.params || {}), event_id: cited.id, event_title: cited.title, credits: Number(cited.price_credits || 0) };
       if (!pendingAction.label) pendingAction.label = `Inscrire à « ${cited.title} »`;
+    }
+
+    // Garde-fou unfreeze_wallet : un dégel sans wallet_id (ou sans gel réel
+    // vérifié) est annulé — Nexus ne doit JAMAIS proposer un dégel
+    // halluciné. On injecte le wallet_id uniquement si un portefeuille gelé
+    // a réellement été trouvé dans la recherche.
+    if (pendingAction && pendingAction.type === 'unfreeze_wallet') {
+      if (pendingAction.params?.wallet_id && frozenWallets.some((w) => w.id === pendingAction.params.wallet_id)) {
+        // wallet_id valide et confirmé gelé — on garde.
+      } else if (frozenWallets.length === 1) {
+        pendingAction.params = { ...(pendingAction.params || {}), wallet_id: frozenWallets[0].id, wallet_name: frozenWallets[0].name };
+      } else {
+        // Aucun gel vérifié (ou plusieurs sans précision) → on retire l'action.
+        pendingAction = null;
+        actionType = null;
+      }
     }
 
     const finalMessages = [...newMessages, {

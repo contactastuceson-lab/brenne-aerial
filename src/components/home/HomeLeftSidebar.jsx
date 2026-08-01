@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
     Home, Compass, MessageCircle, Bell, Bookmark, Calendar,
     Users, BarChart3, Briefcase, FileText, Award, Camera,
-    Heart, Star, MoreHorizontal, LogOut, Sparkles, UserCircle, List, Radio, Wallet
+    Heart, Star, MoreHorizontal, LogOut, Sparkles, UserCircle, List, Radio, Wallet, LifeBuoy
     } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import { hasAdminAccess } from '@/lib/roles';
@@ -27,6 +27,7 @@ const NAV = [
   { icon: Briefcase,     label: 'Business',       to: '/business', businessOnly: true },
   { icon: Sparkles,      label: 'Boutique',        to: '/boutique', premium: true },
   { icon: Wallet,        label: 'Banque',          to: '/banque' },
+  { icon: LifeBuoy,      label: 'Support IA',      to: '/support' },
 ];
 
 function NavItem({ icon: Icon, label, to, active, badge, premium }) {

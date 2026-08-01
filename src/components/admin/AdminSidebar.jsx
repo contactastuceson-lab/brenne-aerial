@@ -33,6 +33,7 @@ const navSections = [
       { key: 'spaces', icon: Radio, path: '/admin/spaces', label: 'Spaces Audio' },
       { key: 'events', icon: Calendar, path: '/admin/events', label: 'Événements' },
       { key: 'reports', icon: AlertCircle, path: '/admin/reports', label: 'Signalements' },
+      { key: 'support', icon: MessageSquare, path: '/admin/support', label: 'Support IA' },
       { key: 'donations', icon: Gift, path: '/admin/donations', label: 'Donations' },
       { key: 'billing', icon: CreditCard, path: '/admin/billing', label: 'Facturation' },
     ]

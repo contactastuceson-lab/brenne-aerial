@@ -1,0 +1,132 @@
+{
+  "name": "SupportTicket",
+  "type": "object",
+  "properties": {
+    "subject": {
+      "type": "string",
+      "description": "Sujet / r\u00e9sum\u00e9 court de la demande"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID de l'utilisateur"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur (snapshot)"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nom de l'utilisateur (snapshot)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "account",
+        "billing",
+        "credits",
+        "bug",
+        "feature",
+        "events",
+        "moderation",
+        "other"
+      ],
+      "default": "other",
+      "description": "Cat\u00e9gorie IA (compte, facturation, cr\u00e9dits, bug, fonctionnalit\u00e9, \u00e9v\u00e9nements, mod\u00e9ration, autre)"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium",
+      "description": "Priorit\u00e9 d\u00e9termin\u00e9e par l'IA"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "ai_resolved",
+        "awaiting_human",
+        "resolved",
+        "closed"
+      ],
+      "default": "open",
+      "description": "open = nouveau, ai_resolved = r\u00e9solu par l'IA, awaiting_human = escalad\u00e9 humain, resolved = r\u00e9solu, closed = ferm\u00e9"
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "default": [],
+      "description": "Fil de conversation : { role: 'user'|'assistant'|'admin', content, at }"
+    },
+    "ai_summary": {
+      "type": "string",
+      "description": "R\u00e9sum\u00e9 IA de la demande"
+    },
+    "ai_handled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Trait\u00e9 automatiquement par l'IA"
+    },
+    "escalation_reason": {
+      "type": "string",
+      "description": "Raison de l'escalade humaine si applicable"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Notes admin"
+    }
+  },
+  "required": [
+    "subject",
+    "user_email"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -73,6 +73,8 @@ import AdminForum from "@/pages/admin/AdminForum";
 import AdminSpaces from "@/pages/admin/AdminSpaces";
 import AdminPortfolio from "@/pages/admin/AdminPortfolio";
 import AdminAffiliations from "@/pages/admin/AdminAffiliations";
+import AdminSupport from "@/pages/admin/AdminSupport";
+import SupportPage from "@/pages/SupportPage";
 import AdminSampleProfiles from "@/pages/admin/AdminSampleProfiles";
 import BlogArticlePage from "@/pages/BlogArticlePage";
 import { Navigate } from "react-router-dom";
@@ -198,6 +200,7 @@ const AuthenticatedApp = () => {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/events/:id" element={<EventDetailPage />} />
           <Route path="/panier" element={<CartPage />} />
+          <Route path="/support" element={<SupportPage />} />
           <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />
@@ -250,6 +253,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/events" element={<AdminEvents />} />
         <Route path="/admin/scan-tickets" element={<AdminScanTickets />} />
         <Route path="/admin/qr-generator" element={<AdminQrGenerator />} />
+        <Route path="/admin/support" element={<AdminSupport />} />
 
       </Route>
 

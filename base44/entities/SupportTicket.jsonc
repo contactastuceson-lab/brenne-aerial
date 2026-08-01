@@ -20,7 +20,7 @@
     },
     "related_item_id": {
       "type": "string",
-      "description": "ID de l'\u00e9l\u00e9ment concern\u00e9 (post, discussion, portefeuille) si applicable"
+      "description": "ID de l'\u00e9l\u00e9ment concern\u00e9 (post, discussion, portefeuille, \u00e9v\u00e9nement) si applicable"
     },
     "related_item_type": {
       "type": "string",
@@ -28,10 +28,11 @@
         "post",
         "conversation",
         "wallet",
+        "event",
         "none"
       ],
       "default": "none",
-      "description": "Type d'\u00e9l\u00e9ment concern\u00e9 : post, conversation, wallet (portefeuille), ou aucun"
+      "description": "Type d'\u00e9l\u00e9ment concern\u00e9 : post, conversation, wallet (portefeuille), event (\u00e9v\u00e9nement), ou aucun"
     },
     "related_item_label": {
       "type": "string",

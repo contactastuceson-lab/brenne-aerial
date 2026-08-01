@@ -11,6 +11,7 @@ import { useAuth } from '@/lib/AuthContext';
 import ReactMarkdown from 'react-markdown';
 import AiSteps from '@/components/support/AiSteps';
 import PendingActionCard from '@/components/support/PendingActionCard';
+import EventPickerCard from '@/components/support/EventPickerCard';
 
 const CATEGORY_LABELS = {
   account: 'Compte', billing: 'Facturation', credits: 'Crédits', bug: 'Bug technique',
@@ -293,6 +294,9 @@ export default function SupportTicketPage() {
             <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
             <span>Escaladé : {ticket.escalation_reason}</span>
           </div>
+        )}
+        {!composerDisabled && !ticket.pending_action && (ticket.category === 'events' || ticket.related_item_type === 'event') && (
+          <EventPickerCard ticket={ticket} onDone={load} />
         )}
         <PendingActionCard ticket={ticket} onDone={load} />
       </div>

@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import {
   Loader2, Upload, X, FileText, Image as ImageIcon, Sparkles, ArrowRight,
-  ArrowLeft, CheckCircle2, MessageSquare, FileQuestion, Hash, Send, Wallet,
+  ArrowLeft, CheckCircle2, MessageSquare, FileQuestion, Hash, Send, Wallet, Calendar, MapPin,
 } from 'lucide-react';
 
 const MAX_FILES = 5;
@@ -28,6 +28,9 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   const [wallets, setWallets] = useState([]);
   const [loadingWallets, setLoadingWallets] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [createdTicket, setCreatedTicket] = useState(null);
 
@@ -35,6 +38,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
     setStep(1); setDescription(''); setFileUrls([]); setSuggestions([]);
     setSelected(null); setPosts([]); setSelectedPost(null); setConvLabel('');
     setWallets([]); setSelectedWallet(null);
+    setEvents([]); setSelectedEvent(null);
     setCreatedTicket(null); setSubmitting(false);
   }, []);
 
@@ -95,6 +99,15 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
         setWallets(list || []);
       } catch { setWallets([]); }
       setLoadingWallets(false);
+    } else if (s.element_type === 'event') {
+      setStep(3);
+      setLoadingEvents(true);
+      try {
+        const list = await base44.entities.Event.filter({}, 'start_date', 30).catch(() => []);
+        const active = (list || []).filter((e) => e.status !== 'cancelled' && e.status !== 'ended' && (!e.end_date || new Date(e.end_date).getTime() >= Date.now()));
+        setEvents(active || []);
+      } catch { setEvents([]); }
+      setLoadingEvents(false);
     } else {
       setStep(4);
     }
@@ -110,9 +123,9 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
         description: description.trim(),
         file_urls: fileUrls,
         category: selected.category,
-        related_item_id: selectedPost?.id || selectedWallet?.id || null,
-        related_item_type: selected.element_type === 'post' ? 'post' : selected.element_type === 'conversation' ? 'conversation' : selected.element_type === 'wallet' ? 'wallet' : 'none',
-        related_item_label: selectedPost ? (selectedPost.content || '').slice(0, 120) : selectedWallet ? `${selectedWallet.name || 'Portefeuille'} (${selectedWallet.balance || 0} crédits)` : convLabel || null,
+        related_item_id: selectedPost?.id || selectedWallet?.id || selectedEvent?.id || null,
+        related_item_type: selected.element_type === 'post' ? 'post' : selected.element_type === 'conversation' ? 'conversation' : selected.element_type === 'wallet' ? 'wallet' : selected.element_type === 'event' ? 'event' : 'none',
+        related_item_label: selectedPost ? (selectedPost.content || '').slice(0, 120) : selectedWallet ? `${selectedWallet.name || 'Portefeuille'} (${selectedWallet.balance || 0} crédits)` : selectedEvent ? `${selectedEvent.title || 'Événement'} · ${selectedEvent.start_date ? selectedEvent.start_date.slice(0, 10) : '?'}${Number(selectedEvent.price_credits) > 0 ? ` · ${selectedEvent.price_credits} crédits` : ' · gratuit'}` : convLabel || null,
         user_id: user.id,
         user_email: user.email,
         user_name: user.full_name || user.email,
@@ -197,7 +210,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
               <span>L'IA a analysé votre description. Sélectionnez le type qui correspond le mieux :</span>
             </div>
             {suggestions.map((s, i) => {
-              const icon = s.element_type === 'post' ? Hash : s.element_type === 'conversation' ? MessageSquare : s.element_type === 'wallet' ? Wallet : FileQuestion;
+              const icon = s.element_type === 'post' ? Hash : s.element_type === 'conversation' ? MessageSquare : s.element_type === 'wallet' ? Wallet : s.element_type === 'event' ? Calendar : FileQuestion;
               const Ic = icon;
               return (
                 <button key={i} onClick={() => pickSuggestion(s)}
@@ -213,7 +226,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground uppercase">{s.category}</span>
                         {s.element_type !== 'none' && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                            {s.element_type === 'post' ? 'Publication' : s.element_type === 'wallet' ? 'Portefeuille' : 'Discussion'}
+                            {s.element_type === 'post' ? 'Publication' : s.element_type === 'wallet' ? 'Portefeuille' : s.element_type === 'event' ? 'Événement' : 'Discussion'}
                           </span>
                         )}
                       </div>
@@ -290,6 +303,51 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
                 )}
               </>
             )}
+            {selected.element_type === 'event' && (
+              <>
+                <p className="text-xs text-muted-foreground">Sélectionnez l'événement concerné (ou passez si non applicable) :</p>
+                {loadingEvents ? (
+                  <div className="text-center py-6"><Loader2 className="w-5 h-5 mx-auto animate-spin text-muted-foreground" /></div>
+                ) : events.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">Aucun événement à venir trouvé.</p>
+                ) : (
+                  <div className="space-y-1.5 max-h-56 overflow-y-auto">
+                    {events.map((e) => {
+                      const price = Number(e.price_credits || 0);
+                      const balance = Number(user?.referral_credits || 0);
+                      const insufficient = price > 0 && balance < price;
+                      const full = e.capacity > 0 && (e.attendees_count || 0) >= e.capacity;
+                      return (
+                        <button key={e.id} onClick={() => !full && !insufficient && setSelectedEvent(selectedEvent?.id === e.id ? null : e)}
+                          disabled={full || insufficient}
+                          className={`w-full text-left p-2.5 rounded-lg border text-xs transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                            selectedEvent?.id === e.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'
+                          }`}>
+                          {e.image_url ? (
+                            <img src={e.image_url} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                          ) : (
+                            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <Calendar className="w-4 h-4 text-primary" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{e.title || 'Événement'}</p>
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1 flex-wrap">
+                              <span>{e.start_date ? new Date(e.start_date).toLocaleDateString('fr-FR') : '?'}</span>
+                              {e.city && <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{e.city}</span>}
+                              <span>· {price > 0 ? `${price} crédits` : 'gratuit'}</span>
+                              {e.capacity > 0 && <span>· {e.attendees_count || 0}/{e.capacity}</span>}
+                            </p>
+                            {insufficient && <p className="text-[10px] text-red-400 mt-0.5">Solde insuffisant ({balance}/{price})</p>}
+                            {full && <p className="text-[10px] text-amber-400 mt-0.5">Complet</p>}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => { setSelected(null); setStep(2); }} className="flex-1">
                 <ArrowLeft className="w-4 h-4" /> Retour
@@ -316,6 +374,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
               {selectedPost && <p className="text-xs text-muted-foreground flex items-center gap-1"><Hash className="w-3 h-3" /> Publication: {selectedPost.content?.slice(0, 50)}…</p>}
               {convLabel && <p className="text-xs text-muted-foreground flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {convLabel}</p>}
               {selectedWallet && <p className="text-xs text-muted-foreground flex items-center gap-1"><Wallet className="w-3 h-3" /> {selectedWallet.name || 'Portefeuille'} · {selectedWallet.balance || 0} crédits</p>}
+              {selectedEvent && <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="w-3 h-3" /> {selectedEvent.title} · {selectedEvent.start_date ? new Date(selectedEvent.start_date).toLocaleDateString('fr-FR') : '?'} · {Number(selectedEvent.price_credits) > 0 ? `${selectedEvent.price_credits} crédits` : 'gratuit'}</p>}
             </div>
             <p className="text-xs text-muted-foreground text-center">Nexus IA va analyser votre ticket et répondre immédiatement. Un email de confirmation vous sera envoyé.</p>
             <div className="flex gap-2">

@@ -102,6 +102,13 @@ export default async function(req) {
       }
     }
 
+    if (ticket.related_item_type === 'event' && ticket.related_item_id) {
+      const ev = await base44.asServiceRole.entities.Event.get(ticket.related_item_id).catch(() => null);
+      if (ev) {
+        researchBits.push(`ÉVÉNEMENT CONCERNÉ (sélectionné par l'utilisateur dans le wizard) :\n- ID:${ev.id} · « ${ev.title} »\n- Début : ${ev.start_date || '?'} · Lieu : ${ev.city || ev.location || '?'}\n- Prix : ${ev.price_credits || 0} crédits · ${ev.attendees_count || 0}/${ev.capacity || '∞'} inscrits · Statut : ${ev.status}`);
+      }
+    }
+
     let frozenWallets = [];
     if (ticket.category === 'credits' || ticket.category === 'billing' || ticket.category === 'events' || /solde|crédit|credit|gel|bloqué|bloque|rembours|portefeuille|wallet|dégel|degel|transf/i.test(content)) {
       try {

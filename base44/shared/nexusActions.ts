@@ -113,6 +113,7 @@ export async function executeNexusAction(base44, action, ticket, user) {
       const w = await base44.asServiceRole.entities.Wallet.get(params.wallet_id).catch(() => null);
       if (!w) throw new Error('Portefeuille introuvable');
       if (w.owner_id !== userId) throw new Error('Portefeuille non assignable');
+      if (!w.frozen) throw new Error('Portefeuille non gelé — aucune action requise');
       await base44.asServiceRole.entities.Wallet.update(w.id, { frozen: false }).catch(() => {});
       return { ok: true, label, result: { wallet: w.name } };
     }

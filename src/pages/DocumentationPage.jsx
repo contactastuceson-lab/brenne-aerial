@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowRight, Sparkles, BookOpen, Layers, Zap, Shield, Search,
+  ArrowRight, Sparkles, BookOpen, Layers, Zap, Shield,
 } from 'lucide-react';
+import DocSearch from '@/components/docs/DocSearch';
 import {
   DOC_TOPICS, getDocImage, DOC_CATEGORIES,
   DOC_TOPIC_COUNT, DOC_SECTION_COUNT,
@@ -76,15 +77,13 @@ export default function DocumentationPage() {
           </p>
 
           {/* Search */}
-          <div className="relative max-w-xl mx-auto mt-8">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rechercher un guide…"
-              className="w-full h-12 pl-11 pr-4 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
-            />
-          </div>
+          <DocSearch
+            value={query}
+            onChange={setQuery}
+            placeholder="Rechercher un guide…"
+            className="max-w-xl mx-auto mt-8"
+            inputClassName="w-full h-12 pl-11 pr-4 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
+          />
 
           {/* Stats */}
           <div className="grid grid-cols-4 gap-3 max-w-lg mx-auto mt-10">

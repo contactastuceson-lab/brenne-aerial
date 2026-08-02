@@ -1,21 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Search, Sparkles, ChevronDown, Monitor, ArrowRight, Headset,
+  Sparkles, ChevronDown, Monitor, ArrowRight, Headset,
 } from 'lucide-react';
+import DocSearch from '@/components/docs/DocSearch';
 
 const EZA_LOGO = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/077186390_1782605365815.png';
 const ORANGE = '#ff7800';
 
-export default function DocNavbar({ onSearch }) {
+export default function DocNavbar() {
   const navigate = useNavigate();
-  const [q, setQ] = useState('');
-
-  const submitSearch = (e) => {
-    e.preventDefault();
-    if (onSearch) onSearch(q);
-    else navigate('/documentation');
-  };
 
   return (
     <header
@@ -38,18 +32,12 @@ export default function DocNavbar({ onSearch }) {
 
         {/* Center group: search + assistant */}
         <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
-          <form onSubmit={submitSearch} className="relative hidden sm:block w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
-            <input
-              value={q}
-              onChange={(e) => { setQ(e.target.value); onSearch?.(e.target.value); }}
-              placeholder="Recherche..."
-              className="w-full h-9 pl-9 pr-14 rounded-full bg-white/[0.05] border border-white/10 text-xs text-white placeholder:text-white/35 outline-none focus:border-white/25 transition-colors"
-            />
-            <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-white/40 px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.03]">
-              Ctrl K
-            </kbd>
-          </form>
+          <DocSearch
+            className="hidden sm:block w-full max-w-md"
+            placeholder="Recherche..."
+            inputClassName="w-full h-9 pl-11 pr-12 rounded-full bg-white/[0.05] border border-white/10 text-xs text-white placeholder:text-white/35 outline-none focus:border-white/25 transition-colors"
+            rightSlot={<kbd className="text-[10px] font-mono text-white/40 px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.03]">Ctrl K</kbd>}
+          />
 
           <button
             type="button"

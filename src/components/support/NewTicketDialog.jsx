@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
@@ -56,6 +57,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [docSuggestions, setDocSuggestions] = useState([]);
   const [selected, setSelected] = useState(null);
   const [elementType, setElementType] = useState(null);
   const [items, setItems] = useState([]);
@@ -66,9 +68,9 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   const [createdTicket, setCreatedTicket] = useState(null);
 
   const reset = useCallback(() => {
-    setStep(1); setDescription(''); setFileUrls([]); setSuggestions([]);
+    setStep(1); setDescription(''); setFileUrls([]); setSuggestions([]); setDocSuggestions([]);
     setSelected(null); setElementType(null); setItems([]); setItemsLoading(false);
-    setSelectedItem(null); setConvLabel(''); setCreatedTicket(null); setSubmitting(false);
+    setSelectedItem(null); setConvLabel(''); setCreatedTicket(null); setSubmitting(false); setDocSuggestions([]);
   }, []);
 
   const handleClose = () => { reset(); onClose(); };
@@ -105,6 +107,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
       } else {
         setSuggestions(sugg.slice(0, 3));
       }
+      setDocSuggestions(Array.isArray(data?.doc_suggestions) ? data.doc_suggestions.slice(0, 3) : []);
       setStep(3);
     } catch (e) {
       toast.error(e?.response?.data?.error || 'Analyse échouée');
@@ -381,6 +384,23 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
                   );
                 })}
               </div>
+              {docSuggestions.length > 0 && (
+                <div className="rounded-xl border border-primary/20 bg-primary/[0.04] p-3.5">
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <BookOpen className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-xs font-semibold">Ces articles pourraient vous aider avant de soumettre</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {docSuggestions.map((d) => (
+                      <Link key={d.slug} to={`/documentation/${d.slug}`} target="_blank" className="flex items-start gap-2 p-2 rounded-lg hover:bg-primary/[0.06] transition-colors group">
+                        <span className="text-xs font-semibold text-primary mt-0.5 flex-shrink-0">{d.title}</span>
+                        <span className="text-[11px] text-muted-foreground leading-relaxed flex-1">{d.reason}</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-0.5" />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
               <Footer onBack={() => setStep(1)} onNext={selected ? () => pickCategory(selected) : null} nextDisabled={!selected} />
             </div>
           )}

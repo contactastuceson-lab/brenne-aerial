@@ -11,6 +11,45 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 const VALID_CATEGORIES = ['account','billing','credits','bug','feature','events','moderation','messaging','other'];
 const VALID_TYPES = ['post','conversation','wallet','event','community','space','story','referral','registration','reward','cart','ticket','discussion','forum','review','certification','donation','list','ad','none'];
 
+// Catalogue de la documentation EZA — injecté dans le prompt pour que l'IA
+// puisse suggérer les articles les plus pertinents au moment de l'analyse
+// du ticket (auto-assistance avant soumission).
+const DOC_CATALOG = [
+  { slug: 'overview', title: "Vue d'ensemble", kw: 'plateforme, fonctionnement, présentation' },
+  { slug: 'social', title: 'Réseau social', kw: 'publication, post, like, hashtag, mention, visibilité, fil' },
+  { slug: 'messaging', title: 'Messagerie', kw: 'message, conversation, demande de contact, spam, officiel' },
+  { slug: 'forum', title: 'Forum & discussions', kw: 'forum, discussion, sujet, réponse, markdown, lien externe' },
+  { slug: 'communities', title: 'Communautés', kw: 'communauté, membres, règles, post communautaire, capacité' },
+  { slug: 'stories', title: 'Stories', kw: 'story, ephemere, caméra, filtre, sticker, 24h' },
+  { slug: 'spaces', title: 'Spaces audio', kw: 'space, audio, live, livekit, orateur, direct' },
+  { slug: 'events', title: 'Événements', kw: 'événement, inscription, billet, check-in, annulation, remboursement, qr' },
+  { slug: 'economie-credits', title: 'Crédits Eza', kw: 'crédit, gain, récompense, dépense, fraude' },
+  { slug: 'economie-boutique', title: 'Boutique', kw: 'boutique, pack, abonnement, pro, business, enterprise, token, stripe' },
+  { slug: 'banque', title: 'Banque & portefeuilles', kw: 'wallet, portefeuille, solde, transfert, gel, frozen, banque' },
+  { slug: 'parrainage', title: 'Parrainage & récompenses', kw: 'parrainage, filleul, code, jalon, fraude parrainage' },
+  { slug: 'ads', title: 'Publicité business', kw: 'publicité, campagne, budget, impression, clic, business, ciblage' },
+  { slug: 'profile', title: 'Profil & identité', kw: 'profil, username, compte, personnalisation, thème, badge' },
+  { slug: 'certifications', title: 'Certifications', kw: 'certification, vérification, badge, paiement stripe, questionnaire' },
+  { slug: 'affiliations', title: 'Affiliations & écosystème', kw: 'affiliation, organisation, logo, écosystème, entreprise' },
+  { slug: 'enor', title: "Enor & identité fondatrice", kw: 'enor, pdg, histoire, vision, eza group' },
+  { slug: 'support', title: 'Support & Nexus IA', kw: 'support, ticket, nexus, ia, escalade, action, ia support' },
+  { slug: 'stack', title: 'Stack technique', kw: 'technique, react, vite, base44, architecture, technologies' },
+  { slug: 'notifications', title: 'Notifications', kw: 'notification, push, email, digest, préférences, fcm, vapid' },
+  { slug: 'pwa', title: 'PWA & installation', kw: 'pwa, installation, ios, android, manifest, offline, écran accueil' },
+  { slug: 'auth', title: 'Authentification', kw: 'connexion, login, oauth, otp, reset, mot de passe, 2fa, session' },
+  { slug: 'data', title: 'Modèle de données', kw: 'données, entité, snapshot, base de données, sdk, realtime' },
+  { slug: 'design', title: 'Système de design', kw: 'design, thème, tokens, couleurs, typographie, sky, glassmorphism' },
+  { slug: 'integrations', title: 'Intégrations & services', kw: 'intégration, connecteur, oauth, secret, stripe, livekit, giphy' },
+  { slug: 'security', title: 'Sécurité & RGPD', kw: 'sécurité, rgpd, suppression compte, audit, session, device, 2fa' },
+  { slug: 'automations', title: 'Automatisations', kw: 'automatisation, cron, schedule, webhook, digest, modération auto' },
+  { slug: 'rls', title: 'Row-Level Security', kw: 'rls, sécurité ligne, isolation, permission, rôle, ownership' },
+  { slug: 'conventions', title: 'Conventions de code', kw: 'convention, code, esm, import, composant, entité, tailwind' },
+  { slug: 'portfolio', title: 'Portfolio', kw: 'portfolio, projet, avant après, avis, carte, géolocalisation' },
+  { slug: 'blog', title: 'Blog & articles', kw: 'blog, article, rédaction, catégorie, publication article' },
+];
+const VALID_DOC_SLUGS = new Set(DOC_CATALOG.map((d) => d.slug));
+const DOC_BY_SLUG = Object.fromEntries(DOC_CATALOG.map((d) => [d.slug, d]));
+
 export default async function(req) {
   let base44;
   try {
@@ -102,14 +141,27 @@ Description de l'utilisateur:
 ${description.slice(0, 2000)}
 """
 
+CATALOGUE DE LA DOCUMENTATION EZA (slug : titre — mots-clés) :
+${DOC_CATALOG.map((d) => `- ${d.slug} : « ${d.title} » (${d.kw})`).join('\n')}
+
 Réponds en JSON STRICT conforme à ce schéma:
 {
   "suggestions": [
     { "label": "...", "category": "...", "element_type": "...", "description": "...", "related_item_id": "id|null", "related_item_label": "libellé|null" },
     { "label": "...", "category": "...", "element_type": "...", "description": "...", "related_item_id": "id|null", "related_item_label": "libellé|null" },
     { "label": "...", "category": "...", "element_type": "...", "description": "...", "related_item_id": "id|null", "related_item_label": "libellé|null" }
+  ],
+  "doc_suggestions": [
+    { "slug": "slug exact du catalogue", "reason": "courte raison en français : pourquoi cet article aide l'utilisateur pour SA demande" }
   ]
 }
+
+Règles pour doc_suggestions :
+- 0 à 3 articles, ordonnés par pertinence.
+- Le slug DOIT exister dans le catalogue ci-dessus (copie exactement la valeur slug).
+- Ne suggère jamais un article technique (stack, conventions, rls, design, integrations) pour un ticket utilisateur lambda.
+- La reason est une phrase courte en français qui relie l'article à la description de l'utilisateur.
+- Si aucun article n'est clairement pertinent, renvoie un tableau vide.
 
 Règles:
 - 3 suggestions exactement, ordonnées par probabilité.
@@ -138,6 +190,16 @@ Règles:
                 description: { type: 'string' },
                 related_item_id: { type: 'string' },
                 related_item_label: { type: 'string' },
+              },
+            },
+          },
+          doc_suggestions: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                slug: { type: 'string' },
+                reason: { type: 'string' },
               },
             },
           },
@@ -173,6 +235,18 @@ Règles:
       };
     }) : [];
 
+    // Valide les suggestions de documentation (slugs réels, dédupliqués).
+    const seenDoc = new Set();
+    const docSuggestions = (Array.isArray(ai?.doc_suggestions) ? ai.doc_suggestions : [])
+      .filter((d) => d && d.slug && VALID_DOC_SLUGS.has(d.slug))
+      .map((d) => {
+        if (seenDoc.has(d.slug)) return null;
+        seenDoc.add(d.slug);
+        return { slug: d.slug, title: DOC_BY_SLUG[d.slug].title, reason: String(d.reason || '').slice(0, 200) };
+      })
+      .filter(Boolean)
+      .slice(0, 3);
+
     // Fallback si l'IA n'a rien retourné d'exploitable
     if (suggestions.length === 0) {
       return Response.json({
@@ -181,10 +255,11 @@ Règles:
           { label: 'Bug technique', category: 'bug', element_type: 'post', description: 'Bug d\'affichage ou technique', related_item_id: null, related_item_label: null },
           { label: 'Autre demande', category: 'other', element_type: 'none', description: 'Question générale', related_item_id: null, related_item_label: null },
         ],
+        doc_suggestions: docSuggestions,
       });
     }
 
-    return Response.json({ suggestions });
+    return Response.json({ suggestions, doc_suggestions: docSuggestions });
   } catch (error) {
     return Response.json({ error: String(error?.message || error) }, { status: 500 });
   }

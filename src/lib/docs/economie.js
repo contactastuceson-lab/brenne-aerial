@@ -1,0 +1,315 @@
+// Documentation EZA — catégorie Économie (events, economie-credits, economie-boutique, banque, parrainage, ads).
+
+export const economieTopics = [
+  {
+    slug: 'events', cat: 'economie', icon: 'Calendar',
+    title: "Événements", tagline: "Inscriptions, billetterie, check-in", color: '#ff6d3f',
+    intro: "Les événements EZA permettent l'inscription en ligne avec billetterie en crédits Eza. Chaque inscription génère un billet avec code QR unique, un check-in sur place (scan QR), et un historique complet pour l'utilisateur. Les organisateurs (admin ou event_manager) gèrent leurs événements via une interface dédiée.",
+    sections: [
+      {
+        title: "Le modèle Event",
+        body: "Un événement (Event) a un titre, un slug URL, une catégorie thématique, un format (online, hybrid, physical), des dates de début et de fin, un lieu (location, address, city) et un lien visio pour les formats en ligne. La capacité maximale (capacity, 0 = illimité), le prix en euros (price) et/ou en crédits Eza (price_credits), le statut gratuit (is_free), et un statut calculé (draft, upcoming, live, ended, cancelled) composent le cœur du modèle.",
+        table: [
+          { k: 'Catégories', v: 'conference, workshop, meetup, concert, hackathon, webinar, expo, sport, party, other.' },
+          { k: 'Formats', v: 'online, hybrid, physical.' },
+          { k: 'Prix', v: 'Euros (price) et/ou crédits Eza (price_credits), is_free.' },
+          { k: 'Capacité', v: 'capacity (0 = illimité), attendees_count (synchro).' },
+          { k: 'Statuts', v: 'draft, upcoming, live, ended, cancelled.' },
+          { k: 'Lieu', v: 'location, address, city, online_link (visio).' },
+          { k: 'Mise en avant', v: 'is_featured, tags, website_url (billetterie externe).' },
+        ],
+      },
+      {
+        title: "Inscription (registerForEvent)",
+        body: "L'inscription se fait via la fonction backend registerForEvent. Le processus vérifie la capacité restante et le solde de l'utilisateur, débite les crédits Eza (price_credits) le cas échéant, crée une EventRegistration (statut registered) avec un ticket_code unique, et ajoute l'utilisateur à registered_ids de l'événement. Des snapshots (event_title, event_image_url, event_start_date, event_city) sont stockés sur l'inscription pour l'historique.",
+        steps: [
+          "Vérification de la capacité (attendees_count < capacity) et du statut (non cancelled).",
+          "Vérification du solde de l'utilisateur (price_credits).",
+          "Débit des crédits Eza (price_credits) si l'événement est payant.",
+          "Création de l'EventRegistration (status: registered, user snapshot).",
+          "Génération du ticket_code (format EZA-AB12CD34, unique).",
+          "Ajout de l'utilisateur à registered_ids + attendees_count++.",
+        ],
+        callout: { kind: 'tip', title: 'Billetterie en crédits', text: "Un événement peut être gratuit ou payant en crédits Eza. Nexus peut aussi inscrire un utilisateur directement depuis un ticket de support (register_event) avec confirmation — l'utilisateur n'a pas à quitter la conversation." },
+      },
+      {
+        title: "Billets & check-in QR",
+        body: "Chaque inscription produit un billet avec un ticket_code court unique (format EZA-AB12CD34). Un QR code est généré (qrcode) pour le check-in sur place. L'interface AdminScanTickets scanne le QR et valide le participant (checked_in = true, checked_in_at). Le AdminQrGenerator génère les QR codes en masse pour un événement.",
+        bullets: [
+          "ticket_code — code court unique par inscription (EZA-AB12CD34).",
+          "QR code généré (lib qrcode) pour le check-in.",
+          "AdminScanTickets — scan sur place, validation checked_in.",
+          "AdminQrGenerator — génération de QR codes en masse.",
+          "validateEventTicket — validation d'un billet par code.",
+        ],
+      },
+      {
+        title: "Annulation & remboursement",
+        body: "L'utilisateur peut annuler son inscription (cancelMyEventRegistration). Le processus rembourse les crédits payés (credits_paid), passe l'inscription en status refunded, et décrémente attendees_count. Une demande d'annulation peut aussi être soumise (cancel_request_status: pending → approved/rejected) pour validation admin.",
+        table: [
+          { k: 'cancelMyEventRegistration', v: 'Annulation par l\'utilisateur + remboursement crédits.' },
+          { k: 'status refunded', v: 'Crédits rendus, inscription annulée.' },
+          { k: 'cancel_request', v: 'Demande d\'annulation (pending → approved/rejected).' },
+          { k: 'Nexus', v: 'Peut annuler + rembourser via cancel_event_registration.' },
+        ],
+        callout: { kind: 'warning', title: 'Remboursement en crédits', text: "Le remboursement d'un événement se fait en crédits Eza (pas en euros). Pour un remboursement bancaire réel (carte Stripe), Nexus escalade à un humain — ce n'est pas une action automatisable." },
+      },
+      {
+        title: "Gestion côté organisateur",
+        body: "Les organisateurs (admin ou event_manager) gèrent leurs événements via AdminEvents : création/édition (EventEditDialog), liste des inscrits (AdminRegisterDialog pour inscription manuelle), check-in manuel, et statistiques (inscrits, check-ins, revenus crédits). Le RLS autorise l'organisateur (organizer_id) ou les roles admin/event_manager à modifier.",
+        bullets: [
+          "EventEditDialog — création / édition complète d'un événement.",
+          "AdminRegisterDialog — inscription manuelle d'un utilisateur.",
+          "Liste des inscrits avec statut (registered, cancelled, refunded).",
+          "Statistiques : inscrits, check-ins, revenus crédits.",
+          "EventsPage / EventDetailPage — pages publiques côté utilisateur.",
+          "EventTicketModal — billet avec QR pour l'utilisateur inscrit.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'economie-credits', cat: 'economie', icon: 'Coins',
+    title: "Économie : Crédits Eza", tagline: "Devise interne, gains, dépenses", color: '#ff6d3f',
+    intro: "Les crédits Eza sont la devise interne d'EZA. Ils se gagnent en accomplissant des actions (posts, likes, parrainage) et se dépensent en boutique, en événements et en publicité. Chaque mouvement est tracé dans CreditTransaction. L'économie est surveillée par des automatisations anti-fraude.",
+    sections: [
+      {
+        title: "Gains de crédits (RewardLog)",
+        body: "Les crédits se gagnent via des actions récompensées par awardActionCredits. Chaque action a une valeur en crédits définie dans le catalogue de récompenses (rewardActions). Chaque gain est tracé dans RewardLog avec l'action, un libellé lisible, le montant et des metadata de contexte. Les récompenses sont plafonnées pour éviter l'abus.",
+        table: [
+          { k: 'create_post', v: 'Création d\'une publication.' },
+          { k: 'like_post', v: 'Aimer une publication.' },
+          { k: 'daily_login', v: 'Connexion quotidienne.' },
+          { k: 'Parrainage', v: 'Inscription + jalons d\'un filleul (cumul).' },
+          { k: 'Badges', v: 'Attribution de badges (runBadgeAttribution).' },
+        ],
+        callout: { kind: 'tip', title: 'Anti-abus', text: "Les récompenses sont plafonnées par action et par jour, et surveillées par detectReferralFraud pour éviter la fraude et l'automatisation abusive. Un gain excessif ou suspect est flagué et peut être annulé." },
+      },
+      {
+        title: "Dépenses de crédits",
+        body: "Les crédits se dépensent dans plusieurs contextes : la boutique (packs de crédits achetés en euros, abonnements, tokens fonctionnels), les événements (inscription en price_credits), et la publicité (budget_credits pour les campagnes ads). Chaque dépense crée une CreditTransaction de type boutique_spend ou équivalent.",
+        bullets: [
+          "Boutique — packs de crédits (achat en euros), abonnements, tokens.",
+          "Événements — inscription en price_credits.",
+          "Publicité — budget_credits pour les campagnes ads.",
+          "Remboursements — en crédits Eza (refund_credits par Nexus).",
+          "Tokens fonctionnels — boost, pin, communauté premium.",
+        ],
+      },
+      {
+        title: "Transactions (CreditTransaction)",
+        body: "Chaque mouvement de crédits est tracé dans CreditTransaction avec un type, un montant (positif = entrée, négatif = sortie), les parties (counterparty), les wallets source/destination (from_wallet_name, to_wallet_name), une note et un statut (completed, pending, failed). L'utilisateur ne voit que ses propres transactions (RLS owner_id).",
+        table: [
+          { k: 'transfer_in', v: 'Réception d\'un transfert d\'un autre utilisateur.' },
+          { k: 'transfer_out', v: 'Envoi d\'un transfert à un autre utilisateur.' },
+          { k: 'wallet_move', v: 'Déplacement entre wallets du MÊME utilisateur.' },
+          { k: 'admin_credit', v: 'Crédit par un admin (geste commercial).' },
+          { k: 'admin_debit', v: 'Débit par un admin.' },
+          { k: 'reward', v: 'Récompense d\'une action (awardActionCredits).' },
+          { k: 'boutique_spend', v: 'Dépense boutique (pack, token, événement).' },
+        ],
+      },
+      {
+        title: "Surveillance & anti-fraude",
+        body: "L'économie est surveillée par des automatisations : detectReferralFraud détecte les parrainages suspects (multi-comptes, robots), alertLowAdBudgets alerte les annonceurs quand leur budget pub est bas, et recoverAbandonedCarts tente de récupérer les paniers abandonnés. Chaque exécution est tracée dans AutomationLog.",
+        callout: { kind: 'warning', title: 'Fraude surveillée', text: "La fraude au parrainage (multi-comptes, bots) est détectée automatiquement par detectReferralFraud. Les cas flagués peuvent entraîner l'annulation des récompenses et un bannissement du compte." },
+      },
+    ],
+  },
+  {
+    slug: 'economie-boutique', cat: 'economie', icon: 'Gift',
+    title: "Économie : Boutique", tagline: "Packs, abonnements, tokens", color: '#f59e0b',
+    intro: "La boutique EZA vend des packs de crédits (en euros via Stripe), des abonnements (Free, Pro, Business, Enterprise) qui débloquent des perks et du gating, et des tokens fonctionnels consommables (boost, pin, communauté premium, capacité étendue).",
+    sections: [
+      {
+        title: "Packs de crédits",
+        body: "Les packs de crédits s'achètent en euros via Stripe (createCreditPurchase). Chaque pack a un prix en euros, un montant de crédits et un éventuel bonus. L'achat crée une session Stripe Checkout ; le webhook Stripe (handleStripeWebhook) confirme le paiement et crédite le compte de l'utilisateur. BuyCreditsSection et CreditPacksDialog présentent les packs.",
+        bullets: [
+          "BuyCreditsSection + CreditPacksDialog — achat de packs.",
+          "createCreditPurchase — session Stripe Checkout.",
+          "handleStripeWebhook — confirmation + crédit du compte.",
+          "Bonus sur certains packs (plus de crédits pour le même prix).",
+          "CreditPill — affichage du solde en crédits.",
+        ],
+        callout: { kind: 'info', title: 'Paiement sécurisé Stripe', text: "L'achat de packs passe par Stripe Checkout. Aucune donnée de carte n'est jamais stockée côté EZA — Stripe gère toute la chaîne de paiement sécurisée." },
+      },
+      {
+        title: "Abonnements (4 paliers)",
+        body: "Quatre paliers d'abonnement définissent les avantages : Free, Pro, Business, Enterprise. Ils gèrent les perks (avantages) et le gating de fonctionnalités (subscriptionGating). L'abonnement peut être souscrit (submitEnterpriseProofs pour Enterprise avec preuves), annulé (cancelMySubscription / cancelSubscription), et géré via le portail Stripe (getStripePortalUrl / createBillingPortal).",
+        table: [
+          { k: 'Free', v: 'Accès de base, communauté, social, forum.' },
+          { k: 'Pro', v: 'Plus de crédits, perks créateur, analytics avancées.' },
+          { k: 'Business', v: 'Publicité, posts sponsorisés, tokens, capacité étendue.' },
+          { k: 'Enterprise', v: 'Tout Business + preuves entreprise, support prioritaire.' },
+        ],
+        callout: { kind: 'note', title: 'Gating de fonctionnalités', text: "Certaines fonctionnalités (ads, posts sponsorisés, communauté premium, capacité étendue) ne sont accessibles qu'aux paliers Business/Enterprise (subscriptionGating). Les paliers inférieurs ne voient pas ces options." },
+      },
+      {
+        title: "Tokens fonctionnels",
+        body: "Les tokens sont des avantages consommables : boost de visibilité d'un post, épinglage 24h ou 7j, communauté premium (design amélioré), ou capacité étendue des communautés. Ils s'achètent en crédits ou se gagnent et s'utilisent via UseTokenDialog / UseCommunityTokenDialog (useRewardToken côté backend).",
+        bullets: [
+          "boost — boost de visibilité d'un post (plus de vues).",
+          "pin_24h / pin_7d — épinglage temporaire d'un post ou communauté.",
+          "Communauté premium — design amélioré (is_premium).",
+          "Capacité étendue — member cap des communautés augmenté.",
+          "RewardRedemption — traçabilité de chaque utilisation de token.",
+        ],
+      },
+      {
+        title: "Remboursements & portail",
+        body: "Les abonnements peuvent être annulés (cancelMySubscription côté utilisateur, cancelSubscription côté admin) et remboursés via le portail Stripe (getStripePortalUrl, createBillingPortal). L'utilisateur gère ses moyens de paiement et son historique directement dans le portail Stripe sécurisé.",
+        bullets: [
+          "cancelMySubscription — annulation par l'utilisateur.",
+          "cancelSubscription — annulation côté admin.",
+          "createBillingPortal — portail de gestion Stripe.",
+          "getStripePortalUrl — lien vers le portail client.",
+          "adminManageSubscription — gestion admin d'un abonnement.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'banque', cat: 'economie', icon: 'Coins',
+    title: "Banque & portefeuilles", tagline: "Wallets, transferts, gel", color: '#38aadc',
+    intro: "La banque EZA gère des portefeuilles (Wallet) par utilisateur. Chaque wallet a un type, un solde en crédits, une couleur et un statut de gel. Les transferts entre wallets et entre utilisateurs sont tracés dans CreditTransaction. Les admins gèrent l'économie via AdminBanque.",
+    sections: [
+      {
+        title: "Les portefeuilles (Wallet)",
+        body: "Un utilisateur possède plusieurs wallets (épargne, dépenses, projet, custom). Chacun a un solde en crédits (balance), un type (epargne, depenses, projet, custom), une couleur d'affichage (color) et un statut frozen (gelé par l'admin). Un wallet gelé ne peut ni envoyer ni recevoir — il est bloqué le temps d'une enquête ou d'un litige.",
+        table: [
+          { k: 'Types', v: 'epargne, depenses, projet, custom.' },
+          { k: 'Solde', v: 'balance en crédits Eza.' },
+          { k: 'Couleur', v: 'color — couleur d\'affichage (optionnel).' },
+          { k: 'Gel', v: 'frozen — bloqué par l\'admin (transferts bloqués).' },
+          { k: 'Snapshot', v: 'owner_id, owner_email, name.' },
+        ],
+      },
+      {
+        title: "Transferts",
+        body: "Les transferts se font entre wallets d'un même utilisateur (moveCredits) ou entre utilisateurs (transferCredits). Chaque transfert vérifie le solde et le gel (un wallet frozen ne peut pas envoyer), crée des CreditTransaction pour les deux parties (négatif pour l'expéditeur, positif pour le destinataire), et snapshot les noms des wallets source/destination.",
+        steps: [
+          "moveCredits — déplacement entre wallets du même utilisateur.",
+          "transferCredits — envoi à un autre utilisateur.",
+          "Vérification du solde suffisant et du gel (frozen bloqué).",
+          "CreditTransaction expéditeur (négatif) + destinataire (positif).",
+          "Snapshot : from_wallet_name, to_wallet_name, counterparty.",
+        ],
+        callout: { kind: 'warning', title: 'Wallet gelé', text: "Un wallet frozen=true ne peut ni envoyer ni recevoir. Nexus peut le dégeler (unfreeze_wallet) UNIQUEMENT si le gel est confirmé et vérifié dans la recherche — jamais sur simple demande non vérifiée." },
+      },
+      {
+        title: "Interface utilisateur (BanquePage)",
+        body: "La page Banque (BanquePage) affiche le récap des wallets (WalletSummary), une carte par portefeuille (WalletCard) avec le solde et le statut de gel, l'historique des transactions (TransactionHistory) et un formulaire de transfert (TransferForm + MoveDialog). Un bandeau signale les wallets gelés (BankFreezeBanner).",
+        bullets: [
+          "WalletSummary — solde total + répartition par wallet.",
+          "WalletCard — carte par portefeuille (solde, type, gel).",
+          "TransactionHistory — historique des mouvements (CreditTransaction).",
+          "TransferForm + MoveDialog — transferts entre wallets / utilisateurs.",
+          "CreateWalletDialog — création d'un wallet.",
+          "BankFreezeBanner — bandeau d'alerte si un wallet est gelé.",
+        ],
+      },
+      {
+        title: "Administration (AdminBanque)",
+        body: "Les admins gèrent l'économie via AdminBanque avec plusieurs onglets : OverviewTab (vue d'ensemble), WalletsTab (gestion des wallets, gel inclus), TransactionsTab (audit des mouvements), DistributionTab (distribution de crédits), RulesTab (règles économiques), TransferAdminTab (transferts admin) et SoldesTab (soldes). La fonction backend adminBanque orchestre les opérations.",
+        bullets: [
+          "OverviewTab — vue d'ensemble de l'économie (totaux, répartition).",
+          "WalletsTab — gestion des wallets (gel, modification, suppression).",
+          "TransactionsTab — audit complet des mouvements de crédits.",
+          "DistributionTab — distribution de crédits à un ou plusieurs utilisateurs.",
+          "RulesTab — règles économiques (valeurs des récompenses, plafonds).",
+          "TransferAdminTab — transferts administratifs.",
+          "ProfilesTab — profils économiques des utilisateurs.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'parrainage', cat: 'economie', icon: 'Gift',
+    title: "Parrainage & récompenses", tagline: "Code, filleuls, jalons", color: '#fb7185',
+    intro: "Le parrainage EZA récompense l'apport de nouveaux membres. Un code de parrainage (le username du parrain), des filleuls, des jalons progressifs et des récompenses cumulatives composent le système. L'anti-fraude surveille les parrainages suspects en continu.",
+    sections: [
+      {
+        title: "Le modèle Referral",
+        body: "Une entrée Referral relie un parrain (referrer) à un filleul (referred). Le code de parrainage (referral_code) est le username du parrain. Le statut passe de pending → validated → rewarded au fil du cycle. Les crédits gagnés (credits_earned) cumulent l'inscription et les jalons. Les jalons déjà récompensés (milestones_rewarded) évitent le double-crédit.",
+        table: [
+          { k: 'Code', v: 'referral_code = username du parrain.' },
+          { k: 'Statuts', v: 'pending, validated, rewarded.' },
+          { k: 'Crédits', v: 'credits_earned (inscription + jalons cumulés).' },
+          { k: 'Jalons', v: 'milestones_rewarded — jalons déjà récompensés.' },
+          { k: 'Filleul', v: 'referred_email, referred_user_id, referred_name.' },
+        ],
+      },
+      {
+        title: "Traitement & jalons",
+        body: "processReferral valide un parrainage à l'inscription du filleul (crédit initial au parrain). evaluateReferralMilestones attribue les récompenses de jalons (1er, 5e, 10e filleul…). redeemReferralReward encaisse une récompense. launchReferralActivation relance les parrains inactifs par campagne email.",
+        steps: [
+          "processReferral — à l'inscription du filleul (crédit initial au parrain).",
+          "evaluateReferralMilestones — jalons (1er, 5e, 10e filleul…).",
+          "redeemReferralReward — encaissement de la récompense.",
+          "launchReferralActivation — campagne d'activation des parrains inactifs.",
+        ],
+        callout: { kind: 'tip', title: 'Cumul progressif', text: "Les récompenses se cumulent : inscription + chaque jalon. Plus vous parrainez, plus vous gagnez. milestones_rewarded évite le double-crédit d'un même jalon — la traçabilité est absolue." },
+      },
+      {
+        title: "Anti-fraude (detectReferralFraud)",
+        body: "detectReferralFraud surveille les parrainages suspects : multi-comptes depuis la même IP, robots d'inscription, patterns de parrainage anormaux. Les cas flagués sont tracés dans AutomationLog et peuvent entraîner l'annulation des récompenses et un bannissement du compte.",
+        callout: { kind: 'warning', title: 'Surveillance continue', text: "La fraude au parrainage est détectée automatiquement et peut entraîner l'annulation des récompenses et un bannissement. Ne tentez pas le système — chaque parrainage est vérifié." },
+      },
+      {
+        title: "Interface (ReferralPage)",
+        body: "La page ReferralPage affiche le code de parrainage de l'utilisateur, la liste de ses filleuls (statut, crédits gagnés), les jalons disponibles et un lien de partage. L'utilisateur suit ses gains et ses progrès vers le prochain jalon.",
+        bullets: [
+          "Code de parrainage = username (partageable).",
+          "Liste des filleuls avec statut et crédits gagnés.",
+          "Jalons disponibles et progression.",
+          "Lien de partage direct vers l'inscription avec le code.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'ads', cat: 'economie', icon: 'Megaphone',
+    title: "Publicité business", tagline: "Campagnes, budgets, analytics", color: '#f59e0b',
+    intro: "La publicité EZA permet aux comptes Business et Enterprise de promouvoir leur contenu. Une campagne a un budget en crédits, un budget journalier, un placement, un ciblage par hashtags et des analytics d'impressions/clics. Le budget se déduit chaque jour et se met en pause auto à l'épuisement.",
+    sections: [
+      {
+        title: "Le modèle AdCampaign",
+        body: "Une campagne (AdCampaign) a un titre, un annonceur (advertiser_name), une créa (image_url), un CTA (cta_label + cta_url), un headline et un body. Le placement (feed_banner, between_posts, sidebar) définit où l'annonce apparaît. Le budget total (budget_credits) et le budget journalier (daily_budget) se déduisent chaque jour de credits_remaining. La portée estimée (estimated_reach = budget × 50 vues/crédit) donne une projection.",
+        table: [
+          { k: 'Placements', v: 'feed_banner, between_posts, sidebar.' },
+          { k: 'Budget', v: 'budget_credits (total) + daily_budget (par jour).' },
+          { k: 'Crédits restants', v: 'credits_remaining — quand à 0, pause auto (auto_paused_reason).' },
+          { k: 'Portée', v: 'estimated_reach = budget × 50 vues/crédit.' },
+          { k: 'Ciblage', v: 'target_hashtags (optionnel).' },
+          { k: 'Statuts', v: 'draft, active, paused, ended.' },
+          { k: 'Période', v: 'starts_at, ends_at.' },
+          { k: 'Métriques', v: 'impressions, clicks.' },
+        ],
+      },
+      {
+        title: "Cycle de vie d'une campagne",
+        body: "Une campagne part en draft, devient active à validation admin, diffuse (processDailyAdBudgets débite le daily_budget chaque jour), se met en pause automatiquement quand credits_remaining atteint 0 (auto_paused_reason: credits_insufficient), et se termine à la date de fin (ends_at → ended). alertLowAdBudgets notifie l'annonceur quand le budget est bas.",
+        steps: [
+          "Création : manageBusinessAdCampaign (débit du budget business au départ).",
+          "Validation admin : passage draft → active.",
+          "Diffusion : processDailyAdBudgets débite le daily_budget chaque jour.",
+          "Pause auto : credits_remaining = 0 → auto_paused_reason = credits_insufficient.",
+          "Fin : ends_at → statut ended.",
+          "Alerte : alertLowAdBudgets notifie quand le budget est bas.",
+        ],
+        callout: { kind: 'info', title: 'Gating Business', text: "La publicité n'est accessible qu'aux abonnements Business et Enterprise (subscriptionGating). Les paliers Free et Pro ne voient pas l'option — c'est un avantage business réservé." },
+      },
+      {
+        title: "Analytics & gestion",
+        body: "Chaque campagne suit ses impressions et ses clics. L'admin visualise les performances dans AdminAds et l'annonceur gère ses campagnes dans BusinessAdsPage. L'emplacement publicitaire dans le feed (AdSlot) diffuse les campagnes actives selon le placement et le ciblage.",
+        bullets: [
+          "impressions — nombre d'affichages de l'annonce.",
+          "clicks — nombre de clics sur le CTA.",
+          "AdminAds — tableau de bord admin (toutes campagnes).",
+          "BusinessAdsPage — gestion côté annonceur (ses campagnes).",
+          "AdSlot — emplacement publicitaire dans le feed (feed_banner, between_posts, sidebar).",
+        ],
+      },
+    ],
+  },
+];

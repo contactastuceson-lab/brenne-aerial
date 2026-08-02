@@ -1,0 +1,198 @@
+// Documentation EZA — catégorie Plateforme (overview, portfolio, blog).
+
+export const plateauTopics = [
+  {
+    slug: 'overview', cat: 'plateforme', icon: 'Book',
+    title: "Vue d'ensemble", tagline: "La plateforme EZA en un coup d'œil", color: '#38aadc',
+    intro: "EZA est une plateforme communautaire et sociale tout-en-un, installable en PWA sur iOS et Android depuis le même code. Elle réunit un réseau social, une messagerie, un forum, des communautés, des Spaces audio en direct, des stories éphémères, un portfolio professionnel, un blog, des événements avec billetterie, des certifications officielles, des affiliations d'organisations, une économie de crédits interne complète et un support IA contextuel — le tout dans une seule application responsive, rapide et pensée comme une application native.",
+    sections: [
+      {
+        title: "Une seule plateforme, une seule identité",
+        body: "La force d'EZA tient dans son intégration : là où la plupart des communautés online éclatent leurs outils entre cinq ou six sites distincts (un réseau social, un Discord, un forum, une boutique, un système de tickets), EZA réunit tout sous un même compte, une même identité et une même interface. Vous créez un compte une fois et accédez instantanément à l'intégralité des pôles. Votre profil, vos badges, votre solde de crédits, vos affiliations et votre réputation vous suivent partout, sans jamais avoir à re-register ou re-configurer quoi que ce soit.",
+        table: [
+          { k: 'Un compte', v: 'Accès à tous les pôles, sans re-inscription.' },
+          { k: 'Une identité', v: 'Profil, badges, vérifications partagés partout.' },
+          { k: 'Un solde', v: 'Crédits Eza utilisables dans toute la plateforme.' },
+          { k: 'Une app', v: 'PWA installable, même code iOS et Android.' },
+          { k: 'Un agent IA', v: 'Nexus supporte, modère et anime l\'écosystème.' },
+        ],
+        callout: { kind: 'info', title: 'Pourquoi c\'est puissant', text: "Cette unification signifie qu'un créateur qui publie un post est aussi un membre de communauté, un certifié, un parrain potentiel, un acheteur de billets et un client du support — sans jamais changer d'application. La réputation se construit une fois et se déploie partout." },
+      },
+      {
+        title: "Les grands pôles",
+        body: "L'application s'organise autour d'une quinzaine de pôles fonctionnels qui partagent la même identité visuelle, le même système de design et les mêmes utilisateurs. Chaque pôle a sa propre page, ses propres interactions et ses propres règles, mais tout est interconnecté : un auteur de publication est aussi un utilisateur avec un profil public, des badges, des affiliations, un portefeuille de crédits et potentiellement des événements organisés.",
+        table: [
+          { k: 'Réseau social', v: 'Publications, médias, sondages, likes, réponses, mentions, hashtags, reposts, citations, suivi d\'utilisateurs.' },
+          { k: 'Messagerie', v: 'Conversations 1-à-1, demandes de contact, modération fine, messages officiels, raffinement par IA.' },
+          { k: 'Forum', v: 'Discussions thématiques, réponses, likes, annonces, épinglage, rendu Markdown style Discord.' },
+          { k: 'Communautés', v: 'Espaces thématiques avec membres, posts communautaires, règles, capacité configurable.' },
+          { k: 'Spaces audio', v: 'Salons en direct façon X Spaces, orateurs/auditeurs, LiveKit, badges officiels.' },
+          { k: 'Stories', v: 'Contenus éphémères 24h, caméra intégrée, filtres, stickers emoji, réactions.' },
+          { k: 'Portfolio', v: 'Galerie de projets, avant/après interactif, avis clients notés, carte géographique.' },
+          { k: 'Blog', v: 'Articles d\'actualité, conseils, techniques, projets et formation, éditeur riche.' },
+          { k: 'Événements', v: 'Inscriptions en ligne, billetterie en crédits, check-in QR, historique.' },
+          { k: 'Certifications', v: 'Questionnaire + paiement Stripe, badges de vérification officiels.' },
+          { k: 'Banque', v: 'Portefeuilles multiples, transferts, gel, historique complet des transactions.' },
+          { k: 'Boutique', v: 'Packs de crédits, abonnements (Free/Pro/Business/Enterprise), tokens fonctionnels.' },
+          { k: 'Parrainage', v: 'Code unique, filleuls, jalons progressifs, récompenses cumulées.' },
+          { k: 'Publicité', v: 'Campagnes business, budgets en crédits, placements, analytics, ciblage par hashtags.' },
+          { k: 'Support Nexus', v: 'Tickets IA contextuels, actions autonomes, escalade humaine, markdown pro.' },
+        ],
+      },
+      {
+        title: "Pour qui ?",
+        body: "EZA s'adresse à une communauté large de créateurs, de professionnels et de clients. Les créateurs partagent leurs réalisations via le réseau social, le portfolio et les stories. Les clients découvrent un portfolio, demandent des devis et s'inscrivent à des événements. La communauté échange via le forum, les communautés thématiques et les Spaces audio. Les organisations et comptes business peuvent s'affilier, afficher leur logo sur les profils et lancer des campagnes publicitaires.",
+        table: [
+          { k: 'Créateurs', v: 'Publications, stories, portfolio, blog — construire une audience.' },
+          { k: 'Clients', v: 'Découverte de prestataires, devis, événements, portfolio.' },
+          { k: 'Communauté', v: 'Forum, communautés, Spaces, social, messagerie.' },
+          { k: 'Organisations', v: 'Affiliations, logo sur profil, recrutement d\'affiliés.' },
+          { k: 'Professionnels', v: 'Certifications, badges, crédibilité vérifiable.' },
+          { k: 'Business / Enterprise', v: 'Publicité, posts sponsorisés, tokens, analytics.' },
+        ],
+        callout: { kind: 'tip', title: 'Tous profils bienvenus', text: "Que vous soyez un créateur solo, une PME, une association ou un grand groupe, EZA s'adapte. Les abonnements Free à Enterprise débloquent progressivement plus de capacité, de perks et d'outils business." },
+      },
+      {
+        title: "Principes de conception",
+        body: "L'application est pensée comme une application native : rapide, tactile, avec un design sombre « Sky » par défaut et un thème clair optionnel. Tout est responsive, optimisé pour le mobile, installable sur l'écran d'accueil et doté de performances soignées (lazy loading, GPU layers, skeleton shimmers). L'accessibilité n'est pas une option : reduced-motion, contrastes lisibles, focus rings et tailles tactiles conformes.",
+        table: [
+          { k: 'Design', v: 'Dark-first (palette bleu/cyan) + thème clair, glassmorphism, halos lumineux, texte en dégradé.' },
+          { k: 'Mobile', v: 'Mobile-first, safe areas, momentum scroll, sans flash au tap, press feedback natif.' },
+          { k: 'Performance', v: 'Lazy loading, contain layout, GPU layers, skeleton shimmers, code splitting.' },
+          { k: 'Accessibilité', v: 'Reduced-motion, contrastes lisibles, focus rings, tailles tactiles >=44px.' },
+          { k: 'PWA', v: 'Installable, offline shell, push notifications, écran d\'accueil, manifest.' },
+          { k: 'Realtime', v: 'Subscriptions entité (create/update/delete), polling, sync temps réel.' },
+        ],
+      },
+      {
+        title: "Nexus, le PDG IA",
+        body: "EZA est pilotée par un agent IA nommé Nexus, qui agit comme un PDG numérique. Nexus ne se contente pas de répondre au support : il traite les tickets de manière contextuelle (il lit le compte de l'utilisateur avant de répondre), exécute des actions concrètes (inscriptions, crédits, remboursements, transferts, dégel), génère des digests quotidien et hebdomadaire, attribue les badges, détecte la fraude au parrainage, surveille l'économie et rédige des brouillons de réponses humaines.",
+        bullets: [
+          "Support IA contextuel : Nexus vérifie le solde, les inscriptions, les posts et la doc avant de répondre.",
+          "Actions autonomes : inscriptions, crédits de courtoisie, remboursements en crédits, transferts, dégel de wallet.",
+          "Escalade humaine : Nexus sait transmettre à un humain pour sécurité, litige, remboursement bancaire, suppression.",
+          "Digests automatiques : nexusDailyDigest (quotidien), nexusWeeklyDigest, sendWeeklyActivityReport.",
+          "Modération prédictive : moderateNewPost analyse les nouveaux posts, detectReferralFraud surveille le parrainage.",
+          "Économie : processDailyAdBudgets, alertLowAdBudgets, recoverAbandonedCarts, runBadgeAttribution.",
+        ],
+        callout: { kind: 'tip', title: 'Nexus connaît votre compte', text: "Quand vous ouvrez un ticket, Nexus ne répond jamais à l'aveugle. Il lit votre documentation, vérifie votre solde, vos inscriptions actives, vos posts et votre historique — puis répond avec ce contexte réel. C'est un agent, pas un chatbot générique." },
+      },
+      {
+        title: "L'écosystème EZA Group",
+        body: "EZA est la plateforme grand public d'EZA Group. Le groupe regroupe les différentes initiatives sous une marque unique, pilotée par Enor (l'identité fondatrice et PDG) et l'agent IA Nexus. La page /ecosysteme présente les entités du groupe et leurs interactions. La page /enor raconte l'histoire et la vision fondatrice.",
+        bullets: [
+          "/enor — biographie d'Enor, parcours et vision.",
+          "/ecosysteme — présentation des entités EZA Group.",
+          "Une seule marque, un seul PDG (Enor + Nexus IA).",
+          "Toutes les initiatives convergent vers la plateforme EZA.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'portfolio', cat: 'plateforme', icon: 'Map',
+    title: "Portfolio", tagline: "Projets, avant/après, avis clients", color: '#a78bfa',
+    intro: "Le portfolio est la vitrine professionnelle d'EZA. Il présente les projets réalisés, filtrables par catégorie, avec un détail riche (médias, description, tags), des comparaisons avant/après interactives, une carte géographique pour les projets localisés et des avis clients notés en étoiles. C'est l'outil de preuve sociale le plus puissant de la plateforme.",
+    sections: [
+      {
+        title: "Les projets",
+        body: "Chaque projet (Project) a un titre, une catégorie, des médias (images et vidéos), une description longue, des tags et un auteur. Ils sont filtrables par catégorie et triables, et exposent un compteur de vues. Un projet peut être géolocalisé (MapProject) et apparaître sur la carte interactive react-leaflet du portfolio public.",
+        table: [
+          { k: 'Titre', v: 'Nom du projet, visible dans la grille.' },
+          { k: 'Catégorie', v: 'Filtre thématique (tech, business, art…).' },
+          { k: 'Médias', v: 'Images et vidéos multiples (upload via UploadFile).' },
+          { k: 'Description', v: 'Texte long décrivant le contexte et le résultat.' },
+          { k: 'Tags', v: 'Mots-clés libres pour la recherche.' },
+          { k: 'Vues', v: 'views_count — compteur de vues.' },
+          { k: 'Géolocalisation', v: 'MapProject — projet placé sur la carte (lat/lng).' },
+        ],
+        callout: { kind: 'note', title: 'Persistance', v: "Les projets restent visibles même si l'auteur supprime son compte — le snapshot d'auteur (nom, username) est conservé pour préserver l'historique." },
+      },
+      {
+        title: "Comparaisons avant / après",
+        body: "Les comparaisons avant/après (BeforeAfterGallery) utilisent un slider interactif (BeforeAfterSlider) qui révèle la transformation en glissant latéralement. C'est l'outil le plus convaincant pour montrer un résultat de prestation : on voit littéralement le « avant » devenir le « après » sous le doigt. Idéal pour les rénovations, les transformations physiques, les refontes graphiques ou les résultats de chantier.",
+        bullets: [
+          "BeforeAfterGallery — galerie de comparaisons.",
+          "BeforeAfterSlider — slider interactif gauche/droite.",
+          "Médias haute résolution (image vs image).",
+          "Effet WOW pour convertir un visiteur en client.",
+        ],
+        callout: { kind: 'tip', title: 'Preuve sociale maximale', text: "Un slider avant/après vaut mille mots. Montrez le résultat réel d'une prestation plutôt qu'une promesse — c'est ce qui transforme un visiteur hésitant en client convaincu." },
+      },
+      {
+        title: "Avis clients (Review)",
+        body: "Les avis (Review) notent une prestation en étoiles (1 à 5) avec un commentaire textuel. Ils apparaissent sur le portfolio public (ReviewsSection) et renforcent la crédibilité de l'auteur. L'auteur de l'avis est persistant (snapshot email) pour résister à la suppression de compte.",
+        table: [
+          { k: 'Note', v: '1 à 5 étoiles.' },
+          { k: 'Commentaire', v: 'Texte libre, modéré.' },
+          { k: 'Auteur', v: 'Snapshot persistant (email, nom).' },
+          { k: 'Affichage', v: 'ReviewsSection sur le portfolio public.' },
+          { k: 'Modération', v: 'Signalement via Report (entité).' },
+        ],
+      },
+      {
+        title: "La carte interactive",
+        body: "Les projets géolocalisés (MapProject) apparaissent sur une carte interactive react-leaflet dans le portfolio public. Chaque marqueur ouvre le détail du projet. C'est idéal pour les prestations locales (drone, photographie, construction…) où la géographie compte.",
+        bullets: [
+          "react-leaflet — carte interactive zoomable.",
+          "Marqueurs par projet avec popup de détail.",
+          "Filtre par catégorie superposé à la carte.",
+          "Idéal pour les prestations géolocalisées.",
+        ],
+      },
+      {
+        title: "Administration du portfolio",
+        body: "Les admins gèrent le portfolio via AdminPortfolio avec trois onglets : ProjectsTab (projets), MapProjectsTab (projets géolocalisés) et BeforeAfterTab (comparaisons). Création, édition, suppression et modération se font depuis cette interface.",
+        bullets: [
+          "ProjectsTab — gestion des projets (CRUD).",
+          "MapProjectsTab — gestion des projets géolocalisés.",
+          "BeforeAfterTab — gestion des comparaisons avant/après.",
+          "Modération : signalements, suppression, mise en avant.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'blog', cat: 'plateforme', icon: 'FileText',
+    title: "Blog & articles", tagline: "Actualités, conseils, techniques", color: '#38aadc',
+    intro: "Le blog EZA publie des articles d'actualité, de conseils, techniques, projets et formation. Chaque article a une couverture, une catégorie, un auteur (snapshot persistant) et un contenu riche édité avec react-quill. Les brouillons ne sont visibles que des admins jusqu'à publication.",
+    sections: [
+      {
+        title: "Le modèle BlogPost",
+        body: "Un article (BlogPost) a un titre, un slug (URL propre), une image de couverture, une catégorie, un extrait court, un contenu long formaté avec l'éditeur riche react-quill, un auteur (snapshot persistant) et un statut (draft ou published). Les tags permettent la recherche et le regroupement.",
+        table: [
+          { k: 'Slug', v: 'URL propre (/blog/:id).' },
+          { k: 'Catégorie', v: 'actualité, conseil, technique, projet, formation.' },
+          { k: 'Contenu', v: 'Éditeur riche (react-quill), rendu sécurisé.' },
+          { k: 'Couverture', v: 'image_url — image d\'en-tête de l\'article.' },
+          { k: 'Extrait', v: 'description courte pour les listes.' },
+          { k: 'Auteur', v: 'Snapshot persistant (nom, username, avatar).' },
+          { k: 'Statut', v: 'draft (invisible) ou published (public).' },
+          { k: 'Tags', v: 'Mots-clés pour la recherche et le regroupement.' },
+        ],
+      },
+      {
+        title: "Aperçu & publication",
+        body: "Les admins peuvent prévisualiser un article avant publication (blogPreview) et le publier/dépublier à volonté. Le rendu public (BlogArticlePage) affiche le contenu formaté avec une mise en page lecture optimisée, la couverture, l'auteur et les tags.",
+        steps: [
+          "Rédaction : AdminBlog avec l'éditeur react-quill.",
+          "Aperçu : blogPreview affiche le rendu final avant publication.",
+          "Publication : passage draft → published, l'article devient public.",
+          "Dépublication : retour à draft, l'article disparaît du public.",
+        ],
+        callout: { kind: 'note', title: 'Brouillon invisible', text: "Un article en statut 'draft' n'est pas visible publiquement. Seuls les admins voient les brouillons dans AdminBlog. Cela permet de préparer un article tranquillement avant de le publier." },
+      },
+      {
+        title: "Catégories éditoriales",
+        body: "Le blog organise ses articles en cinq catégories pour aider les lecteurs à trouver ce qui les intéresse.",
+        table: [
+          { k: 'Actualité', v: 'Nouveautés de la plateforme, annonces produit.' },
+          { k: 'Conseil', v: 'Guides pratiques, astuces, bonnes pratiques.' },
+          { k: 'Technique', v: 'Articles techniques, deep dives, architecture.' },
+          { k: 'Projet', v: 'Retours d\'expérience, études de cas, réalisations.' },
+          { k: 'Formation', v: 'Tutoriels, cours, apprentissage progressif.' },
+        ],
+      },
+    ],
+  },
+];

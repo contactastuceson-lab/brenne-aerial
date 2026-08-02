@@ -1,0 +1,336 @@
+// Documentation EZA — catégorie Social & communauté (social, messaging, forum, communities, stories, spaces).
+
+export const socialTopics = [
+  {
+    slug: 'social', cat: 'social', icon: 'Users',
+    title: "Réseau social", tagline: "Fil, publications, likes, réponses, reposts", color: '#38aadc',
+    intro: "Le réseau social est le cœur battant d'EZA. Les utilisateurs publient du contenu (texte, médias, sondages), interagissent (likes, réponses, partages, reposts, citations) et suivent d'autres comptes dans un fil infini. Les hashtags et mentions sont extraits automatiquement, la visibilité est configurable, et les posts peuvent appartenir à une communauté. Tout est pensé pour l'engagement et la découvrabilité.",
+    sections: [
+      {
+        title: "L'entité Post",
+        body: "Une publication (Post) est l'unité de base du réseau social. Elle contient du texte libre dans lequel les hashtags (#) et les mentions (@username) sont extraits automatiquement à la création. On peut y joindre des médias multiples (images, vidéos, GIFs via GIPHY) et un sondage structuré. La visibilité est configurable : publique, abonnés seulement, certifiés uniquement, ou cercle EZA. Un post peut être rattaché à une communauté (community_id), épinglé, mis en avant, ou programmé (scheduled_at).",
+        table: [
+          { k: 'Contenu', v: 'Texte libre, hashtags et mentions auto-extraits.' },
+          { k: 'Médias', v: 'Images, vidéos, GIFs (GIPHY) multiples via media_urls.' },
+          { k: 'Sondage', v: 'poll : question, options, votes, durée, total des votes.' },
+          { k: 'Auteur', v: 'Snapshot : nom, username, avatar, vérifications.' },
+          { k: 'Visibilité', v: 'public, followers, certified, eza_circle.' },
+          { k: 'Communauté', v: 'community_id — post rattaché à une communauté.' },
+          { k: 'Brouillon', v: 'is_draft + scheduled_at pour la programmation.' },
+          { k: 'Épinglage', v: 'is_pinned (haut de profil), is_highlight (à la une).' },
+          { k: 'Sponsorisé', v: 'is_sponsored — avantage Business/Enterprise.' },
+        ],
+      },
+      {
+        title: "Interactions sociales",
+        body: "Chaque publication expose un ensemble d'actions sociales qui alimentent l'engagement et la discoverabilité. Les compteurs (likes, réponses, vues, reposts, citations) sont maintenus en temps réel via les fonctions backend dédiées. Le like est un toggle (togglePostLike), la réponse crée un thread (reply_to_id), le repost peut être simple ou citation (quote post).",
+        steps: [
+          "Like — togglePostLike incrémente likes_count et ajoute l'utilisateur à liked_by.",
+          "Réponse — crée un Post avec reply_to_id (thread de conversation), replies_count++.",
+          "Repost simple — createRepost incrémente reposts_count (partage sans commentaire).",
+          "Citation (quote) — quote post avec quote_content, quotes_count++.",
+          "Vues — incrementPostViews à l'affichage, views_count++.",
+          "Signalement — ReportModal crée un Report, notifie les admins (notifyAdminNewReport).",
+          "Édition / suppression — par l'auteur (RLS) ou un admin.",
+        ],
+        callout: { kind: 'tip', title: 'Engagement en temps réel', text: "Les compteurs sont synchronisés en direct : un like est visible immédiatement par l'auteur et par les autres viewers grâce aux subscriptions d'entité (base44.entities.Post.subscribe)." },
+      },
+      {
+        title: "Hashtags, mentions & tendances",
+        body: "Les hashtags (#) et les mentions (@) sont extraits du contenu à la création et stockés dans les champs hashtags[] et mentions[]. Les hashtags alimentent la recherche et le panneau de tendances affiché dans la sidebar droite (les hashtags les plus utilisés sur Discussion + Post). La recherche accepte aussi bien des noms d'utilisateurs que des #hashtags, et l'URL /?tag=monTag filtre directement par hashtag.",
+        bullets: [
+          "Extraction automatique des hashtags depuis le contenu à la création.",
+          "Sidebar tendances : hashtags les plus utilisés (Discussion + Post).",
+          "Recherche par hashtag via /?tag=monTag.",
+          "Recherche d'utilisateurs par nom ou @username.",
+          "Mentions : autocomplétion @username dans le composer (MentionAutocomplete).",
+        ],
+        callout: { kind: 'info', title: 'Visibilité sélective', text: "Un post en visibilité « certifiés » n'est visible que par les comptes certifiés — idéal pour les annonces réservées aux professionnels vérifiés. La visibilité « eza_circle » restreint encore plus au cercle interne EZA." },
+      },
+      {
+        title: "Suivi (Follow) & découverte",
+        body: "Les utilisateurs peuvent s'abonner les uns aux autres. L'entité Follow relie un follower à un following. La sidebar propose des suggestions d'utilisateurs à suivre, et la page /discover permet d'explorer la communauté au sens large. Le profil public /@username affiche les publications et les statistiques (followers, following, posts) de chaque utilisateur.",
+        table: [
+          { k: 'Follow', v: 'follower_id / following_id.' },
+          { k: 'Suggestions', v: 'Sidebar avec suggestions d\'utilisateurs.' },
+          { k: '/discover', v: 'Page d\'exploration de la communauté.' },
+          { k: 'Profil public', v: '/@username avec publications + stats.' },
+          { k: 'Listes', v: 'UserList — listes personnalisées (publiques ou privées).' },
+          { k: 'Signets', v: 'Bookmark — posts mis en signet (privé).' },
+        ],
+      },
+      {
+        title: "Création de contenu (composer)",
+        body: "La création d'une publication passe par un composer riche (CreatePost) qui centralise tous les outils : upload de médias, recherche de GIF GIPHY, créateur de sondage, autocomplétion des mentions, et programmation. Le composer gère aussi le repost et la citation avec prévisualisation du post original (RepostEmbed).",
+        bullets: [
+          "Upload de fichiers (intégration UploadFile) — images et vidéos.",
+          "GifPicker — recherche GIPHY intégrée.",
+          "PollCreator — sondage avec options, durée, votes.",
+          "MentionAutocomplete — suggestion de @username en temps réel.",
+          "LazyMedia / VideoPlayer — chargement différé et lecture vidéo optimisée.",
+          "ScheduledPostsManager — programmation de publications (scheduled_at + is_draft).",
+          "RepostDialog — repost simple ou citation avec commentaire.",
+          "RepostEmbed — prévisualisation du post original dans une citation.",
+        ],
+      },
+      {
+        title: "Modération & sécurité",
+        body: "Chaque post est modérable : signalement (Report), modération automatique (moderateNewPost analyse les nouveaux posts via IA), et gestion admin. L'automatisation moderateNewTour s'exécute sur la création de post et peut flaguer, masquer ou escalader un contenu suspect. Les admins gèrent les signalements dans AdminReports.",
+        callout: { kind: 'warning', title: 'Modération IA', text: "L'automatisation moderateNewPost analyse chaque nouveau post à la création. Un contenu suspect est flagué et peut être masqué automatiquement en attendant une revue humaine. La modération n'est jamais laissée au seul jugement humain." },
+      },
+    ],
+  },
+  {
+    slug: 'messaging', cat: 'social', icon: 'MessageSquare',
+    title: "Messagerie", tagline: "Conversations 1-à-1 en temps réel", color: '#1dd8b4',
+    intro: "La messagerie permet des conversations privées entre deux utilisateurs, avec gestion fine des demandes de contact, modération par conversation, messages officiels de l'équipe et raffinement par IA. Le temps réel (subscription + polling) rend les échanges fluides et instantanés.",
+    sections: [
+      {
+        title: "Les conversations",
+        body: "Chaque conversation est identifiée par les emails des deux participants triés alphabétiquement (emailA_emailB). Cette convention garantit qu'une conversation entre Alice et Bob a toujours le même identifiant, quel que soit le sens. Les messages stockent l'expéditeur (sender_email), le destinataire (recipient_email), le contenu et le statut de lecture (is_read).",
+        table: [
+          { k: 'Identifiant', v: 'Emails triés alphabétiquement (emailA_emailB).' },
+          { k: 'Champs', v: 'sender_email, recipient_email, content, is_read.' },
+          { k: 'Temps réel', v: 'Subscription + polling, statut en ligne.' },
+          { k: 'Lecture', v: 'Marquage automatique lu + auto-scroll au bas.' },
+          { k: 'Statut en ligne', v: 'Indicateur de présence par utilisateur.' },
+        ],
+      },
+      {
+        title: "Demandes de contact",
+        body: "Le premier message envoyé à quelqu'un est une demande de contact (is_request = true). Le destinataire peut l'accepter, la refuser ou l'ignorer. Tant qu'elle est en attente, elle apparaît dans le panneau des demandes (MessageRequestsPanel) et n'atterrit pas dans la boîte de réception principale. Ce mécanisme anti-spam protège les utilisateurs des messages non sollicités.",
+        steps: [
+          "is_request = true pour le premier message vers un nouveau contact.",
+          "request_status : pending → accepted / declined.",
+          "MessageRequestsPanel — panneau des demandes entrantes.",
+          "ConversationList avec filtre « demandes ».",
+          "Acceptation : la conversation bascule dans la boîte principale.",
+          "Refus : la conversation reste isolée, l'expéditeur est notifié.",
+        ],
+        callout: { kind: 'note', title: 'Anti-spam natif', text: "Tant qu'une demande n'est pas acceptée, la conversation reste isolée dans le panneau des demandes. Cela empêche le spam et protège la boîte de réception principale de tout déchet." },
+      },
+      {
+        title: "Messages officiels & avertissements",
+        body: "L'équipe EZA peut envoyer des messages officiels (is_official) mis en forme distinctement avec un badge officiel, et des avertissements (is_warning) au style orange. Des notes internes (is_admin_note) existent pour la modération mais ne sont jamais visibles côté utilisateur — elles servent à tracer le contexte d'une décision de modération.",
+        table: [
+          { k: 'is_official', v: 'Message de l\'équipe, style dédié + badge officiel.' },
+          { k: 'is_warning', v: 'Avertissement, style orange, visible par l\'utilisateur.' },
+          { k: 'is_admin_note', v: 'Note interne modération, invisible pour l\'utilisateur.' },
+        ],
+      },
+      {
+        title: "Modération (ConversationControl)",
+        body: "Chaque conversation peut être modérée finement via l'entité ConversationControl. Un admin peut verrouiller la conversation pour les deux participants (locked_for_all), verrouiller unilatéralement pour un seul (locked_for_email), bloquer un sens (blocked_a_to_b / blocked_b_to_a), et ajouter des notes de modération avec une raison. Cette granularité permet de gérer les litiges sans bannir.",
+        bullets: [
+          "locked_for_all — verrouillage pour les deux participants.",
+          "locked_for_email — verrouillage unilatéral (un seul utilisateur).",
+          "blocked_a_to_b / blocked_b_to_a — blocage unidirectionnel.",
+          "Notes de modération + raison (persistées).",
+          "OfficialMessageEditor — éditeur de message officiel.",
+        ],
+      },
+      {
+        title: "Raffinement par IA",
+        body: "Le composer de messagerie peut raffiner un message via une fonction backend (refineMessageWithAI) qui appelle un LLM pour reformuler, adoucir ou résumer le texte avant l'envoi. L'utilisateur prévisualise le résultat et décide d'envoyer ou non — l'IA n'envoie jamais à sa place.",
+        callout: { kind: 'tip', title: 'Restez maître du contenu', text: "Le raffinement IA est optionnel : vous prévisualisez le résultat et décidez d'envoyer ou non. L'IA ne remplace jamais votre jugement — elle vous aide à formuler, c'est tout." },
+      },
+    ],
+  },
+  {
+    slug: 'forum', cat: 'social', icon: 'MessagesSquare',
+    title: "Forum & discussions", tagline: "Échanges thématiques communautaires", color: '#f59e0b',
+    intro: "Le forum regroupe des discussions classées par catégorie. Les utilisateurs créent des sujets, y répondent, likent les réponses et marquent des solutions. Le rendu Markdown style Discord (DiscordMarkdown) rend les échanges lisibles et riches : titres, gras, blocs de code, citations, listes et liens externes sécurisés.",
+    sections: [
+      {
+        title: "Les discussions (Discussion)",
+        body: "Une Discussion a un titre, un contenu, une catégorie et un auteur (snapshot persistant — l'auteur reste affiché même après suppression de compte). Elle expose des compteurs (réponses, vues) et la date de dernière réponse. Une discussion peut être épinglée (is_pinned), verrouillée (is_locked), officielle (is_official) ou marquée comme annonce (is_announcement).",
+        table: [
+          { k: 'Catégories', v: 'general, technique, aide, partages, autres.' },
+          { k: 'Auteur', v: 'Snapshot persistant : nom, username, avatar, vérifications, badges.' },
+          { k: 'Compteurs', v: 'replies_count, views_count, dernière réponse.' },
+          { k: 'Épinglage', v: 'is_pinned — en haut de la liste.' },
+          { k: 'Verrouillage', v: 'is_locked — plus de réponses possibles.' },
+          { k: 'Officiel', v: 'is_official + is_announcement.' },
+        ],
+      },
+      {
+        title: "Les réponses (DiscussionReply)",
+        body: "Chaque DiscussionReply contient un texte, un auteur (snapshot persistant), un compteur de likes et la liste des likers. Une réponse peut être marquée comme solution (is_solution) par l'auteur de la discussion ou un admin — utile pour les questions d'aide où une réponse résout le problème.",
+        bullets: [
+          "Contenu + auteur (snapshot persistant).",
+          "Likes (likes_count, liked_by).",
+          "Marquage comme solution (is_solution).",
+          "Rendu Markdown style Discord (DiscordMarkdown).",
+          "DiscussionDetailPage — page dédiée avec fil de réponses.",
+        ],
+      },
+      {
+        title: "Modèle alternatif (ForumTopic / ForumPost)",
+        body: "Le forum existe aussi sous forme ForumTopic / ForumPost, un modèle où l'auteur est encore plus persistant : le username, l'email et l'avatar sont conservés au moment de la création, même après suppression du compte. C'est utile pour l'historique et la traçabilité légale.",
+        callout: { kind: 'note', title: 'Double modèle', text: "Discussion/DiscussionReply et ForumTopic/ForumPost coexistent. Le premier privilégie la simplicité et l'intégration sociale ; le second privilégie la persistance absolue de l'auteur pour l'archivage." },
+      },
+      {
+        title: "Rendu Markdown style Discord",
+        body: "Le composant DiscordMarkdown rend le contenu avec une esthétique Discord : titres avec bordure, gras prononcé, blocs de code sombres, citations à barre latérale, listes nettes et détection des hashtags/mentions cliquables. Les liens externes passent par un ExternalLinkModal qui prévisualise et confirme la sortie vers un domaine tiers.",
+        bullets: [
+          "DiscordMarkdown — rendu riche (titres, gras, code, citations, listes).",
+          "Hashtags et mentions cliquables (navigation vers profil/tag).",
+          "ExternalLinkModal — prévisualisation + confirmation des liens externes.",
+          "Protection anti-phishing : confirmation explicite pour les domaines tiers.",
+        ],
+        callout: { kind: 'warning', title: 'Liens externes sécurisés', text: "Tout clic sur un lien externe ouvre un modal de confirmation qui affiche l'URL destination. Cela protège les utilisateurs du phishing et du détournement de lien." },
+      },
+      {
+        title: "Création d'une discussion",
+        body: "La création se fait via NewDiscussionDialog : titre, contenu (Markdown), catégorie et tags. L'auteur est snapshoté au moment de la création. La discussion apparaît immédiatement dans la liste et est éligible à la modération IA (moderateNewPost) si elle contient du contenu suspect.",
+        steps: [
+          "NewDiscussionDialog — titre, contenu, catégorie, tags.",
+          "Snapshot auteur (nom, username, avatar, vérifications, badges).",
+          "Publication immédiate dans la liste du forum.",
+          "Modération IA automatique du contenu (moderateNewPost).",
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'communities', cat: 'social', icon: 'Users',
+    title: "Communautés", tagline: "Espaces thématiques avec membres", color: '#1dd8b4',
+    intro: "Les communautés sont des espaces thématiques où les utilisateurs se rassemblent autour d'un sujet. Ouvertes (publiques) ou fermées (membres uniquement), elles ont des membres, des posts communautaires, des règles et une capacité configurable. C'est l'équivalent des subreddits ou des groupes Facebook, mais intégré nativement à EZA.",
+    sections: [
+      {
+        title: "Création & types",
+        body: "Une communauté appartient à un créateur (owner). Elle peut être ouverte (publique, visible et joignable par tous) ou fermée (membres uniquement — sur invitation ou approbation). Une couverture (cover_url), une description, des tags et des règles la définissent. La catégorie thématique aide à la classification et à la découverte.",
+        table: [
+          { k: 'Type ouvert', v: 'Publique, visible et joignable par tous.' },
+          { k: 'Type fermé', v: 'Membres uniquement (sur invitation / approbation).' },
+          { k: 'Catégorie', v: 'tech, business, art, music, gaming, sport, formation, social, autre.' },
+          { k: 'Métadonnées', v: 'cover_url, description, tags, règles.' },
+          { k: 'Slug', v: 'slug — identifiant URL de la communauté.' },
+        ],
+      },
+      {
+        title: "Membres & capacité",
+        body: "Les membres sont stockés dans member_ids. La capacité maximale (capacity_limit) est configurable (défaut 100) et peut être étendue via un token boutique. Le compte de membres (members_count) et de posts (posts_count) est maintenu à jour automatiquement. L'adhésion se fait via la fonction backend joinCommunity qui vérifie le type et la capacité.",
+        bullets: [
+          "member_ids — liste des IDs des membres.",
+          "members_count, posts_count — compteurs synchronisés.",
+          "capacity_limit — capacité maximale (extensible via token boutique).",
+          "Adhésion via joinCommunity (fonction backend, vérifie type + capacité).",
+          "Retrait : l'utilisateur quitte la communauté (ou admin le retire).",
+        ],
+        callout: { kind: 'tip', title: 'Premium & épinglage', text: "Une communauté peut être marquée is_premium (design amélioré) et is_pinned (épinglée en haut de la liste) via des tokens boutique. Ces avantages visuels augmentent la visibilité et l'attractivité." },
+      },
+      {
+        title: "Posts communautaires",
+        body: "Les publications peuvent être rattachées à une communauté (community_id sur l'entité Post). Elles apparaissent dans le fil dédié de la communauté (getCommunityPosts) et respectent ses règles. La création passe par createCommunityPost qui vérifie l'adhésion de l'auteur avant d'accepter le post.",
+        steps: [
+          "Vérification de l'adhésion de l'auteur (createCommunityPost).",
+          "Création du Post avec community_id rattaché.",
+          "Affichage dans le fil de la communauté (getCommunityPosts).",
+          "Modération par le propriétaire de la communauté + admins.",
+          "posts_count++ de la communauté.",
+        ],
+      },
+      {
+        title: "Règles & modération",
+        body: "Chaque communauté peut définir ses propres règles (rules[]) affichées sur la page de détail (CommunityDetailPage). Le propriétaire et les admins peuvent modérer les posts communautaires, retirer des membres et verrouiller la communauté. Le signalement (Report) est disponible sur chaque post.",
+        bullets: [
+          "rules[] — règles affichées sur la page de détail.",
+          "CommunityDetailPage — page dédiée avec fil de posts + règles + membres.",
+          "CommunityDialog — création / édition d'une communauté.",
+          "Modération : retrait de post, retrait de membre, verrouillage.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'stories', cat: 'social', icon: 'Bell',
+    title: "Stories", tagline: "Contenus éphémères 24h", color: '#fb7185',
+    intro: "Les stories sont des contenus éphémères qui disparaissent après 24h, façon Instagram/Snapchat. Elles supportent image, vidéo et texte, avec une caméra intégrée, des filtres photo, des stickers emoji déplaçables et des réactions. La barre des stories (StoriesBar) affiche les stories actives des abonnés.",
+    sections: [
+      {
+        title: "Types de médias",
+        body: "Une story a un media_type (image, video, text) et un media_url. Les stories texte ont une couleur de fond (background_color) et une police (font) personnalisables, ainsi qu'une couleur de texte (text_color) et un alignement. Les stories image peuvent recevoir un filtre (filter) issu de la liste STORY_FILTERS.",
+        table: [
+          { k: 'image', v: 'Photo avec filtre optionnel (STORY_FILTERS).' },
+          { k: 'video', v: 'Vidéo courte (caméra ou upload).' },
+          { k: 'text', v: 'Texte sur fond dégradé, police et couleur custom (STORY_FONTS).' },
+        ],
+      },
+      {
+        title: "Story Studio (création)",
+        body: "Le Story Creator intègre une caméra native (CameraCapture), un picker de GIF (GifPicker), un calque de dessin (DrawingLayer), des stickers emoji déplaçables (DraggableLayer, positions x/y en pourcentages), des filtres photo et le choix de la police/couleur pour le texte. C'est un studio créatif complet dans le navigateur.",
+        bullets: [
+          "CameraCapture — capture photo/vidéo in-app (caméra front/back).",
+          "GifPicker — recherche GIPHY intégrée.",
+          "DrawingLayer — dessin sur le média (couleur, épaisseur).",
+          "DraggableLayer — stickers emoji déplaçables (x, y en %).",
+          "STORY_FONTS + STORY_FILTERS — personnalisation texte et image.",
+          "CreateStoryDialog / StoryCreator — orchestration de la création.",
+        ],
+        callout: { kind: 'note', title: 'Expiration', text: "expires_at = création + 24h. Les stories expirées ne s'affichent plus dans la barre mais restent en base pour la modération et l'historique." },
+      },
+      {
+        title: "Visionnage & réactions",
+        body: "La barre des stories (StoriesBar) affiche les stories actives des abonnés. Chaque story enregistre ses viewers (viewers[] : id, name, username, avatar). Le visionnage plein écran (StoryViewer) permet de naviguer entre les stories d'un auteur. Les réactions (like ou reply avec emoji + texte) sont stockées dans StoryReaction.",
+        steps: [
+          "StoriesBar — barre des stories actives (abonnés).",
+          "StoryViewer — visionnage plein écran avec navigation.",
+          "viewers[] — liste des viewers (id, name, username, avatar).",
+          "StoryReaction — like ou reply (emoji + texte).",
+          "StoryActionBar — like, réponse emoji, partage.",
+          "trackStoryView — enregistrement d'une vue (trackStoryView).",
+        ],
+        callout: { kind: 'tip', title: 'Vu par qui ?', text: "L'auteur d'une story voit exactement qui l'a regardée (viewers[]). C'est un excellent indicateur d'engagement pour les créateurs qui veulent mesurer leur audience réelle." },
+      },
+    ],
+  },
+  {
+    slug: 'spaces', cat: 'social', icon: 'Radio',
+    title: "Spaces audio", tagline: "Salons en direct (LiveKit)", color: '#a78bfa',
+    intro: "Les Spaces sont des salons audio en direct, façon X Spaces. Un hôte démarre un direct, des orateurs parlent, des auditeurs écoutent. Gérés via LiveKit (WebRTC audio temps réel), ils peuvent être officiels (badgés EZA) ou programmés à une date future. L'interface gère les rôles (hôte, orateur, auditeur) et les badges de vérification réduits.",
+    sections: [
+      {
+        title: "Le modèle Space",
+        body: "Un Space a un titre, une description, un hôte (snapshot : nom, username, avatar, vérifications) et un statut (live, scheduled, ended). Il référence une room LiveKit (livekit_room — nom de la room audio) et peut être officiel (is_official — badge EZA). Un Space programmé a un scheduled_at ; un Space en direct a un started_at ; un Space terminé a un ended_at.",
+        table: [
+          { k: 'Statuts', v: 'live, scheduled, ended.' },
+          { k: 'Hôte', v: 'Snapshot : nom, username, avatar, vérifications (host_verifications).' },
+          { k: 'LiveKit', v: 'livekit_room — nom de la room audio.' },
+          { k: 'Officiel', v: 'is_official — badge EZA, visibilité prioritaire.' },
+          { k: 'Programmation', v: 'scheduled_at pour un direct planifié.' },
+          { k: 'Durée', v: 'started_at (live) / ended_at (ended).' },
+        ],
+      },
+      {
+        title: "Cycle de vie d'un Space",
+        body: "Un Space passe par plusieurs étates. La création (createSpace) génère un token LiveKit (generateSpaceToken) pour le hôte. Le hôte démarre le direct et publie son audio. Les participants rejoignent en tant qu'orateurs (ils publient) ou auditeurs (ils écoutent seulement). La clôture (endSpace) marque le Space comme ended et notifie les participants (notifySpaceEnd).",
+        steps: [
+          "Création : createSpace + generateSpaceToken (token LiveKit pour le hôte).",
+          "Direct : le hôte rejoint en tant qu'orateur, publie son flux audio.",
+          "Participants : orateurs (publient leur audio) / auditeurs (écoutent).",
+          "updateSpaceParticipant — gestion des rôles en direct.",
+          "Clôture : endSpace + notifySpaceEnd aux participants.",
+        ],
+        callout: { kind: 'warning', title: 'LiveKit requis', text: "Les Spaces nécessitent des identifiants LiveKit (LIVEKIT_API_KEY, LIVEKIT_API_SECRET, LIVEKIT_WS_URL) configurés dans les secrets de l'app. Sans ça, la connexion audio échoue avec une erreur de token." },
+      },
+      {
+        title: "Interface utilisateur",
+        body: "L'interface Spaces affiche les salons actifs (SpacesPage), une carte par Space (SpaceCard) avec le hôte et le statut, et la room audio temps réel (SpaceRoomPage) avec gestion des orateurs, badges de statut réduits et caméra optionnelle. La création d'un Space passe par CreateSpaceDialog.",
+        bullets: [
+          "SpacesPage — liste des salons live + programmés.",
+          "SpaceCard — carte d'un salon avec hôte, statut, auditeurs count.",
+          "SpaceRoomPage — room audio temps réel (LiveKit).",
+          "CreateSpaceDialog — création d'un salon (titre, description, programmation).",
+          "Badges de vérification réduits dans l'interface audio (visibilité clean).",
+          "Caméra optionnelle (activation/désactivation avec animation spring).",
+        ],
+      },
+      {
+        title: "Sécurité & tokens",
+        body: "L'accès à un Space requiert un token LiveKit généré côté serveur (generateSpaceToken) avec les credentials secrets. Le token est signé et limité dans le temps. Aucun credential LiveKit n'est jamais exposé côté client — seul le token signé transite.",
+        callout: { kind: 'tip', title: 'Tokens signés', text: "Le token LiveKit est généré côté serveur avec les secrets, signé et limité dans le temps. Le client ne voit jamais les credentials LiveKit — sécurité totale." },
+      },
+    ],
+  },
+];

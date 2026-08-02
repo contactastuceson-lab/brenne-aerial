@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Send, Loader2, CheckCircle2, Clock, AlertCircle,
   ArrowLeft, Bot, UserCog, Paperclip, Hash, MessageCircle, FileText,
-  Lock, ShieldAlert, Tag, Wallet, XCircle,
+  Lock, ShieldAlert, Tag, Wallet, XCircle, Search,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -250,7 +250,13 @@ export default function SupportTicketPage() {
                 {m.role !== 'user' ? (
                   <div>
                     {m.role === 'assistant' && m.steps?.length > 0 && (
-                      <AiSteps steps={m.steps} animate={i === messages.length - 1 && !sending} />
+                      <>
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground mb-2">
+                          <Search className="w-3 h-3 text-primary" /> Recherche Nexus
+                        </div>
+                        <AiSteps steps={m.steps} animate={i === messages.length - 1 && !sending} />
+                        <div className="h-px bg-border my-2.5" />
+                      </>
                     )}
                     <NexusMarkdown>{m.content}</NexusMarkdown>
                     {m.action && (m.action.status === 'executed' || m.action.status === 'failed') && (

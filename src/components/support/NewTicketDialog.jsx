@@ -294,9 +294,22 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
 
   const pickSuggestion = async (s) => {
     setSelected(s);
-    setStep(3);
-    // L'IA pré-sélectionne un type ; on charge ses données.
     const et = ELEMENT_TYPES.some((t) => t.id === s.element_type) ? s.element_type : 'none';
+    setElementType(et);
+    setSelectedItem(null);
+    // Détection AUTOMATIQUE : l'IA a identifié l'élément précis depuis la
+    // description → on saute la grille manuelle et on passe à la confirmation.
+    if (s.related_item_id && et !== 'none' && et !== 'conversation') {
+      setSelectedItem({ id: s.related_item_id, label: s.related_item_label || '', auto: true });
+      setStep(4);
+      return;
+    }
+    if (et === 'none' || et === 'conversation') {
+      setStep(4);
+      return;
+    }
+    // Fallback : aucun élément détecté, on charge la liste manuelle.
+    setStep(3);
     await loadForType(et);
   };
 
@@ -305,6 +318,8 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
     if (et === 'none') return { type: 'none', id: null, label: null };
     if (et === 'conversation') return { type: 'conversation', id: null, label: convLabel || null };
     if (!selectedItem) return { type: et, id: null, label: null };
+    // Élément auto-détecté par l'IA : on utilise directement l'id + libellé.
+    if (selectedItem.auto) return { type: et, id: selectedItem.id, label: selectedItem.label };
     const obj = selectedItem.obj;
     let label = selectedItem.label;
     if (et === 'post') label = (obj.content || '').slice(0, 120);

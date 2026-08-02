@@ -13,6 +13,7 @@ import {
 } from '@/lib/docsContent';
 import DocIcon from '@/components/docs/DocIcon';
 import DocNavbar from '@/components/docs/DocNavbar';
+import DocSuggestions from '@/components/docs/DocSuggestions';
 
 const ORANGE = '#ff6d3f';
 const BLUE = '#38aadc';
@@ -124,6 +125,9 @@ export default function DocumentationPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* ===== SUGGESTIONS PERSONNALISÉES (depuis les tickets) ===== */}
+      <DocSuggestions />
 
       {/* ===== À PROPOS ===== */}
       <section className="px-5 py-16 md:py-20 max-w-6xl mx-auto">

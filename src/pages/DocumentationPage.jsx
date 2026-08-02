@@ -67,8 +67,8 @@ export default function DocumentationPage() {
               <Link to="/documentation/overview" className="group inline-flex items-center gap-2 h-11 px-5 rounded-xl font-semibold text-sm text-white transition-transform active:scale-95" style={{ background: ORANGE }}>
                 Commencer <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
-              <Link to="/documentation/stack" className="inline-flex items-center gap-2 h-11 px-5 rounded-xl font-semibold text-sm border border-border bg-card hover:border-foreground/20 transition-colors">
-                <Terminal className="w-4 h-4 text-muted-foreground" /> Documentation technique
+              <Link to="/documentation/demarrer" className="inline-flex items-center gap-2 h-11 px-5 rounded-xl font-semibold text-sm border border-border bg-card hover:border-foreground/20 transition-colors">
+                <Terminal className="w-4 h-4 text-muted-foreground" /> Modes d'emploi
               </Link>
             </div>
 
@@ -253,20 +253,20 @@ export default function DocumentationPage() {
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${BLUE}15`, border: `1px solid ${BLUE}30` }}>
                   <Code2 className="w-5 h-5" style={{ color: BLUE }} />
                 </div>
-                <h3 className="font-grotesk font-bold text-lg">Pour les développeurs</h3>
+                <h3 className="font-grotesk font-bold text-lg">Modes d'emploi</h3>
               </div>
               <div className="divide-y divide-border">
                 {[
-                  { t: 'Stack technique', to: '/documentation/stack' },
-                  { t: 'Modèle de données', to: '/documentation/data' },
-                  { t: 'Système de design', to: '/documentation/design' },
-                  { t: 'Intégrations & services', to: '/documentation/integrations' },
-                  { t: 'Authentification', to: '/documentation/auth' },
-                  { t: 'Sécurité & RGPD', to: '/documentation/security' },
-                  { t: 'Row-Level Security', to: '/documentation/rls' },
-                  { t: 'Automatisations', to: '/documentation/automations' },
-                  { t: 'PWA & installation', to: '/documentation/pwa' },
-                  { t: 'Conventions de code', to: '/documentation/conventions' },
+                  { t: 'Démarrer sur eza', to: '/documentation/demarrer' },
+                  { t: 'Publier un post', to: '/documentation/publier' },
+                  { t: 'Gagner & dépenser des crédits', to: '/documentation/credits-guide' },
+                  { t: 'Participer à un événement', to: '/documentation/evenements-guide' },
+                  { t: 'Rejoindre une communauté', to: '/documentation/communautes-guide' },
+                  { t: 'Créer une story', to: '/documentation/stories-guide' },
+                  { t: 'Participer à un Space', to: '/documentation/spaces-guide' },
+                  { t: 'Sécuriser mon compte', to: '/documentation/securite-guide' },
+                  { t: 'Gérer mes notifications', to: '/documentation/notifications-guide' },
+                  { t: 'Obtenir de l\'aide', to: '/documentation/aide-guide' },
                 ].map((l) => (
                   <Link key={l.to} to={l.to} className="flex items-center justify-between py-2.5 group">
                     <span className="text-sm">{l.t}</span>

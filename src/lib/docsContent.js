@@ -37,7 +37,7 @@ export const DOC_CATEGORIES = [
   { id: 'social', label: 'Social & communauté', color: '#1dd8b4' },
   { id: 'economie', label: 'Économie & crédits', color: '#ff6d3f' },
   { id: 'identite', label: 'Identité & confiance', color: '#a78bfa' },
-  { id: 'tech', label: 'Technique', color: '#f59e0b' },
+  { id: 'tech', label: 'Modes d\'emploi', color: '#f59e0b' },
 ];
 
 export const DOC_TOPICS = [

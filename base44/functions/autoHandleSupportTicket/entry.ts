@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { sendEzaEmail } from '../../shared/ezaEmails.ts';
 import { logAutomation } from '../../shared/logAutomation.ts';
 import { buildUserContext } from '../../shared/supportUserContext.ts';
-import { EZA_KNOWLEDGE, buildResearchSteps } from '../../shared/supportKnowledge.ts';
+import { EZA_KNOWLEDGE, buildResearchSteps, buildRelatedItemResearch } from '../../shared/supportKnowledge.ts';
 
 // Support IA automatique — déclenché à la création d'un ticket SupportTicket.
 // L'IA catégorise, priorise, fait sa recherche, puis applique UNE des trois résolutions :
@@ -37,15 +37,11 @@ export default async function(req) {
     const { text: contextText } = await buildUserContext(base44, data.user_id, data.user_email).catch(() => ({ text: '' }));
 
     // --- RECHERCHE CONTEXTUELLE ---
-    let relatedPostData = null;
     const researchBits = [];
 
-    if (data.related_item_type === 'post' && data.related_item_id) {
-      relatedPostData = await base44.asServiceRole.entities.Post.get(data.related_item_id).catch(() => null);
-      if (relatedPostData) {
-        researchBits.push(`PUBLICATION CONCERNÉE : auteur ${relatedPostData.author_username || '?'}, contenu : ${(relatedPostData.content || '').slice(0, 300)}, likes ${relatedPostData.likes_count || 0}`);
-      }
-    }
+    // Élément concerné : recherche RÉELLE par type (tous les types du wizard).
+    const relatedResearch = await buildRelatedItemResearch(base44, data.related_item_type, data.related_item_id);
+    if (relatedResearch.researchBit) researchBits.push(relatedResearch.researchBit);
 
     // Événements : Nexus peut inscrire l'utilisateur (action register_event côté reply)
     if (data.category === 'events' || /événement|evenement|event|inscription|inscrire|je m'inscr/i.test(question)) {
@@ -59,7 +55,7 @@ export default async function(req) {
       } catch {}
     }
 
-    const prompt = `Tu es NEXUS, l'IA de support eza. Tu viens de lire la documentation${relatedPostData ? ', examiner la publication concernée' : ''}. Tu réponds avec ce contexte.
+    const prompt = `Tu es NEXUS, l'IA de support eza. Tu viens de lire la documentation${relatedResearch.researchBit ? ", examiner l'élément concerné" : ''}. Tu réponds avec ce contexte.
 
 ${EZA_KNOWLEDGE}
 
@@ -139,8 +135,8 @@ ${question}
     const handledBy = escalated ? 'escalated' : 'ai';
 
     const steps = buildResearchSteps({
-      hasRelatedPost: !!relatedPostData,
-      hasRelatedConversation: data.related_item_type === 'conversation',
+      relatedStep: relatedResearch.step,
+      relatedType: data.related_item_type,
       category: cat,
     }).map((s) => ({ ...s, status: 'done' }));
 

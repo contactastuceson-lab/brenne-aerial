@@ -86,12 +86,36 @@ export default function SupportTicketPage() {
   }, [ticket?.messages?.length, loading, sending]);
 
   // Étapes de recherche affichées en temps réel pendant que Nexus traite
-  const sendingSteps = useMemo(() => {
+  // Étapes de recherche réelles affichées en temps réel — reflètent le type
+  // d'élément concerné sélectionné dans le wizard (pas des étapes génériques).
+  const thinkingSteps = useMemo(() => {
+    const rt = ticket?.related_item_type;
+    const byType = {
+      post: { icon: 'post', label: 'Examen de la publication concernée' },
+      conversation: { icon: 'history', label: 'Analyse de la discussion concernée' },
+      wallet: { icon: 'wallet', label: 'Vérification du portefeuille concerné' },
+      event: { icon: 'event', label: "Examen de l'événement concerné" },
+      community: { icon: 'community', label: 'Examen de la communauté concernée' },
+      space: { icon: 'space', label: 'Examen du Space audio concerné' },
+      story: { icon: 'story', label: 'Examen de la story concernée' },
+      referral: { icon: 'referral', label: 'Examen du parrainage concerné' },
+      registration: { icon: 'registration', label: "Examen de l'inscription concernée" },
+      reward: { icon: 'reward', label: 'Examen de la récompense concernée' },
+      cart: { icon: 'cart', label: 'Examen du panier concerné' },
+      ticket: { icon: 'ticket', label: 'Examen du ticket concerné' },
+      discussion: { icon: 'discussion', label: 'Examen de la discussion forum concernée' },
+      forum: { icon: 'forum', label: 'Examen du sujet forum concerné' },
+      review: { icon: 'review', label: "Examen de l'avis concerné" },
+      certification: { icon: 'certification', label: 'Examen de la demande de certification' },
+      donation: { icon: 'donation', label: 'Examen du don concerné' },
+      list: { icon: 'list', label: 'Examen de la liste concernée' },
+      ad: { icon: 'ad', label: 'Examen de la campagne pub concernée' },
+    };
     const steps = [{ icon: 'book', label: 'Lecture de la documentation eza' }];
-    if (ticket?.related_item_type === 'post') steps.push({ icon: 'post', label: 'Examen de la publication concernée' });
-    if (ticket?.related_item_type === 'conversation') steps.push({ icon: 'history', label: 'Analyse de la discussion' });
-    if (['credits', 'billing'].includes(ticket?.category) || ticket?.related_item_type === 'wallet') steps.push({ icon: 'wallet', label: 'Vérification de votre solde Eza' });
+    if (rt && rt !== 'none' && byType[rt]) steps.push(byType[rt]);
+    if (['credits', 'billing'].includes(ticket?.category) || rt === 'wallet') steps.push({ icon: 'wallet', label: 'Vérification de votre solde Eza' });
     if (ticket?.category === 'account') steps.push({ icon: 'user', label: 'Vérification de votre compte' });
+    if (ticket?.category === 'events' || rt === 'event' || rt === 'registration') steps.push({ icon: 'event', label: 'Recherche des événements & inscriptions' });
     steps.push({ icon: 'search', label: "Recherche d'une solution applicable" });
     return steps;
   }, [ticket?.related_item_type, ticket?.category]);
@@ -148,8 +172,11 @@ export default function SupportTicketPage() {
   // répondre pour rouvrir / demander un complément (sinon Nexus coupe la parole).
   const isClosed = ['resolved', 'closed'].includes(ticket.status);
   const isLocked = !!ticket.user_locked;
-  const composerDisabled = isClosed || isLocked;
   const isAiResolved = ticket.status === 'ai_resolved';
+  // Nexus n'a pas encore répondu (ticket fraîchement créé, traitement auto en
+  // cours) → on affiche un état de traitement au lieu d'un composer vide.
+  const nexusThinking = !sending && messages.length > 0 && !messages.some((m) => m.role === 'assistant' || m.role === 'admin');
+  const composerDisabled = isClosed || isLocked || nexusThinking;
 
   return (
     <div className="max-w-3xl mx-auto px-3 md:px-4 py-4 md:py-6 flex flex-col" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
@@ -283,7 +310,19 @@ export default function SupportTicketPage() {
               <Bot className="w-4 h-4 text-white" />
             </div>
             <div className="bg-[#1C2329] border border-white/[0.06] rounded-2xl rounded-tl-md px-3.5 py-2.5 max-w-[82%]">
-              <AiSteps steps={sendingSteps} animate={true} />
+              <AiSteps steps={thinkingSteps} animate={true} />
+            </div>
+          </div>
+        )}
+        {nexusThinking && (
+          <div className="flex justify-start gap-2.5 items-start">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+              style={{ background: 'linear-gradient(135deg, hsl(205 90% 50%), hsl(195 80% 42%))' }}>
+              <Bot className="w-4 h-4 text-white" />
+            </div>
+            <div className="bg-[#1C2329] border border-white/[0.06] rounded-2xl rounded-tl-md px-3.5 py-2.5 max-w-[82%]">
+              <AiSteps steps={thinkingSteps} animate={true} />
+              <p className="text-[11px] text-muted-foreground mt-1">Nexus traite votre demande en direct…</p>
             </div>
           </div>
         )}

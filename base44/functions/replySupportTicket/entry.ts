@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { sendEzaEmail } from '../../shared/ezaEmails.ts';
 import { logAutomation } from '../../shared/logAutomation.ts';
 import { buildUserContext } from '../../shared/supportUserContext.ts';
-import { EZA_KNOWLEDGE, buildResearchSteps } from '../../shared/supportKnowledge.ts';
+import { EZA_KNOWLEDGE, buildResearchSteps, buildRelatedItemResearch } from '../../shared/supportKnowledge.ts';
 import { executeNexusAction, AUTO_ACTIONS, CONFIRMABLE_ACTIONS } from '../../shared/nexusActions.ts';
 
 // Réponse utilisateur sur un ticket existant : Nexus fait d'abord sa recherche
@@ -92,22 +92,14 @@ export default async function(req) {
 
     // --- RECHERCHE CONTEXTUELLE ---
     const researchBits = [];
-    let relatedPostData = null;
     let walletData = null;
 
-    if (ticket.related_item_type === 'post' && ticket.related_item_id) {
-      relatedPostData = await base44.asServiceRole.entities.Post.get(ticket.related_item_id).catch(() => null);
-      if (relatedPostData) {
-        researchBits.push(`PUBLICATION CONCERNÉE (examinée par Nexus) :\n- Auteur : ${relatedPostData.author_username || '?'}\n- Contenu : ${(relatedPostData.content || '').slice(0, 400)}\n- Likes : ${relatedPostData.likes_count || 0} · Vues : ${relatedPostData.views_count || 0}\n- Visibilité : ${relatedPostData.visibility || 'public'}`);
-      }
-    }
-
-    if (ticket.related_item_type === 'event' && ticket.related_item_id) {
-      const ev = await base44.asServiceRole.entities.Event.get(ticket.related_item_id).catch(() => null);
-      if (ev) {
-        researchBits.push(`ÉVÉNEMENT CONCERNÉ (sélectionné par l'utilisateur dans le wizard) :\n- ID:${ev.id} · « ${ev.title} »\n- Début : ${ev.start_date || '?'} · Lieu : ${ev.city || ev.location || '?'}\n- Prix : ${ev.price_credits || 0} crédits · ${ev.attendees_count || 0}/${ev.capacity || '∞'} inscrits · Statut : ${ev.status}`);
-      }
-    }
+    // Élément concerné : recherche RÉELLE par type (post, event, community,
+    // space, story, referral, registration, reward, cart, ticket, discussion,
+    // forum, review, certification, donation, list, ad). Chaque type fetch
+    // l'entité correspondante et fournit une étape affichée en temps réel.
+    const relatedResearch = await buildRelatedItemResearch(base44, ticket.related_item_type, ticket.related_item_id);
+    if (relatedResearch.researchBit) researchBits.push(relatedResearch.researchBit);
 
     let frozenWallets = [];
     if (ticket.category === 'credits' || ticket.category === 'billing' || ticket.category === 'events' || /solde|crédit|credit|gel|bloqué|bloque|rembours|portefeuille|wallet|dégel|degel|transf/i.test(content)) {
@@ -148,12 +140,12 @@ export default async function(req) {
       .join('\n');
 
     const steps = buildResearchSteps({
-      hasRelatedPost: !!relatedPostData,
-      hasRelatedConversation: ticket.related_item_type === 'conversation',
+      relatedStep: relatedResearch.step,
+      relatedType: ticket.related_item_type,
       category: ticket.category,
     });
 
-    const prompt = `Tu es NEXUS, l'IA de support eza. Tu n'es pas qu'un chatbot : tu es un AGENT autonome qui peut EXÉCUTER des actions concrètes sur le compte de l'utilisateur (inscriptions, crédits, remboursements en crédits, portefeuilles…), pas seulement répondre. Consulte ton catalogue de capacités plus bas et PROPOSE l'action appropriée dès que la demande correspond. Tu viens de faire ta recherche : tu as lu la documentation, ${relatedPostData ? 'examiné la publication concernée, ' : ''}${walletData ? 'vérifié le solde, ' : ''}et consulté le profil de l'utilisateur. Tu réponds maintenant avec tout ce contexte.
+    const prompt = `Tu es NEXUS, l'IA de support eza. Tu n'es pas qu'un chatbot : tu es un AGENT autonome qui peut EXÉCUTER des actions concrètes sur le compte de l'utilisateur (inscriptions, crédits, remboursements en crédits, portefeuilles…), pas seulement répondre. Consulte ton catalogue de capacités plus bas et PROPOSE l'action appropriée dès que la demande correspond. Tu viens de faire ta recherche : tu as lu la documentation, ${relatedResearch.researchBit ? "examiné l'élément concerné, " : ''}${walletData ? 'vérifié le solde, ' : ''}et consulté le profil de l'utilisateur. Tu réponds maintenant avec tout ce contexte.
 
 ${EZA_KNOWLEDGE}
 

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, FileText, Wallet, User as UserIcon, Search, MessageSquare,
-  Check, Loader2,
+  Check, Loader2, Calendar, Users, Radio, CircleDot, Gift, Ticket, Award,
+  ShoppingCart, LifeBuoy, Star, BadgeCheck, Heart, List, Megaphone, ClipboardList,
 } from 'lucide-react';
 
 const ICON_MAP = {
@@ -12,6 +13,22 @@ const ICON_MAP = {
   user: UserIcon,
   search: Search,
   history: MessageSquare,
+  event: Calendar,
+  community: Users,
+  space: Radio,
+  story: CircleDot,
+  referral: Gift,
+  registration: Ticket,
+  reward: Award,
+  cart: ShoppingCart,
+  ticket: LifeBuoy,
+  discussion: MessageSquare,
+  forum: ClipboardList,
+  review: Star,
+  certification: BadgeCheck,
+  donation: Heart,
+  list: List,
+  ad: Megaphone,
 };
 
 // Checklist de recherche Nexus — chaque étape apparaît une par une, avec une

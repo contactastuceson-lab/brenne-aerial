@@ -6,7 +6,9 @@ import { toast } from 'sonner';
 import {
   Loader2, Upload, X, FileText, ArrowRight, ArrowLeft, Check,
   Lock, Bug, HelpCircle, CreditCard, Wallet, Sparkles, Calendar,
-  Shield, MessageSquare, Send,
+  Shield, MessageSquare, Ban, Hash, Users, Radio, CircleDot, Gift,
+  Ticket, Award, ShoppingCart, LifeBuoy, MessageCircle, BookOpen, Star,
+  BadgeCheck, Heart, List, Megaphone,
 } from 'lucide-react';
 
 const MAX_FILES = 5;
@@ -18,11 +20,33 @@ const CATEGORY_ICONS = {
   messaging: MessageSquare, other: HelpCircle,
 };
 
+const ELEMENT_TYPES = [
+  { id: 'none', label: 'Aucun', icon: Ban },
+  { id: 'post', label: 'Publication', icon: Hash },
+  { id: 'wallet', label: 'Portefeuille', icon: Wallet },
+  { id: 'event', label: 'Événement', icon: Calendar },
+  { id: 'conversation', label: 'Conversation', icon: MessageSquare },
+  { id: 'community', label: 'Communauté', icon: Users },
+  { id: 'space', label: 'Space', icon: Radio },
+  { id: 'story', label: 'Story', icon: CircleDot },
+  { id: 'referral', label: 'Parrainage', icon: Gift },
+  { id: 'registration', label: 'Inscription', icon: Ticket },
+  { id: 'reward', label: 'Récompense', icon: Award },
+  { id: 'cart', label: 'Panier', icon: ShoppingCart },
+  { id: 'ticket', label: 'Ticket', icon: LifeBuoy },
+  { id: 'discussion', label: 'Discussion', icon: MessageCircle },
+  { id: 'forum', label: 'Sujet forum', icon: BookOpen },
+  { id: 'review', label: 'Avis', icon: Star },
+  { id: 'certification', label: 'Certification', icon: BadgeCheck },
+  { id: 'donation', label: 'Don', icon: Heart },
+  { id: 'list', label: 'Liste', icon: List },
+  { id: 'ad', label: 'Campagne pub', icon: Megaphone },
+];
+
+const TYPE_LABEL = Object.fromEntries(ELEMENT_TYPES.map((t) => [t.id, t.label]));
 const isImg = (u) => /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(u);
 
-// Étapes : 1 description, 2 analyse IA, 3 catégorie, 4 succès.
-// Flow simplifié type Base44 : décrire → l'IA analyse et propose 3 catégories
-// → l'utilisateur en choisit une → le ticket est créé et Nexus prend le relais.
+// Étapes : 1 description, 2 analyse IA, 3 catégorie, 4 élément concerné, 5 succès.
 
 export default function NewTicketDialog({ open, onClose, onCreated }) {
   const { user } = useAuth();
@@ -33,12 +57,18 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [elementType, setElementType] = useState(null);
+  const [items, setItems] = useState([]);
+  const [itemsLoading, setItemsLoading] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [convLabel, setConvLabel] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [createdTicket, setCreatedTicket] = useState(null);
 
   const reset = useCallback(() => {
     setStep(1); setDescription(''); setFileUrls([]); setSuggestions([]);
-    setSelected(null); setCreatedTicket(null); setSubmitting(false);
+    setSelected(null); setElementType(null); setItems([]); setItemsLoading(false);
+    setSelectedItem(null); setConvLabel(''); setCreatedTicket(null); setSubmitting(false);
   }, []);
 
   const handleClose = () => { reset(); onClose(); };
@@ -71,7 +101,6 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
       const data = res?.data || res;
       const sugg = data?.suggestions || [];
       if (!sugg.length) {
-        // fallback : on saute directement à la création avec catégorie "other"
         setSuggestions([{ label: 'Autre', category: 'other', element_type: 'none', description: '' }]);
       } else {
         setSuggestions(sugg.slice(0, 3));
@@ -84,19 +113,139 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
     setAnalyzing(false);
   };
 
-  const submit = async (sugg) => {
+  // Charge les items réels pour un type d'élément.
+  const loadForType = async (type) => {
+    setElementType(type);
+    setSelectedItem(null);
+    setConvLabel('');
+    if (type === 'none' || type === 'conversation') { setItems([]); return; }
+    setItemsLoading(true);
+    try {
+      let list = [];
+      if (type === 'post') {
+        const ps = await base44.entities.Post.filter({ author_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (ps || []).map((p) => ({ id: p.id, label: (p.content || '(sans texte)').slice(0, 80), sub: `${p.likes_count || 0} likes · ${p.views_count || 0} vues`, obj: p }));
+      } else if (type === 'wallet') {
+        const ws = await base44.entities.Wallet.filter({ owner_id: user.id }).catch(() => []);
+        list = [{ id: 'main_account', label: 'Compte principal', sub: `${Number(user?.referral_credits || 0)} crédits`, obj: { id: 'main_account', name: 'Compte principal', balance: Number(user?.referral_credits || 0) } }];
+        (ws || []).forEach((w) => list.push({ id: w.id, label: w.name || 'Portefeuille', sub: `${w.balance || 0} crédits${w.frozen ? ' · gelé' : ''}`, obj: w }));
+      } else if (type === 'event') {
+        const es = await base44.entities.Event.filter({}, 'start_date', 30).catch(() => []);
+        list = (es || []).filter((e) => e.status !== 'cancelled' && e.status !== 'ended' && (!e.end_date || new Date(e.end_date).getTime() >= Date.now()))
+          .map((e) => ({ id: e.id, label: e.title, sub: `${e.start_date ? e.start_date.slice(0, 10) : '?'}${e.city ? ' · ' + e.city : ''} · ${e.price_credits || 0} cr`, img: e.image_url, obj: e }));
+      } else if (type === 'community') {
+        const cs = await base44.entities.Community.filter({}, '-members_count', 60).catch(() => []);
+        list = (cs || []).filter((c) => c.type === 'open' || c.owner_id === user.id || (c.member_ids || []).includes(user.id))
+          .map((c) => ({ id: c.id, label: c.name, sub: `${c.members_count || 0} membres`, img: c.cover_url, obj: c }));
+      } else if (type === 'space') {
+        const ss = await base44.entities.Space.filter({ host_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (ss || []).map((s) => ({ id: s.id, label: s.title, sub: s.status, obj: s }));
+      } else if (type === 'story') {
+        const st = await base44.entities.Story.filter({ author_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (st || []).filter((s) => !s.expires_at || new Date(s.expires_at).getTime() > Date.now())
+          .map((s) => ({ id: s.id, label: s.text ? s.text.slice(0, 60) : `Story ${s.media_type}`, sub: s.media_type, img: s.media_type === 'image' ? s.media_url : null, obj: s }));
+      } else if (type === 'referral') {
+        let rs = await base44.entities.Referral.filter({ referrer_email: user.email }).catch(() => []);
+        if (!rs?.length) rs = await base44.entities.Referral.filter({ referred_email: user.email }).catch(() => []);
+        list = (rs || []).map((r) => ({ id: r.id, label: r.referred_email || r.referred_name || 'Filleul', sub: `${r.status} · ${r.credits_earned || 0} cr`, obj: r }));
+      } else if (type === 'registration') {
+        const regs = await base44.entities.EventRegistration.filter({ user_id: user.id, status: 'registered' }, '-created_date', 50).catch(() => []);
+        list = (regs || []).map((r) => ({ id: r.id, label: r.event_title || 'Inscription', sub: `${r.credits_paid || 0} cr${r.ticket_code ? ' · ' + r.ticket_code : ''}`, img: r.event_image_url, obj: r }));
+      } else if (type === 'reward') {
+        const rws = await base44.entities.RewardRedemption.filter({ user_email: user.email }, '-created_date', 50).catch(() => []);
+        list = (rws || []).map((r) => ({ id: r.id, label: r.item_label, sub: `${r.cost || 0} cr · ${r.status}`, obj: r }));
+      } else if (type === 'cart') {
+        const carts = await base44.entities.Cart.filter({ owner_id: user.id, status: 'active' }).catch(() => []);
+        const active = (carts || [])[0];
+        if (active) list = [{ id: active.id, label: `Panier (${(active.items || []).length} art.)`, sub: `${active.total_credits || 0} cr`, obj: active }];
+      } else if (type === 'ticket') {
+        const ts = await base44.entities.SupportTicket.filter({ user_email: user.email }, '-created_date', 30).catch(() => []);
+        list = (ts || []).map((t) => ({ id: t.id, label: t.subject || '(sans sujet)', sub: `#${String(t.id).slice(-6)} · ${t.status}`, obj: t }));
+      } else if (type === 'discussion') {
+        const ds = await base44.entities.Discussion.filter({ author_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (ds || []).map((d) => ({ id: d.id, label: d.title || '(sans titre)', sub: `${d.replies_count || 0} réponses`, obj: d }));
+      } else if (type === 'forum') {
+        const fs = await base44.entities.ForumTopic.filter({ author: user.id }, '-created_date', 30).catch(() => []);
+        list = (fs || []).map((f) => ({ id: f.id, label: f.title || '(sans titre)', sub: `${f.replies_count || 0} réponses · ${f.views_count || 0} vues`, obj: f }));
+      } else if (type === 'review') {
+        const rs = await base44.entities.Review.filter({ author_email: user.email }, '-created_date', 30).catch(() => []);
+        list = (rs || []).map((r) => ({ id: r.id, label: r.comment ? r.comment.slice(0, 60) : `Avis ${r.rating || '?'}/5`, sub: `${r.rating || '?'}/5`, obj: r }));
+      } else if (type === 'certification') {
+        const cs = await base44.entities.CertificationRequest.filter({ user_email: user.email }, '-created_date', 30).catch(() => []);
+        list = (cs || []).map((c) => ({ id: c.id, label: 'Demande de certification', sub: c.status, obj: c }));
+      } else if (type === 'donation') {
+        const ds = await base44.entities.Donation.filter({ donor_email: user.email }, '-created_date', 30).catch(() => []);
+        list = (ds || []).map((d) => ({ id: d.id, label: `Don de ${d.amount || 0} €`, sub: d.status, obj: d }));
+      } else if (type === 'list') {
+        const ls = await base44.entities.UserList.filter({ owner_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (ls || []).map((l) => ({ id: l.id, label: l.name, sub: `${(l.member_ids || []).length} membres`, obj: l }));
+      } else if (type === 'ad') {
+        const as = await base44.entities.AdCampaign.filter({ owner_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (as || []).map((a) => ({ id: a.id, label: a.title || 'Campagne', sub: `${a.status} · ${a.credits_remaining || 0} cr`, obj: a }));
+      }
+      setItems(list || []);
+    } catch {}
+    setItemsLoading(false);
+  };
+
+  const pickCategory = (sugg) => {
+    setSelected(sugg);
+    const et = ELEMENT_TYPES.some((t) => t.id === sugg.element_type) ? sugg.element_type : 'none';
+    setElementType(et);
+    setSelectedItem(null);
+    // Si l'IA a déjà détecté l'élément précis, on le pré-sélectionne et on
+    // passe directement à la sélection (skip de la grille si déjà identifié).
+    if (sugg.related_item_id && et !== 'none' && et !== 'conversation') {
+      setSelectedItem({ id: sugg.related_item_id, label: sugg.related_item_label || '', auto: true });
+    }
+    setStep(4);
+    if (et !== 'none' && et !== 'conversation' && !sugg.related_item_id) loadForType(et);
+  };
+
+  const buildRelatedItem = () => {
+    const et = elementType || 'none';
+    if (et === 'none') return { type: 'none', id: null, label: null };
+    if (et === 'conversation') return { type: 'conversation', id: null, label: convLabel || null };
+    if (!selectedItem) return { type: et, id: null, label: null };
+    if (selectedItem.auto) return { type: et, id: selectedItem.id, label: selectedItem.label };
+    const obj = selectedItem.obj;
+    let label = selectedItem.label;
+    if (et === 'post') label = (obj.content || '').slice(0, 120);
+    else if (et === 'wallet') label = `${obj.name || 'Portefeuille'} (${obj.balance || 0} cr)`;
+    else if (et === 'event') label = `${obj.title || 'Événement'} · ${obj.start_date ? obj.start_date.slice(0, 10) : '?'}`;
+    else if (et === 'community') label = obj.name;
+    else if (et === 'space') label = obj.title;
+    else if (et === 'story') label = `Story ${obj.media_type}`;
+    else if (et === 'referral') label = `Parrainage ${obj.referred_email || ''}`.trim();
+    else if (et === 'registration') label = `Inscription ${obj.event_title || ''}`.trim();
+    else if (et === 'reward') label = obj.item_label;
+    else if (et === 'cart') label = `Panier (${(obj.items || []).length} articles)`;
+    else if (et === 'ticket') label = `Ticket #${String(obj.id).slice(-6)}`;
+    else if (et === 'discussion') label = obj.title;
+    else if (et === 'forum') label = obj.title;
+    else if (et === 'review') label = `Avis ${obj.rating || '?'}/5`;
+    else if (et === 'certification') label = 'Demande de certification';
+    else if (et === 'donation') label = `Don de ${obj.amount || 0} €`;
+    else if (et === 'list') label = obj.name;
+    else if (et === 'ad') label = obj.title;
+    return { type: et, id: selectedItem.id, label };
+  };
+
+  const submit = async () => {
     if (!user) return;
+    const sugg = selected || { label: 'Autre', category: 'other', element_type: 'none' };
     setSubmitting(true);
     try {
       const subject = description.trim().slice(0, 80) || sugg.label;
+      const ri = buildRelatedItem();
       const ticket = await base44.entities.SupportTicket.create({
         subject,
         description: description.trim(),
         file_urls: fileUrls,
         category: sugg.category,
-        related_item_id: sugg.related_item_id || null,
-        related_item_type: sugg.element_type || 'none',
-        related_item_label: sugg.related_item_label || null,
+        related_item_id: ri.id,
+        related_item_type: ri.type,
+        related_item_label: ri.label,
         user_id: user.id,
         user_email: user.email,
         user_name: user.full_name || user.email,
@@ -105,7 +254,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
         messages: [{ role: 'user', content: description.trim(), at: new Date().toISOString(), attachments: fileUrls }],
       });
       setCreatedTicket(ticket);
-      setStep(4);
+      setStep(5);
       onCreated?.(ticket);
     } catch (e) {
       toast.error(e?.response?.data?.error || 'Création du ticket échouée');
@@ -143,17 +292,13 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent className="max-w-md bg-card border-border overflow-hidden p-0">
-        {/* Orange top accent bar */}
         <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #F37322, #F97316)' }} />
         <div className="p-5 md:p-6">
           <p className="text-[11px] text-muted-foreground mb-1">Soumettre un ticket de support</p>
 
-          {/* Progress dots */}
           <div className="flex items-center gap-1.5 mb-5">
-            {[1, 2, 3].map((s) => (
-              <div key={s} className={`h-1 flex-1 rounded-full transition-colors ${
-                step >= s ? 'bg-primary' : 'bg-secondary'
-              }`} />
+            {[1, 2, 3, 4].map((s) => (
+              <div key={s} className={`h-1 flex-1 rounded-full transition-colors ${step >= s ? 'bg-primary' : 'bg-secondary'}`} />
             ))}
           </div>
 
@@ -214,7 +359,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
             <div className="space-y-4">
               <div>
                 <h2 className="font-grotesk font-bold text-lg mb-1">Quel type de problème rencontrez-vous ?</h2>
-                <p className="text-xs text-muted-foreground">Sélectionnez la catégorie qui correspond le mieux — cela aide Nexus à vous guider vers la bonne solution.</p>
+                <p className="text-xs text-muted-foreground">Sélectionnez la catégorie qui correspond le mieux — cela aide Nexus à vous guider.</p>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {suggestions.map((s, i) => {
@@ -222,9 +367,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
                   const active = selected?.i === i;
                   return (
                     <button key={i} onClick={() => setSelected({ ...s, i })}
-                      className={`relative rounded-xl border p-4 text-center transition-all ${
-                        active ? 'border-foreground bg-foreground/5' : 'border-border bg-background/40 hover:border-foreground/30'
-                      }`}>
+                      className={`relative rounded-xl border p-4 text-center transition-all ${active ? 'border-foreground bg-foreground/5' : 'border-border bg-background/40 hover:border-foreground/30'}`}>
                       {active && (
                         <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-foreground flex items-center justify-center">
                           <Check className="w-2.5 h-2.5 text-background" />
@@ -238,12 +381,72 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
                   );
                 })}
               </div>
-              <Footer onBack={() => setStep(1)} onNext={() => selected && submit(selected)} nextDisabled={!selected} nextLabel="Soumettre" loading={submitting} />
+              <Footer onBack={() => setStep(1)} onNext={selected ? () => pickCategory(selected) : null} nextDisabled={!selected} />
             </div>
           )}
 
-          {/* STEP 4 — Succès */}
-          {step === 4 && createdTicket && (
+          {/* STEP 4 — Élément concerné */}
+          {step === 4 && selected && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="font-grotesk font-bold text-lg mb-1">Élément concerné</h2>
+                <p className="text-xs text-muted-foreground">Précisez l'élément en question pour aider Nexus à contextualiser.</p>
+              </div>
+              {/* Chips de type */}
+              <div className="flex flex-wrap gap-1.5">
+                {ELEMENT_TYPES.map((t) => {
+                  const Ic = t.icon;
+                  const active = elementType === t.id;
+                  return (
+                    <button key={t.id} onClick={() => loadForType(t.id)}
+                      className={`text-xs px-2.5 py-1.5 rounded-full border inline-flex items-center gap-1.5 transition-colors ${active ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-background/40 text-muted-foreground hover:text-foreground hover:border-foreground/20'}`}>
+                      <Ic className="w-3.5 h-3.5" /> {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {elementType === 'none' && (
+                <p className="text-xs text-muted-foreground text-center py-4">Aucun élément spécifique — passez à l'étape suivante.</p>
+              )}
+              {elementType === 'conversation' && (
+                <input value={convLabel} onChange={(e) => setConvLabel(e.target.value)}
+                  placeholder="Ex: Discussion avec @username…"
+                  className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-primary/40" />
+              )}
+              {elementType && elementType !== 'none' && elementType !== 'conversation' && (
+                <>
+                  {itemsLoading ? (
+                    <div className="text-center py-6"><Loader2 className="w-5 h-5 mx-auto animate-spin text-muted-foreground" /></div>
+                  ) : items.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-4">Aucun élément trouvé pour « {TYPE_LABEL[elementType]} ».</p>
+                  ) : (
+                    <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                      {items.map((it) => {
+                        const active = selectedItem?.id === it.id;
+                        return (
+                          <button key={it.id} onClick={() => setSelectedItem(active ? null : it)}
+                            className={`w-full text-left p-2.5 rounded-lg border text-xs transition-colors flex items-center gap-2 ${active ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'}`}>
+                            {it.img ? <img src={it.img} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" /> :
+                              <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">{(() => { const Ic = ELEMENT_TYPES.find((t) => t.id === elementType)?.icon || FileText; return <Ic className="w-4 h-4 text-muted-foreground" />; })()}</div>}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{it.label}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">{it.sub}</p>
+                            </div>
+                            {active && <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+              <Footer onBack={() => setStep(3)} onNext={submit} nextDisabled={elementType !== 'none' && elementType !== 'conversation' && !selectedItem} nextLabel="Soumettre" loading={submitting} />
+            </div>
+          )}
+
+          {/* STEP 5 — Succès */}
+          {step === 5 && createdTicket && (
             <div className="py-6 text-center space-y-3">
               <div className="w-14 h-14 rounded-2xl bg-green-400/10 border border-green-400/30 flex items-center justify-center mx-auto">
                 <Check className="w-7 h-7 text-green-400" />

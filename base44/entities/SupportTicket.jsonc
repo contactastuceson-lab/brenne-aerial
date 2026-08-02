@@ -36,10 +36,18 @@
         "registration",
         "reward",
         "cart",
+        "ticket",
+        "discussion",
+        "forum",
+        "review",
+        "certification",
+        "donation",
+        "list",
+        "ad",
         "none"
       ],
       "default": "none",
-      "description": "Type d'\u00e9l\u00e9ment concern\u00e9 : post, conversation, wallet, event, community, space, story, referral, registration, reward, cart, ou aucun"
+      "description": "Type d'\u00e9l\u00e9ment concern\u00e9 : post, conversation, wallet, event, community, space, story, referral, registration, reward, cart, ticket, discussion, forum, review, certification, donation, list, ad, ou aucun"
     },
     "related_item_label": {
       "type": "string",

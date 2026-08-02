@@ -8,6 +8,7 @@ import {
   Loader2, Upload, X, FileText, Image as ImageIcon, Sparkles, ArrowRight,
   ArrowLeft, CheckCircle2, MessageSquare, FileQuestion, Hash, Send, Wallet, Calendar, MapPin,
   Ban, Users, Radio, CircleDot, Gift, Ticket, Award, ShoppingCart,
+  LifeBuoy, MessageCircle, Star, BadgeCheck, Heart, List, Megaphone, BookOpen,
 } from 'lucide-react';
 
 const MAX_FILES = 5;
@@ -28,6 +29,14 @@ const ELEMENT_TYPES = [
   { id: 'registration', label: 'Inscription', icon: Ticket },
   { id: 'reward', label: 'Récompense', icon: Award },
   { id: 'cart', label: 'Panier', icon: ShoppingCart },
+  { id: 'ticket', label: 'Ticket', icon: LifeBuoy },
+  { id: 'discussion', label: 'Discussion', icon: MessageCircle },
+  { id: 'forum', label: 'Sujet forum', icon: BookOpen },
+  { id: 'review', label: 'Avis', icon: Star },
+  { id: 'certification', label: 'Certification', icon: BadgeCheck },
+  { id: 'donation', label: 'Don', icon: Heart },
+  { id: 'list', label: 'Liste', icon: List },
+  { id: 'ad', label: 'Campagne pub', icon: Megaphone },
 ];
 
 const TYPE_LABEL = Object.fromEntries(ELEMENT_TYPES.map((t) => [t.id, t.label]));
@@ -213,6 +222,70 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
           sub: `${active.total_credits || 0} crédits · ${active.status}`,
           obj: active,
         }];
+      } else if (type === 'ticket') {
+        const ts = await base44.entities.SupportTicket.filter({ user_email: user.email }, '-created_date', 30).catch(() => []);
+        list = (ts || []).map((t) => ({
+          id: t.id,
+          label: t.subject || '(sans sujet)',
+          sub: `#${String(t.id).slice(-6)} · ${t.status} · ${t.category || ''} · ${t.created_date ? new Date(t.created_date).toLocaleDateString('fr-FR') : ''}`,
+          obj: t,
+        }));
+      } else if (type === 'discussion') {
+        const ds = await base44.entities.Discussion.filter({ author_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (ds || []).map((d) => ({
+          id: d.id,
+          label: d.title || '(sans titre)',
+          sub: `${d.replies_count || 0} réponses · ${d.category || ''} · ${d.created_date ? new Date(d.created_date).toLocaleDateString('fr-FR') : ''}`,
+          obj: d,
+        }));
+      } else if (type === 'forum') {
+        const fs = await base44.entities.ForumTopic.filter({ author: user.id }, '-created_date', 30).catch(() => []);
+        list = (fs || []).map((f) => ({
+          id: f.id,
+          label: f.title || '(sans titre)',
+          sub: `${f.replies_count || 0} réponses · ${f.category || ''} · ${f.views_count || 0} vues`,
+          obj: f,
+        }));
+      } else if (type === 'review') {
+        const rs = await base44.entities.Review.filter({ author_email: user.email }, '-created_date', 30).catch(() => []);
+        list = (rs || []).map((r) => ({
+          id: r.id,
+          label: r.comment ? r.comment.slice(0, 60) : `Avis ${r.rating || '?'}/5`,
+          sub: `${r.rating || '?'}/5 · ${r.author_name || ''}${r.is_verified_client ? ' · client vérifié' : ''}`,
+          obj: r,
+        }));
+      } else if (type === 'certification') {
+        const cs = await base44.entities.CertificationRequest.filter({ user_email: user.email }, '-created_date', 30).catch(() => []);
+        list = (cs || []).map((c) => ({
+          id: c.id,
+          label: 'Demande de certification',
+          sub: `${c.status} · paiement ${c.payment_status || ''} · ${c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('fr-FR') : ''}`,
+          obj: c,
+        }));
+      } else if (type === 'donation') {
+        const ds = await base44.entities.Donation.filter({ donor_email: user.email }, '-created_date', 30).catch(() => []);
+        list = (ds || []).map((d) => ({
+          id: d.id,
+          label: `Don de ${d.amount || 0} €`,
+          sub: `${d.status} · ${d.created_date ? new Date(d.created_date).toLocaleDateString('fr-FR') : ''}${d.is_anonymous ? ' · anonyme' : ''}`,
+          obj: d,
+        }));
+      } else if (type === 'list') {
+        const ls = await base44.entities.UserList.filter({ owner_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (ls || []).map((l) => ({
+          id: l.id,
+          label: l.name,
+          sub: `${(l.member_ids || []).length} membres · ${l.is_private ? 'privée' : 'publique'}`,
+          obj: l,
+        }));
+      } else if (type === 'ad') {
+        const as = await base44.entities.AdCampaign.filter({ owner_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (as || []).map((a) => ({
+          id: a.id,
+          label: a.title || 'Campagne',
+          sub: `${a.status} · ${a.credits_remaining || 0}/${a.budget_credits || 0} crédits · ${a.impressions || 0} impressions`,
+          obj: a,
+        }));
       }
       setItems(list || []);
     } catch {}
@@ -244,6 +317,14 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
     else if (et === 'registration') label = `Inscription ${obj.event_title || ''}`.trim();
     else if (et === 'reward') label = obj.item_label;
     else if (et === 'cart') label = `Panier (${(obj.items || []).length} articles)`;
+    else if (et === 'ticket') label = `Ticket #${String(obj.id).slice(-6)} — ${obj.subject || ''}`;
+    else if (et === 'discussion') label = obj.title;
+    else if (et === 'forum') label = obj.title;
+    else if (et === 'review') label = `Avis ${obj.rating || '?'}/5`;
+    else if (et === 'certification') label = 'Demande de certification';
+    else if (et === 'donation') label = `Don de ${obj.amount || 0} €`;
+    else if (et === 'list') label = obj.name;
+    else if (et === 'ad') label = obj.title;
     return { type: et, id: selectedItem.id, label };
   };
 

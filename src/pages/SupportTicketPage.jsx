@@ -3,8 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Send, Loader2, CheckCircle2, Clock, AlertCircle,
-  ArrowLeft, Bot, User as UserIcon, Paperclip, Hash, MessageCircle, FileText,
-  Lock, ShieldAlert, Tag, UserCog, Wallet, XCircle, Zap,
+  ArrowLeft, Bot, UserCog, Paperclip, Hash, MessageCircle, FileText,
+  Lock, ShieldAlert, Tag, Wallet, XCircle,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -19,39 +19,16 @@ const CATEGORY_LABELS = {
 };
 
 const STATUS_META = {
-  open: { label: 'Ouvert', icon: Clock, dot: 'bg-amber-400', cls: 'text-amber-300 bg-amber-400/10 border-amber-400/25' },
-  ai_resolved: { label: 'Résolu par Nexus', icon: CheckCircle2, dot: 'bg-green-500', cls: 'text-green-300 bg-green-500/10 border-green-500/25' },
-  awaiting_human: { label: 'Escaladé humain', icon: ShieldAlert, dot: 'bg-orange-400', cls: 'text-orange-300 bg-orange-400/10 border-orange-400/25' },
-  resolved: { label: 'Résolu', icon: CheckCircle2, dot: 'bg-green-500', cls: 'text-green-300 bg-green-500/10 border-green-500/25' },
-  closed: { label: 'Fermé', icon: CheckCircle2, dot: 'bg-zinc-500', cls: 'text-muted-foreground bg-secondary border-border' },
+  open: { label: 'Ouvert', icon: Clock, cls: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
+  ai_resolved: { label: 'Résolu IA', icon: CheckCircle2, cls: 'text-green-400 bg-green-400/10 border-green-400/20' },
+  awaiting_human: { label: 'Escaladé', icon: ShieldAlert, cls: 'text-orange-400 bg-orange-400/10 border-orange-400/20' },
+  resolved: { label: 'Résolu', icon: CheckCircle2, cls: 'text-green-400 bg-green-400/10 border-green-400/20' },
+  closed: { label: 'Fermé', icon: CheckCircle2, cls: 'text-muted-foreground bg-secondary border-border' },
 };
-
-const PRIORITY_META = {
-  low: { label: 'Faible', cls: 'text-slate-300 bg-slate-400/10 border-slate-400/25' },
-  medium: { label: 'Normale', cls: 'text-blue-300 bg-blue-400/10 border-blue-400/25' },
-  high: { label: 'Haute', cls: 'text-orange-300 bg-orange-400/10 border-orange-400/25' },
-  urgent: { label: 'Urgente', cls: 'text-red-300 bg-red-500/10 border-red-500/25' },
-};
-
-const ASSIGNEE_META = {
-  ai: { label: 'Nexus', icon: Bot, cls: 'text-primary bg-primary/10 border-primary/25' },
-  human: { label: 'Humain', icon: UserCog, cls: 'text-orange-300 bg-orange-400/10 border-orange-400/25' },
-  unassigned: { label: 'Non assigné', icon: UserIcon, cls: 'text-muted-foreground bg-secondary border-border' },
-};
-
-function Badge({ meta, icon: Icon, children, className = '' }) {
-  return (
-    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border inline-flex items-center gap-1 ${className || meta.cls}`}>
-      {Icon && <Icon className="w-2.5 h-2.5" />}
-      {children}
-    </span>
-  );
-}
 
 export default function SupportTicketPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reply, setReply] = useState('');
@@ -64,7 +41,7 @@ export default function SupportTicketPage() {
       const t = await base44.entities.SupportTicket.get(id).catch(() => null);
       if (!t) { setError('Ticket introuvable'); setLoading(false); return; }
       setTicket(t);
-    } catch (e) {
+    } catch {
       setError('Ticket introuvable');
     } finally {
       setLoading(false);
@@ -85,9 +62,6 @@ export default function SupportTicketPage() {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [ticket?.messages?.length, loading, sending]);
 
-  // Étapes de recherche affichées en temps réel pendant que Nexus traite
-  // Étapes de recherche réelles affichées en temps réel — reflètent le type
-  // d'élément concerné sélectionné dans le wizard (pas des étapes génériques).
   const thinkingSteps = useMemo(() => {
     const rt = ticket?.related_item_type;
     const byType = {
@@ -96,20 +70,20 @@ export default function SupportTicketPage() {
       wallet: { icon: 'wallet', label: 'Vérification du portefeuille concerné' },
       event: { icon: 'event', label: "Examen de l'événement concerné" },
       community: { icon: 'community', label: 'Examen de la communauté concernée' },
-      space: { icon: 'space', label: 'Examen du Space audio concerné' },
+      space: { icon: 'space', label: 'Examen du Space concerné' },
       story: { icon: 'story', label: 'Examen de la story concernée' },
       referral: { icon: 'referral', label: 'Examen du parrainage concerné' },
       registration: { icon: 'registration', label: "Examen de l'inscription concernée" },
       reward: { icon: 'reward', label: 'Examen de la récompense concernée' },
       cart: { icon: 'cart', label: 'Examen du panier concerné' },
       ticket: { icon: 'ticket', label: 'Examen du ticket concerné' },
-      discussion: { icon: 'discussion', label: 'Examen de la discussion forum concernée' },
-      forum: { icon: 'forum', label: 'Examen du sujet forum concerné' },
+      discussion: { icon: 'discussion', label: 'Examen de la discussion forum' },
+      forum: { icon: 'forum', label: 'Examen du sujet forum' },
       review: { icon: 'review', label: "Examen de l'avis concerné" },
-      certification: { icon: 'certification', label: 'Examen de la demande de certification' },
+      certification: { icon: 'certification', label: 'Examen de la certification' },
       donation: { icon: 'donation', label: 'Examen du don concerné' },
       list: { icon: 'list', label: 'Examen de la liste concernée' },
-      ad: { icon: 'ad', label: 'Examen de la campagne pub concernée' },
+      ad: { icon: 'ad', label: 'Examen de la campagne pub' },
     };
     const steps = [{ icon: 'book', label: 'Lecture de la documentation eza' }];
     if (rt && rt !== 'none' && byType[rt]) steps.push(byType[rt]);
@@ -124,8 +98,8 @@ export default function SupportTicketPage() {
     const msg = reply.trim();
     if (!msg || sending) return;
     setSending(true);
-    const optimisticMsg = { role: 'user', content: msg, at: new Date().toISOString() };
-    setTicket((prev) => prev ? { ...prev, messages: [...(prev.messages || []), optimisticMsg] } : prev);
+    const optimistic = { role: 'user', content: msg, at: new Date().toISOString() };
+    setTicket((prev) => prev ? { ...prev, messages: [...(prev.messages || []), optimistic] } : prev);
     setReply('');
     try {
       const res = await base44.functions.invoke('replySupportTicket', { ticketId: id, message: msg });
@@ -142,7 +116,7 @@ export default function SupportTicketPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-20 text-center text-muted-foreground">
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center text-muted-foreground">
         <Loader2 className="w-6 h-6 mx-auto mb-3 animate-spin" />
         Chargement du ticket…
       </div>
@@ -151,7 +125,7 @@ export default function SupportTicketPage() {
 
   if (error || !ticket) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-20 text-center">
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
         <AlertCircle className="w-8 h-8 mx-auto mb-3 text-muted-foreground/50" />
         <p className="text-sm text-muted-foreground mb-4">{error || 'Ticket introuvable'}</p>
         <Link to="/support" className="text-primary text-sm hover:underline">← Retour au support</Link>
@@ -161,83 +135,71 @@ export default function SupportTicketPage() {
 
   const meta = STATUS_META[ticket.status] || STATUS_META.open;
   const SIcon = meta.icon;
-  const prio = PRIORITY_META[ticket.priority] || PRIORITY_META.medium;
-  const assignee = ASSIGNEE_META[ticket.assignee] || ASSIGNEE_META.unassigned;
-  const AIcon = assignee.icon;
   const messages = ticket.messages || [];
-  // Statut terminal = le ticket est "fermé normalement" (résolu par Nexus, résolu, ou fermé).
-  // On ne peut plus écrire — il faut ouvrir un nouveau ticket.
-  // Seuls les statuts vraiment terminaux bloquent la saisie.
-  // 'ai_resolved' = Nexus pense avoir répondu, mais l'utilisateur peut encore
-  // répondre pour rouvrir / demander un complément (sinon Nexus coupe la parole).
   const isClosed = ['resolved', 'closed'].includes(ticket.status);
   const isLocked = !!ticket.user_locked;
   const isAiResolved = ticket.status === 'ai_resolved';
-  // Nexus n'a pas encore répondu (ticket fraîchement créé, traitement auto en
-  // cours) → on affiche un état de traitement au lieu d'un composer vide.
   const nexusThinking = !sending && messages.length > 0 && !messages.some((m) => m.role === 'assistant' || m.role === 'admin');
   const composerDisabled = isClosed || isLocked || nexusThinking;
+  const relatedIcon = { post: Hash, conversation: MessageCircle, wallet: Wallet }[ticket.related_item_type];
 
   return (
-    <div className="max-w-3xl mx-auto px-3 md:px-4 py-4 md:py-6 flex flex-col" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
-      {/* Header */}
-      <div className="rounded-2xl bg-card border border-border p-3 md:p-4 mb-3">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/support')}
-            className="w-9 h-9 rounded-xl flex items-center justify-center bg-secondary border border-border hover:border-primary/40 transition-colors flex-shrink-0">
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-[15px] md:text-base font-grotesk font-bold truncate">{ticket.subject}</h1>
-            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border inline-flex items-center gap-1 ${meta.cls}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
-                {meta.label}
-              </span>
-              <Badge meta={prio}>{prio.label}</Badge>
-              <Badge meta={assignee} icon={AIcon}>{assignee.label}</Badge>
-              {ticket.admin_label && (
-                <Badge className="text-violet-300 bg-violet-400/10 border-violet-400/25" icon={Tag}>
-                  {ticket.admin_label}
-                </Badge>
-              )}
-              <span className="text-[10px] text-muted-foreground/70 ml-auto">#{String(ticket.id).slice(-6)}</span>
+    <div className="max-w-2xl mx-auto px-3 md:px-4 py-4 md:py-6 flex flex-col" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
+      {/* Header — style Base44 épuré */}
+      <div className="rounded-2xl bg-card border border-border overflow-hidden mb-3">
+        <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #F37322, #1DA890)' }} />
+        <div className="p-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/support')}
+              className="w-9 h-9 rounded-xl flex items-center justify-center bg-secondary border border-border hover:border-primary/40 transition-colors flex-shrink-0">
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-base md:text-lg font-grotesk font-bold truncate">{ticket.subject}</h1>
+              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border inline-flex items-center gap-1 ${meta.cls}`}>
+                  <SIcon className="w-2.5 h-2.5" /> {meta.label}
+                </span>
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-border bg-secondary text-muted-foreground">
+                  {CATEGORY_LABELS[ticket.category] || 'Autre'}
+                </span>
+                {ticket.admin_label && (
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-violet-400/20 bg-violet-400/10 text-violet-300 inline-flex items-center gap-1">
+                    <Tag className="w-2.5 h-2.5" /> {ticket.admin_label}
+                  </span>
+                )}
+                <span className="text-[10px] text-muted-foreground/60 ml-auto">#{String(ticket.id).slice(-6)}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* IA context banner */}
+      {/* Banner Nexus context */}
       <div className="rounded-2xl border border-primary/15 bg-primary/[0.04] p-3 mb-3 flex items-start gap-2.5">
         <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, hsl(205 90% 50%), hsl(195 80% 42%))' }}>
+          style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
           <Sparkles className="w-4 h-4 text-white" />
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed pt-0.5">
-          Nexus connaît votre compte (solde, abonnement, activité, parrainages) et répond à partir de ce contexte réel.
-          {ticket.ai_summary ? <span className="text-foreground/80 block mt-1">Résumé : {ticket.ai_summary}</span> : null}
+          Nexus connaît votre compte et répond à partir de ce contexte réel.
+          {ticket.ai_summary ? <span className="text-foreground/80 block mt-0.5">Résumé : {ticket.ai_summary}</span> : null}
         </p>
       </div>
 
       {/* Métadonnées : élément concerné + pièces jointes */}
       {(ticket.related_item_type !== 'none' || ticket.file_urls?.length > 0) && (
         <div className="rounded-2xl border border-border bg-secondary/30 p-3 mb-3 space-y-2.5">
-          {ticket.related_item_type === 'post' && (
+          {ticket.related_item_type !== 'none' && ticket.related_item_type !== 'conversation' && relatedIcon && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Hash className="w-3.5 h-3.5 text-primary" />
-              <span>Publication concernée : {ticket.related_item_label || ticket.related_item_id}</span>
+              {(() => { const Ic = relatedIcon; return <Ic className="w-3.5 h-3.5 text-primary" />; })()}
+              <span>Élément concerné : {ticket.related_item_label || ticket.related_item_id}</span>
             </div>
           )}
           {ticket.related_item_type === 'conversation' && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <MessageCircle className="w-3.5 h-3.5 text-primary" />
               <span>Discussion : {ticket.related_item_label}</span>
-            </div>
-          )}
-          {ticket.related_item_type === 'wallet' && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Wallet className="w-3.5 h-3.5 text-primary" />
-              <span>Portefeuille concerné : {ticket.related_item_label}</span>
             </div>
           )}
           {ticket.file_urls?.length > 0 && (
@@ -273,7 +235,7 @@ export default function SupportTicketPage() {
               className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} gap-2.5`}>
               {m.role !== 'user' && (
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: 'linear-gradient(135deg, hsl(205 90% 50%), hsl(195 80% 42%))' }}>
+                  style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
                   {m.role === 'admin' ? <UserCog className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-white" />}
                 </div>
               )}
@@ -282,9 +244,9 @@ export default function SupportTicketPage() {
                   ? 'rounded-tr-md text-white'
                   : m.role === 'admin'
                     ? 'bg-blue-500/15 border border-blue-400/20 rounded-tl-md'
-                    : 'bg-[#1C2329] border border-white/[0.06] rounded-tl-md'
+                    : 'bg-card border border-border rounded-tl-md'
               }`}
-                style={m.role === 'user' ? { background: 'linear-gradient(135deg, hsl(211 100% 50%), hsl(205 90% 45%))' } : {}}>
+                style={m.role === 'user' ? { background: '#0F172A' } : {}}>
                 {m.role !== 'user' ? (
                   <div>
                     {m.role === 'assistant' && m.steps?.length > 0 && (
@@ -292,7 +254,7 @@ export default function SupportTicketPage() {
                     )}
                     <NexusMarkdown>{m.content}</NexusMarkdown>
                     {m.action && (m.action.status === 'executed' || m.action.status === 'failed') && (
-                      <div className={`mt-2 flex items-center gap-1.5 text-[11px] ${m.action.status === 'executed' ? 'text-green-300' : 'text-red-300'}`}>
+                      <div className={`mt-2 flex items-center gap-1.5 text-[11px] ${m.action.status === 'executed' ? 'text-green-400' : 'text-red-400'}`}>
                         {m.action.status === 'executed' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                         <span>{m.action.status === 'executed' ? 'Action effectuée' : 'Action échouée'} · {m.action.label || m.action.type}</span>
                       </div>
@@ -306,10 +268,10 @@ export default function SupportTicketPage() {
         {sending && (
           <div className="flex justify-start gap-2.5 items-start">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-              style={{ background: 'linear-gradient(135deg, hsl(205 90% 50%), hsl(195 80% 42%))' }}>
+              style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
               <Bot className="w-4 h-4 text-white" />
             </div>
-            <div className="bg-[#1C2329] border border-white/[0.06] rounded-2xl rounded-tl-md px-3.5 py-2.5 max-w-[82%]">
+            <div className="bg-card border border-border rounded-2xl rounded-tl-md px-3.5 py-2.5 max-w-[82%]">
               <AiSteps steps={thinkingSteps} animate={true} />
             </div>
           </div>
@@ -317,10 +279,10 @@ export default function SupportTicketPage() {
         {nexusThinking && (
           <div className="flex justify-start gap-2.5 items-start">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-              style={{ background: 'linear-gradient(135deg, hsl(205 90% 50%), hsl(195 80% 42%))' }}>
+              style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
               <Bot className="w-4 h-4 text-white" />
             </div>
-            <div className="bg-[#1C2329] border border-white/[0.06] rounded-2xl rounded-tl-md px-3.5 py-2.5 max-w-[82%]">
+            <div className="bg-card border border-border rounded-2xl rounded-tl-md px-3.5 py-2.5 max-w-[82%]">
               <AiSteps steps={thinkingSteps} animate={true} />
               <p className="text-[11px] text-muted-foreground mt-1">Nexus traite votre demande en direct…</p>
             </div>
@@ -338,7 +300,7 @@ export default function SupportTicketPage() {
         <PendingActionCard ticket={ticket} onDone={load} />
       </div>
 
-      {/* Composer */}
+      {/* Composer + états */}
       {isLocked && (
         <div className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-3 flex items-center gap-2.5 sticky bottom-0">
           <Lock className="w-4 h-4 text-amber-300 flex-shrink-0" />
@@ -370,7 +332,7 @@ export default function SupportTicketPage() {
               onClick={sendReply}
               disabled={!reply.trim() || sending}
               className="w-10 h-10 rounded-xl flex items-center justify-center text-white disabled:opacity-40 disabled:saturate-50 transition-transform active:scale-95 flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, hsl(211 100% 50%), hsl(205 90% 45%))' }}
+              style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}
             >
               {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </button>

@@ -5,7 +5,7 @@ import {
   Bell, User, LogOut, LayoutDashboard, Bookmark,
   Users, FileText, Calendar, Settings, Heart, Shield,
   Building2, Star, Award, Plus, Camera, List, Radio,
-  ShoppingBag, Wallet, Gift, BookOpen, Newspaper, Info, ShoppingCart
+  ShoppingBag, Wallet, Gift, BookOpen, Newspaper, Info, ShoppingCart, LifeBuoy
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -58,6 +58,7 @@ const NAV_SECTIONS = [
   {
     title: 'Ressources',
     items: [
+      { to: '/support',        icon: LifeBuoy,         label: 'Support',        color: 'text-cyan-400' },
       { to: '/documentation', icon: BookOpen,        label: 'Documentation',  color: 'text-blue-300' },
       { to: '/blog',          icon: Newspaper,        label: 'Blog',           color: 'text-indigo-400' },
       { to: '/about',         icon: Info,             label: 'À propos',       color: 'text-slate-300' },

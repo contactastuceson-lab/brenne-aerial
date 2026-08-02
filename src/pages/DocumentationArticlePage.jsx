@@ -13,6 +13,7 @@ const splitBullet = (b) => {
 };
 import { getDocTopic, DOC_TOPICS, getDocImage } from '@/lib/docsContent';
 import DocIcon from '@/components/docs/DocIcon';
+import DocNavbar from '@/components/docs/DocNavbar';
 
 export default function DocumentationArticlePage() {
   const { slug } = useParams();
@@ -55,6 +56,7 @@ export default function DocumentationArticlePage() {
 
   return (
     <div className="min-h-screen">
+      <DocNavbar />
       {/* ===== HERO ===== */}
       <section className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0 grid-bg opacity-30" />

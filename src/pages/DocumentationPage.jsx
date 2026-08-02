@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { DOC_TOPICS, getDocImage } from '@/lib/docsContent';
 import DocIcon from '@/components/docs/DocIcon';
+import DocNavbar from '@/components/docs/DocNavbar';
 
 const ORANGE = '#ff6d3f';
 const BLUE = '#38aadc';
@@ -18,8 +19,14 @@ const ROSE = '#fb7185';
 const AMBER = '#f59e0b';
 
 export default function DocumentationPage() {
+  const [query, setQuery] = useState('');
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? DOC_TOPICS.filter((t) => (t.title + ' ' + t.tagline + ' ' + t.intro).toLowerCase().includes(q))
+    : DOC_TOPICS;
   return (
     <div className="min-h-screen bg-background">
+      <DocNavbar onSearch={setQuery} />
       {/* ===== HERO ===== */}
       <section className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0 grid-bg opacity-30" />
@@ -268,10 +275,15 @@ export default function DocumentationPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="font-grotesk font-bold text-2xl md:text-3xl">Toute la documentation</h2>
-            <p className="text-muted-foreground mt-2 text-sm">{DOC_TOPICS.length} sujets complets à explorer en détail.</p>
+            <p className="text-muted-foreground mt-2 text-sm">{filtered.length} sujet{filtered.length > 1 ? 's' : ''} complet{filtered.length > 1 ? 's' : ''} à explorer en détail.</p>
           </div>
+          {filtered.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <p className="text-sm">Aucun sujet ne correspond à « {query} ».</p>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {DOC_TOPICS.map((t, i) => (
+            {filtered.map((t, i) => (
               <motion.div
                 key={t.slug}
                 initial={{ opacity: 0, y: 16 }}
@@ -309,13 +321,14 @@ export default function DocumentationPage() {
                     <p className="font-inter text-xs text-muted-foreground leading-relaxed">{t.tagline}</p>
                   </div>
                 </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+                </motion.div>
+                ))}
+                </div>
+                )}
+                </div>
+                </section>
 
-      {/* Footer */}
+                {/* Footer */}
       <div className="max-w-6xl mx-auto px-5 py-10 text-center">
         <p className="font-mono text-[10px] text-muted-foreground/40">© 2026 EZA by EZA Group · Documentation publique</p>
       </div>

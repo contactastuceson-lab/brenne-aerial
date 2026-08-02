@@ -2,18 +2,106 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, ChevronRight, ArrowRight, Check, BookOpen, List, Quote,
+  ArrowLeft, ArrowRight, BookOpen, List, Clock, Hash, Quote, Code2,
 } from 'lucide-react';
-
-// Transforme une liste de bullets "Terme — description" en lignes de tableau.
-const splitBullet = (b) => {
-  const idx = b.indexOf(' — ');
-  if (idx === -1) return { term: '', desc: b };
-  return { term: b.slice(0, idx).trim(), desc: b.slice(idx + 3).trim() };
-};
-import { getDocTopic, DOC_TOPICS, getDocImage } from '@/lib/docsContent';
+import { getDocTopic, DOC_TOPICS, getDocImage, DOC_TOPIC_COUNT } from '@/lib/docsContent';
 import DocIcon from '@/components/docs/DocIcon';
 import DocNavbar from '@/components/docs/DocNavbar';
+import DocCallout from '@/components/docs/DocCallout';
+
+// Temps de lecture estimé (~200 mots/min).
+const readingTime = (topic) => {
+  const words = [
+    topic.intro,
+    ...(topic.sections || []).flatMap((s) => [s.body, ...(s.bullets || []), ...(s.steps || []), ...(s.table || []).map((r) => r.k + ' ' + r.v)]),
+  ].join(' ').split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+};
+
+const CALLOUT_ICONS = { tip: '✨', note: 'ℹ️', warning: '⚠️', info: '💡', success: '✅' };
+
+function SectionBlock({ s, i, color, active }) {
+  return (
+    <motion.section
+      data-idx={i}
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.4 }}
+      className="scroll-mt-24 mb-6"
+    >
+      <div
+        className="rounded-2xl border bg-card overflow-hidden"
+        style={{ borderLeft: `4px solid ${color}`, boxShadow: active === i ? `0 0 0 1px ${color}30` : 'none', borderColor: active === i ? `${color}40` : undefined }}
+      >
+        <div className="p-5 md:p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="w-9 h-9 rounded-xl flex items-center justify-center font-mono text-sm font-bold flex-shrink-0" style={{ background: `${color}15`, color }}>
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h2 className="font-grotesk font-bold text-lg md:text-xl text-foreground leading-tight">{s.title}</h2>
+          </div>
+
+          {s.body && <p className="text-sm text-muted-foreground leading-relaxed mb-4">{s.body}</p>}
+
+          {/* Étapes numérotées */}
+          {s.steps?.length > 0 && (
+            <ol className="space-y-2 mb-4">
+              {s.steps.map((st, j) => (
+                <li key={j} className="flex items-start gap-3">
+                  <span className="mt-0.5 w-6 h-6 rounded-lg flex items-center justify-center font-mono text-[11px] font-bold flex-shrink-0" style={{ background: `${color}15`, color }}>{j + 1}</span>
+                  <span className="text-sm text-foreground/90 leading-relaxed pt-0.5">{st}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+
+          {/* Tableau clé / valeur */}
+          {s.table?.length > 0 && (
+            <div className="rounded-xl border border-border overflow-hidden mb-4">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr style={{ background: `${color}10` }}>
+                    <th className="text-left font-semibold text-foreground px-3 py-2.5 w-1/3">Point</th>
+                    <th className="text-left font-semibold text-foreground px-3 py-2.5">Détail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {s.table.map((row, j) => (
+                    <tr key={j} className="border-t border-border/60">
+                      <td className="px-3 py-2.5 align-top font-medium" style={{ color }}>{row.k}</td>
+                      <td className="px-3 py-2.5 align-top text-muted-foreground leading-relaxed">{row.v}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Liste à puces */}
+          {s.bullets?.length > 0 && (
+            <ul className="space-y-1.5 mb-4">
+              {s.bullets.map((b, j) => (
+                <li key={j} className="flex items-start gap-2.5 text-sm text-foreground/90 leading-relaxed">
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: color }} />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Bloc de code */}
+          {s.code && (
+            <pre className="mt-3 rounded-xl border border-border bg-secondary/60 p-4 overflow-x-auto text-xs font-mono text-foreground/85 whitespace-pre">{s.code}</pre>
+          )}
+
+          {/* Callout */}
+          {s.callout && <DocCallout callout={s.callout} />}
+        </div>
+      </div>
+    </motion.section>
+  );
+}
 
 export default function DocumentationArticlePage() {
   const { slug } = useParams();
@@ -24,17 +112,10 @@ export default function DocumentationArticlePage() {
   useEffect(() => {
     if (!topic) return;
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            const idx = Number(e.target.dataset.idx);
-            setActive(idx);
-          }
-        });
-      },
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) setActive(Number(e.target.dataset.idx)); }),
       { rootMargin: '-20% 0px -70% 0px', threshold: 0 }
     );
-    refs.current.forEach(r => r && observer.observe(r));
+    refs.current.forEach((r) => r && observer.observe(r));
     return () => observer.disconnect();
   }, [slug]);
 
@@ -43,16 +124,18 @@ export default function DocumentationArticlePage() {
       <div className="min-h-screen flex items-center justify-center px-5">
         <div className="text-center">
           <h1 className="font-grotesk font-bold text-2xl mb-3">Sujet introuvable</h1>
-          <Link to="/documentation" className="text-primary hover:underline font-inter text-sm">← Retour à la documentation</Link>
+          <Link to="/documentation" className="text-primary hover:underline text-sm">← Retour à la documentation</Link>
         </div>
       </div>
     );
   }
 
-  const idx = DOC_TOPICS.findIndex(t => t.slug === slug);
+  const idx = DOC_TOPICS.findIndex((t) => t.slug === slug);
   const prev = idx > 0 ? DOC_TOPICS[idx - 1] : null;
   const next = idx < DOC_TOPICS.length - 1 ? DOC_TOPICS[idx + 1] : null;
   const heroImg = getDocImage(slug);
+  const rt = readingTime(topic);
+  const sectionCount = topic.sections?.length || 0;
 
   return (
     <div className="min-h-screen">
@@ -66,34 +149,34 @@ export default function DocumentationArticlePage() {
             <ArrowLeft className="w-3.5 h-3.5" /> Documentation
           </Link>
           <div className="flex items-start gap-4">
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center border flex-shrink-0"
-              style={{ background: `${topic.color}15`, borderColor: `${topic.color}30` }}
-            >
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center border flex-shrink-0" style={{ background: `${topic.color}15`, borderColor: `${topic.color}30` }}>
               <DocIcon name={topic.icon} className="w-6 h-6" style={{ color: topic.color }} />
             </div>
             <div className="min-w-0">
               <h1 className="font-grotesk font-black text-2xl sm:text-3xl leading-tight">{topic.title}</h1>
-              <span
-                className="inline-block font-mono text-[10px] tracking-[2px] uppercase mt-2 px-2.5 py-1 rounded-full border"
-                style={{ color: topic.color, borderColor: `${topic.color}40`, background: `${topic.color}10` }}
-              >
+              <span className="inline-block font-mono text-[10px] tracking-[2px] uppercase mt-2 px-2.5 py-1 rounded-full border" style={{ color: topic.color, borderColor: `${topic.color}40`, background: `${topic.color}10` }}>
                 {topic.tagline}
               </span>
             </div>
           </div>
+
+          {/* Méta : temps de lecture + sections */}
+          <div className="mt-5 flex flex-wrap gap-2.5">
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/50 border border-border rounded-lg px-2.5 py-1.5">
+              <Clock className="w-3.5 h-3.5" /> {rt} min de lecture
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/50 border border-border rounded-lg px-2.5 py-1.5">
+              <Hash className="w-3.5 h-3.5" /> {sectionCount} section{sectionCount > 1 ? 's' : ''}
+            </span>
+          </div>
+
           <div className="mt-6 rounded-2xl border border-border bg-card p-5 flex items-start gap-3">
             <BookOpen className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: topic.color }} />
-            <p className="font-inter text-sm text-muted-foreground leading-relaxed">{topic.intro}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{topic.intro}</p>
           </div>
 
           {/* Illustration IA */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="mt-6 relative rounded-2xl border border-border overflow-hidden aspect-[2/1] bg-card"
-          >
+          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="mt-6 relative rounded-2xl border border-border overflow-hidden aspect-[2/1] bg-card">
             <img src={heroImg} alt="" className="w-full h-full object-cover" loading="lazy" />
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-4 flex items-center gap-2">
@@ -118,9 +201,7 @@ export default function DocumentationArticlePage() {
                 key={i}
                 onClick={() => refs.current[i]?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 className={`w-full text-left flex items-start gap-2 px-3 py-2.5 rounded-xl text-xs font-medium transition-all border ${
-                  active === i
-                    ? 'text-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary border-transparent'
+                  active === i ? 'text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary border-transparent'
                 }`}
                 style={active === i ? { background: `${topic.color}10`, borderColor: `${topic.color}30`, color: topic.color } : {}}
               >
@@ -134,81 +215,12 @@ export default function DocumentationArticlePage() {
         {/* Sections */}
         <div className="flex-1 min-w-0 max-w-3xl">
           {topic.sections.map((s, i) => (
-            <motion.section
-              key={i}
-              data-idx={i}
-              ref={el => (refs.current[i] = el)}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.4 }}
-              className="scroll-mt-24 mb-6"
-            >
-              <div
-                className="rounded-2xl border border-border bg-card overflow-hidden"
-                style={{ borderLeft: `4px solid ${topic.color}`, boxShadow: active === i ? `0 0 0 1px ${topic.color}30` : 'none' }}
-              >
-                <div className="p-5 md:p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span
-                      className="w-9 h-9 rounded-xl flex items-center justify-center font-mono text-sm font-bold flex-shrink-0"
-                      style={{ background: `${topic.color}15`, color: topic.color }}
-                    >
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <h2 className="font-grotesk font-bold text-lg md:text-xl text-foreground leading-tight">{s.title}</h2>
-                  </div>
-                  <p className="font-inter text-sm text-muted-foreground leading-relaxed mb-5">{s.body}</p>
-
-                  {/* Tableau structuré */}
-                  <div className="rounded-xl border border-border overflow-hidden">
-                    <table className="w-full text-sm border-collapse">
-                      <thead>
-                        <tr style={{ background: `${topic.color}12` }}>
-                          <th className="text-left font-semibold text-foreground px-3 py-2 w-1/3">Point</th>
-                          <th className="text-left font-semibold text-foreground px-3 py-2">Détail</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {s.bullets.map((b, j) => {
-                          const { term, desc } = splitBullet(b);
-                          return (
-                            <tr key={j} className="border-t border-border/60">
-                              {term ? (
-                                <>
-                                  <td className="px-3 py-2.5 align-top font-medium text-foreground" style={{ color: topic.color }}>
-                                    {term}
-                                  </td>
-                                  <td className="px-3 py-2.5 align-top text-muted-foreground leading-relaxed">{desc}</td>
-                                </>
-                              ) : (
-                                <td colSpan={2} className="px-3 py-2.5 text-foreground/90 leading-relaxed">{desc}</td>
-                              )}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Barre latérale — callout */}
-                  <div
-                    className="mt-4 rounded-r-xl pl-4 pr-3 py-3 flex items-start gap-2.5"
-                    style={{ borderLeft: `3px solid ${topic.color}`, background: `${topic.color}0a` }}
-                  >
-                    <Quote className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: topic.color }} />
-                    <p className="font-inter text-xs text-foreground/80 leading-relaxed italic">
-                      {splitBullet(s.bullets[0]).term
-                        ? `${splitBullet(s.bullets[0]).term} — ${splitBullet(s.bullets[0]).desc}`
-                        : s.bullets[0]}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.section>
+            <div key={i} ref={(el) => (refs.current[i] = el)}>
+              <SectionBlock s={s} i={i} color={topic.color} active={active} />
+            </div>
           ))}
 
-          {/* Prev / Next — colored top bar cards */}
+          {/* Prev / Next */}
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {prev ? (
               <Link to={`/documentation/${prev.slug}`} className="group rounded-2xl border border-border bg-card overflow-hidden hover-lift">
@@ -238,7 +250,7 @@ export default function DocumentationArticlePage() {
 
           <div className="mt-8 text-center">
             <Link to="/documentation" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
-              <ArrowLeft className="w-3.5 h-3.5" /> Toute la documentation
+              <ArrowLeft className="w-3.5 h-3.5" /> Toute la documentation ({DOC_TOPIC_COUNT} sujets)
             </Link>
           </div>
         </div>

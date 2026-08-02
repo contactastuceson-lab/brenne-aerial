@@ -39,7 +39,14 @@ export async function executeNexusAction(base44, action, ticket, user) {
   const label = describeAction(type, params);
   try {
     if (type === 'grant_credits' || type === 'refund_credits') {
-      const amount = Math.max(0, Math.min(Number(params.amount) || 0, COURTESY_CREDIT_CAP));
+      // Le LLM omet parfois params.amount et ne met le montant que dans le label
+      // (ex: « Confirmer l'ajout de 50 crédits »). On l'extrait du label en repli.
+      let amountNum = Number(params.amount);
+      if (!Number.isFinite(amountNum) || amountNum <= 0) {
+        const labelNum = (action?.label || '').match(/(\d+(?:[.,]\d+)?)/);
+        if (labelNum) amountNum = Number(labelNum[1].replace(',', '.'));
+      }
+      const amount = Math.max(0, Math.min(Math.round(amountNum) || 0, COURTESY_CREDIT_CAP));
       if (amount <= 0) throw new Error('Montant invalide (1-100)');
       let wallet = null;
       if (params.wallet_id) wallet = await base44.asServiceRole.entities.Wallet.get(params.wallet_id).catch(() => null);

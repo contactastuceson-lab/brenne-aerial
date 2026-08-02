@@ -1,6 +1,46 @@
 // Contenu de la documentation publique EZA.
 // Chaque sujet = une page dédiée (/documentation/:slug) avec plusieurs sections riches.
 
+// Illustrations IA par thème, assignées à chaque sujet.
+export const DOC_IMAGES = {
+  platform: 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/15b445f90_generated_image.png',
+  social: 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/fc64bbf29_generated_image.png',
+  technical: 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/ba5be6dc9_generated_image.png',
+  economy: 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/dd1701cb0_generated_image.png',
+  identity: 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/ba8d47f9d_generated_image.png',
+  security: 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/447b7b854_generated_image.png',
+  notifications: 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/858e916d4_generated_image.png',
+  design: 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/cc7fb5fb8_generated_image.png',
+};
+
+export const DOC_IMAGE_BY_SLUG = {
+  overview: 'platform',
+  stack: 'technical',
+  social: 'social',
+  messaging: 'social',
+  forum: 'social',
+  portfolio: 'design',
+  blog: 'social',
+  profile: 'identity',
+  certifications: 'identity',
+  affiliations: 'platform',
+  enor: 'identity',
+  notifications: 'notifications',
+  pwa: 'technical',
+  auth: 'security',
+  data: 'technical',
+  design: 'design',
+  integrations: 'technical',
+  security: 'security',
+  'economie-credits': 'economy',
+  'economie-boutique': 'economy',
+  'economie-tokens': 'economy',
+  'economie-admin': 'economy',
+  conventions: 'technical',
+};
+
+export const getDocImage = (slug) => DOC_IMAGES[DOC_IMAGE_BY_SLUG[slug] || 'platform'];
+
 export const DOC_TOPICS = [
   {
     slug: 'overview',

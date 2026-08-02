@@ -7,7 +7,7 @@ import {
   Network, Crown, Coins, Gift, Palette, Database, Lock,
   Rocket, Layers, Terminal, BookOpen,
 } from 'lucide-react';
-import { DOC_TOPICS } from '@/lib/docsContent';
+import { DOC_TOPICS, getDocImage } from '@/lib/docsContent';
 import DocIcon from '@/components/docs/DocIcon';
 
 const ORANGE = '#ff6d3f';
@@ -281,29 +281,33 @@ export default function DocumentationPage() {
               >
                 <Link
                   to={`/documentation/${t.slug}`}
-                  className="group relative block h-full bg-card border border-border rounded-2xl p-5 overflow-hidden hover-lift"
+                  className="group relative block h-full bg-card border border-border rounded-2xl overflow-hidden hover-lift"
                 >
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: t.color }} />
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="relative h-24 overflow-hidden">
+                    <img src={getDocImage(t.slug)} alt="" className="w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500" loading="lazy" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
                     <div
-                      className="w-11 h-11 rounded-xl flex items-center justify-center border"
-                      style={{ background: `${t.color}15`, borderColor: `${t.color}30` }}
+                      className="absolute top-3 left-3 w-11 h-11 rounded-xl flex items-center justify-center border backdrop-blur-sm"
+                      style={{ background: `${t.color}30`, borderColor: `${t.color}50` }}
                     >
-                      <DocIcon name={t.icon} className="w-5 h-5" />
+                      <DocIcon name={t.icon} className="w-5 h-5 text-white" />
                     </div>
-                    <div className="flex items-center gap-2">
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: t.color }} />
+                  <div className="p-5">
+                    <div className="flex items-center justify-between mb-1">
+                      <h2 className="font-grotesk font-bold text-base text-foreground">{t.title}</h2>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
+                    </div>
+                    <div className="flex items-center gap-2 mb-1">
                       {t.isNew && (
                         <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-emerald-400/15 text-emerald-400 border border-emerald-400/30">
                           Nouveau
                         </span>
                       )}
-                      <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                     </div>
+                    <p className="font-inter text-xs text-muted-foreground leading-relaxed">{t.tagline}</p>
                   </div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h2 className="font-grotesk font-bold text-base text-foreground">{t.title}</h2>
-                  </div>
-                  <p className="font-inter text-xs text-muted-foreground leading-relaxed">{t.tagline}</p>
                 </Link>
               </motion.div>
             ))}

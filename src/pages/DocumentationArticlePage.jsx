@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   ArrowLeft, ChevronRight, ArrowRight, Check, BookOpen, List,
 } from 'lucide-react';
-import { getDocTopic, DOC_TOPICS } from '@/lib/docsContent';
+import { getDocTopic, DOC_TOPICS, getDocImage } from '@/lib/docsContent';
 import DocIcon from '@/components/docs/DocIcon';
 
 export default function DocumentationArticlePage() {
@@ -44,6 +44,7 @@ export default function DocumentationArticlePage() {
   const idx = DOC_TOPICS.findIndex(t => t.slug === slug);
   const prev = idx > 0 ? DOC_TOPICS[idx - 1] : null;
   const next = idx < DOC_TOPICS.length - 1 ? DOC_TOPICS[idx + 1] : null;
+  const heroImg = getDocImage(slug);
 
   return (
     <div className="min-h-screen">
@@ -76,6 +77,21 @@ export default function DocumentationArticlePage() {
             <BookOpen className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: topic.color }} />
             <p className="font-inter text-sm text-muted-foreground leading-relaxed">{topic.intro}</p>
           </div>
+
+          {/* Illustration IA */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="mt-6 relative rounded-2xl border border-border overflow-hidden aspect-[2/1] bg-card"
+          >
+            <img src={heroImg} alt="" className="w-full h-full object-cover" loading="lazy" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+            <div className="absolute bottom-3 left-4 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: topic.color }} />
+              <span className="font-mono text-[10px] uppercase tracking-wider text-foreground/70">Illustration · {topic.tagline}</span>
+            </div>
+          </motion.div>
         </div>
       </section>
 

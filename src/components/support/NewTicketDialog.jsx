@@ -7,9 +7,30 @@ import { toast } from 'sonner';
 import {
   Loader2, Upload, X, FileText, Image as ImageIcon, Sparkles, ArrowRight,
   ArrowLeft, CheckCircle2, MessageSquare, FileQuestion, Hash, Send, Wallet, Calendar, MapPin,
+  Ban, Users, Radio, CircleDot, Gift, Ticket, Award, ShoppingCart,
 } from 'lucide-react';
 
 const MAX_FILES = 5;
+
+// Catalogue des types d'éléments sélectionnables à l'étape 3.
+// L'utilisateur peut basculer entre tous ces types (l'IA pré-sélectionne un
+// candidat, mais l'utilisateur reste libre d'en choisir un autre).
+const ELEMENT_TYPES = [
+  { id: 'none', label: 'Aucun', icon: Ban },
+  { id: 'post', label: 'Publication', icon: Hash },
+  { id: 'wallet', label: 'Portefeuille', icon: Wallet },
+  { id: 'event', label: 'Événement', icon: Calendar },
+  { id: 'conversation', label: 'Discussion', icon: MessageSquare },
+  { id: 'community', label: 'Communauté', icon: Users },
+  { id: 'space', label: 'Space audio', icon: Radio },
+  { id: 'story', label: 'Story', icon: CircleDot },
+  { id: 'referral', label: 'Parrainage', icon: Gift },
+  { id: 'registration', label: 'Inscription', icon: Ticket },
+  { id: 'reward', label: 'Récompense', icon: Award },
+  { id: 'cart', label: 'Panier', icon: ShoppingCart },
+];
+
+const TYPE_LABEL = Object.fromEntries(ELEMENT_TYPES.map((t) => [t.id, t.label]));
 
 export default function NewTicketDialog({ open, onClose, onCreated }) {
   // wizard steps: 1 description, 2 category, 3 element, 4 confirm, 5 done
@@ -21,24 +42,20 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [loadingPosts, setLoadingPosts] = useState(false);
-  const [selectedPost, setSelectedPost] = useState(null);
+  // Étape 3 — sélecteur d'élément riche
+  const [elementType, setElementType] = useState(null);
+  const [items, setItems] = useState([]);
+  const [itemsLoading, setItemsLoading] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [convLabel, setConvLabel] = useState('');
-  const [wallets, setWallets] = useState([]);
-  const [loadingWallets, setLoadingWallets] = useState(false);
-  const [selectedWallet, setSelectedWallet] = useState(null);
-  const [events, setEvents] = useState([]);
-  const [loadingEvents, setLoadingEvents] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [createdTicket, setCreatedTicket] = useState(null);
 
   const reset = useCallback(() => {
     setStep(1); setDescription(''); setFileUrls([]); setSuggestions([]);
-    setSelected(null); setPosts([]); setSelectedPost(null); setConvLabel('');
-    setWallets([]); setSelectedWallet(null);
-    setEvents([]); setSelectedEvent(null);
+    setSelected(null);
+    setElementType(null); setItems([]); setItemsLoading(false);
+    setSelectedItem(null); setConvLabel('');
     setCreatedTicket(null); setSubmitting(false);
   }, []);
 
@@ -79,38 +96,155 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
     setAnalyzing(false);
   };
 
+  // Charge les items réels pour un type d'élément (publications, wallets,
+  // événements, communautés, spaces, stories, parrainages, inscriptions,
+  // récompenses, panier). Normalise en { id, label, sub, img?, disabled? }.
+  const loadForType = async (type) => {
+    setElementType(type);
+    setSelectedItem(null);
+    setConvLabel('');
+    if (type === 'none' || type === 'conversation') { setItems([]); return; }
+    setItemsLoading(true);
+    try {
+      let list = [];
+      if (type === 'post') {
+        const ps = await base44.entities.Post.filter({ author_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (ps || []).map((p) => ({
+          id: p.id,
+          label: (p.content || '(sans texte)').slice(0, 80),
+          sub: `${p.likes_count || 0} likes · ${p.views_count || 0} vues · ${p.created_date ? new Date(p.created_date).toLocaleDateString('fr-FR') : ''}`,
+          obj: p,
+        }));
+      } else if (type === 'wallet') {
+        const ws = await base44.entities.Wallet.filter({ owner_id: user.id }).catch(() => []);
+        list = [{
+          id: 'main_account',
+          label: 'Compte principal',
+          sub: `${Number(user?.referral_credits || 0)} crédits · compte eza`,
+          obj: { id: 'main_account', name: 'Compte principal', balance: Number(user?.referral_credits || 0), type: 'main', frozen: false },
+        }];
+        (ws || []).forEach((w) => list.push({
+          id: w.id,
+          label: w.name || 'Portefeuille',
+          sub: `${w.balance || 0} crédits · ${w.type || 'custom'}${w.frozen ? ' · gelé' : ''}`,
+          obj: w,
+        }));
+      } else if (type === 'event') {
+        const es = await base44.entities.Event.filter({}, 'start_date', 30).catch(() => []);
+        const bal = Number(user?.referral_credits || 0);
+        list = (es || [])
+          .filter((e) => e.status !== 'cancelled' && e.status !== 'ended' && (!e.end_date || new Date(e.end_date).getTime() >= Date.now()))
+          .map((e) => {
+            const price = Number(e.price_credits || 0);
+            const insufficient = price > 0 && bal < price;
+            const full = e.capacity > 0 && (e.attendees_count || 0) >= e.capacity;
+            return {
+              id: e.id,
+              label: e.title || 'Événement',
+              sub: `${e.start_date ? new Date(e.start_date).toLocaleDateString('fr-FR') : '?'}${e.city ? ' · ' + e.city : ''} · ${price > 0 ? price + ' crédits' : 'gratuit'}${e.capacity > 0 ? ' · ' + `${e.attendees_count || 0}/${e.capacity}` : ''}`,
+              img: e.image_url,
+              obj: e,
+              disabled: insufficient || full,
+              disabledReason: insufficient ? `Solde insuffisant (${bal}/${price})` : full ? 'Complet' : null,
+            };
+          });
+      } else if (type === 'community') {
+        const cs = await base44.entities.Community.filter({}, '-members_count', 60).catch(() => []);
+        list = (cs || [])
+          .filter((c) => c.type === 'open' || c.owner_id === user.id || (c.member_ids || []).includes(user.id))
+          .map((c) => ({
+            id: c.id,
+            label: c.name,
+            sub: `${c.members_count || 0} membres · ${c.category || ''}${c.type === 'closed' ? ' · fermée' : ''}`,
+            img: c.cover_url,
+            obj: c,
+          }));
+      } else if (type === 'space') {
+        const ss = await base44.entities.Space.filter({ host_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (ss || []).map((s) => ({
+          id: s.id,
+          label: s.title,
+          sub: `${s.status} · ${s.started_at ? new Date(s.started_at).toLocaleDateString('fr-FR') : ''}`,
+          obj: s,
+        }));
+      } else if (type === 'story') {
+        const st = await base44.entities.Story.filter({ author_id: user.id }, '-created_date', 30).catch(() => []);
+        list = (st || [])
+          .filter((s) => !s.expires_at || new Date(s.expires_at).getTime() > Date.now())
+          .map((s) => ({
+            id: s.id,
+            label: s.text ? s.text.slice(0, 60) : (s.media_type === 'image' ? 'Story photo' : 'Story vidéo'),
+            sub: `${s.media_type} · ${s.created_date ? new Date(s.created_date).toLocaleDateString('fr-FR') : ''}${(s.viewers || []).length ? ' · ' + s.viewers.length + ' vues' : ''}`,
+            img: s.media_type === 'image' ? s.media_url : null,
+            obj: s,
+          }));
+      } else if (type === 'referral') {
+        let rs = await base44.entities.Referral.filter({ referrer_email: user.email }).catch(() => []);
+        if (!rs || !rs.length) rs = await base44.entities.Referral.filter({ referred_email: user.email }).catch(() => []);
+        list = (rs || []).map((r) => ({
+          id: r.id,
+          label: r.referred_email || r.referred_name || 'Filleul',
+          sub: `${r.status} · ${r.credits_earned || 0} crédits${r.referral_code ? ' · ' + r.referral_code : ''}`,
+          obj: r,
+        }));
+      } else if (type === 'registration') {
+        const regs = await base44.entities.EventRegistration.filter({ user_id: user.id, status: 'registered' }, '-created_date', 50).catch(() => []);
+        list = (regs || []).map((r) => ({
+          id: r.id,
+          label: r.event_title || 'Inscription',
+          sub: `${r.event_start_date ? new Date(r.event_start_date).toLocaleDateString('fr-FR') : '?'} · ${r.credits_paid || 0} crédits${r.ticket_code ? ' · ' + r.ticket_code : ''}`,
+          img: r.event_image_url,
+          obj: r,
+        }));
+      } else if (type === 'reward') {
+        const rws = await base44.entities.RewardRedemption.filter({ user_email: user.email }, '-created_date', 50).catch(() => []);
+        list = (rws || []).map((r) => ({
+          id: r.id,
+          label: r.item_label,
+          sub: `${r.cost || 0} crédits · ${r.status} · ${r.item_category || ''}`,
+          obj: r,
+        }));
+      } else if (type === 'cart') {
+        const carts = await base44.entities.Cart.filter({ owner_id: user.id, status: 'active' }).catch(() => []);
+        const active = (carts || [])[0];
+        if (active) list = [{
+          id: active.id,
+          label: `Panier (${(active.items || []).length} article(s))`,
+          sub: `${active.total_credits || 0} crédits · ${active.status}`,
+          obj: active,
+        }];
+      }
+      setItems(list || []);
+    } catch {}
+    setItemsLoading(false);
+  };
+
   const pickSuggestion = async (s) => {
     setSelected(s);
-    if (s.element_type === 'post') {
-      setStep(3);
-      setLoadingPosts(true);
-      try {
-        const list = await base44.entities.Post.filter({ author_id: user.id }, '-created_date', 30).catch(() => []);
-        setPosts(list || []);
-      } catch { setPosts([]); }
-      setLoadingPosts(false);
-    } else if (s.element_type === 'conversation') {
-      setStep(3);
-    } else if (s.element_type === 'wallet') {
-      setStep(3);
-      setLoadingWallets(true);
-      try {
-        const list = await base44.entities.Wallet.filter({ owner_id: user.id }).catch(() => []);
-        setWallets(list || []);
-      } catch { setWallets([]); }
-      setLoadingWallets(false);
-    } else if (s.element_type === 'event') {
-      setStep(3);
-      setLoadingEvents(true);
-      try {
-        const list = await base44.entities.Event.filter({}, 'start_date', 30).catch(() => []);
-        const active = (list || []).filter((e) => e.status !== 'cancelled' && e.status !== 'ended' && (!e.end_date || new Date(e.end_date).getTime() >= Date.now()));
-        setEvents(active || []);
-      } catch { setEvents([]); }
-      setLoadingEvents(false);
-    } else {
-      setStep(4);
-    }
+    setStep(3);
+    // L'IA pré-sélectionne un type ; on charge ses données.
+    const et = ELEMENT_TYPES.some((t) => t.id === s.element_type) ? s.element_type : 'none';
+    await loadForType(et);
+  };
+
+  const buildRelatedItem = () => {
+    const et = elementType || 'none';
+    if (et === 'none') return { type: 'none', id: null, label: null };
+    if (et === 'conversation') return { type: 'conversation', id: null, label: convLabel || null };
+    if (!selectedItem) return { type: et, id: null, label: null };
+    const obj = selectedItem.obj;
+    let label = selectedItem.label;
+    if (et === 'post') label = (obj.content || '').slice(0, 120);
+    else if (et === 'wallet') label = `${obj.name || 'Portefeuille'} (${obj.balance || 0} crédits)`;
+    else if (et === 'event') label = `${obj.title || 'Événement'} · ${obj.start_date ? obj.start_date.slice(0, 10) : '?'}${Number(obj.price_credits) > 0 ? ` · ${obj.price_credits} crédits` : ' · gratuit'}`;
+    else if (et === 'community') label = obj.name;
+    else if (et === 'space') label = obj.title;
+    else if (et === 'story') label = `Story ${obj.media_type}`;
+    else if (et === 'referral') label = `Parrainage ${obj.referred_email || obj.referred_name || ''}`.trim();
+    else if (et === 'registration') label = `Inscription ${obj.event_title || ''}`.trim();
+    else if (et === 'reward') label = obj.item_label;
+    else if (et === 'cart') label = `Panier (${(obj.items || []).length} articles)`;
+    return { type: et, id: selectedItem.id, label };
   };
 
   const submit = async () => {
@@ -118,14 +252,15 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
     setSubmitting(true);
     try {
       const subject = description.trim().slice(0, 80) || selected.label;
+      const ri = buildRelatedItem();
       const ticket = await base44.entities.SupportTicket.create({
         subject,
         description: description.trim(),
         file_urls: fileUrls,
         category: selected.category,
-        related_item_id: selectedPost?.id || selectedWallet?.id || selectedEvent?.id || null,
-        related_item_type: selected.element_type === 'post' ? 'post' : selected.element_type === 'conversation' ? 'conversation' : selected.element_type === 'wallet' ? 'wallet' : selected.element_type === 'event' ? 'event' : 'none',
-        related_item_label: selectedPost ? (selectedPost.content || '').slice(0, 120) : selectedWallet ? `${selectedWallet.name || 'Portefeuille'} (${selectedWallet.balance || 0} crédits)` : selectedEvent ? `${selectedEvent.title || 'Événement'} · ${selectedEvent.start_date ? selectedEvent.start_date.slice(0, 10) : '?'}${Number(selectedEvent.price_credits) > 0 ? ` · ${selectedEvent.price_credits} crédits` : ' · gratuit'}` : convLabel || null,
+        related_item_id: ri.id,
+        related_item_type: ri.type,
+        related_item_label: ri.label,
         user_id: user.id,
         user_email: user.email,
         user_name: user.full_name || user.email,
@@ -143,7 +278,6 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   };
 
   const isImg = (u) => /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(u);
-  const canSubmit3 = selected?.element_type !== 'post' || true; // post is optional (can skip)
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -210,8 +344,8 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
               <span>L'IA a analysé votre description. Sélectionnez le type qui correspond le mieux :</span>
             </div>
             {suggestions.map((s, i) => {
-              const icon = s.element_type === 'post' ? Hash : s.element_type === 'conversation' ? MessageSquare : s.element_type === 'wallet' ? Wallet : s.element_type === 'event' ? Calendar : FileQuestion;
-              const Ic = icon;
+              const etype = ELEMENT_TYPES.find((t) => t.id === s.element_type);
+              const Ic = etype?.icon || FileQuestion;
               return (
                 <button key={i} onClick={() => pickSuggestion(s)}
                   className="w-full text-left p-3.5 rounded-xl border border-border bg-secondary/40 hover:border-primary/40 hover:bg-primary/5 transition-all group">
@@ -224,10 +358,8 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
                       <p className="text-xs text-muted-foreground mt-0.5">{s.description}</p>
                       <div className="flex gap-1.5 mt-2">
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground uppercase">{s.category}</span>
-                        {s.element_type !== 'none' && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                            {s.element_type === 'post' ? 'Publication' : s.element_type === 'wallet' ? 'Portefeuille' : s.element_type === 'event' ? 'Événement' : 'Discussion'}
-                          </span>
+                        {s.element_type !== 'none' && etype && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{etype.label}</span>
                         )}
                       </div>
                     </div>
@@ -242,35 +374,33 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
           </div>
         )}
 
-        {/* STEP 3 — Élément concerné (dynamique) */}
+        {/* STEP 3 — Élément concerné (sélecteur riche) */}
         {step === 3 && selected && (
           <div className="space-y-4">
             <div className="text-sm font-medium">Élément concerné</div>
-            {selected.element_type === 'post' && (
-              <>
-                <p className="text-xs text-muted-foreground">Sélectionnez la publication concernée (ou passez si non applicable) :</p>
-                {loadingPosts ? (
-                  <div className="text-center py-6"><Loader2 className="w-5 h-5 mx-auto animate-spin text-muted-foreground" /></div>
-                ) : posts.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">Aucune publication trouvée.</p>
-                ) : (
-                  <div className="space-y-1.5 max-h-56 overflow-y-auto">
-                    {posts.map((p) => (
-                      <button key={p.id} onClick={() => setSelectedPost(selectedPost?.id === p.id ? null : p)}
-                        className={`w-full text-left p-2.5 rounded-lg border text-xs transition-colors ${
-                          selectedPost?.id === p.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'
-                        }`}>
-                        <p className="truncate">{p.content || '(sans texte)'}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          {new Date(p.created_date).toLocaleDateString('fr-FR')} · {p.likes_count || 0} likes · {p.views_count || 0} vues
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
+            {/* Sélecteur de type (chips) */}
+            <div className="flex flex-wrap gap-1.5">
+              {ELEMENT_TYPES.map((t) => {
+                const Ic = t.icon;
+                const active = elementType === t.id;
+                return (
+                  <button key={t.id} onClick={() => loadForType(t.id)}
+                    className={`text-xs px-2.5 py-1.5 rounded-full border inline-flex items-center gap-1.5 transition-colors ${
+                      active ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-muted-foreground hover:border-primary/30 hover:text-foreground'
+                    }`}>
+                    <Ic className="w-3.5 h-3.5" />
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Contenu dynamique selon le type */}
+            {elementType === 'none' && (
+              <p className="text-xs text-muted-foreground text-center py-4">Aucun élément spécifique — passez à l'étape suivante.</p>
             )}
-            {selected.element_type === 'conversation' && (
+
+            {elementType === 'conversation' && (
               <div>
                 <p className="text-xs text-muted-foreground mb-1.5">Indiquez la conversation concernée :</p>
                 <input value={convLabel} onChange={(e) => setConvLabel(e.target.value)}
@@ -278,91 +408,43 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
                   className="w-full bg-secondary/60 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-primary/40" />
               </div>
             )}
-            {selected.element_type === 'wallet' && (
+
+            {elementType && elementType !== 'none' && elementType !== 'conversation' && (
               <>
-                <p className="text-xs text-muted-foreground">Sélectionnez le compte ou portefeuille concerné (ou passez si non applicable) :</p>
-                {loadingWallets ? (
+                {itemsLoading ? (
                   <div className="text-center py-6"><Loader2 className="w-5 h-5 mx-auto animate-spin text-muted-foreground" /></div>
+                ) : items.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">Aucun élément trouvé pour « {TYPE_LABEL[elementType]} ».</p>
                 ) : (
                   <div className="space-y-1.5 max-h-56 overflow-y-auto">
-                    <button onClick={() => setSelectedWallet(selectedWallet?.id === 'main_account' ? null : { id: 'main_account', name: 'Compte principal', balance: Number(user?.referral_credits || 0), type: 'main', frozen: false })}
-                      className={`w-full text-left p-2.5 rounded-lg border text-xs transition-colors flex items-center gap-2 ${
-                        selectedWallet?.id === 'main_account' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'
-                      }`}>
-                      <div className="w-4 h-4 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
-                        <span className="text-[8px] font-bold text-white">eza</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">Compte principal</p>
-                        <p className="text-[10px] text-muted-foreground">{Number(user?.referral_credits || 0)} crédits · compte eza</p>
-                      </div>
-                    </button>
-                    {wallets.length > 0 && (
-                      <div className="pt-1.5 border-t border-border/60">
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 px-1 mb-1">Portefeuilles</p>
-                        {wallets.map((w) => (
-                          <button key={w.id} onClick={() => setSelectedWallet(selectedWallet?.id === w.id ? null : w)}
-                            className={`w-full text-left p-2.5 rounded-lg border text-xs transition-colors flex items-center gap-2 mb-1 ${
-                              selectedWallet?.id === w.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'
-                            }`}>
-                            <Wallet className="w-4 h-4 text-primary flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{w.name || 'Portefeuille'}</p>
-                              <p className="text-[10px] text-muted-foreground">{w.balance || 0} crédits · {w.type || 'custom'}{w.frozen ? ' · gelé' : ''}</p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-            {selected.element_type === 'event' && (
-              <>
-                <p className="text-xs text-muted-foreground">Sélectionnez l'événement concerné (ou passez si non applicable) :</p>
-                {loadingEvents ? (
-                  <div className="text-center py-6"><Loader2 className="w-5 h-5 mx-auto animate-spin text-muted-foreground" /></div>
-                ) : events.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">Aucun événement à venir trouvé.</p>
-                ) : (
-                  <div className="space-y-1.5 max-h-56 overflow-y-auto">
-                    {events.map((e) => {
-                      const price = Number(e.price_credits || 0);
-                      const balance = Number(user?.referral_credits || 0);
-                      const insufficient = price > 0 && balance < price;
-                      const full = e.capacity > 0 && (e.attendees_count || 0) >= e.capacity;
-                      return (
-                        <button key={e.id} onClick={() => !full && !insufficient && setSelectedEvent(selectedEvent?.id === e.id ? null : e)}
-                          disabled={full || insufficient}
-                          className={`w-full text-left p-2.5 rounded-lg border text-xs transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                            selectedEvent?.id === e.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'
-                          }`}>
-                          {e.image_url ? (
-                            <img src={e.image_url} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
-                          ) : (
-                            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <Calendar className="w-4 h-4 text-primary" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{e.title || 'Événement'}</p>
-                            <p className="text-[10px] text-muted-foreground flex items-center gap-1 flex-wrap">
-                              <span>{e.start_date ? new Date(e.start_date).toLocaleDateString('fr-FR') : '?'}</span>
-                              {e.city && <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5" />{e.city}</span>}
-                              <span>· {price > 0 ? `${price} crédits` : 'gratuit'}</span>
-                              {e.capacity > 0 && <span>· {e.attendees_count || 0}/{e.capacity}</span>}
-                            </p>
-                            {insufficient && <p className="text-[10px] text-red-400 mt-0.5">Solde insuffisant ({balance}/{price})</p>}
-                            {full && <p className="text-[10px] text-amber-400 mt-0.5">Complet</p>}
+                    {items.map((it) => (
+                      <button key={it.id} onClick={() => !it.disabled && setSelectedItem(selectedItem?.id === it.id ? null : it)}
+                        disabled={it.disabled}
+                        className={`w-full text-left p-2.5 rounded-lg border text-xs transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                          selectedItem?.id === it.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'
+                        }`}>
+                        {it.img ? (
+                          <img src={it.img} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                            {(() => {
+                              const Ic = ELEMENT_TYPES.find((t) => t.id === elementType)?.icon || FileText;
+                              return <Ic className="w-4 h-4 text-muted-foreground" />;
+                            })()}
                           </div>
-                        </button>
-                      );
-                    })}
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{it.label}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{it.sub}</p>
+                          {it.disabled && it.disabledReason && <p className="text-[10px] text-red-400 mt-0.5">{it.disabledReason}</p>}
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 )}
               </>
             )}
+
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => { setSelected(null); setStep(2); }} className="flex-1">
                 <ArrowLeft className="w-4 h-4" /> Retour
@@ -386,14 +468,21 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
               {fileUrls.length > 0 && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1"><FileText className="w-3 h-3" /> {fileUrls.length} pièce(s) jointe(s)</p>
               )}
-              {selectedPost && <p className="text-xs text-muted-foreground flex items-center gap-1"><Hash className="w-3 h-3" /> Publication: {selectedPost.content?.slice(0, 50)}…</p>}
-              {convLabel && <p className="text-xs text-muted-foreground flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {convLabel}</p>}
-              {selectedWallet && <p className="text-xs text-muted-foreground flex items-center gap-1"><Wallet className="w-3 h-3" /> {selectedWallet.name || 'Portefeuille'} · {selectedWallet.balance || 0} crédits</p>}
-              {selectedEvent && <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="w-3 h-3" /> {selectedEvent.title} · {selectedEvent.start_date ? new Date(selectedEvent.start_date).toLocaleDateString('fr-FR') : '?'} · {Number(selectedEvent.price_credits) > 0 ? `${selectedEvent.price_credits} crédits` : 'gratuit'}</p>}
+              {(() => {
+                const ri = buildRelatedItem();
+                if (ri.type === 'none' || (!ri.id && !ri.label)) return null;
+                const Ic = ELEMENT_TYPES.find((t) => t.id === ri.type)?.icon || FileText;
+                return (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <Ic className="w-3 h-3 text-primary" />
+                    <span className="font-medium text-foreground/80">{TYPE_LABEL[ri.type]} :</span> {ri.label || '(non sélectionné)'}
+                  </p>
+                );
+              })()}
             </div>
             <p className="text-xs text-muted-foreground text-center">Nexus IA va analyser votre ticket et répondre immédiatement. Un email de confirmation vous sera envoyé.</p>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep(selected.element_type === 'none' ? 2 : 3)} className="flex-1">
+              <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
                 <ArrowLeft className="w-4 h-4" /> Retour
               </Button>
               <Button onClick={submit} disabled={submitting} className="flex-1 font-grotesk">

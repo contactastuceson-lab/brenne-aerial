@@ -75,6 +75,7 @@ import AdminPortfolio from "@/pages/admin/AdminPortfolio";
 import AdminAffiliations from "@/pages/admin/AdminAffiliations";
 import AdminSupport from "@/pages/admin/AdminSupport";
 import SupportPage from "@/pages/SupportPage";
+import SupportConversationsPage from "@/pages/SupportConversationsPage";
 import SupportTicketPage from "@/pages/SupportTicketPage";
 import AdminSampleProfiles from "@/pages/admin/AdminSampleProfiles";
 import BlogArticlePage from "@/pages/BlogArticlePage";
@@ -202,6 +203,8 @@ const AuthenticatedApp = () => {
           <Route path="/events/:id" element={<EventDetailPage />} />
           <Route path="/panier" element={<CartPage />} />
           <Route path="/support" element={<SupportPage />} />
+          <Route path="/support/documentation" element={<DocumentationPage />} />
+          <Route path="/support/conversation" element={<SupportConversationsPage />} />
           <Route path="/support/:id" element={<SupportTicketPage />} />
           <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<DocumentationPage />} />

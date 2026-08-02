@@ -2,8 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, ChevronRight, ArrowRight, Check, BookOpen, List,
+  ArrowLeft, ChevronRight, ArrowRight, Check, BookOpen, List, Quote,
 } from 'lucide-react';
+
+// Transforme une liste de bullets "Terme — description" en lignes de tableau.
+const splitBullet = (b) => {
+  const idx = b.indexOf(' — ');
+  if (idx === -1) return { term: '', desc: b };
+  return { term: b.slice(0, idx).trim(), desc: b.slice(idx + 3).trim() };
+};
 import { getDocTopic, DOC_TOPICS, getDocImage } from '@/lib/docsContent';
 import DocIcon from '@/components/docs/DocIcon';
 
@@ -137,33 +144,63 @@ export default function DocumentationArticlePage() {
             >
               <div
                 className="rounded-2xl border border-border bg-card overflow-hidden"
-                style={{ boxShadow: active === i ? `0 0 0 1px ${topic.color}30` : 'none' }}
+                style={{ borderLeft: `4px solid ${topic.color}`, boxShadow: active === i ? `0 0 0 1px ${topic.color}30` : 'none' }}
               >
-                <div className="h-1" style={{ background: active === i ? topic.color : 'transparent', transition: 'background 0.3s' }} />
                 <div className="p-5 md:p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <span
-                      className="w-8 h-8 rounded-lg flex items-center justify-center font-mono text-xs font-bold flex-shrink-0"
+                      className="w-9 h-9 rounded-xl flex items-center justify-center font-mono text-sm font-bold flex-shrink-0"
                       style={{ background: `${topic.color}15`, color: topic.color }}
                     >
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <h2 className="font-grotesk font-bold text-lg md:text-xl text-foreground leading-tight">{s.title}</h2>
                   </div>
-                  <p className="font-inter text-sm text-muted-foreground leading-relaxed mb-5 pl-11">{s.body}</p>
-                  <ul className="space-y-2.5 pl-11">
-                    {s.bullets.map((b, j) => (
-                      <li key={j} className="flex items-start gap-2.5 text-sm text-foreground/90">
-                        <span
-                          className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                          style={{ background: `${topic.color}18` }}
-                        >
-                          <Check className="w-2.5 h-2.5" style={{ color: topic.color }} />
-                        </span>
-                        <span className="font-inter leading-relaxed">{b}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="font-inter text-sm text-muted-foreground leading-relaxed mb-5">{s.body}</p>
+
+                  {/* Tableau structuré */}
+                  <div className="rounded-xl border border-border overflow-hidden">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr style={{ background: `${topic.color}12` }}>
+                          <th className="text-left font-semibold text-foreground px-3 py-2 w-1/3">Point</th>
+                          <th className="text-left font-semibold text-foreground px-3 py-2">Détail</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {s.bullets.map((b, j) => {
+                          const { term, desc } = splitBullet(b);
+                          return (
+                            <tr key={j} className="border-t border-border/60">
+                              {term ? (
+                                <>
+                                  <td className="px-3 py-2.5 align-top font-medium text-foreground" style={{ color: topic.color }}>
+                                    {term}
+                                  </td>
+                                  <td className="px-3 py-2.5 align-top text-muted-foreground leading-relaxed">{desc}</td>
+                                </>
+                              ) : (
+                                <td colSpan={2} className="px-3 py-2.5 text-foreground/90 leading-relaxed">{desc}</td>
+                              )}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Barre latérale — callout */}
+                  <div
+                    className="mt-4 rounded-r-xl pl-4 pr-3 py-3 flex items-start gap-2.5"
+                    style={{ borderLeft: `3px solid ${topic.color}`, background: `${topic.color}0a` }}
+                  >
+                    <Quote className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: topic.color }} />
+                    <p className="font-inter text-xs text-foreground/80 leading-relaxed italic">
+                      {splitBullet(s.bullets[0]).term
+                        ? `${splitBullet(s.bullets[0]).term} — ${splitBullet(s.bullets[0]).desc}`
+                        : s.bullets[0]}
+                    </p>
+                  </div>
                 </div>
               </div>
             </motion.section>

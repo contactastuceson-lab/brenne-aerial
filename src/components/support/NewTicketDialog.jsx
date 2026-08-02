@@ -285,7 +285,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
       <div className="border-t border-border mt-3 pt-3 text-center">
         <p className="text-[11px] text-muted-foreground">
           Besoin d'aide immédiate ? Consultez notre{' '}
-          <a href="/documentation" className="underline hover:text-foreground">documentation</a> ou rejoignez notre{' '}
+          <a href="/support/documentation" className="underline hover:text-foreground">documentation</a> ou rejoignez notre{' '}
           <a href="/forum" className="underline hover:text-foreground">communauté</a>.
         </p>
       </div>
@@ -392,7 +392,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
                   </div>
                   <div className="space-y-1.5">
                     {docSuggestions.map((d) => (
-                      <Link key={d.slug} to={`/documentation/${d.slug}`} target="_blank" className="flex items-start gap-2 p-2 rounded-lg hover:bg-primary/[0.06] transition-colors group">
+                      <Link key={d.slug} to={`/support/documentation/${d.slug}`} target="_blank" className="flex items-start gap-2 p-2 rounded-lg hover:bg-primary/[0.06] transition-colors group">
                         <span className="text-xs font-semibold text-primary mt-0.5 flex-shrink-0">{d.title}</span>
                         <span className="text-[11px] text-muted-foreground leading-relaxed flex-1">{d.reason}</span>
                         <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-0.5" />

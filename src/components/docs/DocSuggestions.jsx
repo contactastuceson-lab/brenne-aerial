@@ -84,7 +84,7 @@ export default function DocSuggestions({ onImage }) {
                 </div>
                 <h3 className="font-grotesk font-bold text-base mb-1.5">{s.title}</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed mb-3 min-h-[48px]">{s.reason}</p>
-                <Link to={`/documentation/${s.slug}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:gap-2.5 transition-all">
+                <Link to={`/support/documentation/${s.slug}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:gap-2.5 transition-all">
                   Lire l'article <ArrowRight className="w-4 h-4" />
                 </Link>
               </motion.div>

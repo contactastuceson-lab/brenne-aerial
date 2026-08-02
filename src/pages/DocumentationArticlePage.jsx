@@ -86,7 +86,7 @@ function SectionBlock({ s, i, color, active, registerRef }) {
 
 function SubNav() {
   const items = [
-    { label: 'Documentation', to: '/documentation', active: true },
+    { label: 'Documentation', to: '/support/documentation', active: true },
     { label: 'Communauté', to: '/forum' },
     { label: 'Support', to: '/support' },
     { label: 'Journal des modifications', to: '/uptime' },
@@ -127,7 +127,7 @@ function SideNav({ slug }) {
               return (
                 <li key={t.slug}>
                   <Link
-                    to={`/documentation/${t.slug}`}
+                    to={`/support/documentation/${t.slug}`}
                     className="block px-3 py-1.5 rounded-md text-[13px] leading-snug transition-all border-l-2"
                     style={activeT
                       ? { background: `${g.color}14`, color: '#fff', fontWeight: 600, borderLeftColor: g.color, boxShadow: `inset 12px 0 24px -16px ${g.color}` }
@@ -207,7 +207,7 @@ export default function DocumentationArticlePage() {
         <main className="min-w-0 max-w-3xl mx-auto lg:mx-0 w-full">
           {/* Breadcrumb */}
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
-            <Link to="/documentation" className="hover:text-foreground transition-colors">Documentation</Link>
+            <Link to="/support/documentation" className="hover:text-foreground transition-colors">Documentation</Link>
             <span className="opacity-50">/</span>
             <span className="text-foreground/80">{DOC_CATEGORIES.find((c) => c.id === topic.cat)?.label || ''}</span>
           </div>
@@ -261,13 +261,13 @@ export default function DocumentationArticlePage() {
           {/* Prev / Next */}
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {prev ? (
-              <Link to={`/documentation/${prev.slug}`} className="group rounded-xl border border-border bg-card p-4 hover:border-foreground/20 transition-colors">
+              <Link to={`/support/documentation/${prev.slug}`} className="group rounded-xl border border-border bg-card p-4 hover:border-foreground/20 transition-colors">
                 <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/50 mb-1 flex items-center gap-1"><ArrowLeft className="w-3 h-3" /> Précédent</p>
                 <p className="font-grotesk font-semibold text-sm truncate">{prev.title}</p>
               </Link>
             ) : <div />}
             {next ? (
-              <Link to={`/documentation/${next.slug}`} className="group rounded-xl border border-border bg-card p-4 hover:border-foreground/20 transition-colors sm:text-right">
+              <Link to={`/support/documentation/${next.slug}`} className="group rounded-xl border border-border bg-card p-4 hover:border-foreground/20 transition-colors sm:text-right">
                 <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/50 mb-1 flex items-center gap-1 sm:justify-end">Suivant <ArrowRight className="w-3 h-3" /></p>
                 <p className="font-grotesk font-semibold text-sm truncate">{next.title}</p>
               </Link>
@@ -275,7 +275,7 @@ export default function DocumentationArticlePage() {
           </div>
 
           <div className="mt-8 pb-4 text-center">
-            <Link to="/documentation" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/support/documentation" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-3.5 h-3.5" /> Toute la documentation ({DOC_TOPIC_COUNT} sujets)
             </Link>
           </div>

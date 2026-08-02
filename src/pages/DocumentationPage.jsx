@@ -23,7 +23,7 @@ const STATS = [
 
 function SubNav() {
   const items = [
-    { label: 'Documentation', to: '/documentation', active: true },
+    { label: 'Documentation', to: '/support/documentation', active: true },
     { label: 'Communauté', to: '/forum' },
     { label: 'Support', to: '/support' },
     { label: 'Journal des modifications', to: '/uptime' },
@@ -131,7 +131,7 @@ export default function DocumentationPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((t, i) => (
               <motion.div key={t.slug} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-40px' }} transition={{ delay: (i % 6) * 0.04 }}>
-                <Link to={`/documentation/${t.slug}`} className="group relative block h-full rounded-2xl border border-border bg-card overflow-hidden hover-lift">
+                <Link to={`/support/documentation/${t.slug}`} className="group relative block h-full rounded-2xl border border-border bg-card overflow-hidden hover-lift">
                   <div className="relative h-28 overflow-hidden">
                     <img src={getDocImage(t.slug)} alt="" className="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />

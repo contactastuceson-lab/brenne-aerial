@@ -204,6 +204,7 @@ const AuthenticatedApp = () => {
           <Route path="/panier" element={<CartPage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/support/documentation" element={<DocumentationPage />} />
+          <Route path="/support/documentation/:slug" element={<DocumentationArticlePage />} />
           <Route path="/support/conversation" element={<SupportConversationsPage />} />
           <Route path="/support/:id" element={<SupportTicketPage />} />
           <Route path="/s/:username" element={<SampleProfilePage />} />

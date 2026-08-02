@@ -116,7 +116,7 @@ export default async function(req) {
         walletData = wallets;
         const total = (wallets || []).reduce((s, w) => s + (w.balance || 0), 0);
         frozenWallets = (wallets || []).filter((w) => w.frozen);
-        researchBits.push(`SOLDE EZA (vérifié) : ${total} crédits répartis sur ${wallets?.length || 0} wallet(s). Gelé : ${frozenWallets.length ? 'oui' : 'non'}.${frozenWallets.length ? `\nPORTEFEUILLES GELÉS (frozen=true, wallet_id utilisable pour unfreeze_wallet) :\n${frozenWallets.map((w) => `- ID:${w.id} · « ${w.name} » · solde ${w.balance || 0}`).join('\n')}` : ''}${(wallets || []).length ? `\nDÉTAIL PORTEFEUILLES : ${(wallets || []).map((w) => `« ${w.name} »=${w.balance || 0}${w.frozen ? ' (gelé)' : ''}`).join(', ')}` : ''}`);
+        researchBits.push(`SOLDE EZA (vérifié) : ${total} crédits répartis sur ${wallets?.length || 0} wallet(s). Gelé : ${frozenWallets.length ? 'oui' : 'non'}.${frozenWallets.length ? `\nPORTEFEUILLES GELÉS (frozen=true, wallet_id utilisable pour unfreeze_wallet) :\n${frozenWallets.map((w) => `- ID:${w.id} · « ${w.name} » · solde ${w.balance || 0}`).join('\n')}` : ''}${(wallets || []).length ? `\nDÉTAIL PORTEFEUILLES (wallet_id utilisable pour move_credits / grant_credits) :\n${(wallets || []).map((w) => `- ID:${w.id} · « ${w.name} » · ${w.balance || 0} crédits${w.frozen ? ' (gelé)' : ''}`).join('\n')}` : ''}`);
       } catch {}
     }
 
@@ -286,6 +286,10 @@ RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
     const aiAction = ai && !ai.__error && ai.action && ai.action.type ? ai.action : null;
     if (aiAction && !escalated && (AUTO_ACTIONS.includes(aiAction.type) || CONFIRMABLE_ACTIONS.includes(aiAction.type))) {
       actionType = aiAction.type;
+      // recalc_post sans post_id → utiliser la publication liée au ticket.
+      if (aiAction.type === 'recalc_post' && !(aiAction.params?.post_id) && ticket.related_item_type === 'post' && ticket.related_item_id) {
+        aiAction.params = { ...(aiAction.params || {}), post_id: ticket.related_item_id };
+      }
       if (AUTO_ACTIONS.includes(aiAction.type)) {
         actionResult = await executeNexusAction(base44, aiAction, ticket, user);
       } else if (CONFIRMABLE_ACTIONS.includes(aiAction.type)) {
@@ -351,6 +355,25 @@ RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
         if (!pendingAction.label) pendingAction.label = `Annuler l'inscription à « ${r.event_title || '?'} »`;
       } else if (myRegistrations.length > 1) {
         // Ambiguïté → on retire pour forcer la demande de précision.
+        pendingAction = null;
+        actionType = null;
+      }
+    }
+
+    // Garde-fou move_credits : le LLM connaît les noms de portefeuilles mais
+    // rarement leurs IDs. On résout from_wallet_id / to_wallet_id depuis les
+    // noms (ou on complète les noms depuis les IDs) via le solde vérifié.
+    // Sans IDs fiables, le transfert échouerait systématiquement.
+    if (pendingAction && pendingAction.type === 'move_credits' && walletData) {
+      const p = pendingAction.params || {};
+      const findByName = (name) => name && (walletData.find((w) => w.name === name) || walletData.find((w) => (w.name || '').toLowerCase() === String(name).toLowerCase()));
+      const findById = (id) => id && walletData.find((w) => w.id === id);
+      let fromW = findById(p.from_wallet_id) || findByName(p.from_name);
+      let toW = findById(p.to_wallet_id) || findByName(p.to_name);
+      if (fromW && toW && fromW.id !== toW.id) {
+        pendingAction.params = { ...p, from_wallet_id: fromW.id, to_wallet_id: toW.id, from_name: fromW.name, to_name: toW.name };
+      } else {
+        // IDs/noms introuvables ou transfert vers le même wallet → on retire.
         pendingAction = null;
         actionType = null;
       }

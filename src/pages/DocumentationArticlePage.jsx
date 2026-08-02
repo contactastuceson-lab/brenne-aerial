@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
-  ArrowLeft, ArrowRight, BookOpen, List, Clock, Hash, Copy, Check,
+  ArrowLeft, ArrowRight, List, Clock, Hash, Copy, Check,
 } from 'lucide-react';
 import { getDocTopic, DOC_TOPICS, getDocImage, DOC_TOPIC_COUNT, DOC_CATEGORIES } from '@/lib/docsContent';
 import DocNavbar from '@/components/docs/DocNavbar';
@@ -128,10 +128,10 @@ function SideNav({ slug }) {
                 <li key={t.slug}>
                   <Link
                     to={`/documentation/${t.slug}`}
-                    className="block px-3 py-1.5 rounded-md text-[13px] leading-snug transition-colors"
+                    className="block px-3 py-1.5 rounded-md text-[13px] leading-snug transition-all border-l-2"
                     style={activeT
-                      ? { background: `${g.color}14`, color: '#fff', fontWeight: 600 }
-                      : { color: 'hsl(var(--muted-foreground))' }}
+                      ? { background: `${g.color}14`, color: '#fff', fontWeight: 600, borderLeftColor: g.color, boxShadow: `inset 12px 0 24px -16px ${g.color}` }
+                      : { color: 'hsl(var(--muted-foreground))', borderLeftColor: 'transparent' }}
                     onMouseEnter={(e) => { if (!activeT) e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
                     onMouseLeave={(e) => { if (!activeT) e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}
                   >
@@ -215,8 +215,8 @@ export default function DocumentationArticlePage() {
           {/* Title + meta */}
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground mb-1">{DOC_CATEGORIES.find((c) => c.id === topic.cat)?.label || ''}</p>
-              <h1 className="font-grotesk font-bold text-3xl md:text-4xl text-foreground leading-tight">{topic.title}</h1>
+              <p className="font-mono text-[11px] tracking-[2px] uppercase mb-2" style={{ color: topic.color }}>{DOC_CATEGORIES.find((c) => c.id === topic.cat)?.label || ''}</p>
+              <h1 className="font-grotesk font-black text-3xl md:text-4xl leading-tight sky-glow-text" style={{ color: 'hsl(var(--foreground))' }}>{topic.title}</h1>
             </div>
             <button
               onClick={copyPage}
@@ -242,11 +242,11 @@ export default function DocumentationArticlePage() {
           </div>
 
           {/* Hero illustration widget */}
-          <div className="relative rounded-2xl border border-border overflow-hidden aspect-[16/9] bg-card mb-2">
+          <div className="relative rounded-2xl border overflow-hidden aspect-[16/9] bg-card mb-2" style={{ borderColor: `${topic.color}30`, boxShadow: `0 0 50px ${topic.color}15` }}>
             <img src={heroImg} alt="" className="w-full h-full object-cover" loading="lazy" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: topic.color }} />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: topic.color, boxShadow: `0 0 10px ${topic.color}` }} />
               <span className="font-mono text-[10px] uppercase tracking-wider text-foreground/70">{topic.tagline}</span>
             </div>
           </div>

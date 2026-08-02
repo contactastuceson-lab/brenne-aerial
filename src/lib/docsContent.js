@@ -33,7 +33,7 @@ export const getDocTopic = (slug) => DOC_TOPICS.find((t) => t.slug === slug) || 
 
 export const DOC_CATEGORIES = [
   { id: 'all', label: 'Tout', color: '#38aadc' },
-  { id: 'plateforme', label: 'Plateforme', color: '#38aadc' },
+  { id: 'plateforme', label: 'Découvrir eza', color: '#38aadc' },
   { id: 'social', label: 'Social & communauté', color: '#1dd8b4' },
   { id: 'economie', label: 'Économie & crédits', color: '#ff6d3f' },
   { id: 'identite', label: 'Identité & confiance', color: '#a78bfa' },

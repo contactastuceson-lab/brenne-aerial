@@ -280,25 +280,40 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
             )}
             {selected.element_type === 'wallet' && (
               <>
-                <p className="text-xs text-muted-foreground">Sélectionnez le portefeuille concerné (ou passez si non applicable) :</p>
+                <p className="text-xs text-muted-foreground">Sélectionnez le compte ou portefeuille concerné (ou passez si non applicable) :</p>
                 {loadingWallets ? (
                   <div className="text-center py-6"><Loader2 className="w-5 h-5 mx-auto animate-spin text-muted-foreground" /></div>
-                ) : wallets.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">Aucun portefeuille trouvé.</p>
                 ) : (
                   <div className="space-y-1.5 max-h-56 overflow-y-auto">
-                    {wallets.map((w) => (
-                      <button key={w.id} onClick={() => setSelectedWallet(selectedWallet?.id === w.id ? null : w)}
-                        className={`w-full text-left p-2.5 rounded-lg border text-xs transition-colors flex items-center gap-2 ${
-                          selectedWallet?.id === w.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'
-                        }`}>
-                        <Wallet className="w-4 h-4 text-primary flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{w.name || 'Portefeuille'}</p>
-                          <p className="text-[10px] text-muted-foreground">{w.balance || 0} crédits · {w.type || 'custom'}{w.frozen ? ' · gelé' : ''}</p>
-                        </div>
-                      </button>
-                    ))}
+                    <button onClick={() => setSelectedWallet(selectedWallet?.id === 'main_account' ? null : { id: 'main_account', name: 'Compte principal', balance: Number(user?.referral_credits || 0), type: 'main', frozen: false })}
+                      className={`w-full text-left p-2.5 rounded-lg border text-xs transition-colors flex items-center gap-2 ${
+                        selectedWallet?.id === 'main_account' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'
+                      }`}>
+                      <div className="w-4 h-4 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
+                        <span className="text-[8px] font-bold text-white">eza</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">Compte principal</p>
+                        <p className="text-[10px] text-muted-foreground">{Number(user?.referral_credits || 0)} crédits · compte eza</p>
+                      </div>
+                    </button>
+                    {wallets.length > 0 && (
+                      <div className="pt-1.5 border-t border-border/60">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 px-1 mb-1">Portefeuilles</p>
+                        {wallets.map((w) => (
+                          <button key={w.id} onClick={() => setSelectedWallet(selectedWallet?.id === w.id ? null : w)}
+                            className={`w-full text-left p-2.5 rounded-lg border text-xs transition-colors flex items-center gap-2 mb-1 ${
+                              selectedWallet?.id === w.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'
+                            }`}>
+                            <Wallet className="w-4 h-4 text-primary flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{w.name || 'Portefeuille'}</p>
+                              <p className="text-[10px] text-muted-foreground">{w.balance || 0} crédits · {w.type || 'custom'}{w.frozen ? ' · gelé' : ''}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </>

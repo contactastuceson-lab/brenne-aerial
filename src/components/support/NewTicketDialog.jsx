@@ -337,7 +337,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
             <div className="space-y-4">
               <div>
                 <h2 className="font-grotesk font-bold text-lg mb-1">Quel type de problème ?</h2>
-                <p className="text-xs text-muted-foreground">Nexus a analysé votre demande. Sélectionnez la catégorie qui correspond le mieux.</p>
+                <p className="text-xs text-muted-foreground">Sélectionnez la catégorie qui correspond le mieux.</p>
               </div>
 
               <div className="space-y-2">
@@ -348,17 +348,11 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
                     <button key={i} onClick={() => { setSelectedSuggestion(sugg); setSelectedCategory(sugg.category); setElementType(sugg.element_type && sugg.element_type !== 'none' ? sugg.element_type : 'none'); }}
                       className={`relative w-full text-left rounded-2xl border p-3.5 transition-all ${active ? 'border-primary bg-primary/[0.06]' : 'border-border bg-background/40 hover:border-foreground/30'}`}>
                       {active && <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary flex items-center justify-center"><Check className="w-2.5 h-2.5 text-white" /></span>}
-                      <div className="flex items-start gap-2.5">
+                      <div className="flex items-center gap-2.5">
                         <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${active ? 'bg-primary/15' : 'bg-secondary'}`}>
                           <Icon className={`w-4 h-4 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-grotesk font-bold text-sm">{sugg.label}</p>
-                          {sugg.description && <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{sugg.description}</p>}
-                          <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full border border-border bg-secondary text-muted-foreground mt-1.5">
-                            {CATEGORY_LABELS[sugg.category] || sugg.category}
-                          </span>
-                        </div>
+                        <p className="font-grotesk font-bold text-sm">{sugg.label}</p>
                       </div>
                     </button>
                   );

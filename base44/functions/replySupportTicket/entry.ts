@@ -31,6 +31,27 @@ export default async function(req) {
     const history = Array.isArray(ticket.messages) ? ticket.messages : [];
     const newMessages = [...history, { role: 'user', content, at: new Date().toISOString() }];
 
+    // Si le ticket est escaladé vers un humain, Nexus NE répond PAS.
+    // On sauvegarde juste le message utilisateur et on notifie les admins.
+    if (ticket.status === 'awaiting_human') {
+      const updated = await base44.entities.SupportTicket.update(ticketId, {
+        messages: newMessages,
+      }).catch(() => null);
+
+      try {
+        const admins = await base44.asServiceRole.entities.User.list().catch(() => []);
+        for (const email of (admins || []).filter((u) => u.role === 'admin' || u.role === 'owner').map((u) => u.email).slice(0, 25)) {
+          await base44.asServiceRole.entities.Notification.create({
+            user_email: email, type: 'system',
+            title: `🎫 Nouveau message — Ticket #${String(ticketId).slice(-6)}`,
+            content: content.slice(0, 200), link: '/admin/support', sender_name: 'Nexus Support',
+          }).catch(() => {});
+        }
+      } catch {}
+
+      return Response.json({ ok: true, ticket: updated || { ...ticket, messages: newMessages } });
+    }
+
     // --- RECHERCHE CONTEXTUELLE (informatif uniquement, aucune action) ---
     const researchBits = [];
 

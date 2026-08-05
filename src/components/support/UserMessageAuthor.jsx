@@ -14,9 +14,9 @@ export default function UserMessageAuthor({ userId, fallbackName }) {
   const avatar = profile?.avatar_url;
 
   return (
-    <div className="flex items-center gap-1.5 mb-1 px-1 flex-wrap justify-end">
+    <div className="flex items-center gap-0.5 mb-1 px-1 flex-wrap justify-end">
       <span className="text-xs font-semibold text-foreground/90 truncate">{displayName}</span>
-      <VerificationIcons verifications={verifications} user={profile} size="sm" />
+      <VerificationIcons verifications={verifications} user={profile} size="sm" markSize="0.85em" />
       <div className="w-4 h-4 rounded-full overflow-hidden flex-shrink-0 bg-secondary border border-border">
         {avatar ? (
           <img src={avatar} className="w-full h-full object-cover" alt="" />

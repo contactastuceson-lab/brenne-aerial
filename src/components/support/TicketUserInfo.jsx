@@ -24,7 +24,7 @@ export default function TicketUserInfo({ userId, fallbackName, fallbackEmail }) 
         )}
       </div>
       <span className="text-muted-foreground truncate">{displayName}</span>
-      <VerificationIcons verifications={verifications} user={profile} size="sm" />
+      <VerificationIcons verifications={verifications} user={profile} size="sm" markSize="0.85em" />
       {fallbackEmail && (
         <>
           <span className="text-muted-foreground/50">·</span>

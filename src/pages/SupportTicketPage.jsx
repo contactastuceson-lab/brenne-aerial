@@ -1,17 +1,13 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles, Send, Loader2, CheckCircle2, Clock, AlertCircle,
-  ArrowLeft, Bot, UserCog, Paperclip, Hash, MessageCircle, FileText,
-  Lock, ShieldAlert, Tag, Wallet, XCircle, Search,
+  Send, Loader2, CheckCircle2, Clock, AlertCircle,
+  ArrowLeft, Bot, UserCog, Paperclip, FileText,
+  ShieldAlert, Sparkles,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { useAuth } from '@/lib/AuthContext';
-import AiSteps from '@/components/support/AiSteps';
 import NexusMarkdown from '@/components/support/NexusMarkdown';
-import PendingActionCard from '@/components/support/PendingActionCard';
-import EventPickerCard from '@/components/support/EventPickerCard';
 
 const CATEGORY_LABELS = {
   account: 'Compte', billing: 'Facturation', credits: 'Crédits', bug: 'Bug technique',
@@ -62,38 +58,6 @@ export default function SupportTicketPage() {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [ticket?.messages?.length, loading, sending]);
 
-  const thinkingSteps = useMemo(() => {
-    const rt = ticket?.related_item_type;
-    const byType = {
-      post: { icon: 'post', label: 'Examen de la publication concernée' },
-      conversation: { icon: 'history', label: 'Analyse de la discussion concernée' },
-      wallet: { icon: 'wallet', label: 'Vérification du portefeuille concerné' },
-      event: { icon: 'event', label: "Examen de l'événement concerné" },
-      community: { icon: 'community', label: 'Examen de la communauté concernée' },
-      space: { icon: 'space', label: 'Examen du Space concerné' },
-      story: { icon: 'story', label: 'Examen de la story concernée' },
-      referral: { icon: 'referral', label: 'Examen du parrainage concerné' },
-      registration: { icon: 'registration', label: "Examen de l'inscription concernée" },
-      reward: { icon: 'reward', label: 'Examen de la récompense concernée' },
-      cart: { icon: 'cart', label: 'Examen du panier concerné' },
-      ticket: { icon: 'ticket', label: 'Examen du ticket concerné' },
-      discussion: { icon: 'discussion', label: 'Examen de la discussion forum' },
-      forum: { icon: 'forum', label: 'Examen du sujet forum' },
-      review: { icon: 'review', label: "Examen de l'avis concerné" },
-      certification: { icon: 'certification', label: 'Examen de la certification' },
-      donation: { icon: 'donation', label: 'Examen du don concerné' },
-      list: { icon: 'list', label: 'Examen de la liste concernée' },
-      ad: { icon: 'ad', label: 'Examen de la campagne pub' },
-    };
-    const steps = [{ icon: 'book', label: 'Lecture de la documentation eza' }];
-    if (rt && rt !== 'none' && byType[rt]) steps.push(byType[rt]);
-    if (['credits', 'billing'].includes(ticket?.category) || rt === 'wallet') steps.push({ icon: 'wallet', label: 'Vérification de votre solde Eza' });
-    if (ticket?.category === 'account') steps.push({ icon: 'user', label: 'Vérification de votre compte' });
-    if (ticket?.category === 'events' || rt === 'event' || rt === 'registration') steps.push({ icon: 'event', label: 'Recherche des événements & inscriptions' });
-    steps.push({ icon: 'search', label: "Recherche d'une solution applicable" });
-    return steps;
-  }, [ticket?.related_item_type, ticket?.category]);
-
   const sendReply = async () => {
     const msg = reply.trim();
     if (!msg || sending) return;
@@ -140,17 +104,16 @@ export default function SupportTicketPage() {
   const isLocked = !!ticket.user_locked;
   const isAiResolved = ticket.status === 'ai_resolved';
   const nexusThinking = !sending && messages.length > 0 && !messages.some((m) => m.role === 'assistant' || m.role === 'admin');
-  const composerDisabled = isClosed || isLocked || nexusThinking;
-  const relatedIcon = { post: Hash, conversation: MessageCircle, wallet: Wallet }[ticket.related_item_type];
+  const composerDisabled = isClosed || isLocked || nexusThinking || sending;
 
   return (
     <div className="max-w-2xl mx-auto px-3 md:px-4 py-4 md:py-6 flex flex-col" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
-      {/* Header — style Base44 épuré */}
+      {/* Header */}
       <div className="rounded-2xl bg-card border border-border overflow-hidden mb-3">
         <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #F37322, #1DA890)' }} />
         <div className="p-4">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/support')}
+            <button onClick={() => navigate('/support/conversation')}
               className="w-9 h-9 rounded-xl flex items-center justify-center bg-secondary border border-border hover:border-primary/40 transition-colors flex-shrink-0">
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -164,8 +127,8 @@ export default function SupportTicketPage() {
                   {CATEGORY_LABELS[ticket.category] || 'Autre'}
                 </span>
                 {ticket.admin_label && (
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-violet-400/20 bg-violet-400/10 text-violet-300 inline-flex items-center gap-1">
-                    <Tag className="w-2.5 h-2.5" /> {ticket.admin_label}
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-violet-400/20 bg-violet-400/10 text-violet-300">
+                    {ticket.admin_label}
                   </span>
                 )}
                 <span className="text-[10px] text-muted-foreground/60 ml-auto">#{String(ticket.id).slice(-6)}</span>
@@ -175,14 +138,14 @@ export default function SupportTicketPage() {
         </div>
       </div>
 
-      {/* Banner Nexus context */}
+      {/* Nexus context banner */}
       <div className="rounded-2xl border border-primary/15 bg-primary/[0.04] p-3 mb-3 flex items-start gap-2.5">
         <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
           <Sparkles className="w-4 h-4 text-white" />
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed pt-0.5">
-          Nexus connaît votre compte et répond à partir de ce contexte réel.
+          Nexus répond à vos questions et vous oriente. Pour toute action sur votre compte, l'équipe eza prend le relais.
           {ticket.ai_summary ? <span className="text-foreground/80 block mt-0.5">Résumé : {ticket.ai_summary}</span> : null}
         </p>
       </div>
@@ -190,15 +153,15 @@ export default function SupportTicketPage() {
       {/* Métadonnées : élément concerné + pièces jointes */}
       {(ticket.related_item_type !== 'none' || ticket.file_urls?.length > 0) && (
         <div className="rounded-2xl border border-border bg-secondary/30 p-3 mb-3 space-y-2.5">
-          {ticket.related_item_type !== 'none' && ticket.related_item_type !== 'conversation' && relatedIcon && (
+          {ticket.related_item_type !== 'none' && ticket.related_item_type !== 'conversation' && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {(() => { const Ic = relatedIcon; return <Ic className="w-3.5 h-3.5 text-primary" />; })()}
+              <span className="text-primary">●</span>
               <span>Élément concerné : {ticket.related_item_label || ticket.related_item_id}</span>
             </div>
           )}
           {ticket.related_item_type === 'conversation' && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <MessageCircle className="w-3.5 h-3.5 text-primary" />
+              <span className="text-primary">●</span>
               <span>Discussion : {ticket.related_item_label}</span>
             </div>
           )}
@@ -248,49 +211,26 @@ export default function SupportTicketPage() {
               }`}
                 style={m.role === 'user' ? { background: '#0F172A' } : {}}>
                 {m.role !== 'user' ? (
-                  <div>
-                    {m.role === 'assistant' && m.steps?.length > 0 && (
-                      <>
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground mb-2">
-                          <Search className="w-3 h-3 text-primary" /> Recherche Nexus
-                        </div>
-                        <AiSteps steps={m.steps} animate={i === messages.length - 1 && !sending} />
-                        <div className="h-px bg-border my-2.5" />
-                      </>
-                    )}
-                    <NexusMarkdown>{m.content}</NexusMarkdown>
-                    {m.action && (m.action.status === 'executed' || m.action.status === 'failed') && (
-                      <div className={`mt-2 flex items-center gap-1.5 text-[11px] ${m.action.status === 'executed' ? 'text-green-400' : 'text-red-400'}`}>
-                        {m.action.status === 'executed' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                        <span>{m.action.status === 'executed' ? 'Action effectuée' : 'Action échouée'} · {m.action.label || m.action.type}</span>
-                      </div>
-                    )}
-                  </div>
+                  <NexusMarkdown>{m.content}</NexusMarkdown>
                 ) : <p style={{ whiteSpace: 'pre-wrap' }} className="leading-relaxed">{m.content}</p>}
               </div>
             </motion.div>
           ))}
         </AnimatePresence>
-        {sending && (
+        {(sending || nexusThinking) && (
           <div className="flex justify-start gap-2.5 items-start">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
               style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
               <Bot className="w-4 h-4 text-white" />
             </div>
-            <div className="bg-card border border-border rounded-2xl rounded-tl-md px-3.5 py-2.5 max-w-[82%]">
-              <AiSteps steps={thinkingSteps} animate={true} />
-            </div>
-          </div>
-        )}
-        {nexusThinking && (
-          <div className="flex justify-start gap-2.5 items-start">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-              style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
-              <Bot className="w-4 h-4 text-white" />
-            </div>
-            <div className="bg-card border border-border rounded-2xl rounded-tl-md px-3.5 py-2.5 max-w-[82%]">
-              <AiSteps steps={thinkingSteps} animate={true} />
-              <p className="text-[11px] text-muted-foreground mt-1">Nexus traite votre demande en direct…</p>
+            <div className="bg-card border border-border rounded-2xl rounded-tl-md px-4 py-3 max-w-[82%]">
+              <div className="flex items-center gap-1.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.div key={i} className="w-2 h-2 rounded-full bg-primary/50"
+                    animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }} />
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -300,17 +240,13 @@ export default function SupportTicketPage() {
             <span>Escaladé : {ticket.escalation_reason}</span>
           </div>
         )}
-        {!composerDisabled && !ticket.pending_action && (ticket.category === 'events' || ticket.related_item_type === 'event') && (
-          <EventPickerCard ticket={ticket} onDone={load} />
-        )}
-        <PendingActionCard ticket={ticket} onDone={load} />
       </div>
 
       {/* Composer + états */}
       {isLocked && (
         <div className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-3 flex items-center gap-2.5 sticky bottom-0">
-          <Lock className="w-4 h-4 text-amber-300 flex-shrink-0" />
-          <p className="text-xs text-amber-200/90">Cette conversation est verrouillée en attendant une confirmation de votre part.</p>
+          <ShieldAlert className="w-4 h-4 text-amber-300 flex-shrink-0" />
+          <p className="text-xs text-amber-200/90">Cette conversation est verrouillée.</p>
         </div>
       )}
       {isAiResolved && !isLocked && (
@@ -320,7 +256,7 @@ export default function SupportTicketPage() {
       )}
       {isClosed && !isLocked && (
         <div className="rounded-2xl border border-border bg-card p-3 text-center text-xs text-muted-foreground sticky bottom-0">
-          Ce ticket est fermé. <Link to="/support" className="text-primary hover:underline">Ouvrir un nouveau ticket</Link>
+          Ce ticket est fermé. <Link to="/support/conversation" className="text-primary hover:underline">Ouvrir un nouveau ticket</Link>
         </div>
       )}
       {!composerDisabled && (

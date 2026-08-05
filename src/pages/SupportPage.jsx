@@ -32,7 +32,7 @@ export default function SupportPage() {
       title: 'Ouvrir un ticket',
       desc: 'Soumettez un ticket de support détaillé et obtenez une assistance personnalisée de Nexus IA.',
       action: 'Commencer',
-      onClick: () => setShowNew(true),
+      to: '/support/conversation?new=1',
     },
   ];
 

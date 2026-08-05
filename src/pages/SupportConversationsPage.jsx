@@ -32,6 +32,14 @@ export default function SupportConversationsPage() {
 
   useEffect(() => { applySeoMeta({ title: 'Mes conversations — Support eza', description: 'Vos tickets de support eza.' }); }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('new') === '1') {
+      setShowNew(true);
+      window.history.replaceState({}, '', '/support/conversation');
+    }
+  }, []);
+
   const load = useCallback(async () => {
     if (!user?.email) return;
     setLoading(true);

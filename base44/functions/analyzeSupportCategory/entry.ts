@@ -1,54 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 // Analyse IA de la description d'un problème (étape 2 du wizard de ticket).
-// Retourne 3 suggestions de type de problème, chacune avec un element_type.
-// En PLUS : l'IA détecte AUTOMATIQUEMENT l'élément précis concerné (événement,
-// inscription, portefeuille, post, communauté…) en croisant la description
-// avec le catalogue réel des éléments de l'utilisateur. Quand un élément est
-// identifié, la suggestion porte related_item_id + related_item_label et le
-// wizard saute la sélection manuelle (la grille "moche").
+// Retourne LA suggestion la plus probable (une seule), avec l'élément précis
+// détecté automatiquement (événement, inscription, portefeuille, post…).
+// L'IA croise la description avec le catalogue réel des éléments de l'utilisateur.
 
 const VALID_CATEGORIES = ['account','billing','credits','bug','feature','events','moderation','messaging','other'];
 const VALID_TYPES = ['post','conversation','wallet','event','community','space','story','referral','registration','reward','cart','ticket','discussion','forum','review','certification','donation','list','ad','none'];
-
-// Catalogue de la documentation EZA — injecté dans le prompt pour que l'IA
-// puisse suggérer les articles les plus pertinents au moment de l'analyse
-// du ticket (auto-assistance avant soumission).
-const DOC_CATALOG = [
-  { slug: 'overview', title: "Vue d'ensemble", kw: 'plateforme, fonctionnement, présentation' },
-  { slug: 'social', title: 'Réseau social', kw: 'publication, post, like, hashtag, mention, visibilité, fil' },
-  { slug: 'messaging', title: 'Messagerie', kw: 'message, conversation, demande de contact, spam, officiel' },
-  { slug: 'forum', title: 'Forum & discussions', kw: 'forum, discussion, sujet, réponse, markdown, lien externe' },
-  { slug: 'communities', title: 'Communautés', kw: 'communauté, membres, règles, post communautaire, capacité' },
-  { slug: 'stories', title: 'Stories', kw: 'story, ephemere, caméra, filtre, sticker, 24h' },
-  { slug: 'spaces', title: 'Spaces audio', kw: 'space, audio, live, livekit, orateur, direct' },
-  { slug: 'events', title: 'Événements', kw: 'événement, inscription, billet, check-in, annulation, remboursement, qr' },
-  { slug: 'economie-credits', title: 'Crédits Eza', kw: 'crédit, gain, récompense, dépense, fraude' },
-  { slug: 'economie-boutique', title: 'Boutique', kw: 'boutique, pack, abonnement, pro, business, enterprise, token, stripe' },
-  { slug: 'banque', title: 'Banque & portefeuilles', kw: 'wallet, portefeuille, solde, transfert, gel, frozen, banque' },
-  { slug: 'parrainage', title: 'Parrainage & récompenses', kw: 'parrainage, filleul, code, jalon, fraude parrainage' },
-  { slug: 'ads', title: 'Publicité business', kw: 'publicité, campagne, budget, impression, clic, business, ciblage' },
-  { slug: 'profile', title: 'Profil & identité', kw: 'profil, username, compte, personnalisation, thème, badge' },
-  { slug: 'certifications', title: 'Certifications', kw: 'certification, vérification, badge, paiement stripe, questionnaire' },
-  { slug: 'affiliations', title: 'Affiliations & écosystème', kw: 'affiliation, organisation, logo, écosystème, entreprise' },
-  { slug: 'enor', title: "Enor & identité fondatrice", kw: 'enor, pdg, histoire, vision, eza group' },
-  { slug: 'support', title: 'Support & Nexus IA', kw: 'support, ticket, nexus, ia, escalade, action, ia support' },
-  { slug: 'stack', title: 'Stack technique', kw: 'technique, react, vite, base44, architecture, technologies' },
-  { slug: 'notifications', title: 'Notifications', kw: 'notification, push, email, digest, préférences, fcm, vapid' },
-  { slug: 'pwa', title: 'PWA & installation', kw: 'pwa, installation, ios, android, manifest, offline, écran accueil' },
-  { slug: 'auth', title: 'Authentification', kw: 'connexion, login, oauth, otp, reset, mot de passe, 2fa, session' },
-  { slug: 'data', title: 'Modèle de données', kw: 'données, entité, snapshot, base de données, sdk, realtime' },
-  { slug: 'design', title: 'Système de design', kw: 'design, thème, tokens, couleurs, typographie, sky, glassmorphism' },
-  { slug: 'integrations', title: 'Intégrations & services', kw: 'intégration, connecteur, oauth, secret, stripe, livekit, giphy' },
-  { slug: 'security', title: 'Sécurité & RGPD', kw: 'sécurité, rgpd, suppression compte, audit, session, device, 2fa' },
-  { slug: 'automations', title: 'Automatisations', kw: 'automatisation, cron, schedule, webhook, digest, modération auto' },
-  { slug: 'rls', title: 'Row-Level Security', kw: 'rls, sécurité ligne, isolation, permission, rôle, ownership' },
-  { slug: 'conventions', title: 'Conventions de code', kw: 'convention, code, esm, import, composant, entité, tailwind' },
-  { slug: 'portfolio', title: 'Portfolio', kw: 'portfolio, projet, avant après, avis, carte, géolocalisation' },
-  { slug: 'blog', title: 'Blog & articles', kw: 'blog, article, rédaction, catégorie, publication article' },
-];
-const VALID_DOC_SLUGS = new Set(DOC_CATALOG.map((d) => d.slug));
-const DOC_BY_SLUG = Object.fromEntries(DOC_CATALOG.map((d) => [d.slug, d]));
 
 export default async function(req) {
   let base44;
@@ -64,8 +22,6 @@ export default async function(req) {
     }
 
     // --- CATALOGUE DES ÉLÉMENTS DE L'UTILISATEUR ---
-    // On fetch en parallèle les éléments détectables pour que l'IA puisse
-    // identifier l'élément précis mentionné dans la description.
     const sr = base44.asServiceRole;
     const uid = user.id;
     const uemail = user.email;
@@ -94,8 +50,6 @@ export default async function(req) {
       sr.entities.AdCampaign.filter({ owner_id: uid }, '-created_date', 15).catch(() => []),
     ]);
 
-    // Catalogue compact : { id, type, label }. On ne garde que les éléments
-    // exploitables (events à venir, inscriptions actives, etc.).
     const catalog = [];
     const push = (id, type, label) => { if (id && label) catalog.push({ id: String(id), type, label: String(label).slice(0, 120) }); };
 
@@ -125,9 +79,9 @@ export default async function(req) {
 
     const prompt = `Tu es l'assistant de tri du support eza (réseau professionnel/communautaire : profil, posts, stories, communities, Spaces, events, boutique, banque de crédits, parrainage, messagerie).
 
-Analyse la description ci-dessous et propose EXACTEMENT 3 types de problème possibles, du plus probable au moins probable.
+Analyse la description ci-dessous et propose LA suggestion la plus probable (une seule, pas trois).
 
-Pour chaque suggestion, choisis:
+Pour cette suggestion, choisis:
 - "label": un libellé court et clair en français (ex: "Bug d'affichage d'une publication", "Problème de facturation", "Signalement de contenu")
 - "category": une valeur parmi ["account","billing","credits","bug","feature","events","moderation","messaging","other"]
 - "element_type": parmi ["post","conversation","wallet","event","community","space","story","referral","registration","reward","cart","ticket","discussion","forum","review","certification","donation","list","ad","none"]
@@ -141,30 +95,20 @@ Description de l'utilisateur:
 ${description.slice(0, 2000)}
 """
 
-CATALOGUE DE LA DOCUMENTATION EZA (slug : titre — mots-clés) :
-${DOC_CATALOG.map((d) => `- ${d.slug} : « ${d.title} » (${d.kw})`).join('\n')}
-
 Réponds en JSON STRICT conforme à ce schéma:
 {
-  "suggestions": [
-    { "label": "...", "category": "...", "element_type": "...", "description": "...", "related_item_id": "id|null", "related_item_label": "libellé|null" },
-    { "label": "...", "category": "...", "element_type": "...", "description": "...", "related_item_id": "id|null", "related_item_label": "libellé|null" },
-    { "label": "...", "category": "...", "element_type": "...", "description": "...", "related_item_id": "id|null", "related_item_label": "libellé|null" }
-  ],
-  "doc_suggestions": [
-    { "slug": "slug exact du catalogue", "reason": "courte raison en français : pourquoi cet article aide l'utilisateur pour SA demande" }
-  ]
+  "suggestion": {
+    "label": "...",
+    "category": "...",
+    "element_type": "...",
+    "description": "...",
+    "related_item_id": "id|null",
+    "related_item_label": "libellé|null"
+  }
 }
 
-Règles pour doc_suggestions :
-- 0 à 3 articles, ordonnés par pertinence.
-- Le slug DOIT exister dans le catalogue ci-dessus (copie exactement la valeur slug).
-- Ne suggère jamais un article technique (stack, conventions, rls, design, integrations) pour un ticket utilisateur lambda.
-- La reason est une phrase courte en français qui relie l'article à la description de l'utilisateur.
-- Si aucun article n'est clairement pertinent, renvoie un tableau vide.
-
 Règles:
-- 3 suggestions exactement, ordonnées par probabilité.
+- 1 seule suggestion, la plus probable.
 - element_type "post" pour les problèmes d'affichage/likes/visibilité d'une publication ou signalement de contenu.
 - element_type "conversation" pour les problèmes de messagerie/discussions.
 - element_type "wallet" pour les problèmes de portefeuille, crédits, solde, transfert, ou banque Eza.
@@ -179,28 +123,15 @@ Règles:
       response_json_schema: {
         type: 'object',
         properties: {
-          suggestions: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                label: { type: 'string' },
-                category: { type: 'string' },
-                element_type: { type: 'string' },
-                description: { type: 'string' },
-                related_item_id: { type: 'string' },
-                related_item_label: { type: 'string' },
-              },
-            },
-          },
-          doc_suggestions: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                slug: { type: 'string' },
-                reason: { type: 'string' },
-              },
+          suggestion: {
+            type: 'object',
+            properties: {
+              label: { type: 'string' },
+              category: { type: 'string' },
+              element_type: { type: 'string' },
+              description: { type: 'string' },
+              related_item_id: { type: 'string' },
+              related_item_label: { type: 'string' },
             },
           },
         },
@@ -215,51 +146,40 @@ Règles:
     const byType = {};
     catalog.forEach((c) => { (byType[c.type] = byType[c.type] || new Set()).add(c.id); });
 
-    const suggestions = Array.isArray(ai?.suggestions) ? ai.suggestions.slice(0, 3).map((s) => {
-      const et = VALID_TYPES.includes(s.element_type) ? s.element_type : 'none';
-      // Valide related_item_id : doit exister dans le catalogue pour ce type.
-      let rid = s.related_item_id ? String(s.related_item_id) : null;
-      let rlabel = s.related_item_label ? String(s.related_item_label).slice(0, 160) : null;
+    const rawSugg = ai?.suggestion;
+    let suggestion = null;
+    if (rawSugg) {
+      const et = VALID_TYPES.includes(rawSugg.element_type) ? rawSugg.element_type : 'none';
+      let rid = rawSugg.related_item_id ? String(rawSugg.related_item_id) : null;
+      let rlabel = rawSugg.related_item_label ? String(rawSugg.related_item_label).slice(0, 160) : null;
       if (rid && et !== 'none' && et !== 'conversation' && byType[et] && byType[et].has(rid)) {
-        // OK — on garde l'élément détecté.
+        // OK — élément validé
       } else {
         rid = null; rlabel = null;
       }
-      return {
-        label: String(s.label || 'Autre').slice(0, 80),
-        category: VALID_CATEGORIES.includes(s.category) ? s.category : 'other',
+      suggestion = {
+        label: String(rawSugg.label || 'Autre').slice(0, 80),
+        category: VALID_CATEGORIES.includes(rawSugg.category) ? rawSugg.category : 'other',
         element_type: et,
-        description: String(s.description || '').slice(0, 200),
+        description: String(rawSugg.description || '').slice(0, 200),
         related_item_id: rid,
         related_item_label: rlabel,
       };
-    }) : [];
-
-    // Valide les suggestions de documentation (slugs réels, dédupliqués).
-    const seenDoc = new Set();
-    const docSuggestions = (Array.isArray(ai?.doc_suggestions) ? ai.doc_suggestions : [])
-      .filter((d) => d && d.slug && VALID_DOC_SLUGS.has(d.slug))
-      .map((d) => {
-        if (seenDoc.has(d.slug)) return null;
-        seenDoc.add(d.slug);
-        return { slug: d.slug, title: DOC_BY_SLUG[d.slug].title, reason: String(d.reason || '').slice(0, 200) };
-      })
-      .filter(Boolean)
-      .slice(0, 3);
-
-    // Fallback si l'IA n'a rien retourné d'exploitable
-    if (suggestions.length === 0) {
-      return Response.json({
-        suggestions: [
-          { label: 'Problème de compte', category: 'account', element_type: 'none', description: 'Compte, connexion, profil', related_item_id: null, related_item_label: null },
-          { label: 'Bug technique', category: 'bug', element_type: 'post', description: 'Bug d\'affichage ou technique', related_item_id: null, related_item_label: null },
-          { label: 'Autre demande', category: 'other', element_type: 'none', description: 'Question générale', related_item_id: null, related_item_label: null },
-        ],
-        doc_suggestions: docSuggestions,
-      });
     }
 
-    return Response.json({ suggestions, doc_suggestions: docSuggestions });
+    // Fallback si l'IA n'a rien retourné d'exploitable
+    if (!suggestion) {
+      suggestion = {
+        label: 'Demande générale',
+        category: 'other',
+        element_type: 'none',
+        description: 'Question ou problème général',
+        related_item_id: null,
+        related_item_label: null,
+      };
+    }
+
+    return Response.json({ suggestion });
   } catch (error) {
     return Response.json({ error: String(error?.message || error) }, { status: 500 });
   }

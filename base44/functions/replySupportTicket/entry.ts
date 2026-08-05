@@ -3,14 +3,10 @@ import { sendEzaEmail } from '../../shared/ezaEmails.ts';
 import { logAutomation } from '../../shared/logAutomation.ts';
 import { buildUserContext } from '../../shared/supportUserContext.ts';
 import { EZA_KNOWLEDGE, buildResearchSteps, buildRelatedItemResearch } from '../../shared/supportKnowledge.ts';
-import { executeNexusAction, AUTO_ACTIONS, CONFIRMABLE_ACTIONS } from '../../shared/nexusActions.ts';
 
-// Réponse utilisateur sur un ticket existant : Nexus fait d'abord sa recherche
-// (doc, publication concernée, solde, compte), affiche ses étapes, PUIS répond.
-// Trois résolutions possibles :
-//   - "answered"       : info pure complètement répondue → ticket résolu
-//   - "troubleshooting" : étapes proposées, ticket RESTE OUVERT (attend confirmation)
-//   - "escalate"        : critique uniquement (sécurité, remboursement, bug bloquant, suppression)
+// Réponse utilisateur sur un ticket existant : Nexus fait sa recherche contextuelle
+// (doc, élément concerné, solde, compte) PUIS répond. Nexus NE PEUT PAS exécuter
+// d'actions — il informe, guide, ou escalade vers l'équipe humaine.
 
 export default async function(req) {
   let base44;
@@ -35,100 +31,28 @@ export default async function(req) {
     const history = Array.isArray(ticket.messages) ? ticket.messages : [];
     const newMessages = [...history, { role: 'user', content, at: new Date().toISOString() }];
 
-    // --- CONFIRMATION D'ACTION EN ATTENTE ---
-    // Si une action confirmable est en attente (pending) et que l'utilisateur
-    // répond par une confirmation courte (oui/ok/...) ou un refus (non/annule),
-    // on exécute ou refuse SANS repasser par le LLM (sinon Nexus redemande en boucle).
-    const pending = ticket.pending_action;
-    if (pending && pending.status === 'pending' && pending.type && CONFIRMABLE_ACTIONS.includes(pending.type)) {
-      const lc = content.toLowerCase().trim();
-      const confirmWords = ['oui','ouais','ok','okay','d\'accord','d’accord','je suis d\'accord','je suis d’accord','je confirme','confirme','confirmé','confirme-le','vas-y','fais-le','fais le','je veux bien','parfait','génial','genial','yes','yep','ouep','go','c\'est bon','c’est bon','biensur','bien sûr','c\'est oui','allez-y','allez y','allons-y','allons y','c\'est validé','ça marche','ca marche','ça marche nickel','je valide','je veux','ça part','ca part'];
-      const refuseWords = ['non','nan','annule','annuler','je refuse','refuse','non merci','laisse tomber','stop','pas maintenant','absolument pas','jamais'];
-      const negate = /\b(ne\s|n[''’]\s)/.test(lc) || /\bpas\b/.test(lc);
-      const isConfirm = !negate && confirmWords.some((w) => lc.includes(w));
-      const isRefuse = refuseWords.some((w) => lc.includes(w));
-      if (isConfirm || isRefuse) {
-        if (isConfirm) {
-          const actionRes = await executeNexusAction(base44, { type: pending.type, label: pending.label, params: pending.params || {} }, ticket, user);
-          const detail = actionRes.result && actionRes.result.wallet ? `\n\nPortefeuille **${actionRes.result.wallet}** mis à jour.` :
-            actionRes.result && actionRes.result.amount != null ? `\n\n**${actionRes.result.amount} crédits** traités.` : '';
-          const confirmMessages = [...newMessages, {
-            role: 'assistant',
-            content: actionRes.ok
-              ? `✅ **C'est fait** : ${actionRes.label || pending.label}.${detail}\n\nVotre demande est traitée. Avez-vous besoin d'autre chose ?`
-              : `❌ Je n'ai pas pu exécuter l'action (${actionRes.error}). Je laisse le ticket ouvert pour qu'on vérifie ensemble.`,
-            steps: [],
-            action: { type: pending.type, label: pending.label, status: actionRes.ok ? 'executed' : 'failed', result: actionRes, needs_confirmation: true },
-            at: new Date().toISOString(),
-          }];
-          const updatedConf = await base44.entities.SupportTicket.update(ticketId, {
-            pending_action: { ...pending, status: actionRes.ok ? 'executed' : 'failed', result: actionRes, executed_at: new Date().toISOString() },
-            last_action_log: `${actionRes.ok ? '✅' : '❌'} ${actionRes.label || pending.type} — ${new Date().toISOString()}`,
-            messages: confirmMessages,
-            status: actionRes.ok ? 'ai_resolved' : 'open',
-            ai_handled: !!actionRes.ok,
-          }).catch(() => null);
-          await logAutomation(base44, {
-            automation_name: 'nexus_ticket_action', label: `Action Nexus — ${pending.type}`, category: 'system',
-            status: actionRes.ok ? 'success' : 'error',
-            summary: `Ticket #${String(ticketId).slice(-6)} — ${actionRes.label || pending.type} ${actionRes.ok ? 'exécuté (confirmé)' : 'échec'}`,
-            count: 1,
-          }).catch(() => {});
-          return Response.json({ ok: true, ticket: updatedConf || { ...ticket, messages: confirmMessages, pending_action: { ...pending, status: actionRes.ok ? 'executed' : 'failed' } } });
-        }
-        // refus
-        const refuseMessages = [...newMessages, {
-          role: 'assistant',
-          content: `D'accord, j'annule l'action proposée. Que souhaitez-vous faire d'autre ?`,
-          steps: [], at: new Date().toISOString(),
-        }];
-        const updatedRef = await base44.entities.SupportTicket.update(ticketId, {
-          pending_action: { ...pending, status: 'rejected' },
-          messages: refuseMessages,
-        }).catch(() => null);
-        return Response.json({ ok: true, ticket: updatedRef || { ...ticket, messages: refuseMessages, pending_action: { ...pending, status: 'rejected' } } });
-      }
-    }
-
-    // --- RECHERCHE CONTEXTUELLE ---
+    // --- RECHERCHE CONTEXTUELLE (informatif uniquement, aucune action) ---
     const researchBits = [];
-    let walletData = null;
 
-    // Élément concerné : recherche RÉELLE par type (post, event, community,
-    // space, story, referral, registration, reward, cart, ticket, discussion,
-    // forum, review, certification, donation, list, ad). Chaque type fetch
-    // l'entité correspondante et fournit une étape affichée en temps réel.
     const relatedResearch = await buildRelatedItemResearch(base44, ticket.related_item_type, ticket.related_item_id);
     if (relatedResearch.researchBit) researchBits.push(relatedResearch.researchBit);
 
-    let frozenWallets = [];
-    if (ticket.category === 'credits' || ticket.category === 'billing' || ticket.category === 'events' || /solde|crédit|credit|gel|bloqué|bloque|rembours|portefeuille|wallet|dégel|degel|transf/i.test(content)) {
+    if (ticket.category === 'credits' || ticket.category === 'billing' || /solde|crédit|credit|gel|bloqué|bloque|rembours|portefeuille|wallet|transf/i.test(content)) {
       try {
         const wallets = await base44.asServiceRole.entities.Wallet.filter({ owner_id: user.id }).catch(() => []);
-        walletData = wallets;
         const total = (wallets || []).reduce((s, w) => s + (w.balance || 0), 0);
-        frozenWallets = (wallets || []).filter((w) => w.frozen);
-        researchBits.push(`SOLDE EZA (vérifié) : ${total} crédits répartis sur ${wallets?.length || 0} wallet(s). Gelé : ${frozenWallets.length ? 'oui' : 'non'}.${frozenWallets.length ? `\nPORTEFEUILLES GELÉS (frozen=true, wallet_id utilisable pour unfreeze_wallet) :\n${frozenWallets.map((w) => `- ID:${w.id} · « ${w.name} » · solde ${w.balance || 0}`).join('\n')}` : ''}${(wallets || []).length ? `\nDÉTAIL PORTEFEUILLES (wallet_id utilisable pour move_credits / grant_credits) :\n${(wallets || []).map((w) => `- ID:${w.id} · « ${w.name} » · ${w.balance || 0} crédits${w.frozen ? ' (gelé)' : ''}`).join('\n')}` : ''}`);
+        const frozenCount = (wallets || []).filter((w) => w.frozen).length;
+        researchBits.push(`SOLDE EZA (vérifié) : ${total} crédits répartis sur ${wallets?.length || 0} portefeuille(s). Portefeuilles gelés : ${frozenCount > 0 ? `${frozenCount}` : 'aucun'}.`);
       } catch {}
     }
 
-    // Événements : Nexus peut inscrire l'utilisateur (register_event)
-    // ET annuler/rembourser une inscription existante (cancel_event_registration).
-    let upcomingEvents = [];
-    let myRegistrations = [];
-    if (ticket.category === 'events' || /événement|evenement|event|inscription|inscrire|je m'inscr|rembours|annul/i.test(content)) {
+    if (ticket.category === 'events' || /événement|evenement|event|inscription|inscrire|rembours|annul/i.test(content)) {
       try {
         const all = await base44.asServiceRole.entities.Event.filter({}, 'start_date', 30).catch(() => []);
         const now = Date.now();
-        upcomingEvents = (all || []).filter((e) => e.status !== 'cancelled' && (!e.end_date || new Date(e.end_date).getTime() >= now) && (!e.capacity || (e.attendees_count || 0) < e.capacity));
-        if (upcomingEvents.length) {
-          researchBits.push(`ÉVÉNEMENTS À VENIR (Nexus peut inscrire l'utilisateur via register_event) :\n${upcomingEvents.slice(0, 8).map((e) => `- ID:${e.id} · « ${e.title} » · ${e.start_date ? e.start_date.slice(0, 10) : '?'} · ${e.price_credits || 0} crédits · ${e.city || ''} · ${e.attendees_count || 0}/${e.capacity || '∞'}`).join('\n')}`);
-        }
-        // Inscriptions actives de l'utilisateur — Nexus peut les annuler/rembourser
-        const regs = await base44.asServiceRole.entities.EventRegistration.filter({ user_id: user.id, status: 'registered' }, '-created_date', 50).catch(() => []);
-        myRegistrations = (regs || []).filter((r) => r.status === 'registered');
-        if (myRegistrations.length) {
-          researchBits.push(`INSCRIPTIONS ACTIVES DE L'UTILISATEUR (Nexus peut annuler + rembourser via cancel_event_registration, registration_id requis) :\n${myRegistrations.slice(0, 12).map((r) => `- registration_id:${r.id} · « ${r.event_title || '?'} » · ${r.event_start_date ? r.event_start_date.slice(0, 10) : '?'} · crédits payés: ${r.credits_paid || 0} · billet ${r.ticket_code || ''}`).join('\n')}`);
+        const upcoming = (all || []).filter((e) => e.status !== 'cancelled' && (!e.end_date || new Date(e.end_date).getTime() >= now));
+        if (upcoming.length) {
+          researchBits.push(`ÉVÉNEMENTS À VENIR (informatif) :\n${upcoming.slice(0, 8).map((e) => `- « ${e.title} » · ${e.start_date ? e.start_date.slice(0, 10) : '?'} · ${e.price_credits || 0} crédits · ${e.city || ''}`).join('\n')}`);
         }
       } catch {}
     }
@@ -143,9 +67,9 @@ export default async function(req) {
       relatedStep: relatedResearch.step,
       relatedType: ticket.related_item_type,
       category: ticket.category,
-    });
+    }).map((s) => ({ ...s, status: 'done' }));
 
-    const prompt = `Tu es NEXUS, l'IA de support eza. Tu n'es pas qu'un chatbot : tu es un AGENT autonome qui peut EXÉCUTER des actions concrètes sur le compte de l'utilisateur (inscriptions, crédits, remboursements en crédits, portefeuilles…), pas seulement répondre. Consulte ton catalogue de capacités plus bas et PROPOSE l'action appropriée dès que la demande correspond. Tu viens de faire ta recherche : tu as lu la documentation, ${relatedResearch.researchBit ? "examiné l'élément concerné, " : ''}${walletData ? 'vérifié le solde, ' : ''}et consulté le profil de l'utilisateur. Tu réponds maintenant avec tout ce contexte.
+    const prompt = `Tu es NEXUS, l'IA de support eza. Tu RÉPONDS aux questions et ORIENTES les utilisateurs. Tu NE PEUX PAS exécuter d'actions sur le compte (pas d'inscription, pas de remboursement, pas de dégel, pas de transfert). Ton rôle est purement informatif : tu expliques, tu guides, et si une action est nécessaire, tu l'escalades à l'équipe humaine. Tu viens de faire ta recherche : tu as lu la documentation, ${relatedResearch.researchBit ? "examiné l'élément concerné, " : ''}et consulté le profil de l'utilisateur. Tu réponds maintenant avec tout ce contexte.
 
 ${EZA_KNOWLEDGE}
 
@@ -158,103 +82,27 @@ ${conv}
 
 Réponds au dernier message. Renvoie un JSON STRICT :
 {
-  "reply": "réponse en français, PROFESSIONNELLE et STRUCTURÉE (markdown). Vouvoiement obligatoire. Jamais de ton familier, jamais de langage de pote (interdit : 'salut', 'ça marche', 'pas de souci', 'coucou', 'top', 'nickel', 'hop', 'no problem', emojis décontractés). Structure : 1) une phrase d'introduction factuelle, 2) l'explication ou la solution en paragraphe(s) clair(s), 3) les prochaines étapes le cas échéant. Utilise les données de recherche vérifiées. Propose TOUJOURS une solution concrète d'abord.",
+  "reply": "réponse en français, PROFESSIONNELLE et STRUCTURÉE (markdown). Vouvoiement obligatoire. Jamais de ton familier. Structure : 1) introduction factuelle, 2) explication ou solution, 3) prochaines étapes.",
   "resolution_type": "answered|troubleshooting|escalate",
   "escalation_reason": "raison courte si resolution_type=escalate, sinon null"
 }
 
-FORMAT MARKDOWN OBLIGATOIRE (CRITIQUE — chaque réponse DOIT utiliser la syntaxe markdown Discord pour être structurée) :
-Tu DOIS structurer chaque réponse avec de VRAIS éléments markdown, jamais du texte plat. Modèle obligatoire :
-- Titre de section ## (h2 avec bordure) pour ouvrir la réponse — un seul, court, factuel.
-- **gras** pour les mots-clés, montants, termes importants et étapes numérotées.
-- Listes à puces - ou numérotées 1. 2. 3. pour toute énumération / étapes / options.
-- > citation pour reformuler la demande de l'utilisateur ou citer une info vérifiée.
-- Gras marqué pour tout identifiant, code ticket, nom de portefeuille, montant exact.
-- Paragraphes séparés par ligne vide pour aérer.
-- Jamais un bloc de texte plat de plus de 3 lignes sans élément de structure (gras, liste, ou titre).
+FORMAT MARKDOWN : utilise **gras**, listes à puces, titres ## pour structurer. Jamais de texte plat de plus de 3 lignes sans structure.
 
-EXEMPLE DE BONNE RÉPONSE (à imiter en structure, pas en contenu) :
-## Solde de votre portefeuille
-> Je veux vérifier mon solde Eza
-Votre solde actuel est de **1 240 crédits**, répartis sur **2 portefeuilles** :
-- **Épargne** — **980 crédits**
-- **Dépenses** — **260 crédits**
-Aucun portefeuille n'est gelé. Vous pouvez transférer entre eux via la section **Banque**.
-
-TON & STRUCTURE (CRITIQUE — l'utilisateur veut des réponses PROFESSIONNELLES, pas un chat entre potes) :
-- Vouvoiement systématique (« vous », jamais « tu »).
-- Ton factuel, institutionnel, comme un support officiel d'entreprise.
-- Interdiction absolue du registre familier : pas de « salut », « ça marche », « pas de souci », « coucou », « top », « nickel », « hop », « voilà voilà », emojis décontractés (✅😀👍 OK seulement si strictement nécessaire à une confirmation d'action).
-- Pas d'exclamations excessives, pas de « ! » multiples.
-- Structure la réponse : introduction courte → corps explicatif → conclusion/prochaines étapes. Utilise le markdown (paragraphes, listes puces si pertinent) pour aérer.
-- Sois direct et précis, pas bavard. Évite les fillers (« alors », « donc voilà », « du coup »).
-- Référence les éléments concernés et le contexte vérifié de manière factuelle.
-
-RÈGLES DE RÉSOLUTION (CRITIQUE) :
-- "answered" : tu as répondu COMPLÈTEMENT à une question d'info (comment ça marche, où trouver, combien). L'utilisateur n'a plus rien à faire. → résolu.
-- "troubleshooting" : tu proposes des étapes / une solution, mais l'utilisateur doit TESTER ou CONFIRMER. Le ticket RESTE OUVERT. C'est le cas par défaut pour tout bug ou problème.
-- "escalate" : UNIQUEMENT si :
-    • Sécurité (compte piraté, données, harcèlement).
-    • Remboursement bancaire réel (carte Stripe) — PAS les remboursements en crédits Eza.
-    • Bug bloquant confirmé (core unusable).
-    • Suppression de compte.
-    • Litige / fraude.
-    • L'utilisateur a insisté 3+ fois sans solution dans l'historique.
-  NE ESCALADE PAS un remboursement d'événement en crédits Eza : utilise cancel_event_registration (registration_id issu de la recherche) — c'est exactement ce que Nexus sait faire.
+RÈGLES DE RÉSOLUTION :
+- "answered" : question d'info pure, complètement répondue → résolu.
+- "troubleshooting" : étapes proposées, ticket RESTE OUVERT.
+- "escalate" : sécurité, remboursement bancaire Stripe, suppression de compte, fraude, ou action que tu ne peux pas faire → transmets à un humain.
 
 INTERDIT :
-- Marquer "answered" si l'utilisateur n'a pas confirmé que le bug est résolu.
-- Escalader "par précaution" ou pour un simple "ça ne marche pas" vague.
-- Dire "je transmets à l'équipe" si tu peux répondre toi-même.
+- Tu NE PEUX PAS exécuter d'action (inscription, dégel, transfert, remboursement, crédits).
+- Si l'utilisateur demande une action, explique comment la faire lui-même via l'interface eza, OU escalade vers l'équipe humaine.
+- Ne dis jamais "je vais le faire pour vous" ou "je m'inscris pour vous" — tu ne peux qu'informer ou escalader.
+- Ne marque jamais "answered" un bug non confirmé par l'utilisateur.
+- N'invente jamais l'état du compte : ne décris QUE ce que tu as vérifié dans la recherche.
 
 Si l'utilisateur dit "ça marche" / "merci c'est bon" → "answered".
-Si l'utilisateur dit "non ça ne marche pas" ou donne un nouveau détail → "troubleshooting" (ouvre à nouveau, propose autre chose).
-Si l'info demandée est dans la doc → "answered".
-
---- ANTI-HALLUCINATION (CRITIQUE — TU NE FABRIQUES JAMAIS L'ÉTAT DU COMPTE) ---
-- Tu ne décris QUE ce que tu as réellement vérifié dans la recherche (solde, gel, inscriptions, posts). Si une donnée n'est pas dans la recherche, tu NE l'inventes PAS.
-- INTERDIT d'affirmer "votre solde est bloqué", "votre portefeuille est gelé", "vous êtes inscrit à X" sans avoir lu la donnée correspondante dans la recherche. Si tu n'as pas vérifié, dis "je n'ai pas cette information sous les yeux" et propose d'escalader si nécessaire.
-- N'attribue JAMAIS de cause au problème sans preuve (ex : "votre solde est gelé" sans frozen=true lu dans les données de recherche).
-- Un portefeuille est gelé UNIQUEMENT si la recherche montre un wallet avec frozen=true (section "PORTEFEUILLES GELÉS"). Sans ce constat explicite, NE PROPOSE PAS unfreeze_wallet et NE DIS PAS que le solde est bloqué.
-
---- SÉCURITÉ DES ACTIONS SENSIBLES (anti-danger) ---
-Les actions unfreeze_wallet, refund_credits, grant_credits, cancel_event_registration, move_credits sont SENSIBLES (impact financier). Règles strictes :
-- Ne les propose JAMAIS spontanément (sans demande explicite de l'utilisateur). Seul register_event peut être proposé proactivement.
-- unfreeze_wallet : UNIQUEMENT si la recherche montre un portefeuille gelé ET que tu as son wallet_id. Sans wallet_id ou sans gel confirmé → NE PROPOSE PAS l'action (ne dis pas non plus "c'est fait").
-- refund_credits / grant_credits : UNIQUEMENT si l'utilisateur a explicitement demandé un remboursement / geste commercial, ET que tu peux justifier le montant à partir de données réelles (crédits payés, solde vérifié). Montant max 100.
-- Si l'utilisateur demande une action que tu ne peux pas exécuter faute de données fiables, n'invente rien : dis ce qu'il te manque ou escalade.
-
---- TON CATALOGUE D'ACTIONS (tu PEUX et tu DOIS agir) ---
-Toute action se renvoie dans le champ JSON "action": { "type", "label", "needs_confirmation": bool, "params": {...} }.
-PROPOSE la bonne action PROACTIVEMENT dès que la demande correspond — n'attends pas que l'utilisateur la devine.
-
-▶ ACTIONS AUTOMATIQUES (needs_confirmation=false — exécution immédiate) :
-- "recalc_post" { post_id } — recalculer les compteurs d'une publication. QUAND : "mes likes ont disparu", "le compteur est faux".
-- "create_default_wallet" — créer le portefeuille par défaut. QUAND : utilisateur sans wallet, "je n'ai pas de portefeuille".
-- "close_ticket" — fermer le ticket. QUAND : l'utilisateur confirme "ça marche / merci c'est bon".
-- "reopen_ticket" — rouvrir le ticket. QUAND : "non ça ne marche pas" sur un ticket résolu.
-
-▶ ACTIONS AVEC CONFIRMATION (needs_confirmation=true — la carte Oui/Non s'affiche, exécution au clic) :
-- "grant_credits" { amount: 1-100, reason } — créditer des crédits de courtoisie (max 100). QUAND : bug mineur ayant impacté l'utilisateur, geste commercial.
-- "refund_credits" { amount, reason } — rembourser un achat boutique/événement EN CRÉDITS Eza. QUAND : "remboursez-moi" pour un achat crédits/boutique/événement (PAS de remboursement carte Stripe).
-- "cancel_event_registration" { registration_id } — annuler une inscription + rendre les crédits payés. QUAND : "remboursez mon événement", "annule mon inscription". UTILISE le registration_id EXACT de la section "INSCRIPTIONS ACTIVES" de la recherche. S'il y a plusieurs inscriptions, demande à l'utilisateur de préciser laquelle AVANT de proposer l'action (liste les titres + dates).
-- "move_credits" { from_wallet_id, to_wallet_id, amount, reason } — déplacer des crédits entre les portefeuilles du MÊME utilisateur. QUAND : "transfère de mon wallet épargne vers dépenses".
-- "unfreeze_wallet" { wallet_id } — dégeler un portefeuille VÉRIFIÉ comme gelé (frozen=true lu dans la recherche, avec son wallet_id). Sans wallet_id ou sans gel confirmé → NE PROPOSE PAS l'action. RÈGLE ABSOLUE : un wallet réellement gelé se traite par unfreeze_wallet, JAMAIS par escalade ; mais ne dis jamais "je ne peux pas débloquer" pour un gel non vérifié.
-- "register_event" { event_id, event_title, credits } — inscrire l'utilisateur à un événement (débite ses crédits Eza si payant). RÈGLE ABSOLUE : tu PEUX et tu DOIS inscrire toi-même. Ne dis JAMAIS "je ne peux pas m'inscrire pour vous" ni "vous devez le faire vous-même". Utilise l'event_id exact de la recherche.
-
-▶ CE QUE TU NE PEUX PAS FAIRE (→ resolution_type="escalate", transmets à un humain) :
-- Suppression de compte / données (RGPD).
-- Remboursement bancaire réel Stripe (carte bancaire).
-- Sanction / ban / modération lourde.
-- Suppression de contenu signalé.
-- Litige financier / fraude (parrainage suspect, double paiement).
-
-RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
-1. Toute action DOIT être dans le champ JSON "action" (type + label + needs_confirmation + params). JAMAIS une action annoncée uniquement en prose.
-2. La carte de confirmation s'affiche AUTOMATIQUEMENT avec needs_confirmation=true. NE DEMANDE JAMAIS "Confirmez-vous ?" en texte — mets juste l'objet action.
-3. INTERDIT ABSOLU : écrire "C'est validé", "C'est fait", "inscription confirmée", "votre billet a été créé". Une action n'est exécutée QUE par le système (tu reçois le résultat dans l'historique). Sans objet action, RIEN n'est fait — ne le prétends pas.
-4. register_event : dès que l'utilisateur désigne un événement (nom, "premier", "celui-là", ou "oui" après ta proposition), renvoie IMMÉDIATEMENT "action": { "type": "register_event", "label": "Inscrire à « <titre> »", "needs_confirmation": true, "params": { "event_id": "<id exact>", "event_title": "<titre>", "credits": <nombre> } }.
-5. Une seule action par message. Pas d'objet action si aucune action ne résout la demande.`;
+Si l'utilisateur dit "non ça ne marche pas" → "troubleshooting".`;
 
     const ai = await base44.integrations.Core.InvokeLLM({
       prompt,
@@ -264,15 +112,6 @@ RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
           reply: { type: 'string' },
           resolution_type: { type: 'string' },
           escalation_reason: { type: 'string' },
-          action: {
-            type: 'object',
-            properties: {
-              type: { type: 'string', enum: ['recalc_post', 'create_default_wallet', 'close_ticket', 'reopen_ticket', 'grant_credits', 'refund_credits', 'cancel_event_registration', 'move_credits', 'unfreeze_wallet', 'register_event'] },
-              label: { type: 'string' },
-              needs_confirmation: { type: 'boolean' },
-              params: { type: 'object' },
-            },
-          },
         },
       },
     }).catch((e) => ({ __error: String(e?.message || e) }));
@@ -288,9 +127,6 @@ RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
       escalation = rtype === 'escalate' ? (ai.escalation_reason || 'Nécessite intervention humaine') : null;
     }
 
-    // Si l'utilisateur revient sur un ticket que Nexus avait marqué "ai_resolved",
-    // on le ROUVRE systématiquement — il n'est pas résolu tant que l'utilisateur
-    // n'a pas confirmé. On ne coupe jamais la parole.
     const reopening = ticket.status === 'ai_resolved' || ticket.status === 'resolved';
     const resolved = rtype === 'answered' && !reopening;
     const escalated = rtype === 'escalate';
@@ -298,126 +134,21 @@ RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
     const assignee = escalated ? 'human' : 'ai';
     const handledBy = escalated ? 'escalated' : 'ai';
 
-    // --- ACTION PROPOSÉE PAR NEXUS ---
-    let pendingAction = null;
-    let actionResult = null;
-    let actionType = null;
-    const aiAction = ai && !ai.__error && ai.action && ai.action.type ? ai.action : null;
-    if (aiAction && !escalated && (AUTO_ACTIONS.includes(aiAction.type) || CONFIRMABLE_ACTIONS.includes(aiAction.type))) {
-      actionType = aiAction.type;
-      // recalc_post sans post_id → utiliser la publication liée au ticket.
-      if (aiAction.type === 'recalc_post' && !(aiAction.params?.post_id) && ticket.related_item_type === 'post' && ticket.related_item_id) {
-        aiAction.params = { ...(aiAction.params || {}), post_id: ticket.related_item_id };
-      }
-      if (AUTO_ACTIONS.includes(aiAction.type)) {
-        actionResult = await executeNexusAction(base44, aiAction, ticket, user);
-      } else if (CONFIRMABLE_ACTIONS.includes(aiAction.type)) {
-        pendingAction = { ...aiAction, status: 'pending', proposed_at: new Date().toISOString() };
-      }
-    }
-
-    // Filet de sécurité : si Nexus décrit un bouton/confirmation en prose SANS
-    // émettre l'objet action (modèle désobéissant), on synthétise l'action
-    // register_event à partir de l'événement cité ou du premier disponible,
-    // pour que la carte de confirmation s'affiche quand même.
-    if (!pendingAction && !actionResult && !escalated && upcomingEvents.length) {
-      const intentRe = /cliquez sur le bouton|bouton de confirmation|confirmez|valider l'op|je vais proc|nouvelle tentative d'inscription|je vais (l')?inscr|inscrire|réeffectuer l'inscription|refaire l'inscription|refait l'inscription/i;
-      if (intentRe.test(reply)) {
-        const cited = upcomingEvents.find((e) => reply.includes(e.title)) || upcomingEvents[0];
-        pendingAction = {
-          type: 'register_event',
-          label: `Inscrire à « ${cited.title} »`,
-          needs_confirmation: true,
-          params: { event_id: cited.id, event_title: cited.title, credits: cited.price_credits || 0 },
-          status: 'pending',
-          proposed_at: new Date().toISOString(),
-        };
-        actionType = 'register_event';
-      }
-    }
-
-    // Enrichissement : un register_event sans event_id est inexécutable.
-    // Si le LLM a émis l'action avec un label mais sans params, on injecte
-    // l'event_id depuis les événements à venir (titre cité ou premier dispo).
-    if (pendingAction && pendingAction.type === 'register_event' && !(pendingAction.params?.event_id) && upcomingEvents.length) {
-      const cited = upcomingEvents.find((e) => (pendingAction.label || '').includes(e.title) || (reply || '').includes(e.title)) || upcomingEvents[0];
-      pendingAction.params = { ...(pendingAction.params || {}), event_id: cited.id, event_title: cited.title, credits: Number(cited.price_credits || 0) };
-      if (!pendingAction.label) pendingAction.label = `Inscrire à « ${cited.title} »`;
-    }
-
-    // Garde-fou unfreeze_wallet : un dégel sans wallet_id (ou sans gel réel
-    // vérifié) est annulé — Nexus ne doit JAMAIS proposer un dégel
-    // halluciné. On injecte le wallet_id uniquement si un portefeuille gelé
-    // a réellement été trouvé dans la recherche.
-    if (pendingAction && pendingAction.type === 'unfreeze_wallet') {
-      if (pendingAction.params?.wallet_id && frozenWallets.some((w) => w.id === pendingAction.params.wallet_id)) {
-        // wallet_id valide et confirmé gelé — on garde.
-      } else if (frozenWallets.length === 1) {
-        pendingAction.params = { ...(pendingAction.params || {}), wallet_id: frozenWallets[0].id, wallet_name: frozenWallets[0].name };
-      } else {
-        // Aucun gel vérifié (ou plusieurs sans précision) → on retire l'action.
-        pendingAction = null;
-        actionType = null;
-      }
-    }
-
-    // Garde-fou cancel_event_registration : sans registration_id, Nexus ne
-    // peut pas annuler. Si une seule inscription active existe, on l'injecte ;
-    // s'il y en a plusieurs sans précision, on retire l'action (Nexus doit
-    // demander à l'utilisateur laquelle).
-    if (pendingAction && pendingAction.type === 'cancel_event_registration') {
-      if (pendingAction.params?.registration_id && myRegistrations.some((r) => r.id === pendingAction.params.registration_id)) {
-        // registration_id valide — on garde.
-      } else if (myRegistrations.length === 1) {
-        const r = myRegistrations[0];
-        pendingAction.params = { ...(pendingAction.params || {}), registration_id: r.id, event_title: r.event_title, credits: r.credits_paid || 0 };
-        if (!pendingAction.label) pendingAction.label = `Annuler l'inscription à « ${r.event_title || '?'} »`;
-      } else if (myRegistrations.length > 1) {
-        // Ambiguïté → on retire pour forcer la demande de précision.
-        pendingAction = null;
-        actionType = null;
-      }
-    }
-
-    // Garde-fou move_credits : le LLM connaît les noms de portefeuilles mais
-    // rarement leurs IDs. On résout from_wallet_id / to_wallet_id depuis les
-    // noms (ou on complète les noms depuis les IDs) via le solde vérifié.
-    // Sans IDs fiables, le transfert échouerait systématiquement.
-    if (pendingAction && pendingAction.type === 'move_credits' && walletData) {
-      const p = pendingAction.params || {};
-      const findByName = (name) => name && (walletData.find((w) => w.name === name) || walletData.find((w) => (w.name || '').toLowerCase() === String(name).toLowerCase()));
-      const findById = (id) => id && walletData.find((w) => w.id === id);
-      let fromW = findById(p.from_wallet_id) || findByName(p.from_name);
-      let toW = findById(p.to_wallet_id) || findByName(p.to_name);
-      if (fromW && toW && fromW.id !== toW.id) {
-        pendingAction.params = { ...p, from_wallet_id: fromW.id, to_wallet_id: toW.id, from_name: fromW.name, to_name: toW.name };
-      } else {
-        // IDs/noms introuvables ou transfert vers le même wallet → on retire.
-        pendingAction = null;
-        actionType = null;
-      }
-    }
-
     const finalMessages = [...newMessages, {
       role: 'assistant',
       content: reply,
-      steps: steps.map((s) => ({ ...s, status: 'done' })),
-      action: actionResult ? { type: actionType, label: aiAction?.label || actionResult.label, status: actionResult.ok ? 'executed' : 'failed', result: actionResult } : pendingAction ? { type: pendingAction.type, label: pendingAction.label, status: 'pending', needs_confirmation: true, params: pendingAction.params } : undefined,
+      steps,
       at: new Date().toISOString(),
     }];
 
-    const updatePayload = {
+    const updated = await base44.entities.SupportTicket.update(ticketId, {
       status: newStatus,
       assignee,
       handled_by: handledBy,
       ai_handled: resolved,
       escalation_reason: escalation,
       messages: finalMessages,
-    };
-    if (pendingAction) updatePayload.pending_action = pendingAction;
-    if (actionResult && actionResult.ok) updatePayload.last_action_log = `✅ ${actionResult.label || actionType} — ${new Date().toISOString()}`;
-
-    const updated = await base44.entities.SupportTicket.update(ticketId, updatePayload).catch(() => null);
+    }).catch(() => null);
 
     if (ticket.user_email) {
       await sendEzaEmail(base44, {
@@ -445,7 +176,7 @@ RÈGLES D'EXÉCUTION (CRITIQUE — sans ça, RIEN ne se passe) :
     await logAutomation(base44, {
       automation_name: 'reply_support_ticket', label: 'Support IA — réponse utilisateur', category: 'system',
       status: 'success',
-      summary: `Ticket #${String(ticketId).slice(-6)} — ${resolved ? 'résolu IA' : escalated ? 'escaladé' : 'répondu (ouvert)'} (${steps.length} étapes)`,
+      summary: `Ticket #${String(ticketId).slice(-6)} — ${resolved ? 'résolu IA' : escalated ? 'escaladé' : 'répondu (ouvert)'}`,
       count: 1,
     }).catch(() => {});
 

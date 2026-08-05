@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
@@ -20,6 +19,14 @@ const CATEGORY_ICONS = {
   feature: Sparkles, events: Calendar, moderation: Shield,
   messaging: MessageSquare, other: HelpCircle,
 };
+
+const CATEGORY_LABELS = {
+  account: 'Compte', billing: 'Facturation', credits: 'Crédits', bug: 'Bug',
+  feature: 'Fonctionnalité', events: 'Événements', moderation: 'Modération',
+  messaging: 'Messagerie', other: 'Autre',
+};
+
+const CATEGORIES = Object.keys(CATEGORY_LABELS);
 
 const ELEMENT_TYPES = [
   { id: 'none', label: 'Aucun', icon: Ban },
@@ -55,19 +62,23 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [suggestion, setSuggestion] = useState(null);
-  const [showAdjust, setShowAdjust] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showCatPicker, setShowCatPicker] = useState(false);
   const [elementType, setElementType] = useState(null);
   const [items, setItems] = useState([]);
   const [itemsLoading, setItemsLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [convLabel, setConvLabel] = useState('');
+  const [showElementPicker, setShowElementPicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [createdTicket, setCreatedTicket] = useState(null);
 
   const reset = useCallback(() => {
     setStep(1); setDescription(''); setFileUrls([]); setSuggestion(null);
-    setShowAdjust(false); setElementType(null); setItems([]); setItemsLoading(false);
-    setSelectedItem(null); setConvLabel(''); setCreatedTicket(null); setSubmitting(false);
+    setSelectedCategory(null); setShowCatPicker(false);
+    setElementType(null); setItems([]); setItemsLoading(false);
+    setSelectedItem(null); setConvLabel(''); setShowElementPicker(false);
+    setCreatedTicket(null); setSubmitting(false);
   }, []);
 
   const handleClose = () => { reset(); onClose(); };
@@ -96,15 +107,17 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
     setStep(2);
     setAnalyzing(true);
     try {
-      const res = await base44.functions.invoke('analyzeSupportCategory', { description });
+      const res = await base44.functions.invoke('analyzeSupportCategory', { description, file_urls: fileUrls });
       const data = res?.data || res;
       const sugg = data?.suggestion;
       if (!sugg) {
         setSuggestion({ label: 'Demande générale', category: 'other', element_type: 'none', description: '', related_item_id: null, related_item_label: null });
+        setSelectedCategory('other');
       } else {
         setSuggestion(sugg);
+        setSelectedCategory(sugg.category);
+        setElementType(sugg.element_type && sugg.element_type !== 'none' ? sugg.element_type : 'none');
       }
-      setElementType(sugg?.element_type && sugg.element_type !== 'none' && sugg.element_type !== 'conversation' ? sugg.element_type : 'none');
       setStep(3);
     } catch (e) {
       toast.error(e?.response?.data?.error || 'Analyse échouée');
@@ -191,8 +204,10 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
     const et = elementType || suggestion?.element_type || 'none';
     if (et === 'none') return { type: 'none', id: null, label: null };
     if (et === 'conversation') return { type: 'conversation', id: null, label: convLabel || null };
-    // Priorité: élément détecté par l'IA (si pas d'ajustement) ou élément sélectionné manuellement
-    if (!showAdjust && suggestion?.related_item_id) return { type: et, id: suggestion.related_item_id, label: suggestion.related_item_label };
+    // Si pas d'ajustement et l'IA a détecté l'élément, on l'utilise
+    if (!showElementPicker && suggestion?.related_item_id && et === suggestion.element_type) {
+      return { type: et, id: suggestion.related_item_id, label: suggestion.related_item_label };
+    }
     if (!selectedItem) return { type: et, id: null, label: null };
     const obj = selectedItem.obj;
     let label = selectedItem.label;
@@ -228,7 +243,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
         subject,
         description: description.trim(),
         file_urls: fileUrls,
-        category: sugg.category,
+        category: selectedCategory || sugg.category,
         related_item_id: ri.id,
         related_item_type: ri.type,
         related_item_label: ri.label,
@@ -240,7 +255,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
         messages: [{ role: 'user', content: description.trim(), at: new Date().toISOString(), attachments: fileUrls }],
       });
       setCreatedTicket(ticket);
-      setStep(4);
+      setStep(5);
       onCreated?.(ticket);
     } catch (e) {
       toast.error(e?.response?.data?.error || 'Création du ticket échouée');
@@ -256,34 +271,34 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
           <p className="text-[11px] text-muted-foreground mb-1">Soumettre un ticket de support</p>
 
           <div className="flex items-center gap-1.5 mb-5">
-            {[1, 2, 3].map((s) => (
+            {[1, 2, 3, 4].map((s) => (
               <div key={s} className={`h-1 flex-1 rounded-full transition-colors ${step >= s ? 'bg-primary' : 'bg-secondary'}`} />
             ))}
           </div>
 
-          {/* STEP 1 — Description */}
+          {/* STEP 1 — Description + image */}
           {step === 1 && (
             <div className="space-y-4">
               <div>
                 <h2 className="font-grotesk font-bold text-lg mb-1">Décrivez-nous votre problème</h2>
-                <p className="text-xs text-muted-foreground">Partagez ce que vous faisiez, ce qui s'est mal passé et comment nous pouvons reproduire le problème.</p>
+                <p className="text-xs text-muted-foreground">Décrivez ce qui s'est passé. Vous pouvez joindre une capture d'écran — Nexus analysera l'image et le texte.</p>
               </div>
               <div>
                 <label className="text-xs font-medium mb-1.5 block">Description</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESC))}
-                  placeholder={`Exemple :\n• Ce que vous essayiez de faire\n• Ce qui s'est passé à la place\n• Tout message d'erreur\n• Étapes pour reproduire (si pertinent)`}
-                  rows={7}
+                  placeholder={`Exemple :\n• Ce que vous essayiez de faire\n• Ce qui s'est passé à la place\n• Tout message d'erreur`}
+                  rows={6}
                   className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-primary/40 resize-none placeholder:text-muted-foreground/50"
                 />
                 <p className="text-[10px] text-muted-foreground mt-1 text-right">{description.length} / {MAX_DESC}</p>
               </div>
               <div>
-                <label className="text-xs font-medium mb-1.5 block">Pièces jointes <span className="text-muted-foreground">(optionnel, max {MAX_FILES})</span></label>
+                <label className="text-xs font-medium mb-1.5 block">Image / capture d'écran <span className="text-muted-foreground">(optionnel, max {MAX_FILES})</span></label>
                 <label className="block w-full rounded-xl border border-dashed border-border bg-background/50 px-3 py-5 text-center cursor-pointer hover:border-primary/40 transition-colors">
                   {uploading ? <Loader2 className="w-4 h-4 mx-auto animate-spin text-muted-foreground" /> :
-                    <><Upload className="w-4 h-4 mx-auto mb-1 text-muted-foreground" /><p className="text-xs text-muted-foreground">Glissez et déposez des fichiers ici</p></>}
+                    <><Upload className="w-4 h-4 mx-auto mb-1 text-muted-foreground" /><p className="text-xs text-muted-foreground">Glissez une image ou un fichier ici</p></>}
                   <input type="file" multiple className="hidden" onChange={handleFiles} accept="image/*,video/*,.pdf,.doc,.docx,.txt" />
                 </label>
                 {fileUrls.length > 0 && (
@@ -300,13 +315,11 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
                   </div>
                 )}
               </div>
-              <div className="flex gap-2">
-                <button onClick={goAnalyze} disabled={!description.trim()}
-                  className="flex-1 h-10 rounded-xl text-sm font-semibold text-white disabled:opacity-40 disabled:saturate-50 inline-flex items-center justify-center gap-1.5 transition-transform active:scale-95"
-                  style={{ background: '#0F172A' }}>
-                  Analyser <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+              <button onClick={goAnalyze} disabled={!description.trim()}
+                className="w-full h-10 rounded-xl text-sm font-semibold text-white disabled:opacity-40 inline-flex items-center justify-center gap-1.5 transition-transform active:scale-95"
+                style={{ background: '#0F172A' }}>
+                Analyser {fileUrls.length > 0 ? 'avec l\'image' : ''} <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
           )}
 
@@ -314,57 +327,134 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
           {step === 2 && analyzing && (
             <div className="py-10 text-center">
               <div className="w-12 h-12 rounded-full border-2 border-primary/20 border-t-primary mx-auto mb-4 animate-spin" />
-              <p className="text-sm text-muted-foreground font-medium">Analyse de votre problème…</p>
-              <p className="text-[11px] text-muted-foreground/70 mt-1">Nexus examine votre description pour vous orienter.</p>
+              <p className="text-sm text-muted-foreground font-medium">Analyse de votre demande…</p>
+              <p className="text-[11px] text-muted-foreground/70 mt-1">Nexus examine votre description{fileUrls.length > 0 ? ' et votre image' : ''} pour identifier le problème.</p>
             </div>
           )}
 
-          {/* STEP 3 — Confirmation IA (single suggestion) */}
+          {/* STEP 3 — Catégorie proposée par l'IA */}
           {step === 3 && suggestion && (
             <div className="space-y-4">
               <div>
-                <h2 className="font-grotesk font-bold text-lg mb-1">Nexus a identifié votre demande</h2>
-                <p className="text-xs text-muted-foreground">Vérifiez que c'est correct, puis confirmez. Vous pouvez ajuster si besoin.</p>
+                <h2 className="font-grotesk font-bold text-lg mb-1">Catégorie identifiée</h2>
+                <p className="text-xs text-muted-foreground">Nexus a analysé votre demande. Confirmez la catégorie ou ajustez.</p>
               </div>
 
-              {/* AI suggestion card */}
-              <div className="rounded-2xl border border-primary/25 bg-primary/[0.04] p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
-                    <Sparkles className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-grotesk font-bold text-sm">{suggestion.label}</p>
+              {/* IA suggestion card */}
+              {!showCatPicker ? (
+                <div className="rounded-2xl border border-primary/25 bg-primary/[0.04] p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
+                      <Sparkles className="w-5 h-5 text-white" />
                     </div>
-                    {suggestion.description && (
-                      <p className="text-xs text-muted-foreground leading-relaxed mb-2">{suggestion.description}</p>
-                    )}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-border bg-secondary text-muted-foreground">
-                        {CATEGORY_ICONS[suggestion.category] ? React.createElement(CATEGORY_ICONS[suggestion.category], { className: 'w-2.5 h-2.5 inline mr-0.5' }) : null}
-                        {suggestion.category}
-                      </span>
-                      {suggestion.related_item_label && (
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-primary/20 bg-primary/10 text-primary inline-flex items-center gap-0.5">
-                          <Check className="w-2.5 h-2.5" /> {suggestion.related_item_label}
-                        </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-grotesk font-bold text-sm mb-1">{suggestion.label}</p>
+                      {suggestion.description && (
+                        <p className="text-xs text-muted-foreground leading-relaxed mb-2">{suggestion.description}</p>
                       )}
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border border-primary/20 bg-primary/10 text-primary">
+                        {React.createElement(CATEGORY_ICONS[selectedCategory] || HelpCircle, { className: 'w-2.5 h-2.5' })}
+                        {CATEGORY_LABELS[selectedCategory] || selectedCategory}
+                      </span>
                     </div>
                   </div>
                 </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Choisir une catégorie</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {CATEGORIES.map((cat) => {
+                      const Icon = CATEGORY_ICONS[cat] || HelpCircle;
+                      const active = selectedCategory === cat;
+                      return (
+                        <button key={cat} onClick={() => { setSelectedCategory(cat); setShowCatPicker(false); }}
+                          className={`relative rounded-xl border p-3 text-center transition-all ${active ? 'border-primary bg-primary/10' : 'border-border bg-background/40 hover:border-foreground/30'}`}>
+                          {active && <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center"><Check className="w-2 h-2 text-white" /></span>}
+                          <Icon className={`w-4 h-4 mx-auto mb-1 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+                          <p className="text-[10px] font-semibold leading-tight">{CATEGORY_LABELS[cat]}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {!showCatPicker && (
+                <button onClick={() => setShowCatPicker(true)}
+                  className="w-full text-center text-xs text-muted-foreground hover:text-foreground inline-flex items-center justify-center gap-1 transition-colors">
+                  Pas la bonne catégorie ? <ChevronDown className="w-3.5 h-3.5" /> Changer
+                </button>
+              )}
+
+              <div className="flex gap-2">
+                <button onClick={() => setStep(1)}
+                  className="flex-1 h-10 rounded-xl border border-border bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
+                  Retour
+                </button>
+                <button onClick={() => setStep(4)}
+                  className="flex-1 h-10 rounded-xl text-sm font-semibold text-white inline-flex items-center justify-center gap-1.5 transition-transform active:scale-95"
+                  style={{ background: '#0F172A' }}>
+                  Continuer <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4 — Élément proposé directement par l'IA */}
+          {step === 4 && suggestion && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="font-grotesk font-bold text-lg mb-1">Élément concerné</h2>
+                <p className="text-xs text-muted-foreground">Nexus a identifié l'élément lié à votre demande. Confirmez ou ajustez.</p>
               </div>
 
-              {/* Ajuster toggle */}
-              {!showAdjust ? (
-                <button onClick={() => { setShowAdjust(true); if (suggestion.element_type && suggestion.element_type !== 'none' && suggestion.element_type !== 'conversation') loadForType(suggestion.element_type); }}
+              {/* Si l'IA a détecté un élément précis → on l'affiche directement */}
+              {!showElementPicker && suggestion.related_item_id && suggestion.element_type && suggestion.element_type !== 'none' && suggestion.element_type !== 'conversation' ? (
+                <div className="rounded-2xl border border-primary/25 bg-primary/[0.04] p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/15">
+                      {(() => { const EtIcon = ELEMENT_TYPES.find((t) => t.id === suggestion.element_type)?.icon || FileText; return <EtIcon className="w-5 h-5 text-primary" />; })()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">
+                        {TYPE_LABEL[suggestion.element_type]}
+                      </p>
+                      <p className="font-grotesk font-bold text-sm">{suggestion.related_item_label || 'Élément identifié'}</p>
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border border-green-400/20 bg-green-400/10 text-green-400 mt-1.5">
+                        <Check className="w-2.5 h-2.5" /> Détecté par Nexus
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : !showElementPicker && suggestion.element_type === 'conversation' ? (
+                <div className="rounded-2xl border border-primary/25 bg-primary/[0.04] p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/15">
+                      <MessageSquare className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">Conversation</p>
+                      <p className="font-grotesk font-bold text-sm">{suggestion.related_item_label || 'Discussion'}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : !showElementPicker ? (
+                <div className="rounded-2xl border border-border bg-secondary/30 p-4 text-center">
+                  <Ban className="w-6 h-6 mx-auto mb-1.5 text-muted-foreground/50" />
+                  <p className="text-xs text-muted-foreground">Aucun élément spécifique identifié — vous pouvez préciser si besoin.</p>
+                </div>
+              ) : null}
+
+              {/* Ajuster : picker compact */}
+              {!showElementPicker ? (
+                <button onClick={() => { setShowElementPicker(true); if (elementType && elementType !== 'none' && elementType !== 'conversation') loadForType(elementType); }}
                   className="w-full text-center text-xs text-muted-foreground hover:text-foreground inline-flex items-center justify-center gap-1 transition-colors">
                   Ce n'est pas le bon élément ? <ChevronDown className="w-3.5 h-3.5" /> Ajuster
                 </button>
               ) : (
                 <div className="space-y-3 rounded-xl border border-border bg-background/40 p-3">
-                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Ajuster l'élément concerné</p>
+                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Ajuster l'élément</p>
                   <div className="flex flex-wrap gap-1.5">
                     {ELEMENT_TYPES.map((t) => {
                       const Ic = t.icon;
@@ -416,7 +506,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
               )}
 
               <div className="flex gap-2">
-                <button onClick={() => setStep(1)}
+                <button onClick={() => setStep(3)}
                   className="flex-1 h-10 rounded-xl border border-border bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
                   Retour
                 </button>
@@ -429,8 +519,8 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
             </div>
           )}
 
-          {/* STEP 4 — Succès */}
-          {step === 4 && createdTicket && (
+          {/* STEP 5 — Succès */}
+          {step === 5 && createdTicket && (
             <div className="py-6 text-center space-y-3">
               <div className="w-14 h-14 rounded-2xl bg-green-400/10 border border-green-400/30 flex items-center justify-center mx-auto">
                 <Check className="w-7 h-7 text-green-400" />

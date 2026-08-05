@@ -17,6 +17,7 @@ export default async function(req) {
 
     const body = await req.json().catch(() => ({}));
     const description = (body?.description || '').toString().trim();
+    const fileUrls = Array.isArray(body?.file_urls) ? body.file_urls.filter(Boolean) : [];
     if (!description) {
       return Response.json({ error: 'description requise' }, { status: 400 });
     }
@@ -120,6 +121,7 @@ Règles:
 
     const ai = await base44.integrations.Core.InvokeLLM({
       prompt,
+      ...(fileUrls.length ? { file_urls: fileUrls } : {}),
       response_json_schema: {
         type: 'object',
         properties: {

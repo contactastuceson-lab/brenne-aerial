@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
-  Settings, Globe, LayoutDashboard, MessageCircle, Compass, FileText, BookOpen,
-  Calendar, Save, Loader2, AlertTriangle, Users, Star, Zap, Home,
-  Warehouse, Calculator, Shield, Building2, ZoomIn, QrCode, Pencil, Check, BellRing,
+  Settings, Globe, LayoutDashboard, MessageCircle, Compass, BookOpen,
+  Calendar, Save, Loader2, AlertTriangle, Users, Star, Home,
+  Calculator, Shield, Building2, ZoomIn, Pencil, Check, BellRing,
   Copy, CheckCheck, ExternalLink, WifiOff, Radio
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
@@ -20,10 +20,6 @@ const TABS = [
   { id: 'hero', label: 'Hero & Accueil', icon: Home },
   { id: 'about', label: 'À propos', icon: Users },
   { id: 'stats', label: 'Statistiques', icon: Star },
-  { id: 'garage', label: 'Garage (Drones)', icon: Warehouse },
-  { id: 'calc', label: 'Calculateur', icon: Calculator },
-  { id: 'regle', label: 'Réglementation', icon: Shield },
-  { id: 'tools', label: 'Outils spéciaux', icon: Zap },
   { id: 'monitoring', label: 'API Monitoring', icon: Globe },
 ];
 
@@ -61,60 +57,31 @@ const PAGE_SETTINGS = [
 
 const TEXT_FIELDS = {
   hero: [
-    { key: 'hero_badge', label: 'Badge hero (petit texte)', placeholder: 'Solutions drone professionnelles' },
-    { key: 'hero_title_1', label: 'Titre ligne 1', placeholder: 'Services drone' },
-    { key: 'hero_title_2', label: 'Titre ligne 2 (accentuée)', placeholder: 'professionnels.' },
-    { key: 'hero_desc', label: 'Description', placeholder: 'Brenne Aerial propulse votre vision...', textarea: true },
-    { key: 'hero_cta_primary', label: 'Bouton principal', placeholder: 'Demander un devis' },
-    { key: 'hero_cta_secondary', label: 'Bouton secondaire', placeholder: 'Voir le portfolio' },
+    { key: 'hero_badge', label: 'Badge hero (petit texte)', placeholder: 'Le réseau professionnel de demain' },
+    { key: 'hero_title_1', label: 'Titre ligne 1', placeholder: 'Connectez. Créez.' },
+    { key: 'hero_title_2', label: 'Titre ligne 2 (accentuée)', placeholder: 'Prospérez.' },
+    { key: 'hero_desc', label: 'Description', placeholder: 'eza réunit projet booking, communication et ressources professionnelles dans un écosystème unique.', textarea: true },
+    { key: 'hero_cta_primary', label: 'Bouton principal', placeholder: 'Rejoindre eza' },
+    { key: 'hero_cta_secondary', label: 'Bouton secondaire', placeholder: 'Découvrir' },
     { key: 'hero_image_url', label: 'Image de fond', placeholder: 'https://...', image: true },
-    { key: 'newsletter_url', label: 'URL Newsletter (Sendinblue etc.)', placeholder: 'https://...' },
+    { key: 'newsletter_url', label: 'URL Newsletter', placeholder: 'https://...' },
   ],
   about: [
     { key: 'about_name', label: 'Nom du fondateur', placeholder: 'Enor Lefoulon Meyer' },
     { key: 'about_title', label: 'Titre fondateur', placeholder: 'Fondateur & PDG' },
     { key: 'about_photo_url', label: 'Photo fondateur', placeholder: 'https://...', image: true },
-    { key: 'about_headline', label: 'Titre section À propos', placeholder: 'Expertise aérienne au service de vos projets.' },
-    { key: 'about_desc', label: 'Description À propos', placeholder: 'Brenne Aerial offre...', textarea: true },
+    { key: 'about_headline', label: 'Titre section À propos', placeholder: 'Un écosystème pensé pour les professionnels.' },
+    { key: 'about_desc', label: 'Description À propos', placeholder: 'eza intègre booking projet, communication et suivi de ressources professionnelles...', textarea: true },
   ],
   stats: [
-    { key: 'stat_1_val', label: 'Stat 1 — Valeur', placeholder: '200+' },
-    { key: 'stat_1_label', label: 'Stat 1 — Label', placeholder: 'Missions réalisées' },
-    { key: 'stat_2_val', label: 'Stat 2 — Valeur', placeholder: '4K' },
-    { key: 'stat_2_label', label: 'Stat 2 — Label', placeholder: 'Qualité vidéo' },
+    { key: 'stat_1_val', label: 'Stat 1 — Valeur', placeholder: '10K+' },
+    { key: 'stat_1_label', label: 'Stat 1 — Label', placeholder: 'Utilisateurs actifs' },
+    { key: 'stat_2_val', label: 'Stat 2 — Valeur', placeholder: '500+' },
+    { key: 'stat_2_label', label: 'Stat 2 — Label', placeholder: 'Communautés' },
     { key: 'stat_3_val', label: 'Stat 3 — Valeur', placeholder: '99%' },
-    { key: 'stat_3_label', label: 'Stat 3 — Label', placeholder: 'Satisfaction client' },
-    { key: 'stat_4_val', label: 'Stat 4 — Valeur', placeholder: '48h' },
-    { key: 'stat_4_label', label: 'Stat 4 — Label', placeholder: 'Délai de réponse' },
-  ],
-  garage: [
-    { key: 'garage_matrice_name', label: 'Drone 1 — Nom', placeholder: "L'Aigle" },
-    { key: 'garage_matrice_subtitle', label: 'Drone 1 — Modèle', placeholder: 'DJI Matrice 30T' },
-    { key: 'garage_matrice_tagline', label: 'Drone 1 — Tagline', placeholder: "Pour l'industrie extrême" },
-    { key: 'garage_matrice_badge', label: 'Drone 1 — Badge', placeholder: 'INDUSTRIE' },
-    { key: 'garage_matrice_desc', label: 'Drone 1 — Description', placeholder: 'Notre cheval de bataille...', textarea: true },
-    { key: 'garage_fpv_name', label: 'Drone 2 — Nom', placeholder: 'Le Guêpier' },
-    { key: 'garage_fpv_subtitle', label: 'Drone 2 — Modèle', placeholder: 'Drone FPV Cinématique' },
-    { key: 'garage_fpv_tagline', label: 'Drone 2 — Tagline', placeholder: 'La vitesse à l\'état pur' },
-    { key: 'garage_fpv_badge', label: 'Drone 2 — Badge', placeholder: 'FPV' },
-    { key: 'garage_fpv_desc', label: 'Drone 2 — Description', placeholder: 'Pour les séquences impossibles...', textarea: true },
-    { key: 'garage_mavic_name', label: 'Drone 3 — Nom', placeholder: "L'Albatros" },
-    { key: 'garage_mavic_subtitle', label: 'Drone 3 — Modèle', placeholder: 'DJI Mavic 3 Pro' },
-    { key: 'garage_mavic_tagline', label: 'Drone 3 — Tagline', placeholder: "L'image parfaite, partout" },
-    { key: 'garage_mavic_badge', label: 'Drone 3 — Badge', placeholder: 'CINÉMA' },
-    { key: 'garage_mavic_desc', label: 'Drone 3 — Description', placeholder: 'Notre outil universel...', textarea: true },
-  ],
-  calc: [
-    { key: 'calc_title', label: 'Titre de la page', placeholder: 'Calculateur de Devis Express' },
-    { key: 'calc_desc', label: 'Description', placeholder: 'Obtenez une estimation de prix en moins de 60 secondes.' },
-  ],
-  regle: [
-    { key: 'regle_title', label: 'Titre de la page', placeholder: 'Où peut-on voler ?' },
-    { key: 'regle_desc', label: 'Description intro', placeholder: 'La réglementation drone...', textarea: true },
-  ],
-  tools: [
-    { key: 'weather_location', label: 'Localisation météo widget', placeholder: 'Brenne, France' },
-    { key: 'flash_intro', label: 'Texte intro Flash Delivery', placeholder: 'Votre contenu livré en quelques minutes...', textarea: true },
+    { key: 'stat_3_label', label: 'Stat 3 — Label', placeholder: 'Satisfaction membres' },
+    { key: 'stat_4_val', label: 'Stat 4 — Valeur', placeholder: '24/7' },
+    { key: 'stat_4_label', label: 'Stat 4 — Label', placeholder: 'Support IA Nexus' },
   ],
 };
 

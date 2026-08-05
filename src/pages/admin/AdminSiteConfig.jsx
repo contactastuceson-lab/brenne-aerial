@@ -118,7 +118,7 @@ const TEXT_FIELDS = {
   ],
 };
 
-const APP_URL = 'https://eza.group';
+const APP_URL = 'https://ezagroup.org';
 
 const MONITORING_CATEGORIES = [
   {
@@ -217,9 +217,9 @@ function MonitoringAPISection() {
             Un code <span className="font-mono text-green-400 bg-green-400/10 px-1 rounded">200</span> indique un service actif,
             un code <span className="font-mono text-destructive bg-destructive/10 px-1 rounded">503</span> indique qu'il est désactivé.
           </p>
-          <a href="https://status.eza.group" target="_blank" rel="noopener noreferrer"
+          <a href="https://status.ezagroup.org" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 mt-2 font-inter text-xs text-primary hover:underline">
-            <ExternalLink className="w-3 h-3" /> Tableau de bord status.eza.group
+            <ExternalLink className="w-3 h-3" /> Tableau de bord status.ezagroup.org
           </a>
         </div>
       </div>

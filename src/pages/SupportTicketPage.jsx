@@ -9,6 +9,8 @@ import {
 import { base44 } from '@/api/base44Client';
 import NexusMarkdown from '@/components/support/NexusMarkdown';
 import AdminMessageAuthor from '@/components/support/AdminMessageAuthor';
+import NexusMessageAuthor from '@/components/support/NexusMessageAuthor';
+import UserMessageAuthor from '@/components/support/UserMessageAuthor';
 
 const CATEGORY_LABELS = {
   account: 'Compte', billing: 'Facturation', credits: 'Crédits', bug: 'Bug technique',
@@ -258,14 +260,10 @@ export default function SupportTicketPage() {
             return (
               <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 className={`flex ${isUser ? 'justify-end' : 'justify-start'} gap-2`}>
-                {!isUser && (
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-3"
-                    style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
-                    {m.role === 'admin' ? <UserCog className="w-3.5 h-3.5 text-white" /> : <Bot className="w-3.5 h-3.5 text-white" />}
-                  </div>
-                )}
                 <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
                   {m.role === 'admin' && <AdminMessageAuthor adminId={m.admin_id} fallbackName={m.admin_name} />}
+                  {isAssistant && <NexusMessageAuthor />}
+                  {isUser && <UserMessageAuthor userId={ticket.user_id} fallbackName={ticket.user_name} />}
                   <div className={`rounded-2xl px-3.5 py-2.5 text-sm ${
                     isUser
                       ? 'rounded-br-md text-white'
@@ -302,23 +300,12 @@ export default function SupportTicketPage() {
                     )}
                   </div>
                 </div>
-                {isUser && (
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-3 bg-secondary border border-border">
-                    <span className="text-[10px] font-bold text-muted-foreground">
-                      {(ticket.user_name || ticket.user_email || 'U').charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
               </motion.div>
             );
           })}
         </AnimatePresence>
         {nexusThinking && (
-          <div className="flex justify-start gap-2 items-start">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-3"
-              style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
-              <Bot className="w-3.5 h-3.5 text-white" />
-            </div>
+          <div className="flex justify-start items-start">
             <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
               <div className="flex items-center gap-1.5">
                 {[0, 1, 2].map((i) => (

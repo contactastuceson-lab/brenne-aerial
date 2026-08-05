@@ -5,6 +5,7 @@ import NexusMarkdown from '@/components/support/NexusMarkdown';
 import AdminMessageAuthor from '@/components/support/AdminMessageAuthor';
 import TicketUserInfo from '@/components/support/TicketUserInfo';
 import UserMessageAuthor from '@/components/support/UserMessageAuthor';
+import NexusMessageAuthor from '@/components/support/NexusMessageAuthor';
 import {
   Loader2, RefreshCw, Send, Clock, CheckCircle2, AlertCircle,
   ShieldAlert, Sparkles, Bot, UserCog, X, Search,
@@ -447,15 +448,10 @@ export default function AdminSupport() {
                 const isAdmin = m.role === 'admin';
                 return (
                   <div key={i} className={`flex ${isUser ? 'justify-end' : 'justify-start'} gap-2`}>
-                    {!isUser && (
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-3"
-                        style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
-                        {isAdmin ? <UserCog className="w-3.5 h-3.5 text-white" /> : <Bot className="w-3.5 h-3.5 text-white" />}
-                      </div>
-                    )}
                     <div className={`max-w-[85%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
                       {isAdmin && <AdminMessageAuthor adminId={m.admin_id} fallbackName={m.admin_name} />}
                       {isUser && <UserMessageAuthor userId={selected.user_id} fallbackName={selected.user_name} />}
+                      {!isAdmin && !isUser && <NexusMessageAuthor />}
                       <div className={`rounded-2xl px-3.5 py-2.5 text-sm ${
                         isUser ? 'rounded-br-md text-white' : 'bg-card border border-border rounded-bl-md'
                       }`} style={isUser ? { background: '#0F172A' } : {}}>
@@ -467,13 +463,6 @@ export default function AdminSupport() {
                         {formatTime(m.at)}
                       </span>
                     </div>
-                    {isUser && (
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-3 bg-secondary border border-border">
-                        <span className="text-[10px] font-bold text-muted-foreground">
-                          {(selected.user_name || selected.user_email || 'U').charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 );
               })}

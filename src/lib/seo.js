@@ -147,6 +147,21 @@ export function getSampleProfileSeoData(profile) {
   };
 }
 
+export function getEventSeoData(ev) {
+  const title = ev?.title ? `${ev.title} | Événement EZA` : 'Événement EZA';
+  const description = truncate(
+    ev?.description || ev?.long_description || `Événement EZA${ev?.city ? ' — ' + ev.city : ''}.`,
+    160,
+  );
+  return {
+    title,
+    description: description || DEFAULT_DESCRIPTION,
+    image: ev?.image_url || DEFAULT_IMAGE,
+    type: 'article',
+    author: ev?.organizer_name,
+  };
+}
+
 export function getCommunitySeoData(community) {
   const title = community?.name ? `${community.name} | Communauté EZA` : 'Communauté EZA';
   const description = truncate(

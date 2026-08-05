@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import EventTicketModal from "@/components/events/EventTicketModal";
 import { useCart } from "@/hooks/useCart";
+import { applySeoMeta, getEventSeoData } from "@/lib/seo";
 
 const CATEGORIES = {
   conference: { label: "Conférence", icon: Mic2, color: "text-sky-400" },
@@ -56,6 +57,7 @@ export default function EventDetailPage() {
         if (active) {
           setEv(data);
           setRegistered(!!data.registered_ids?.includes(user?.id));
+          applySeoMeta(getEventSeoData(data));
         }
       } catch {
         if (active) setEv(null);

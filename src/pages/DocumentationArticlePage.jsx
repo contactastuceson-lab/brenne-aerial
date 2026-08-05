@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
-  ArrowLeft, ArrowRight, List, Clock, Hash, Copy, Check,
+  ArrowLeft, ArrowRight, List, Clock, Hash, Copy, Check, ChevronRight,
 } from 'lucide-react';
 import { getDocTopic, DOC_TOPICS, getDocImage, DOC_TOPIC_COUNT, DOC_CATEGORIES } from '@/lib/docsContent';
 import DocNavbar from '@/components/docs/DocNavbar';
 import DocCallout from '@/components/docs/DocCallout';
+import DocIcon from '@/components/docs/DocIcon';
 
-const GREEN = '#00c853';
+const ACCENT = '#ff7800';
 
 const readingTime = (topic) => {
   const words = [
@@ -17,13 +18,13 @@ const readingTime = (topic) => {
   return Math.max(1, Math.round(words / 200));
 };
 
-function SectionBlock({ s, i, color, active, registerRef }) {
+function SectionBlock({ s, i, color, registerRef }) {
   return (
     <section
       id={`sec-${i}`}
       ref={registerRef}
       data-idx={i}
-      className="scroll-mt-28 py-6 border-b border-border/60 last:border-0"
+      className="scroll-mt-32 py-7 border-b border-border/60 last:border-0"
     >
       <div className="flex items-center gap-2.5 mb-3">
         <span className="font-mono text-xs font-bold" style={{ color }}>{String(i + 1).padStart(2, '0')}</span>
@@ -47,16 +48,16 @@ function SectionBlock({ s, i, color, active, registerRef }) {
         <div className="rounded-xl border border-border overflow-hidden mb-4">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr style={{ background: `${color}10` }}>
-                <th className="text-left font-semibold text-foreground px-3.5 py-2.5 w-1/3">Point</th>
-                <th className="text-left font-semibold text-foreground px-3.5 py-2.5">Détail</th>
+              <tr className="bg-muted/50">
+                <th className="text-left font-semibold text-foreground px-4 py-2.5 w-1/3">Point</th>
+                <th className="text-left font-semibold text-foreground px-4 py-2.5">Détail</th>
               </tr>
             </thead>
             <tbody>
               {s.table.map((row, j) => (
                 <tr key={j} className="border-t border-border/60">
-                  <td className="px-3.5 py-2.5 align-top font-medium" style={{ color }}>{row.k}</td>
-                  <td className="px-3.5 py-2.5 align-top text-muted-foreground leading-relaxed">{row.v}</td>
+                  <td className="px-4 py-2.5 align-top font-medium" style={{ color }}>{row.k}</td>
+                  <td className="px-4 py-2.5 align-top text-muted-foreground leading-relaxed">{row.v}</td>
                 </tr>
               ))}
             </tbody>
@@ -76,7 +77,7 @@ function SectionBlock({ s, i, color, active, registerRef }) {
       )}
 
       {s.code && (
-        <pre className="mt-3 rounded-xl border border-border bg-secondary/60 p-4 overflow-x-auto text-xs font-mono text-foreground/85 whitespace-pre mb-4">{s.code}</pre>
+        <pre className="mt-3 rounded-xl border border-border bg-muted/60 p-4 overflow-x-auto text-xs font-mono text-foreground/85 whitespace-pre mb-4">{s.code}</pre>
       )}
 
       {s.callout && <DocCallout callout={s.callout} />}
@@ -84,65 +85,55 @@ function SectionBlock({ s, i, color, active, registerRef }) {
   );
 }
 
-function SubNav() {
-  const items = [
-    { label: 'Documentation', to: '/support/documentation', active: true },
-    { label: 'Communauté', to: '/forum' },
-    { label: 'Support', to: '/support' },
-    { label: 'Journal des modifications', to: '/uptime' },
-  ];
-  return (
-    <div className="sticky top-14 z-30 w-full border-b bg-background/95 backdrop-blur" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-11 flex items-center gap-5 overflow-x-auto no-scrollbar">
-        {items.map((it) => (
-          <Link
-            key={it.to}
-            to={it.to}
-            className="relative text-xs font-medium whitespace-nowrap pb-3 pt-3 transition-colors"
-            style={it.active ? { color: GREEN } : { color: 'hsl(var(--muted-foreground))' }}
-          >
-            {it.label}
-            {it.active && <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full" style={{ background: GREEN }} />}
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function SideNav({ slug }) {
+  const [collapsed, setCollapsed] = useState({});
   const groups = DOC_CATEGORIES
     .filter((c) => c.id !== 'all')
     .map((c) => ({ ...c, topics: DOC_TOPICS.filter((t) => t.cat === c.id) }))
     .filter((g) => g.topics.length);
 
+  const toggle = (id) => setCollapsed((p) => ({ ...p, [id]: !p[id] }));
+
   return (
     <nav className="text-sm">
-      {groups.map((g) => (
-        <div key={g.id} className="mb-5">
-          <p className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider" style={{ color: g.color }}>{g.label}</p>
-          <ul className="space-y-px">
-            {g.topics.map((t) => {
-              const activeT = t.slug === slug;
-              return (
-                <li key={t.slug}>
-                  <Link
-                    to={`/support/documentation/${t.slug}`}
-                    className="block px-3 py-1.5 rounded-md text-[13px] leading-snug transition-all border-l-2"
-                    style={activeT
-                      ? { background: `${g.color}14`, color: '#fff', fontWeight: 600, borderLeftColor: g.color, boxShadow: `inset 12px 0 24px -16px ${g.color}` }
-                      : { color: 'hsl(var(--muted-foreground))', borderLeftColor: 'transparent' }}
-                    onMouseEnter={(e) => { if (!activeT) e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
-                    onMouseLeave={(e) => { if (!activeT) e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}
-                  >
-                    {t.title}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+      {groups.map((g) => {
+        const isCollapsed = collapsed[g.id];
+        return (
+          <div key={g.id} className="mb-5">
+            <button
+              type="button"
+              onClick={() => toggle(g.id)}
+              className="w-full flex items-center gap-2 px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <DocIcon name={g.icon || 'Book'} className="w-3.5 h-3.5" style={{ color: g.color }} />
+              <span className="flex-1 text-left">{g.label}</span>
+              <ChevronRight className={`w-3 h-3 transition-transform ${isCollapsed ? '' : 'rotate-90'}`} />
+            </button>
+            {!isCollapsed && (
+              <ul className="space-y-px ml-1">
+                {g.topics.map((t) => {
+                  const activeT = t.slug === slug;
+                  return (
+                    <li key={t.slug}>
+                      <Link
+                        to={`/support/documentation/${t.slug}`}
+                        className="block px-3 py-1.5 rounded-md text-[13px] leading-snug transition-all border-l-2"
+                        style={activeT
+                          ? { background: `${g.color}14`, color: '#fff', fontWeight: 600, borderLeftColor: g.color }
+                          : { color: 'hsl(var(--muted-foreground))', borderLeftColor: 'transparent' }}
+                        onMouseEnter={(e) => { if (!activeT) e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
+                        onMouseLeave={(e) => { if (!activeT) e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}
+                      >
+                        {t.title}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        );
+      })}
     </nav>
   );
 }
@@ -169,7 +160,7 @@ export default function DocumentationArticlePage() {
       <div className="min-h-screen flex items-center justify-center px-5">
         <div className="text-center">
           <h1 className="font-grotesk font-bold text-2xl mb-3">Sujet introuvable</h1>
-          <Link to="/documentation" className="text-primary hover:underline text-sm">← Retour à la documentation</Link>
+          <Link to="/support/documentation" className="text-primary hover:underline text-sm">← Retour à la documentation</Link>
         </div>
       </div>
     );
@@ -181,6 +172,7 @@ export default function DocumentationArticlePage() {
   const heroImg = getDocImage(slug);
   const rt = readingTime(topic);
   const sectionCount = topic.sections?.length || 0;
+  const catLabel = DOC_CATEGORIES.find((c) => c.id === topic.cat)?.label || '';
 
   const copyPage = async () => {
     try {
@@ -193,60 +185,52 @@ export default function DocumentationArticlePage() {
   return (
     <div className="min-h-screen bg-background">
       <DocNavbar />
-      <SubNav />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)_200px] gap-8 lg:gap-12 py-8 lg:py-10">
-        {/* Left sidebar nav */}
+      <div className="mx-auto max-w-[1400px] px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)_15rem] gap-8 lg:gap-10 py-8 lg:py-10">
+        {/* Left sidebar */}
         <aside className="hidden lg:block">
-          <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 -mr-2">
+          <div className="sticky top-32 max-h-[calc(100vh-9rem)] overflow-y-auto pr-2 -mr-2 no-scrollbar">
             <SideNav slug={slug} />
           </div>
         </aside>
 
         {/* Center content */}
-        <main className="min-w-0 max-w-3xl mx-auto lg:mx-0 w-full">
+        <main className="min-w-0 w-full">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
+          <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-5">
             <Link to="/support/documentation" className="hover:text-foreground transition-colors">Documentation</Link>
-            <span className="opacity-50">/</span>
-            <span className="text-foreground/80">{DOC_CATEGORIES.find((c) => c.id === topic.cat)?.label || ''}</span>
-          </div>
+            <ChevronRight className="w-3 h-3" />
+            <span className="text-foreground/80">{catLabel}</span>
+          </nav>
 
-          {/* Title + meta */}
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <div className="min-w-0">
-              <p className="font-mono text-[11px] tracking-[2px] uppercase mb-2" style={{ color: topic.color }}>{DOC_CATEGORIES.find((c) => c.id === topic.cat)?.label || ''}</p>
-              <h1 className="font-grotesk font-black text-3xl md:text-4xl leading-tight sky-glow-text" style={{ color: 'hsl(var(--foreground))' }}>{topic.title}</h1>
-            </div>
+          {/* Title */}
+          <p className="font-mono text-[11px] tracking-[2px] uppercase mb-2" style={{ color: topic.color }}>{catLabel}</p>
+          <h1 className="font-grotesk font-black text-3xl md:text-[2.5rem] leading-tight text-foreground mb-3">{topic.title}</h1>
+          <p className="text-sm md:text-[15px] text-muted-foreground leading-relaxed mb-5">{topic.intro}</p>
+
+          {/* Meta + actions */}
+          <div className="flex flex-wrap items-center gap-2.5 mb-6 pb-6 border-b border-border">
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 border border-border rounded-lg px-2.5 py-1.5">
+              <Clock className="w-3.5 h-3.5" /> {rt} min de lecture
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 border border-border rounded-lg px-2.5 py-1.5">
+              <Hash className="w-3.5 h-3.5" /> {sectionCount} section{sectionCount > 1 ? 's' : ''}
+            </span>
             <button
               onClick={copyPage}
-              className="flex-shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border bg-secondary/50 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors"
-              title="Copier le lien de la page"
+              className="ml-auto inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border bg-card text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-              {copied ? 'Copié' : 'Copier la page'}
+              {copied ? 'Copié' : 'Copier le lien'}
             </button>
           </div>
 
-          {/* Description */}
-          <p className="text-sm md:text-[15px] text-muted-foreground leading-relaxed mb-5">{topic.intro}</p>
-
-          {/* Meta chips */}
-          <div className="flex flex-wrap gap-2.5 mb-6">
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/40 border border-border rounded-lg px-2.5 py-1.5">
-              <Clock className="w-3.5 h-3.5" /> {rt} min de lecture
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/40 border border-border rounded-lg px-2.5 py-1.5">
-              <Hash className="w-3.5 h-3.5" /> {sectionCount} section{sectionCount > 1 ? 's' : ''}
-            </span>
-          </div>
-
-          {/* Hero illustration widget */}
-          <div className="relative rounded-2xl border overflow-hidden aspect-[16/9] bg-card mb-2" style={{ borderColor: `${topic.color}30`, boxShadow: `0 0 50px ${topic.color}15` }}>
+          {/* Hero illustration */}
+          <div className="relative rounded-2xl border border-border overflow-hidden aspect-[16/9] bg-card mb-2">
             <img src={heroImg} alt="" className="w-full h-full object-cover" loading="lazy" />
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
             <div className="absolute bottom-3 left-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: topic.color, boxShadow: `0 0 10px ${topic.color}` }} />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: topic.color }} />
               <span className="font-mono text-[10px] uppercase tracking-wider text-foreground/70">{topic.tagline}</span>
             </div>
           </div>
@@ -254,7 +238,7 @@ export default function DocumentationArticlePage() {
           {/* Sections */}
           <div className="mt-2">
             {topic.sections.map((s, i) => (
-              <SectionBlock key={i} s={s} i={i} color={topic.color} active={active} registerRef={(el) => (refs.current[i] = el)} />
+              <SectionBlock key={i} s={s} i={i} color={topic.color} registerRef={(el) => (refs.current[i] = el)} />
             ))}
           </div>
 
@@ -262,13 +246,13 @@ export default function DocumentationArticlePage() {
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {prev ? (
               <Link to={`/support/documentation/${prev.slug}`} className="group rounded-xl border border-border bg-card p-4 hover:border-foreground/20 transition-colors">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/50 mb-1 flex items-center gap-1"><ArrowLeft className="w-3 h-3" /> Précédent</p>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60 mb-1 flex items-center gap-1"><ArrowLeft className="w-3 h-3" /> Précédent</p>
                 <p className="font-grotesk font-semibold text-sm truncate">{prev.title}</p>
               </Link>
             ) : <div />}
             {next ? (
               <Link to={`/support/documentation/${next.slug}`} className="group rounded-xl border border-border bg-card p-4 hover:border-foreground/20 transition-colors sm:text-right">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/50 mb-1 flex items-center gap-1 sm:justify-end">Suivant <ArrowRight className="w-3 h-3" /></p>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60 mb-1 flex items-center gap-1 sm:justify-end">Suivant <ArrowRight className="w-3 h-3" /></p>
                 <p className="font-grotesk font-semibold text-sm truncate">{next.title}</p>
               </Link>
             ) : <div />}
@@ -283,10 +267,10 @@ export default function DocumentationArticlePage() {
 
         {/* Right TOC */}
         <aside className="hidden lg:block">
-          <div className="sticky top-28">
+          <div className="sticky top-32">
             <div className="flex items-center gap-2 mb-3">
-              <List className="w-3.5 h-3.5 text-muted-foreground/50" />
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">Sur cette page</p>
+              <List className="w-3.5 h-3.5 text-muted-foreground/60" />
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">Sur cette page</p>
             </div>
             <ul className="space-y-px border-l border-border/60">
               {topic.sections.map((s, i) => (

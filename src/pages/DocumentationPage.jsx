@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  ArrowRight, Sparkles, BookOpen, Layers, Zap, Shield,
-} from 'lucide-react';
+import { ArrowRight, Sparkles, BookOpen, Layers, Zap, Shield } from 'lucide-react';
 import DocSearch from '@/components/docs/DocSearch';
 import {
   DOC_TOPICS, getDocImage, DOC_CATEGORIES,
@@ -13,7 +11,7 @@ import DocIcon from '@/components/docs/DocIcon';
 import DocNavbar from '@/components/docs/DocNavbar';
 import DocSuggestions from '@/components/docs/DocSuggestions';
 
-const GREEN = '#00c853';
+const ACCENT = '#ff7800';
 
 const STATS = [
   { icon: BookOpen, label: 'Guides', value: DOC_TOPIC_COUNT },
@@ -21,27 +19,6 @@ const STATS = [
   { icon: Zap, label: 'Temps réel', value: 'Live' },
   { icon: Shield, label: 'Sécurisé', value: 'RGPD' },
 ];
-
-function SubNav() {
-  const items = [
-    { label: 'Documentation', to: '/support/documentation', active: true },
-    { label: 'Communauté', to: '/forum' },
-    { label: 'Support', to: '/support' },
-    { label: 'Journal des modifications', to: '/uptime' },
-  ];
-  return (
-    <div className="sticky top-14 z-30 w-full border-b bg-background/95 backdrop-blur" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-11 flex items-center gap-5 overflow-x-auto no-scrollbar">
-        {items.map((it) => (
-          <Link key={it.to} to={it.to} className="relative text-xs font-medium whitespace-nowrap pb-3 pt-3 transition-colors" style={it.active ? { color: GREEN } : { color: 'hsl(var(--muted-foreground))' }}>
-            {it.label}
-            {it.active && <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full" style={{ background: GREEN }} />}
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function DocumentationPage() {
   const [query, setQuery] = useState('');
@@ -56,13 +33,12 @@ export default function DocumentationPage() {
   return (
     <div className="min-h-screen bg-background">
       <DocNavbar />
-      <SubNav />
 
-      {/* ===== HERO ===== */}
+      {/* Hero */}
       <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 grid-bg opacity-40" />
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-3xl opacity-25" style={{ background: 'radial-gradient(ellipse, #38aadc, transparent 70%)' }} />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-24 text-center">
+        <div className="absolute inset-0 grid-bg opacity-30" />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-3xl opacity-20" style={{ background: 'radial-gradient(ellipse, #38aadc, transparent 70%)' }} />
+        <div className="relative mx-auto max-w-[1100px] px-4 lg:px-8 py-16 md:py-24 text-center">
           <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-primary/25 bg-primary/10">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
             <span className="font-mono text-[10px] tracking-[2px] uppercase text-primary">Centre d'aide eza</span>
@@ -73,19 +49,16 @@ export default function DocumentationPage() {
           <p className="font-inter text-muted-foreground mt-6 max-w-2xl mx-auto leading-relaxed text-base">
             {DOC_TOPIC_COUNT} guides clairs et pratiques pour maîtriser toute la plateforme —
             du réseau social à l'économie de crédits, des Spaces audio au support IA Nexus.
-            Écrits pour vous, pas pour les développeurs.
           </p>
 
-          {/* Search */}
           <DocSearch
             value={query}
             onChange={setQuery}
             placeholder="Rechercher un guide…"
             className="max-w-xl mx-auto mt-8"
-            inputClassName="w-full h-12 pl-11 pr-4 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
+            inputClassName="w-full h-12 pl-11 pr-4 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/15 transition-all"
           />
 
-          {/* Stats */}
           <div className="grid grid-cols-4 gap-3 max-w-lg mx-auto mt-10">
             {STATS.map((s, i) => (
               <div key={i} className="text-center">
@@ -98,11 +71,11 @@ export default function DocumentationPage() {
         </div>
       </section>
 
-      {/* ===== SUGGESTIONS PERSONNALISÉES ===== */}
+      {/* Suggestions */}
       <DocSuggestions />
 
-      {/* ===== TOUS LES GUIDES ===== */}
-      <section className="px-4 sm:px-6 py-16 md:py-24 max-w-7xl mx-auto">
+      {/* All guides */}
+      <section className="px-4 lg:px-8 py-16 md:py-24 mx-auto max-w-[1400px]">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
             <h2 className="font-grotesk font-bold text-2xl md:text-3xl">Toute la documentation</h2>
@@ -110,12 +83,15 @@ export default function DocumentationPage() {
           </div>
         </div>
 
-        {/* Filtres par catégorie */}
+        {/* Category filters */}
         <div className="flex flex-wrap gap-2 mb-10">
           {DOC_CATEGORIES.map((c) => {
             const active = cat === c.id;
             return (
-              <button key={c.id} onClick={() => setCat(c.id)} className={`text-xs px-3.5 py-1.5 rounded-full border font-medium transition-all ${active ? 'text-white' : 'text-muted-foreground hover:text-foreground border-border bg-card'}`} style={active ? { background: c.color, borderColor: c.color, boxShadow: `0 0 20px ${c.color}40` } : {}}>
+              <button key={c.id} onClick={() => setCat(c.id)}
+                className={`text-xs px-3.5 py-1.5 rounded-full border font-medium transition-all ${active ? 'text-white' : 'text-muted-foreground hover:text-foreground border-border bg-card'}`}
+                style={active ? { background: c.color, borderColor: c.color } : {}}
+              >
                 {c.label}
               </button>
             );
@@ -134,11 +110,10 @@ export default function DocumentationPage() {
                   <div className="relative h-28 overflow-hidden">
                     <img src={getDocImage(t.slug)} alt="" className="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
-                    <div className="absolute top-3 left-3 w-11 h-11 rounded-xl flex items-center justify-center border backdrop-blur-md" style={{ background: `${t.color}30`, borderColor: `${t.color}50` }}>
+                    <div className="absolute top-3 left-3 w-10 h-10 rounded-xl flex items-center justify-center border backdrop-blur-md" style={{ background: `${t.color}30`, borderColor: `${t.color}50` }}>
                       <DocIcon name={t.icon} className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <div className="absolute top-3 right-3 w-1 h-16 rounded-full" style={{ background: t.color, boxShadow: `0 0 12px ${t.color}80` }} />
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="font-grotesk font-bold text-base text-foreground">{t.title}</h3>
@@ -158,7 +133,7 @@ export default function DocumentationPage() {
         )}
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 text-center border-t border-border">
+      <div className="mx-auto max-w-[1400px] px-4 lg:px-8 py-10 text-center border-t border-border">
         <p className="font-mono text-[10px] text-muted-foreground/40">© 2026 eza · Documentation publique · {DOC_TOPIC_COUNT} guides</p>
       </div>
     </div>

@@ -11,9 +11,16 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 const PLACEMENTS = [
-  { key: 'feed_banner', label: 'Banniere du feed' },
+  { key: 'feed_banner', label: 'Bannière du feed' },
   { key: 'between_posts', label: 'Entre les posts' },
   { key: 'sidebar', label: 'Sidebar' },
+  { key: 'sticky_mobile', label: 'Bandeau collant mobile' },
+  { key: 'profile', label: 'Page profil' },
+  { key: 'notifications', label: 'Notifications' },
+  { key: 'events', label: 'Événements' },
+  { key: 'communities', label: 'Communautés' },
+  { key: 'messages', label: 'Messagerie' },
+  { key: 'interstitial', label: 'Plein écran' },
 ];
 
 const STATUS_CFG = {

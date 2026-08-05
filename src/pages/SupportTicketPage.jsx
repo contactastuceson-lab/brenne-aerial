@@ -99,7 +99,7 @@ export default function SupportTicketPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center text-muted-foreground">
+      <div className="w-full md:w-[42%] md:ml-auto px-3 md:px-4 py-20 text-center text-muted-foreground">
         <Loader2 className="w-6 h-6 mx-auto mb-3 animate-spin" />
         Chargement du ticket…
       </div>
@@ -108,7 +108,7 @@ export default function SupportTicketPage() {
 
   if (error || !ticket) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+      <div className="w-full md:w-[42%] md:ml-auto px-3 md:px-4 py-20 text-center">
         <AlertCircle className="w-8 h-8 mx-auto mb-3 text-muted-foreground/50" />
         <p className="text-sm text-muted-foreground mb-4">{error || 'Ticket introuvable'}</p>
         <Link to="/support" className="text-primary text-sm hover:underline">← Retour au support</Link>
@@ -127,7 +127,7 @@ export default function SupportTicketPage() {
   const composerDisabled = isClosed || isLocked || sending;
 
   return (
-    <div className="max-w-lg mx-auto px-3 md:px-4 py-4 md:py-6 flex flex-col" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
+    <div className="w-full md:w-[42%] md:ml-auto px-3 md:px-4 py-4 md:py-6 flex flex-col" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
       {/* Header */}
       <div className="rounded-2xl bg-card border border-border overflow-hidden mb-3">
         <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #F37322, #1DA890)' }} />

@@ -9,7 +9,8 @@ import {
   FolderOpen, Building2, Trash2, ArrowLeft, Sparkles, UserCog, Scroll, Database, Zap,
   SlidersHorizontal, Activity, Radar, CreditCard, Ban, TrendingUp, Network, Star, Coins, Landmark,
   ClipboardList,
-  QrCode
+  QrCode,
+  LifeBuoy
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ROLE_CONFIG, hasAdminAccess, getUserLevel, PDG_ADJOINT_EMAILS, PDG_EMAILS } from '@/lib/roles';
@@ -53,6 +54,7 @@ const NAV_GROUPS = [
       { path: '/admin/certifications', icon: Award, label: 'Certifications', minLevel: 70 },
       { path: '/admin/conversations', icon: MessageCircle, label: 'Conversations', minLevel: 70 },
       { path: '/admin/messaging', icon: MessageSquare, label: 'Messagerie', minLevel: 70 },
+      { path: '/admin/support', icon: LifeBuoy, label: 'Support Tickets', minLevel: 70 },
       { path: '/admin/reports', icon: Flag, label: 'Signalements', minLevel: 70 },
       { path: '/admin/events', icon: Calendar, label: 'Événements', minLevel: 70 },
       { path: '/admin/scan-tickets', icon: QrCode, label: 'Scanner billets', minLevel: 70 },

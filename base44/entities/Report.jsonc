@@ -47,6 +47,10 @@
       "type": "string",
       "description": "Lien vers le contenu signal\u00e9 (si applicable)"
     },
+    "target_context": {
+      "type": "string",
+      "description": "Contexte lisible du contenu signal\u00e9 (ex: 'Publication dans le fil', 'R\u00e9ponse dans Discussion: titre', 'Sujet du forum')"
+    },
     "reason": {
       "type": "string",
       "enum": [
@@ -100,6 +104,21 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "conseil_admin"
+          }
         }
       ]
     },
@@ -112,18 +131,71 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "conseil_admin"
+          }
         }
       ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "conseil_admin"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "conseil_admin"
+          }
+        }
+      ]
     }
   }
 }

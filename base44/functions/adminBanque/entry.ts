@@ -269,6 +269,109 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, frozen: !!frozen });
     }
 
+    // ── Gel global : tous les portefeuilles + comptes principaux ──
+    if (action === 'freeze_all') {
+      const { reason, notify } = body;
+      const now = new Date().toISOString();
+      const reasonText = reason ? String(reason).slice(0, 500) : '';
+
+      // Geler tous les portefeuilles
+      const wallets = await base44.asServiceRole.entities.Wallet.list('-created_date', 1000);
+      let walletsFrozen = 0;
+      for (const w of wallets) {
+        try {
+          if (!w.frozen) {
+            await base44.asServiceRole.entities.Wallet.update(w.id, { frozen: true });
+            walletsFrozen++;
+          }
+        } catch {}
+      }
+
+      // Geler tous les comptes principaux (bank_frozen sur User)
+      const users = await base44.asServiceRole.entities.User.list('-created_date', 1000);
+      let usersFrozen = 0;
+      for (const u of users) {
+        try {
+          if (!u.bank_frozen) {
+            await base44.asServiceRole.entities.User.update(u.id, {
+              bank_frozen: true,
+              bank_freeze_reason: reasonText,
+              bank_frozen_at: now,
+            });
+            usersFrozen++;
+          }
+        } catch {}
+      }
+
+      // Email notification aux utilisateurs concernés
+      if (notify) {
+        for (const u of users) {
+          if (u.email) {
+            try {
+              await base44.asServiceRole.integrations.Core.SendEmail({
+                to: u.email, from_name: 'eza — Banque',
+                subject: `eza — ❄️ Gel global de tous les comptes`,
+                body: `<p>Bonjour,</p><p>Pour information, une mesure de <strong>gel global</strong> a été appliquée à l'ensemble des comptes bancaires et portefeuilles Eza. Les virements, déplacements de crédits et achats sont temporairement désactivés.</p>${reasonText ? `<p>Motif : ${reasonText}</p>` : ''}<p>Merci de votre compréhension.</p>`,
+              });
+            } catch {}
+          }
+        }
+      }
+
+      return Response.json({ success: true, walletsFrozen, usersFrozen, totalWallets: wallets.length, totalUsers: users.length });
+    }
+
+    // ── Dégel global : tous les portefeuilles + comptes principaux ──
+    if (action === 'unfreeze_all') {
+      const { reason, notify } = body;
+      const reasonText = reason ? String(reason).slice(0, 500) : '';
+
+      // Dégeler tous les portefeuilles
+      const wallets = await base44.asServiceRole.entities.Wallet.list('-created_date', 1000);
+      let walletsUnfrozen = 0;
+      for (const w of wallets) {
+        try {
+          if (w.frozen) {
+            await base44.asServiceRole.entities.Wallet.update(w.id, { frozen: false });
+            walletsUnfrozen++;
+          }
+        } catch {}
+      }
+
+      // Dégeler tous les comptes principaux
+      const users = await base44.asServiceRole.entities.User.list('-created_date', 1000);
+      let usersUnfrozen = 0;
+      for (const u of users) {
+        try {
+          if (u.bank_frozen) {
+            await base44.asServiceRole.entities.User.update(u.id, {
+              bank_frozen: false,
+              bank_freeze_reason: '',
+              bank_frozen_at: null,
+            });
+            usersUnfrozen++;
+          }
+        } catch {}
+      }
+
+      // Email notification
+      if (notify) {
+        for (const u of users) {
+          if (u.email) {
+            try {
+              await base44.asServiceRole.integrations.Core.SendEmail({
+                to: u.email, from_name: 'eza — Banque',
+                subject: `eza — ✅ Réactivation de tous les comptes`,
+                body: `<p>Bonjour,</p><p>Votre <strong>compte bancaire Eza</strong> et vos portefeuilles sont de nouveau <strong>actifs</strong>. Les virements et achats sont rétablis.</p>${reasonText ? `<p>Motif : ${reasonText}</p>` : ''}`,
+              });
+            } catch {}
+          }
+        }
+      }
+
+      return Response.json({ success: true, walletsUnfrozen, usersUnfrozen, totalWallets: wallets.length, totalUsers: users.length });
+    }
+
     // ── Règles bancaires ──
     if (action === 'get_rules') {
       return Response.json({ rules: await getBankRules(base44) });

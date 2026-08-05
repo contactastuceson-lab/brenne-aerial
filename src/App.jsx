@@ -203,8 +203,9 @@ const AuthenticatedApp = () => {
           <Route path="/support" element={<SupportPage />} />
           <Route path="/support/documentation" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />
           <Route path="/support/documentation/:slug" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />
-          <Route path="/support/conversation" element={<SupportConversationsPage />} />
-          <Route path="/support/:id" element={<SupportTicketPage />} />
+          <Route path="/support/conversation" element={<SupportConversationsPage />}>
+            <Route path=":id" element={<SupportTicketPage />} />
+          </Route>
           <Route path="/s/:username" element={<SampleProfilePage />} />
           <Route path="/documentation" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />
           <Route path="/documentation/:slug" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />

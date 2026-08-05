@@ -127,7 +127,9 @@ export default function SupportTicketPage() {
   const composerDisabled = isClosed || isLocked || sending;
 
   return (
-    <div className="w-full md:w-[42%] md:ml-auto px-3 md:px-4 py-4 md:py-6 flex flex-col" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
+    <>
+      <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden md:block" onClick={() => navigate('/support/conversation')} />
+      <div className="fixed top-0 right-0 z-50 h-full w-full md:w-[42%] bg-background border-l border-border flex flex-col p-3 md:p-4">
       {/* Header */}
       <div className="rounded-2xl bg-card border border-border overflow-hidden mb-3">
         <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #F37322, #1DA890)' }} />
@@ -263,7 +265,7 @@ export default function SupportTicketPage() {
         </div>
       )}
       {!composerDisabled && (
-        <div className="rounded-2xl border border-border bg-card p-2.5 sticky bottom-0">
+        <div className="border-t border-border bg-card p-2.5">
           <div className="flex items-end gap-2">
             <textarea
               value={reply}
@@ -284,6 +286,7 @@ export default function SupportTicketPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

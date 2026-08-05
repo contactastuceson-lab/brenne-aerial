@@ -106,7 +106,7 @@ export default function SupportPage() {
         </Link>
       </div>
 
-      <NewTicketDialog open={showNew} onClose={() => setShowNew(false)} onCreated={(ticket) => ticket?.id && (window.location.href = `/support/${ticket.id}`)} />
+      <NewTicketDialog open={showNew} onClose={() => setShowNew(false)} onCreated={(ticket) => ticket?.id && (window.location.href = `/support/conversation/${ticket.id}`)} />
     </div>
   );
 }

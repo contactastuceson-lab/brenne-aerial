@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Outlet } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import NewTicketDialog from '@/components/support/NewTicketDialog';
@@ -55,7 +55,7 @@ export default function SupportConversationsPage() {
 
   const onCreated = (ticket) => {
     setShowNew(false);
-    if (ticket?.id) navigate(`/support/${ticket.id}`);
+    if (ticket?.id) navigate(`/support/conversation/${ticket.id}`);
   };
 
   const stats = {
@@ -124,7 +124,7 @@ export default function SupportConversationsPage() {
             const meta = STATUS_META[t.status] || STATUS_META.open;
             const SIcon = meta.icon;
             return (
-              <Link key={t.id} to={`/support/${t.id}`}
+              <Link key={t.id} to={`/support/conversation/${t.id}`}
                 className="flex items-center gap-3 p-3.5 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-all group">
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 border ${meta.cls}`}>
                   <SIcon className="w-4 h-4" />
@@ -145,6 +145,7 @@ export default function SupportConversationsPage() {
       )}
 
       <NewTicketDialog open={showNew} onClose={() => setShowNew(false)} onCreated={onCreated} />
+      <Outlet />
     </div>
   );
 }

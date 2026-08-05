@@ -133,10 +133,8 @@ export default function AdminSupport() {
       const msgs = [...(selected.messages || []), optimistic];
       const updated = await base44.entities.SupportTicket.update(selected.id, {
         messages: msgs,
-        status: selected.status === 'closed' ? 'closed' : 'resolved',
         assignee: 'human',
         handled_by: 'human',
-        admin_notes: msg,
       });
       setSelected(updated);
       setTickets((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));

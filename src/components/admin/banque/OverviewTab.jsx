@@ -1,6 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Wallet, Coins, ArrowLeftRight, Activity, Loader2 } from 'lucide-react';
+import { Wallet, Coins, ArrowLeftRight, Activity, Loader2, Snowflake, ShieldCheck, AlertTriangle, Bell } from 'lucide-react';
+import { toast } from 'sonner';
 
 function Stat({ icon: Icon, label, value, color }) {
   return (
@@ -15,6 +17,7 @@ function Stat({ icon: Icon, label, value, color }) {
 }
 
 export default function OverviewTab() {
+  const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ['admin-banque-overview'],
     queryFn: async () => {
@@ -23,6 +26,29 @@ export default function OverviewTab() {
     },
   });
 
+  const [reason, setReason] = useState('');
+  const [notify, setNotify] = useState(false);
+  const [busy, setBusy] = useState(null); // 'freeze' | 'unfreeze' | null
+  const [confirming, setConfirming] = useState(null); // 'freeze' | 'unfreeze' | null
+
+  const runGlobal = async (action) => {
+    setBusy(action);
+    setConfirming(null);
+    try {
+      const res = await base44.functions.invoke('adminBanque', { action, reason, notify });
+      if (action === 'freeze_all') {
+        toast.error(`❄️ Gel global — ${res.data?.usersFrozen ?? 0} compte(s) + ${res.data?.walletsFrozen ?? 0} portefeuille(s)`);
+      } else {
+        toast.success(`✅ Dégel global — ${res.data?.usersUnfrozen ?? 0} compte(s) + ${res.data?.walletsUnfrozen ?? 0} portefeuille(s)`);
+      }
+      qc.invalidateQueries({ queryKey: ['admin-banque-overview'] });
+    } catch (err) {
+      toast.error(`Erreur: ${err.message}`);
+    } finally {
+      setBusy(null);
+    }
+  };
+
   if (isLoading) {
     return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>;
   }
@@ -30,6 +56,80 @@ export default function OverviewTab() {
   const d = data || {};
   return (
     <div className="space-y-5">
+      {/* Contrôle d'urgence — Gel / Dégel global */}
+      <div className="rounded-2xl border border-red-500/20 bg-red-950/20 p-4 md:p-5">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-red-400" />
+          </div>
+          <div>
+            <p className="font-grotesk font-bold text-sm text-foreground">Contrôle d'urgence</p>
+            <p className="font-inter text-xs text-muted-foreground mt-0.5">
+              Gèle ou dégèle simultanément <strong>tous les comptes principaux</strong> et <strong>tous les portefeuilles</strong> de la plateforme.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-3">
+          <input
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            placeholder="Motif (optionnel) — ex: Audit de sécurité"
+            className="flex-1 h-9 rounded-lg border border-border bg-secondary px-3 font-inter text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-red-500/40"
+          />
+          <label className="flex items-center gap-2 px-3 h-9 rounded-lg border border-border bg-secondary cursor-pointer select-none">
+            <input type="checkbox" checked={notify} onChange={e => setNotify(e.target.checked)} className="accent-red-500" />
+            <Bell className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="font-inter text-xs text-muted-foreground">Notifier par email</span>
+          </label>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 mt-3">
+          {confirming === 'freeze' ? (
+            <div className="flex gap-2 w-full sm:flex-1">
+              <button
+                onClick={() => runGlobal('freeze_all')}
+                disabled={busy !== null}
+                className="flex-1 h-9 rounded-lg bg-red-600 hover:bg-red-700 text-white font-inter font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {busy === 'freeze' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Snowflake className="w-4 h-4" />}
+                Confirmer le gel global
+              </button>
+              <button onClick={() => setConfirming(null)} className="h-9 px-4 rounded-lg border border-border bg-card font-inter text-xs text-muted-foreground hover:text-foreground">Annuler</button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirming('freeze')}
+              disabled={busy !== null}
+              className="flex-1 h-9 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-inter font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Snowflake className="w-4 h-4" /> Gel global
+            </button>
+          )}
+
+          {confirming === 'unfreeze' ? (
+            <div className="flex gap-2 w-full sm:flex-1">
+              <button
+                onClick={() => runGlobal('unfreeze_all')}
+                disabled={busy !== null}
+                className="flex-1 h-9 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-inter font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {busy === 'unfreeze' ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                Confirmer le dégel
+              </button>
+              <button onClick={() => setConfirming(null)} className="h-9 px-4 rounded-lg border border-border bg-card font-inter text-xs text-muted-foreground hover:text-foreground">Annuler</button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirming('unfreeze')}
+              disabled={busy !== null}
+              className="flex-1 h-9 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 font-inter font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <ShieldCheck className="w-4 h-4" /> Dégel global
+            </button>
+          )}
+        </div>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Stat icon={Wallet} label="Portefeuilles" value={d.totalWallets ?? 0} color="bg-sky-400/10 text-sky-400" />
         <Stat icon={Coins} label="Crédits détenus" value={(d.totalHeld ?? 0).toLocaleString('fr-FR')} color="bg-amber-400/10 text-amber-400" />

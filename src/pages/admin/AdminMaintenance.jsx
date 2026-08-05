@@ -88,9 +88,7 @@ export default function AdminMaintenance() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <Settings className="w-4 h-4 text-primary" />
-          </div>
+          <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/53f8e6b37_1782606023373.png" alt="EZA" className="w-9 h-9 rounded-xl object-cover" />
           <div>
             <h1 className="font-grotesk font-bold text-xl">Maintenance & Paramètres</h1>
             <p className="font-inter text-xs text-muted-foreground">Gérez le comportement global et la page de maintenance</p>

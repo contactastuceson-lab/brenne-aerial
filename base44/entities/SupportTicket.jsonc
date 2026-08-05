@@ -147,7 +147,7 @@
         "type": "object"
       },
       "default": [],
-      "description": "Fil de conversation : { role, content, steps, at, attachments, action }"
+      "description": "Fil de conversation : { role, content, steps, at, attachments, action, feedback }"
     },
     "ai_summary": {
       "type": "string",
@@ -165,6 +165,14 @@
     "admin_notes": {
       "type": "string",
       "description": "Notes internes admin"
+    },
+    "satisfaction": {
+      "type": "string",
+      "enum": [
+        "up",
+        "down"
+      ],
+      "description": "Sondage de satisfaction utilisateur (up = satisfait, down = insatisfait)"
     }
   },
   "required": [

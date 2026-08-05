@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Loader2, CheckCircle2, Clock, AlertCircle,
   ArrowLeft, Bot, UserCog, X,
-  ShieldAlert, Sparkles,
+  ShieldAlert, Sparkles, ThumbsUp, ThumbsDown,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import NexusMarkdown from '@/components/support/NexusMarkdown';
@@ -49,6 +49,9 @@ export default function SupportTicketPage() {
   const [reply, setReply] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(null);
+  const [satisfactionLoading, setSatisfactionLoading] = useState(false);
   const scrollRef = useRef(null);
 
   const load = async () => {
@@ -97,34 +100,93 @@ export default function SupportTicketPage() {
     }
   };
 
+  const rateMessage = async (msgIndex, feedback) => {
+    if (feedbackLoading !== null) return;
+    setFeedbackLoading(msgIndex);
+    try {
+      const msgs = [...(ticket.messages || [])];
+      if (!msgs[msgIndex]) return;
+      const current = msgs[msgIndex].feedback;
+      const newFeedback = current === feedback ? null : feedback;
+      msgs[msgIndex] = { ...msgs[msgIndex], feedback: newFeedback };
+      setTicket((prev) => ({ ...prev, messages: msgs }));
+      await base44.entities.SupportTicket.update(id, { messages: msgs });
+    } catch {}
+    setFeedbackLoading(null);
+  };
+
+  const closeTicket = async () => {
+    if (actionLoading) return;
+    setActionLoading(true);
+    try {
+      const updated = await base44.entities.SupportTicket.update(id, {
+        status: 'closed',
+        assignee: ticket.assignee === 'human' ? 'human' : 'ai',
+      });
+      setTicket(updated);
+    } catch {}
+    setActionLoading(false);
+  };
+
+  const escalateToHuman = async () => {
+    if (actionLoading) return;
+    setActionLoading(true);
+    try {
+      const updated = await base44.entities.SupportTicket.update(id, {
+        status: 'awaiting_human',
+        assignee: 'human',
+        handled_by: 'escalated',
+        escalation_reason: "Prise en charge humaine demandée par l'utilisateur",
+      });
+      setTicket(updated);
+    } catch {}
+    setActionLoading(false);
+  };
+
+  const submitSatisfaction = async (rating) => {
+    if (satisfactionLoading) return;
+    setSatisfactionLoading(true);
+    try {
+      const updated = await base44.entities.SupportTicket.update(id, { satisfaction: rating });
+      setTicket(updated);
+    } catch {}
+    setSatisfactionLoading(false);
+  };
+
   if (loading) {
     return (
-      <div className="w-full md:w-[42%] md:ml-auto px-3 md:px-4 py-20 text-center text-muted-foreground">
-        <Loader2 className="w-6 h-6 mx-auto mb-3 animate-spin" />
-        Chargement du ticket…
-      </div>
+      <>
+        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden md:block" onClick={() => navigate('/support/conversation')} />
+        <div className="fixed top-0 right-0 z-50 h-full w-full md:w-1/2 bg-background border-l border-border flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      </>
     );
   }
 
   if (error || !ticket) {
     return (
-      <div className="w-full md:w-[42%] md:ml-auto px-3 md:px-4 py-20 text-center">
-        <AlertCircle className="w-8 h-8 mx-auto mb-3 text-muted-foreground/50" />
-        <p className="text-sm text-muted-foreground mb-4">{error || 'Ticket introuvable'}</p>
-        <Link to="/support" className="text-primary text-sm hover:underline">← Retour au support</Link>
-      </div>
+      <>
+        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden md:block" onClick={() => navigate('/support/conversation')} />
+        <div className="fixed top-0 right-0 z-50 h-full w-full md:w-1/2 bg-background border-l border-border flex flex-col items-center justify-center gap-3 px-4">
+          <AlertCircle className="w-8 h-8 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground text-center">{error || 'Ticket introuvable'}</p>
+          <Link to="/support/conversation" className="text-primary text-sm hover:underline">← Retour aux conversations</Link>
+        </div>
+      </>
     );
   }
 
   const meta = STATUS_META[ticket.status] || STATUS_META.open;
   const SIcon = meta.icon;
   const messages = ticket.messages || [];
-  const isClosed = ['resolved', 'closed'].includes(ticket.status);
+  const isClosed = ['resolved', 'closed', 'awaiting_human'].includes(ticket.status);
   const isLocked = !!ticket.user_locked;
   const isAiResolved = ticket.status === 'ai_resolved';
   const isEscalated = ticket.status === 'awaiting_human';
   const nexusThinking = sending || (!sending && messages.length > 0 && !messages.some((m) => m.role === 'assistant' || m.role === 'admin'));
   const composerDisabled = isClosed || isLocked || sending;
+  const hasSatisfaction = !!ticket.satisfaction;
 
   return (
     <>
@@ -156,6 +218,21 @@ export default function SupportTicketPage() {
                 </span>
               </div>
             </div>
+            {/* Action buttons */}
+            {!isClosed && !isLocked && (
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button onClick={escalateToHuman} disabled={actionLoading}
+                  className="h-8 px-2.5 rounded-lg flex items-center gap-1 text-[11px] font-medium border border-orange-400/30 bg-orange-400/10 text-orange-300 hover:bg-orange-400/20 transition-colors disabled:opacity-40">
+                  {actionLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserCog className="w-3 h-3" />}
+                  <span className="hidden sm:inline">Humain</span>
+                </button>
+                <button onClick={closeTicket} disabled={actionLoading}
+                  className="h-8 px-2.5 rounded-lg flex items-center gap-1 text-[11px] font-medium border border-border bg-secondary text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors disabled:opacity-40">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span className="hidden sm:inline">Fermer</span>
+                </button>
+              </div>
+            )}
             <button onClick={() => navigate('/support/conversation')}
               className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex-shrink-0">
               <X className="w-4 h-4" />
@@ -176,6 +253,7 @@ export default function SupportTicketPage() {
           {messages.map((m, i) => {
             const isUser = m.role === 'user';
             const isAssistant = m.role === 'assistant';
+            const feedback = m.feedback;
             return (
               <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 className={`flex ${isUser ? 'justify-end' : 'justify-start'} gap-2`}>
@@ -196,9 +274,31 @@ export default function SupportTicketPage() {
                       <NexusMarkdown>{m.content}</NexusMarkdown>
                     ) : <p style={{ whiteSpace: 'pre-wrap' }} className="leading-relaxed">{m.content}</p>}
                   </div>
-                  <span className="text-[10px] text-muted-foreground/60 mt-1 px-1">
-                    {formatTime(m.at)}
-                  </span>
+                  <div className="flex items-center gap-2 mt-1 px-1">
+                    <span className="text-[10px] text-muted-foreground/60">
+                      {formatTime(m.at)}
+                    </span>
+                    {isAssistant && (
+                      <div className="flex items-center gap-0.5">
+                        <button
+                          onClick={() => rateMessage(i, 'up')}
+                          disabled={feedbackLoading === i}
+                          className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${
+                            feedback === 'up' ? 'text-green-400 bg-green-400/10' : 'text-muted-foreground/40 hover:text-green-400 hover:bg-green-400/5'
+                          }`}>
+                          {feedbackLoading === i ? <Loader2 className="w-3 h-3 animate-spin" /> : <ThumbsUp className="w-3 h-3" />}
+                        </button>
+                        <button
+                          onClick={() => rateMessage(i, 'down')}
+                          disabled={feedbackLoading === i}
+                          className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${
+                            feedback === 'down' ? 'text-red-400 bg-red-400/10' : 'text-muted-foreground/40 hover:text-red-400 hover:bg-red-400/5'
+                          }`}>
+                          <ThumbsDown className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 {isUser && (
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-3 bg-secondary border border-border">
@@ -236,32 +336,49 @@ export default function SupportTicketPage() {
         )}
       </div>
 
-      {/* Status footer */}
-      {isClosed && !isLocked && (
-        <div className="rounded-2xl border border-border bg-secondary/40 p-4 text-center sticky bottom-0">
-          <CheckCircle2 className="w-5 h-5 mx-auto mb-1.5 text-green-400" />
-          <p className="text-sm font-semibold">Ce ticket a été résolu</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Veuillez créer un nouveau ticket pour une assistance supplémentaire.</p>
+      {/* Satisfaction survey or status footer */}
+      {isClosed && !hasSatisfaction && !isLocked && (
+        <div className="rounded-2xl border border-border bg-card p-4 text-center">
+          <p className="text-sm font-semibold mb-1">
+            {isEscalated ? 'Ticket transmis à un humain' : 'Ce ticket est fermé'}
+          </p>
+          <p className="text-xs text-muted-foreground mb-3">Nexus vous a-t-il aidé ? Votre avis compte.</p>
+          <div className="flex items-center justify-center gap-3">
+            <button onClick={() => submitSatisfaction('up')} disabled={satisfactionLoading}
+              className="flex flex-col items-center gap-1 px-4 py-2 rounded-xl border border-border hover:border-green-400/40 hover:bg-green-400/5 transition-colors group disabled:opacity-40">
+              {satisfactionLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ThumbsUp className="w-5 h-5 text-muted-foreground group-hover:text-green-400 transition-colors" />}
+              <span className="text-[10px] text-muted-foreground">Utile</span>
+            </button>
+            <button onClick={() => submitSatisfaction('down')} disabled={satisfactionLoading}
+              className="flex flex-col items-center gap-1 px-4 py-2 rounded-xl border border-border hover:border-red-400/40 hover:bg-red-400/5 transition-colors group disabled:opacity-40">
+              <ThumbsDown className="w-5 h-5 text-muted-foreground group-hover:text-red-400 transition-colors" />
+              <span className="text-[10px] text-muted-foreground">Pas utile</span>
+            </button>
+          </div>
+        </div>
+      )}
+      {isClosed && hasSatisfaction && !isLocked && (
+        <div className="rounded-2xl border border-border bg-secondary/40 p-4 text-center">
+          <CheckCircle2 className={`w-5 h-5 mx-auto mb-1.5 ${ticket.satisfaction === 'up' ? 'text-green-400' : 'text-orange-400'}`} />
+          <p className="text-sm font-semibold">Ce ticket est fermé</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {ticket.satisfaction === 'up' ? 'Merci pour votre retour positif !' : 'Merci pour votre retour, on va améliorer ça.'}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">Veuillez en ouvrir un nouveau pour une assistance supplémentaire.</p>
           <Link to="/support/conversation" className="inline-flex items-center gap-1 text-xs text-primary font-medium mt-2 hover:underline">
             Créer un nouveau ticket →
           </Link>
         </div>
       )}
       {isLocked && (
-        <div className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-3 flex items-center gap-2.5 sticky bottom-0">
+        <div className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-3 flex items-center gap-2.5">
           <ShieldAlert className="w-4 h-4 text-amber-300 flex-shrink-0" />
           <p className="text-xs text-amber-200/90">Cette conversation est verrouillée.</p>
         </div>
       )}
-      {isAiResolved && !isLocked && !isClosed && (
-        <div className="rounded-xl border border-primary/15 bg-primary/[0.05] p-2.5 text-center text-xs text-muted-foreground sticky bottom-0">
+      {isAiResolved && !isClosed && !isLocked && (
+        <div className="rounded-xl border border-primary/15 bg-primary/[0.05] p-2.5 text-center text-xs text-muted-foreground">
           Nexus a marqué ce ticket comme résolu · répondez si ce n'est pas réglé.
-        </div>
-      )}
-      {isEscalated && !isClosed && !isLocked && (
-        <div className="rounded-xl border border-orange-400/20 bg-orange-400/[0.05] p-2.5 flex items-center gap-2 sticky bottom-0">
-          <ShieldAlert className="w-4 h-4 text-orange-400 flex-shrink-0" />
-          <p className="text-xs text-orange-300/90">Pris en charge par un spécialiste du support — réponse sous 24-48h.</p>
         </div>
       )}
       {!composerDisabled && (

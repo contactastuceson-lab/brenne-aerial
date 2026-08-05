@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown, CreditCard, Network, Radio, Coins, Megaphone, Landmark, Bot } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown, CreditCard, Network, Radio, Coins, Megaphone, Landmark, Bot, LifeBuoy } from 'lucide-react';
 import { useState } from 'react';
 
 const navSections = [
@@ -33,7 +33,7 @@ const navSections = [
       { key: 'spaces', icon: Radio, path: '/admin/spaces', label: 'Spaces Audio' },
       { key: 'events', icon: Calendar, path: '/admin/events', label: 'Événements' },
       { key: 'reports', icon: AlertCircle, path: '/admin/reports', label: 'Signalements' },
-      { key: 'support', icon: MessageSquare, path: '/admin/support', label: 'Support IA' },
+      { key: 'support', icon: LifeBuoy, path: '/admin/support', label: 'Support Tickets' },
       { key: 'donations', icon: Gift, path: '/admin/donations', label: 'Donations' },
       { key: 'billing', icon: CreditCard, path: '/admin/billing', label: 'Facturation' },
     ]

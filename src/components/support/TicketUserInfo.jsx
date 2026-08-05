@@ -1,9 +1,9 @@
 import React from 'react';
-import VerificationMark from '@/components/ui/VerificationMark';
+import VerificationIcons from '@/components/ui/VerificationIcon';
 import usePublicUser from '@/hooks/usePublicUser';
 
 /**
- * Affiche l'avatar + nom + TOUS les badges de vérification
+ * Affiche l'avatar + nom + badges de vérification
  * de l'utilisateur qui a créé le ticket.
  */
 export default function TicketUserInfo({ userId, fallbackName, fallbackEmail }) {
@@ -24,15 +24,7 @@ export default function TicketUserInfo({ userId, fallbackName, fallbackEmail }) 
         )}
       </div>
       <span className="text-muted-foreground truncate">{displayName}</span>
-      {verifications.length > 0 && (
-        <span className="inline-flex items-center gap-0.5">
-          {verifications.map((v) => (
-            <span key={v} className="inline-flex items-center leading-none">
-              <VerificationMark type={v} size="0.85em" />
-            </span>
-          ))}
-        </span>
-      )}
+      <VerificationIcons verifications={verifications} user={profile} size="sm" />
       {fallbackEmail && (
         <>
           <span className="text-muted-foreground/50">·</span>

@@ -481,122 +481,130 @@ export default function AdminSupport() {
               })}
             </div>
 
-            {/* Actions + composer */}
-            <div className="border-t border-border bg-card p-2.5 space-y-2">
-              {/* Gestion rapide */}
-              <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Barre d'actions */}
+            <div className="border-t border-border bg-card">
+              <div className="flex items-center gap-1 px-3 py-2 border-b border-border/50">
                 <button onClick={() => setShowAdminPanel(!showAdminPanel)}
-                  className={`h-7 px-2 rounded-lg text-[11px] font-medium border transition-colors flex items-center gap-1 ${showAdminPanel ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:text-foreground'}`}>
-                  <Tag className="w-3 h-3" /> Gestion
+                  className={`h-8 px-3 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${showAdminPanel ? 'bg-primary/15 text-primary' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+                  <Tag className="w-3.5 h-3.5" /> Gestion
+                  <ChevronDown className={`w-3 h-3 transition-transform ${showAdminPanel ? 'rotate-180' : ''}`} />
                 </button>
+                <div className="w-px h-5 bg-border mx-0.5" />
                 <button onClick={() => changeStatus('awaiting_human')} disabled={actionLoading}
-                  className="h-7 px-2 rounded-lg text-[11px] font-medium border border-orange-400/30 bg-orange-400/10 text-orange-300 hover:bg-orange-400/20 transition-colors disabled:opacity-40 flex items-center gap-1">
-                  {actionLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldAlert className="w-3 h-3" />}
+                  className="h-8 px-2.5 rounded-lg text-xs font-medium text-orange-300 hover:bg-orange-400/10 transition-colors disabled:opacity-40 flex items-center gap-1">
+                  {actionLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldAlert className="w-3.5 h-3.5" />}
                   Escalader
                 </button>
                 <button onClick={() => changeStatus('resolved')} disabled={actionLoading}
-                  className="h-7 px-2 rounded-lg text-[11px] font-medium border border-green-400/30 bg-green-400/10 text-green-300 hover:bg-green-400/20 transition-colors disabled:opacity-40 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Résoudre
+                  className="h-8 px-2.5 rounded-lg text-xs font-medium text-green-300 hover:bg-green-400/10 transition-colors disabled:opacity-40 flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Résoudre
                 </button>
                 <button onClick={closeTicket} disabled={actionLoading}
-                  className="h-7 px-2 rounded-lg text-[11px] font-medium border border-border bg-secondary text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 flex items-center gap-1">
-                  <X className="w-3 h-3" /> Fermer
+                  className="h-8 px-2.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-40 flex items-center gap-1">
+                  <X className="w-3.5 h-3.5" /> Fermer
                 </button>
                 <button onClick={deleteTicket} disabled={actionLoading}
-                  className="h-7 px-2 rounded-lg text-[11px] font-medium border border-red-400/30 bg-red-400/10 text-red-400 hover:bg-red-400/20 transition-colors disabled:opacity-40 flex items-center gap-1 ml-auto">
-                  {actionLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
-                  Supprimer
+                  className="h-8 px-2.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-40 flex items-center gap-1 ml-auto">
+                  {actionLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  <span className="hidden sm:inline">Supprimer</span>
                 </button>
               </div>
 
-              {/* Panneau de gestion étendu */}
+              {/* Panneau de gestion */}
               {showAdminPanel && (
-                <div className="rounded-xl border border-border bg-secondary/30 p-3 space-y-2.5">
-                  {/* Priorité */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0">Priorité</span>
-                    <div className="flex items-center gap-1 flex-wrap">
-                      {Object.entries(PRIORITY_LABELS).map(([key, label]) => (
-                        <button key={key} onClick={() => changePriority(key)} disabled={actionLoading}
-                          className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${selected.priority === key ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border text-muted-foreground hover:text-foreground'}`}>
-                          {label}
-                        </button>
-                      ))}
+                <div className="px-3 py-3 space-y-3 bg-secondary/20">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {/* Priorité */}
+                    <div>
+                      <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-1 block">Priorité</label>
+                      <select
+                        value={selected.priority || 'medium'}
+                        onChange={(e) => changePriority(e.target.value)}
+                        disabled={actionLoading}
+                        className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer"
+                      >
+                        {Object.entries(PRIORITY_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+                      </select>
+                    </div>
+                    {/* Catégorie */}
+                    <div>
+                      <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-1 block">Catégorie</label>
+                      <select
+                        value={selected.category || 'other'}
+                        onChange={(e) => changeCategory(e.target.value)}
+                        disabled={actionLoading}
+                        className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer"
+                      >
+                        {Object.entries(CATEGORY_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+                      </select>
+                    </div>
+                    {/* Assigné */}
+                    <div>
+                      <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-1 block">Assigné à</label>
+                      <select
+                        value={selected.assignee || 'unassigned'}
+                        onChange={(e) => changeAssignee(e.target.value)}
+                        disabled={actionLoading}
+                        className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer"
+                      >
+                        <option value="ai">Nexus IA</option>
+                        <option value="human">Humain</option>
+                        <option value="unassigned">Non assigné</option>
+                      </select>
                     </div>
                   </div>
 
-                  {/* Catégorie */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0">Catégorie</span>
-                    <div className="flex items-center gap-1 flex-wrap">
-                      {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                        <button key={key} onClick={() => changeCategory(key)} disabled={actionLoading}
-                          className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${selected.category === key ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border text-muted-foreground hover:text-foreground'}`}>
-                          {label}
-                        </button>
-                      ))}
+                  {/* Label + notes */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-1 block">Label interne</label>
+                      <input
+                        value={selected.admin_label || ''}
+                        onChange={(e) => setSelected((prev) => prev ? { ...prev, admin_label: e.target.value } : prev)}
+                        onBlur={(e) => setAdminLabel(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                        placeholder="VIP, litige, suivi…"
+                        className="w-full bg-background border border-border rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary/40"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-1 block">Utilisateur</label>
+                      <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-2.5 py-1.5">
+                        <UserSquare className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                        <span className="text-xs text-muted-foreground truncate flex-1">{selected.user_email}</span>
+                        <a href={`/@${selected.user_name || ''}`} target="_blank" rel="noreferrer"
+                          className="text-primary hover:underline flex items-center gap-0.5 flex-shrink-0">
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Assigné à */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0">Assigné</span>
-                    <div className="flex items-center gap-1">
-                      {['ai', 'human', 'unassigned'].map((a) => (
-                        <button key={a} onClick={() => changeAssignee(a)} disabled={actionLoading}
-                          className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${selected.assignee === a ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border text-muted-foreground hover:text-foreground'}`}>
-                          {a === 'ai' ? 'Nexus IA' : a === 'human' ? 'Humain' : 'Non assigné'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Label admin */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0">Label</span>
-                    <input
-                      value={selected.admin_label || ''}
-                      onChange={(e) => setSelected((prev) => prev ? { ...prev, admin_label: e.target.value } : prev)}
-                      onBlur={(e) => setAdminLabel(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
-                      placeholder="VIP, litige, suivi…"
-                      className="flex-1 bg-background border border-border rounded-lg px-2 py-1 text-[11px] outline-none focus:ring-1 focus:ring-primary/40"
-                    />
-                  </div>
-
-                  {/* Notes admin */}
+                  {/* Notes */}
                   <div>
-                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide mb-1 flex items-center gap-1">
+                    <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-1 flex items-center gap-1">
                       <StickyNote className="w-2.5 h-2.5" /> Notes internes
-                    </span>
-                    <textarea
-                      value={adminNotes}
-                      onChange={(e) => setAdminNotes(e.target.value)}
-                      placeholder="Notes administratives (non visibles par l'utilisateur)…"
-                      rows={2}
-                      className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-[11px] outline-none focus:ring-1 focus:ring-primary/40 resize-none"
-                    />
-                    <button onClick={saveAdminNotes} disabled={actionLoading}
-                      className="mt-1 text-[10px] px-2 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors disabled:opacity-40 flex items-center gap-1">
-                      {actionLoading ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <CheckCircle2 className="w-2.5 h-2.5" />}
-                      Enregistrer les notes
-                    </button>
-                  </div>
-
-                  {/* Infos utilisateur */}
-                  <div className="flex items-center gap-2 pt-1 border-t border-border/50">
-                    <UserSquare className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-[10px] text-muted-foreground truncate">{selected.user_email}</span>
-                    <a href={`/@${selected.user_name || ''}`} target="_blank" rel="noreferrer"
-                      className="text-[10px] text-primary hover:underline flex items-center gap-0.5 ml-auto">
-                      Voir profil <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
+                    </label>
+                    <div className="flex gap-2">
+                      <textarea
+                        value={adminNotes}
+                        onChange={(e) => setAdminNotes(e.target.value)}
+                        placeholder="Notes administratives (non visibles par l'utilisateur)…"
+                        rows={2}
+                        className="flex-1 bg-background border border-border rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary/40 resize-none"
+                      />
+                      <button onClick={saveAdminNotes} disabled={actionLoading}
+                        className="self-end h-8 px-3 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors disabled:opacity-40 flex items-center gap-1 text-xs font-medium whitespace-nowrap">
+                        {actionLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                        Enregistrer
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
 
               {/* Composer */}
-              <div className="flex items-end gap-2">
+              <div className="flex items-end gap-2 p-2.5">
                 <textarea
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}

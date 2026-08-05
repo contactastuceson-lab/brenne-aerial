@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import NexusMarkdown from '@/components/support/NexusMarkdown';
 import AdminMessageAuthor from '@/components/support/AdminMessageAuthor';
+import TicketUserInfo from '@/components/support/TicketUserInfo';
 import {
   Loader2, RefreshCw, Send, Clock, CheckCircle2, AlertCircle,
   ShieldAlert, Sparkles, Bot, UserCog, X, Search,
@@ -239,7 +240,7 @@ export default function AdminSupport() {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)] overflow-hidden">
       {/* Liste des tickets — moitié gauche */}
-      <div className={`${selected ? 'hidden lg:flex' : 'flex'} flex-col w-full lg:w-1/2 border-r border-border bg-background`}>
+      <div className={`${selected ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-1/2 border-r border-border bg-background`}>
         {/* Header liste */}
         <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -359,9 +360,9 @@ export default function AdminSupport() {
           <p className="text-xs text-muted-foreground/60 mt-0.5">Choisissez une conversation dans la liste pour la gérer.</p>
         </div>
       ) : (
-        <div className="fixed lg:relative inset-0 z-50 lg:z-auto flex flex-col w-full lg:w-1/2 bg-background">
+        <div className="fixed md:relative inset-0 z-50 md:z-auto flex flex-col w-full md:w-1/2 bg-background">
           {/* Overlay mobile */}
-          <div className="lg:hidden absolute inset-0 bg-black/40" onClick={() => setSelected(null)} />
+          <div className="md:hidden absolute inset-0 bg-black/40" onClick={() => setSelected(null)} />
 
           <div className="relative flex flex-col h-full bg-background">
             {/* Header */}
@@ -370,7 +371,7 @@ export default function AdminSupport() {
               <div className="p-3 md:p-4">
                 <div className="flex items-center gap-2.5">
                   <button onClick={() => setSelected(null)}
-                    className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center bg-secondary border border-border flex-shrink-0">
+                    className="md:hidden w-8 h-8 rounded-lg flex items-center justify-center bg-secondary border border-border flex-shrink-0">
                     <X className="w-4 h-4" />
                   </button>
                   <div className="flex-1 min-w-0">
@@ -404,15 +405,8 @@ export default function AdminSupport() {
                 </div>
 
                 {/* Infos utilisateur */}
-                <div className="flex items-center gap-2 mt-2.5 text-[11px]">
-                  <div className="w-5 h-5 rounded-full bg-secondary border border-border flex items-center justify-center">
-                    <span className="text-[9px] font-bold text-muted-foreground">
-                      {(selected.user_name || selected.user_email || 'U').charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="text-muted-foreground truncate">{selected.user_name || selected.user_email}</span>
-                  <span className="text-muted-foreground/50">·</span>
-                  <span className="text-muted-foreground truncate">{selected.user_email}</span>
+                <div className="flex items-center gap-2 mt-2.5 text-[11px] flex-wrap">
+                  <TicketUserInfo userId={selected.user_id} fallbackName={selected.user_name} fallbackEmail={selected.user_email} />
                   {selected.related_item_label && (
                     <>
                       <span className="text-muted-foreground/50">·</span>

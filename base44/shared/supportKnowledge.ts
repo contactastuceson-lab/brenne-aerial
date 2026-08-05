@@ -1,48 +1,74 @@
 // Base de connaissance eza — injectée dans le contexte NEXUS pour qu'il puisse
-// répondre factuellement sans escalader systatiquement.
+// répondre factuellement sans escalader systématiquement.
 
 export const EZA_KNOWLEDGE = `
 ## Base de connaissance eza (NEXUS l'a lue)
 
 ### Crédits Eza
-- On gagne des crédits en publiant (posts, stories), en parrainant (/parrainage), en recevant des récompenses/badges.
-- On dépense les crédits dans /boutique (tokens boost, pin, abonnements), /events (inscription), /banque (transferts).
-- Le solde visible est la somme des wallets de l'utilisateur (entité Wallet).
-- Un wallet peut être gelé (frozen=true) → transferts bloqués, afficher un message "compte gelé par l'administration".
+- **Gagner des crédits** : publier des posts, créer des stories, parrainer (/parrainage), recevoir des récompenses/badges, événements spéciaux.
+- **Dépenser des crédits** : /boutique (tokens boost, pin, abonnements), /events (inscription), /banque (transferts entre wallets).
+- Le solde visible = somme des wallets de l'utilisateur (entité Wallet).
+- Un wallet peut être gelé (**frozen=true**) → transferts bloqués. Message : "compte gelé par l'administration".
+- **Transferts** : /banque → transférer entre ses propres wallets ou vers un autre utilisateur.
 
 ### Parrainage (/parrainage)
-- Code de parrainage = username. On partage le lien, le filleul s'inscrit, on gagne des crédits.
-- Jalons (milestones) : crédits bonus à 1, 3, 5, 10 filleuls validés.
+- Code de parrainage = votre username. Partagez le lien, le filleul s'inscrit, vous gagnez des crédits.
+- **Jalons** (milestones) : crédits bonus à 1, 3, 5, 10 filleuls validés.
 - Statut d'un parrainage : pending → validated → rewarded.
+- Système anti-fraude automatique (détection des parrainages abusifs).
 
 ### Boutique (/boutique)
-- Tokens : boost (visibilité post), pin_24h, pin_7d, communauté premium, etc.
-- Abonnements : Business, Enterprise (gestion pub, analytics avancés).
-- Achat de crédits via Stripe (CreditPacks).
+- **Tokens** : boost (visibilité post), pin_24h, pin_7d, communauté premium, capacité étendue.
+- **Abonnements** : Business, Enterprise (gestion pub, analytics avancés, tokens inclus).
+- **Achat de crédits** via Stripe (CreditPacks) — paiements sécurisés.
+- **Récompenses** : échangez vos crédits contre des tokens ou des avantages.
 
 ### Événements (/events)
-- Inscription par crédits Eza ou gratuit. Annulation possible avec motif (demande admin).
-- Billet généré avec code (EZA-XXXX), validation par scan admin (/admin/scan-tickets).
+- Inscription par **crédits Eza** ou **gratuit** selon l'événement.
+- Annulation possible avec motif → demande admin → remboursement en crédits si approuvée.
+- Billet généré avec code unique (EZA-XXXX), validation par **scan admin** (/admin/scan-tickets).
+- Capacité maximale affichée. Statut : draft → upcoming → live → ended → cancelled.
 
 ### Publications / Communautés / Spaces
-- Posts : like, repost, quote, bookmark, sondage, visibilité (public/followers/certified/eza_circle).
-- Communities : ouvertes/fermées, membres, posts communautaires.
-- Spaces : audio live via LiveKit, host + participants, officiel ou non.
+- **Posts** : like, repost, quote, bookmark, sondage, visibilité (public/followers/certified/eza_circle).
+- **Stories** : image, vidéo, texte. Expirent après 24h. Stickers, filtres, polices.
+- **Communities** : ouvertes/fermées, membres, posts communautaires. Owner gère les paramètres.
+- **Spaces** : audio live via LiveKit, host + participants, officiel ou non. Rejoignez en direct.
+
+### Banque (/banque)
+- Gérez vos **wallets** (épargne, dépenses, projet, custom).
+- **Transferts** entre wallets ou vers d'autres utilisateurs.
+- **Gel** : un wallet gelé par l'admin bloque les transferts sortants.
+- Historique des transactions (CreditTransaction).
 
 ### Compte / Auth
-- Login email + Google. MDP oublié → /forgot-password → resetPassword.
-- 2FA possible. Vérification email par OTP à l'inscription.
-- Suppression de compte → /account-deletion (demande traitée par admin).
+- **Login** : email + mot de passe, ou Google OAuth.
+- **MDP oublié** → /forgot-password → email de réinitialisation → /reset-password.
+- **2FA** : activation possible via paramètres de sécurité.
+- **Vérification email** : OTP à l'inscription (register → OTP → verifyOtp → connecté).
+- **Suppression de compte** → /account-deletion (demande traitée par admin sous 30 jours).
+- **Certification** : demande de badge vérifié. Paiement Stripe + validation admin.
+
+### Espace Utilisateur (/espace)
+- Vue unifiée : événements inscrits, posts programmés, affiliations, analytics, facturation.
+- **Posts programmés** : planifiez vos publications.
+- **Analytics** : statistiques de vos posts, vues, engagements.
 
 ### Modération
-- Signalement via ReportModal. Modération auto (moderateNewPost) + humaine.
-- Posts supprimables par admin. Utilisateurs bannables.
+- **Signalement** : via ReportModal sur tout contenu. Modération auto (moderateNewPost) + humaine.
+- Posts supprimables par admin. Utilisateurs bannables/suspendables.
+- **Signalements** : report → ack email → traitement admin → notification de résolution.
 
-### Support
-- Le ticket a un statut : open → ai_resolved → (awaiting_human) → resolved → closed.
-- L'IA (Nexus) DOIT d'abord chercher dans cette doc + examiner l'élément concerné + vérifier le compte avant de répondre.
-- ESCALADER UNIQUEMENT si : bug bloquant confirmé, sécurité, demande de remboursement, suppression de compte, ou l'utilisateur insiste 3+ fois sans solution.
-- Ne JAMAIS escalader juste "par précaution" — d'abord proposer une solution.
+### Support (tickets)
+- Le ticket a un statut : **open** (en cours) → **ai_resolved** (résolu par IA après confirmation user) → **awaiting_human** (escaladé) → **resolved** → **closed**.
+- **Nexus** (IA) répond en premier, fait sa recherche contextuelle (doc + élément concerné + compte).
+- Le ticket **RESTE OUVERT** jusqu'à ce que l'utilisateur confirme que le problème est résolu.
+- **Escalader** UNIQUEMENT si : bug bloquant confirmé, sécurité, remboursement Stripe, suppression de compte, fraude.
+- Ne JAMAIS escalader "par précaution" — d'abord proposer une solution.
+
+### Documentation externe
+- Documentation complète et guides utilisateur : **https://docs.ezagroup.org/**
+- Redirigez les utilisateurs vers la doc pour les tutoriels détaillés.
 `;
 
 export const STEP_ICONS = {
@@ -112,8 +138,6 @@ export async function buildRelatedItemResearch(base44, type, id) {
       const e = await sr.entities.Event.get(id).catch(() => null);
       if (e) return { researchBit: `ÉVÉNEMENT CONCERNÉ (examiné par Nexus) :\n- ID:${e.id} · « ${e.title} »\n- Début : ${e.start_date || '?'} · Lieu : ${e.city || e.location || '?'}\n- Prix : ${e.price_credits || 0} crédits · ${e.attendees_count || 0}/${e.capacity || '∞'} inscrits · Statut : ${e.status}`, step };
     } else if (type === 'wallet') {
-      // 'main_account' n'est pas une entité ; on retourne juste l'étape
-      // (la recherche du solde complet est faite à part par l'appelant).
       return { researchBit: null, step };
     } else if (type === 'conversation') {
       return { researchBit: null, step };
@@ -176,7 +200,6 @@ export function buildResearchSteps({ relatedStep, category, relatedType }) {
   if (relatedStep) {
     steps.push(relatedStep);
   } else if (relatedType && relatedType !== 'none') {
-    // L'élément n'a pas pu être fetched mais on indique quand même qu'on l'a examiné.
     const fallback = RELATED_STEP[relatedType];
     if (fallback) steps.push(fallback);
   }

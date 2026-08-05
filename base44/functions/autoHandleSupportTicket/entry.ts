@@ -67,15 +67,14 @@ Analyse la demande et renvoie un JSON STRICT :
 {
   "category": "account|billing|credits|bug|feature|events|moderation|other",
   "priority": "low|medium|high|urgent",
-  "resolution_type": "answered|troubleshooting|escalate",
+  "resolution_type": "troubleshooting|escalate",
   "summary": "résumé court en français",
-  "reply": "réponse 2-6 phrases, markdown, avec une solution concrète tirée de la doc",
+  "reply": "réponse markdown STRUCTURÉE — introduction 1 ligne, puces, gras, jamais de pavé",
   "escalation_reason": "raison courte si resolution_type=escalate, sinon null"
 }
 
 RÈGLES DE RÉSOLUTION (CRITIQUE — respecte-les strictement) :
-- "answered" : la demande est une QUESTION D'INFORMATION pure (comment ça marche, où trouver, combien coûte, à quoi ça sert) ET tu peux y répondre COMPLÈTEMENT avec la doc. → ticket résolu.
-- "troubleshooting" : la demande est un PROBLÈME, un BUG, une action à accomplir, ou une plainte. Tu proposes des étapes concrètes, MAIS le ticket RESTE OUVERT en attendant la confirmation de l'utilisateur. NE JAMAIS marquer résolu un bug non confirmé par l'utilisateur.
+- "troubleshooting" : tu réponds et proposes une solution. Le ticket RESTE OUVERT jusqu'à ce que l'utilisateur confirme que ça marche. C'est le COMPORTEMENT PAR DÉFAUT.
 - "escalate" : UNIQUEMENT si l'un de ces cas :
     • Problème de sécurité (compte piraté, fuite de données, harcèlement).
     • Demande explicite de remboursement / transaction financière.
@@ -85,7 +84,7 @@ RÈGLES DE RÉSOLUTION (CRITIQUE — respecte-les strictement) :
 
 INTERDIT :
 - Escalader "par précaution" ou par défaut.
-- Marquer "answered" un bug, une plainte, ou un problème non résolu.
+- Résoudre ou fermer le ticket — le ticket RESTE OUVERT. Ce n'est jamais à toi de décider.
 - Dire "je transmets à l'équipe" si tu peux répondre toi-même avec la doc.
 - Demander à l'utilisateur de réessayer plus tard sans avoir proposé de solution.
 - Tu NE PEUX PAS exécuter d'actions (inscription, remboursement, dégel, transfert). Si l'utilisateur demande une action, explique comment la faire lui-même via l'interface eza, ou escalade vers l'équipe humaine.
@@ -124,13 +123,15 @@ ${question}
 
     const cat = ai.category || 'other';
     const prio = ai.priority || 'medium';
-    const rtype = (ai.resolution_type === 'answered' || ai.resolution_type === 'escalate') ? ai.resolution_type : 'troubleshooting';
+    // JAMAIS résoudre au premier message — le ticket RESTE OUVERT jusqu'à confirmation utilisateur.
+    // Seul "escalate" peut sortir du statut open (vers awaiting_human).
+    const rtype = ai.resolution_type === 'escalate' ? 'escalate' : 'troubleshooting';
     const reply = ai.reply || "Votre demande a bien été reçue. Pouvez-vous préciser ce que vous essayez de faire ?";
     const summary = ai.summary || question.slice(0, 120);
 
     const escalated = rtype === 'escalate';
-    const resolved = rtype === 'answered';
-    const status = escalated ? 'awaiting_human' : (resolved ? 'ai_resolved' : 'open');
+    const resolved = false; // JAMAIS résolu à la création
+    const status = escalated ? 'awaiting_human' : 'open';
     const assignee = escalated ? 'human' : 'ai';
     const handledBy = escalated ? 'escalated' : 'ai';
 

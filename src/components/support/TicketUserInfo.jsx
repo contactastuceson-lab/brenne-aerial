@@ -1,15 +1,16 @@
 import React from 'react';
-import VerificationIcons from '@/components/ui/VerificationIcon';
+import VerificationMark from '@/components/ui/VerificationMark';
+import { getSortedVerificationBadges } from '@/lib/affiliationUtils';
 import usePublicUser from '@/hooks/usePublicUser';
 
 /**
- * Affiche l'avatar + nom + badges de vérification
+ * Affiche l'avatar + nom d'affichage + badges (principaux d'abord, puis secondaires)
  * de l'utilisateur qui a créé le ticket.
  */
 export default function TicketUserInfo({ userId, fallbackName, fallbackEmail }) {
   const profile = usePublicUser(userId);
   const displayName = profile?.display_name || profile?.full_name || fallbackName || 'Utilisateur';
-  const verifications = profile?.verifications || [];
+  const sortedBadges = getSortedVerificationBadges(profile?.verifications || []);
   const avatar = profile?.avatar_url;
 
   return (
@@ -24,7 +25,15 @@ export default function TicketUserInfo({ userId, fallbackName, fallbackEmail }) 
         )}
       </div>
       <span className="text-muted-foreground truncate">{displayName}</span>
-      <VerificationIcons verifications={verifications} user={profile} size="sm" />
+      {sortedBadges.length > 0 && (
+        <span className="inline-flex items-center gap-0.5">
+          {sortedBadges.map((v) => (
+            <span key={v} className="inline-flex items-center leading-none">
+              <VerificationMark type={v} size="0.85em" />
+            </span>
+          ))}
+        </span>
+      )}
       {fallbackEmail && (
         <>
           <span className="text-muted-foreground/50">·</span>

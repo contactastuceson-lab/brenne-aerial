@@ -1,16 +1,17 @@
 import React from 'react';
-import VerificationIcons from '@/components/ui/VerificationIcon';
+import VerificationMark from '@/components/ui/VerificationMark';
+import { getSortedVerificationBadges } from '@/lib/affiliationUtils';
 import usePublicUser from '@/hooks/usePublicUser';
 import { Shield } from 'lucide-react';
 
 /**
- * Affiche l'avatar + nom d'affichage + badges de vérification
+ * Affiche l'avatar + nom d'affichage + badges (principaux d'abord, puis secondaires)
  * de l'admin qui a répondu à un ticket, + un pill "Admin".
  */
 export default function AdminMessageAuthor({ adminId, fallbackName }) {
   const profile = usePublicUser(adminId);
   const displayName = profile?.display_name || profile?.full_name || fallbackName || 'Administrateur';
-  const verifications = profile?.verifications || [];
+  const sortedBadges = getSortedVerificationBadges(profile?.verifications || []);
   const avatar = profile?.avatar_url;
 
   return (
@@ -25,7 +26,11 @@ export default function AdminMessageAuthor({ adminId, fallbackName }) {
         )}
       </div>
       <span className="text-xs font-semibold text-foreground/90 truncate">{displayName}</span>
-      <VerificationIcons verifications={verifications} user={profile} size="sm" />
+      {sortedBadges.map((v) => (
+        <span key={v} className="inline-flex items-center leading-none flex-shrink-0">
+          <VerificationMark type={v} size="0.85em" />
+        </span>
+      ))}
       <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/20 flex-shrink-0">
         <Shield className="w-2 h-2" /> Admin
       </span>

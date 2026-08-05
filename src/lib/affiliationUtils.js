@@ -50,6 +50,23 @@ const includesAny = (values = [], candidates = []) => {
   return candidates.some((candidate) => normalized.includes(normalizeBadge(candidate)));
 };
 
+export function getSortedVerificationBadges(values = []) {
+  const normalized = (Array.isArray(values) ? values : []).map(canonicalVerificationBadge);
+  const seen = new Set();
+  const unique = [];
+  for (const badge of normalized) {
+    if (!seen.has(badge)) { seen.add(badge); unique.push(badge); }
+  }
+  return unique.sort((a, b) => {
+    const levelA = AFFILIATION_BADGE_LEVEL[a] || 0;
+    const levelB = AFFILIATION_BADGE_LEVEL[b] || 0;
+    if (levelB !== levelA) return levelB - levelA;
+    const idxA = AFFILIATION_VERIFICATION_ORDER.indexOf(a);
+    const idxB = AFFILIATION_VERIFICATION_ORDER.indexOf(b);
+    return idxB - idxA;
+  });
+}
+
 export function getHighestVerificationBadge(values = []) {
   const normalized = (Array.isArray(values) ? values : []).map(canonicalVerificationBadge);
   for (let i = AFFILIATION_VERIFICATION_ORDER.length - 1; i >= 0; i -= 1) {

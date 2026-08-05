@@ -129,7 +129,7 @@ export default function SupportTicketPage() {
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden md:block" onClick={() => navigate('/support/conversation')} />
-      <div className="fixed top-0 right-0 z-50 h-full w-full md:w-[42%] bg-background border-l border-border flex flex-col p-3 md:p-4">
+      <div className="fixed top-0 right-0 z-50 h-full w-full md:w-1/2 bg-background border-l border-border flex flex-col p-3 md:p-4">
       {/* Header */}
       <div className="rounded-2xl bg-card border border-border overflow-hidden mb-3">
         <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #F37322, #1DA890)' }} />

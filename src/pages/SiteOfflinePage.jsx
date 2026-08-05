@@ -166,7 +166,7 @@ export default function SiteOfflinePage() {
 
         {/* Status link */}
         <a
-          href="https://status.eza.group"
+          href="https://ezagroup.statuspage.io"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground font-inter text-xs transition-colors mb-4"

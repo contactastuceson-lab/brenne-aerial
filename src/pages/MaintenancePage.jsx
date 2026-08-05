@@ -190,7 +190,7 @@ export default function MaintenancePage({ message: propMessage }) {
 
         {/* Status button */}
         <a
-          href="https://status.eza.group"
+          href="https://ezagroup.statuspage.io"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 text-primary font-grotesk font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-primary/20 transition-colors mb-4"

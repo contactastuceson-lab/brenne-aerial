@@ -169,7 +169,7 @@ const AuthenticatedApp = () => {
           <Route path="/certification-success" element={<CertificationSuccessPage />} />
           <Route path="/donation" element={<DonationPage />} />
           <Route path="/donation-success" element={<DonationSuccessPage />} />
-          <Route path="/status" element={<ExternalRedirect to="https://status.eza.group" />} />
+          <Route path="/status" element={<ExternalRedirect to="https://ezagroup.statuspage.io" />} />
           <Route path="/uptime" element={<UptimePage />} />
           <Route path="/account-deletion" element={<AccountDeletionPage />} />
           <Route path="/legal/privacy" element={<PrivacyPage />} />

@@ -100,7 +100,7 @@ const StickyAdBanner = memo(function StickyAdBanner({ placement = 'sticky_mobile
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
         transition={{ type: 'spring', damping: 24, stiffness: 320 }}
-        className="fixed bottom-0 left-0 right-0 z-40 md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-40 md:bottom-4 md:left-auto md:right-4 md:w-80 md:rounded-2xl md:border md:overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, rgba(14,22,40,0.98) 0%, rgba(4,10,20,0.99) 100%)',
           borderTop: '1px solid rgba(251,146,60,0.3)',

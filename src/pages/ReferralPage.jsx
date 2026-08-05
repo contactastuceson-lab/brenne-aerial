@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { applySeoMeta } from '@/lib/seo';
 import CreditPill from '@/components/boutique/CreditPill';
 import { REFERRAL_MILESTONES } from '@/lib/referralMilestones';
+import AdSlot from '@/components/feed/AdSlot';
 
 const CREDITS_PER_REFERRAL = 50;
 const EARNING_METHODS = REFERRAL_MILESTONES;
@@ -230,6 +231,9 @@ export default function ReferralPage() {
             <div className="ml-auto"><CreditPill credits={credits} /></div>
           </div>
         </motion.div>
+
+        {/* Pub */}
+        <div className="mb-6"><AdSlot placement="sidebar" /></div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">

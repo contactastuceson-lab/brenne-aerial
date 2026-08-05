@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import EventTicketModal from "@/components/events/EventTicketModal";
 import { useCart } from "@/hooks/useCart";
 import { applySeoMeta, getEventSeoData } from "@/lib/seo";
+import AdSlot from "@/components/feed/AdSlot";
 
 const CATEGORIES = {
   conference: { label: "Conférence", icon: Mic2, color: "text-sky-400" },
@@ -148,6 +149,8 @@ export default function EventDetailPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 -mt-16 relative z-10 pb-16 space-y-6">
+        {/* Pub */}
+        <div><AdSlot placement="events" /></div>
         {/* Header card */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="glass-card rounded-3xl border border-border p-6 sm:p-8 space-y-4">

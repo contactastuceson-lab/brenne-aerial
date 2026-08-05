@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { applySeoMeta } from '@/lib/seo';
+import AdSlot from '@/components/feed/AdSlot';
 
 export default function CartPage() {
   const { user } = useAuth();
@@ -80,6 +81,9 @@ export default function CartPage() {
             </button>
           )}
         </div>
+
+        {/* Pub */}
+        <div className="mb-6"><AdSlot placement="sidebar" /></div>
 
         {!cart || itemCount === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">

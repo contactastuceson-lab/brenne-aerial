@@ -13,6 +13,7 @@ import TransferForm from '@/components/banque/TransferForm';
 import CreateWalletDialog from '@/components/banque/CreateWalletDialog';
 import MoveDialog from '@/components/banque/MoveDialog';
 import TransactionHistory from '@/components/banque/TransactionHistory';
+import AdSlot from '@/components/feed/AdSlot';
 
 const TABS = [
   { id: 'solde', label: 'Solde', icon: WalletIcon },
@@ -91,6 +92,9 @@ export default function BanquePage() {
             <p className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60 mt-1">total</p>
           </div>
         </motion.div>
+
+        {/* Pub */}
+        <div className="mb-5"><AdSlot placement="sidebar" /></div>
 
         {user.bank_frozen && (
           <div className="mb-5">

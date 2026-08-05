@@ -22,6 +22,7 @@ import EnterpriseProofDialog from '@/components/boutique/EnterpriseProofDialog';
 import SubscriptionChoiceDialog from '@/components/boutique/SubscriptionChoiceDialog';
 import VerificationMark from '@/components/ui/VerificationMark';
 import { useCart } from '@/hooks/useCart';
+import AdSlot from '@/components/feed/AdSlot';
 
 const CATEGORIES = {
   abonnements: { label: 'Abonnements', icon: Crown, color: 'text-amber-400', border: 'border-amber-400/30', bg: 'bg-amber-400/10' },
@@ -625,6 +626,9 @@ export default function BoutiquePage() {
             );
           })}
         </div>
+
+        {/* Pub */}
+        <div className="mb-6"><AdSlot placement="sidebar" /></div>
 
         {/* Earn more CTA */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}

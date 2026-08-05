@@ -22,6 +22,7 @@ import AccountSettings from '@/components/settings/AccountSettings';
 import PreferencesSettings from '@/components/settings/PreferencesSettings';
 import NotificationSettings from '@/components/settings/NotificationSettings';
 import CreditPill from '@/components/boutique/CreditPill';
+import AdSlot from '@/components/feed/AdSlot';
 import { ROLE_CONFIG, PDG_ADJOINT_EMAILS } from '@/lib/roles';
 
 const BADGE_CONFIG = {
@@ -290,6 +291,9 @@ export default function ProfilePage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Pub */}
+        <div className="px-4 mb-4"><AdSlot placement="profile" /></div>
 
         {/* Badges + followers */}
         <motion.div

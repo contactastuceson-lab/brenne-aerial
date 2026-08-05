@@ -18,6 +18,7 @@ import ExternalLinkModal from '@/components/forum/ExternalLinkModal.jsx';
 import { applySeoMeta, getForumSeoData } from '@/lib/seo';
 import { handleIdentityClick } from '@/lib/identityClick';
 import ReportButton from '@/components/shared/ReportButton';
+import AdSlot from '@/components/feed/AdSlot';
 
 // Composant isolé pour chaque réponse — hook usePublicUser au niveau du composant
 function ReplyCard({ reply, discussion, id }) {
@@ -237,6 +238,9 @@ export default function DiscussionDetailPage() {
         <div className="p-6 rounded-lg border border-slate-700/50 bg-slate-800/30">
           <DiscordMarkdown content={discussion.content} allowMarkdown={true} />
         </div>
+
+        {/* Pub */}
+        <div className="mb-6"><AdSlot placement="between_posts" /></div>
 
         {/* Replies Section */}
         <div className="space-y-4">

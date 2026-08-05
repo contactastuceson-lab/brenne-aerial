@@ -62,12 +62,13 @@ export default function SupportConversationsPage() {
   const OPEN_STATUSES = ['open', 'ai_resolved', 'awaiting_human'];
   const CLOSED_STATUSES = ['resolved', 'closed'];
   const filteredTickets = tickets.filter((t) =>
-    filter === 'open' ? OPEN_STATUSES.includes(t.status) : CLOSED_STATUSES.includes(t.status)
+    filter === 'all' ? true : filter === 'open' ? OPEN_STATUSES.includes(t.status) : CLOSED_STATUSES.includes(t.status)
   );
 
   const stats = {
     open: tickets.filter((t) => OPEN_STATUSES.includes(t.status)).length,
     closed: tickets.filter((t) => CLOSED_STATUSES.includes(t.status)).length,
+    all: tickets.length,
   };
 
   return (
@@ -101,6 +102,10 @@ export default function SupportConversationsPage() {
           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${filter === 'closed' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
           Fermés ({stats.closed})
         </button>
+        <button onClick={() => setFilter('all')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${filter === 'all' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+          Tous ({stats.all})
+        </button>
       </div>
 
       {loading ? (
@@ -110,9 +115,9 @@ export default function SupportConversationsPage() {
       ) : filteredTickets.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border p-10 text-center">
           <Ticket className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
-          <p className="text-sm font-medium mb-1">{filter === 'open' ? 'Aucun ticket ouvert' : 'Aucun ticket fermé'}</p>
+          <p className="text-sm font-medium mb-1">{filter === 'open' ? 'Aucun ticket ouvert' : filter === 'closed' ? 'Aucun ticket fermé' : 'Aucun ticket'}</p>
           <p className="text-xs text-muted-foreground mb-4 max-w-sm mx-auto">
-            {filter === 'open' ? "Un problème ? Ouvrez un ticket, Nexus IA répond en direct et vous accompagne à chaque étape." : 'Vos tickets fermés apparaîtront ici.'}
+            {filter === 'open' ? "Un problème ? Ouvrez un ticket, Nexus IA répond en direct et vous accompagne à chaque étape." : filter === 'closed' ? 'Vos tickets fermés apparaîtront ici.' : 'Vos tickets apparaîtront ici.'}
           </p>
           {filter === 'open' && (
             <button onClick={() => setShowNew(true)}

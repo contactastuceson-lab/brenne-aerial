@@ -61,7 +61,8 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   const [fileUrls, setFileUrls] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [suggestion, setSuggestion] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showCatPicker, setShowCatPicker] = useState(false);
   const [elementType, setElementType] = useState(null);
@@ -74,8 +75,8 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   const [createdTicket, setCreatedTicket] = useState(null);
 
   const reset = useCallback(() => {
-    setStep(1); setDescription(''); setFileUrls([]); setSuggestion(null);
-    setSelectedCategory(null); setShowCatPicker(false);
+    setStep(1); setDescription(''); setFileUrls([]); setSuggestions([]);
+    setSelectedSuggestion(null); setSelectedCategory(null); setShowCatPicker(false);
     setElementType(null); setItems([]); setItemsLoading(false);
     setSelectedItem(null); setConvLabel(''); setShowElementPicker(false);
     setCreatedTicket(null); setSubmitting(false);
@@ -109,15 +110,14 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
     try {
       const res = await base44.functions.invoke('analyzeSupportCategory', { description, file_urls: fileUrls });
       const data = res?.data || res;
-      const sugg = data?.suggestion;
-      if (!sugg) {
-        setSuggestion({ label: 'Demande générale', category: 'other', element_type: 'none', description: '', related_item_id: null, related_item_label: null });
-        setSelectedCategory('other');
-      } else {
-        setSuggestion(sugg);
-        setSelectedCategory(sugg.category);
-        setElementType(sugg.element_type && sugg.element_type !== 'none' ? sugg.element_type : 'none');
+      const suggs = Array.isArray(data?.suggestions) ? data.suggestions : [];
+      if (suggs.length === 0) {
+        suggs.push({ label: 'Demande générale', category: 'other', element_type: 'none', description: 'Question ou problème général', related_item_id: null, related_item_label: null });
       }
+      setSuggestions(suggs);
+      setSelectedSuggestion(suggs[0]);
+      setSelectedCategory(suggs[0].category);
+      setElementType(suggs[0].element_type && suggs[0].element_type !== 'none' ? suggs[0].element_type : 'none');
       setStep(3);
     } catch (e) {
       toast.error(e?.response?.data?.error || 'Analyse échouée');
@@ -201,12 +201,12 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   };
 
   const buildRelatedItem = () => {
-    const et = elementType || suggestion?.element_type || 'none';
+    const et = elementType || selectedSuggestion?.element_type || 'none';
     if (et === 'none') return { type: 'none', id: null, label: null };
     if (et === 'conversation') return { type: 'conversation', id: null, label: convLabel || null };
     // Si pas d'ajustement et l'IA a détecté l'élément, on l'utilise
-    if (!showElementPicker && suggestion?.related_item_id && et === suggestion.element_type) {
-      return { type: et, id: suggestion.related_item_id, label: suggestion.related_item_label };
+    if (!showElementPicker && selectedSuggestion?.related_item_id && et === selectedSuggestion.element_type) {
+      return { type: et, id: selectedSuggestion.related_item_id, label: selectedSuggestion.related_item_label };
     }
     if (!selectedItem) return { type: et, id: null, label: null };
     const obj = selectedItem.obj;
@@ -236,7 +236,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
     if (!user) return;
     setSubmitting(true);
     try {
-      const sugg = suggestion || { label: 'Demande générale', category: 'other', element_type: 'none' };
+      const sugg = selectedSuggestion || { label: 'Demande générale', category: 'other', element_type: 'none' };
       const subject = description.trim().slice(0, 80) || sugg.label;
       const ri = buildRelatedItem();
       const ticket = await base44.entities.SupportTicket.create({
@@ -332,68 +332,46 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
             </div>
           )}
 
-          {/* STEP 3 — Catégorie proposée par l'IA */}
-          {step === 3 && suggestion && (
+          {/* STEP 3 — 3 catégories proposées par l'IA */}
+          {step === 3 && suggestions.length > 0 && (
             <div className="space-y-4">
               <div>
-                <h2 className="font-grotesk font-bold text-lg mb-1">Catégorie identifiée</h2>
-                <p className="text-xs text-muted-foreground">Nexus a analysé votre demande. Confirmez la catégorie ou ajustez.</p>
+                <h2 className="font-grotesk font-bold text-lg mb-1">Quel type de problème ?</h2>
+                <p className="text-xs text-muted-foreground">Nexus a analysé votre demande. Sélectionnez la catégorie qui correspond le mieux.</p>
               </div>
 
-              {/* IA suggestion card */}
-              {!showCatPicker ? (
-                <div className="rounded-2xl border border-primary/25 bg-primary/[0.04] p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
-                      <Sparkles className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-grotesk font-bold text-sm mb-1">{suggestion.label}</p>
-                      {suggestion.description && (
-                        <p className="text-xs text-muted-foreground leading-relaxed mb-2">{suggestion.description}</p>
-                      )}
-                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border border-primary/20 bg-primary/10 text-primary">
-                        {React.createElement(CATEGORY_ICONS[selectedCategory] || HelpCircle, { className: 'w-2.5 h-2.5' })}
-                        {CATEGORY_LABELS[selectedCategory] || selectedCategory}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Choisir une catégorie</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {CATEGORIES.map((cat) => {
-                      const Icon = CATEGORY_ICONS[cat] || HelpCircle;
-                      const active = selectedCategory === cat;
-                      return (
-                        <button key={cat} onClick={() => { setSelectedCategory(cat); setShowCatPicker(false); }}
-                          className={`relative rounded-xl border p-3 text-center transition-all ${active ? 'border-primary bg-primary/10' : 'border-border bg-background/40 hover:border-foreground/30'}`}>
-                          {active && <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center"><Check className="w-2 h-2 text-white" /></span>}
-                          <Icon className={`w-4 h-4 mx-auto mb-1 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
-                          <p className="text-[10px] font-semibold leading-tight">{CATEGORY_LABELS[cat]}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {!showCatPicker && (
-                <button onClick={() => setShowCatPicker(true)}
-                  className="w-full text-center text-xs text-muted-foreground hover:text-foreground inline-flex items-center justify-center gap-1 transition-colors">
-                  Pas la bonne catégorie ? <ChevronDown className="w-3.5 h-3.5" /> Changer
-                </button>
-              )}
+              <div className="space-y-2">
+                {suggestions.map((sugg, i) => {
+                  const Icon = CATEGORY_ICONS[sugg.category] || HelpCircle;
+                  const active = selectedSuggestion?.label === sugg.label;
+                  return (
+                    <button key={i} onClick={() => { setSelectedSuggestion(sugg); setSelectedCategory(sugg.category); setElementType(sugg.element_type && sugg.element_type !== 'none' ? sugg.element_type : 'none'); }}
+                      className={`relative w-full text-left rounded-2xl border p-3.5 transition-all ${active ? 'border-primary bg-primary/[0.06]' : 'border-border bg-background/40 hover:border-foreground/30'}`}>
+                      {active && <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary flex items-center justify-center"><Check className="w-2.5 h-2.5 text-white" /></span>}
+                      <div className="flex items-start gap-2.5">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${active ? 'bg-primary/15' : 'bg-secondary'}`}>
+                          <Icon className={`w-4 h-4 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-grotesk font-bold text-sm">{sugg.label}</p>
+                          {sugg.description && <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{sugg.description}</p>}
+                          <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full border border-border bg-secondary text-muted-foreground mt-1.5">
+                            {CATEGORY_LABELS[sugg.category] || sugg.category}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
 
               <div className="flex gap-2">
                 <button onClick={() => setStep(1)}
                   className="flex-1 h-10 rounded-xl border border-border bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
                   Retour
                 </button>
-                <button onClick={() => setStep(4)}
-                  className="flex-1 h-10 rounded-xl text-sm font-semibold text-white inline-flex items-center justify-center gap-1.5 transition-transform active:scale-95"
+                <button onClick={() => setStep(4)} disabled={!selectedSuggestion}
+                  className="flex-1 h-10 rounded-xl text-sm font-semibold text-white disabled:opacity-40 inline-flex items-center justify-center gap-1.5 transition-transform active:scale-95"
                   style={{ background: '#0F172A' }}>
                   Continuer <ArrowRight className="w-4 h-4" />
                 </button>
@@ -402,7 +380,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
           )}
 
           {/* STEP 4 — Élément proposé directement par l'IA */}
-          {step === 4 && suggestion && (
+          {step === 4 && selectedSuggestion && (
             <div className="space-y-4">
               <div>
                 <h2 className="font-grotesk font-bold text-lg mb-1">Élément concerné</h2>
@@ -410,24 +388,24 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
               </div>
 
               {/* Si l'IA a détecté un élément précis → on l'affiche directement */}
-              {!showElementPicker && suggestion.related_item_id && suggestion.element_type && suggestion.element_type !== 'none' && suggestion.element_type !== 'conversation' ? (
+              {!showElementPicker && selectedSuggestion.related_item_id && selectedSuggestion.element_type && selectedSuggestion.element_type !== 'none' && selectedSuggestion.element_type !== 'conversation' ? (
                 <div className="rounded-2xl border border-primary/25 bg-primary/[0.04] p-4">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/15">
-                      {(() => { const EtIcon = ELEMENT_TYPES.find((t) => t.id === suggestion.element_type)?.icon || FileText; return <EtIcon className="w-5 h-5 text-primary" />; })()}
+                      {(() => { const EtIcon = ELEMENT_TYPES.find((t) => t.id === selectedSuggestion.element_type)?.icon || FileText; return <EtIcon className="w-5 h-5 text-primary" />; })()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">
-                        {TYPE_LABEL[suggestion.element_type]}
+                        {TYPE_LABEL[selectedSuggestion.element_type]}
                       </p>
-                      <p className="font-grotesk font-bold text-sm">{suggestion.related_item_label || 'Élément identifié'}</p>
+                      <p className="font-grotesk font-bold text-sm">{selectedSuggestion.related_item_label || 'Élément identifié'}</p>
                       <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border border-green-400/20 bg-green-400/10 text-green-400 mt-1.5">
                         <Check className="w-2.5 h-2.5" /> Détecté par Nexus
                       </span>
                     </div>
                   </div>
                 </div>
-              ) : !showElementPicker && suggestion.element_type === 'conversation' ? (
+              ) : !showElementPicker && selectedSuggestion.element_type === 'conversation' ? (
                 <div className="rounded-2xl border border-primary/25 bg-primary/[0.04] p-4">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/15">
@@ -435,7 +413,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">Conversation</p>
-                      <p className="font-grotesk font-bold text-sm">{suggestion.related_item_label || 'Discussion'}</p>
+                      <p className="font-grotesk font-bold text-sm">{selectedSuggestion.related_item_label || 'Discussion'}</p>
                     </div>
                   </div>
                 </div>

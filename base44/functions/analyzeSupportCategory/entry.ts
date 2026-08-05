@@ -80,9 +80,9 @@ export default async function(req) {
 
     const prompt = `Tu es l'assistant de tri du support eza (réseau professionnel/communautaire : profil, posts, stories, communities, Spaces, events, boutique, banque de crédits, parrainage, messagerie).
 
-Analyse la description ci-dessous et propose LA suggestion la plus probable (une seule, pas trois).
+Analyse la description ci-dessous et propose EXACTEMENT 3 suggestions, du plus probable au moins probable.
 
-Pour cette suggestion, choisis:
+Pour chaque suggestion, choisis:
 - "label": un libellé court et clair en français (ex: "Bug d'affichage d'une publication", "Problème de facturation", "Signalement de contenu")
 - "category": une valeur parmi ["account","billing","credits","bug","feature","events","moderation","messaging","other"]
 - "element_type": parmi ["post","conversation","wallet","event","community","space","story","referral","registration","reward","cart","ticket","discussion","forum","review","certification","donation","list","ad","none"]
@@ -98,14 +98,16 @@ ${description.slice(0, 2000)}
 
 Réponds en JSON STRICT conforme à ce schéma:
 {
-  "suggestion": {
-    "label": "...",
-    "category": "...",
-    "element_type": "...",
-    "description": "...",
-    "related_item_id": "id|null",
-    "related_item_label": "libellé|null"
-  }
+  "suggestions": [
+    {
+      "label": "...",
+      "category": "...",
+      "element_type": "...",
+      "description": "...",
+      "related_item_id": "id|null",
+      "related_item_label": "libellé|null"
+    }
+  ]
 }
 
 Règles:
@@ -125,15 +127,18 @@ Règles:
       response_json_schema: {
         type: 'object',
         properties: {
-          suggestion: {
-            type: 'object',
-            properties: {
-              label: { type: 'string' },
-              category: { type: 'string' },
-              element_type: { type: 'string' },
-              description: { type: 'string' },
-              related_item_id: { type: 'string' },
-              related_item_label: { type: 'string' },
+          suggestions: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                label: { type: 'string' },
+                category: { type: 'string' },
+                element_type: { type: 'string' },
+                description: { type: 'string' },
+                related_item_id: { type: 'string' },
+                related_item_label: { type: 'string' },
+              },
             },
           },
         },
@@ -148,9 +153,8 @@ Règles:
     const byType = {};
     catalog.forEach((c) => { (byType[c.type] = byType[c.type] || new Set()).add(c.id); });
 
-    const rawSugg = ai?.suggestion;
-    let suggestion = null;
-    if (rawSugg) {
+    const rawSuggs = Array.isArray(ai?.suggestions) ? ai.suggestions.slice(0, 3) : [];
+    const suggestions = rawSuggs.map((rawSugg) => {
       const et = VALID_TYPES.includes(rawSugg.element_type) ? rawSugg.element_type : 'none';
       let rid = rawSugg.related_item_id ? String(rawSugg.related_item_id) : null;
       let rlabel = rawSugg.related_item_label ? String(rawSugg.related_item_label).slice(0, 160) : null;
@@ -159,7 +163,7 @@ Règles:
       } else {
         rid = null; rlabel = null;
       }
-      suggestion = {
+      return {
         label: String(rawSugg.label || 'Autre').slice(0, 80),
         category: VALID_CATEGORIES.includes(rawSugg.category) ? rawSugg.category : 'other',
         element_type: et,
@@ -167,21 +171,21 @@ Règles:
         related_item_id: rid,
         related_item_label: rlabel,
       };
-    }
+    });
 
     // Fallback si l'IA n'a rien retourné d'exploitable
-    if (!suggestion) {
-      suggestion = {
+    if (suggestions.length === 0) {
+      suggestions.push({
         label: 'Demande générale',
         category: 'other',
         element_type: 'none',
         description: 'Question ou problème général',
         related_item_id: null,
         related_item_label: null,
-      };
+      });
     }
 
-    return Response.json({ suggestion });
+    return Response.json({ suggestions });
   } catch (error) {
     return Response.json({ error: String(error?.message || error) }, { status: 500 });
   }

@@ -189,6 +189,21 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "conseil_admin"
+          }
         }
       ]
     },
@@ -200,6 +215,21 @@
         {
           "user_condition": {
             "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "conseil_admin"
           }
         }
       ]
@@ -213,13 +243,47 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "conseil_admin"
+          }
         }
       ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "conseil_admin"
+          }
+        }
+      ]
     }
   }
 }

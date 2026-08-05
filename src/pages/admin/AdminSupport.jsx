@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import NexusMarkdown from '@/components/support/NexusMarkdown';
 import AdminMessageAuthor from '@/components/support/AdminMessageAuthor';
 import TicketUserInfo from '@/components/support/TicketUserInfo';
+import UserMessageAuthor from '@/components/support/UserMessageAuthor';
 import {
   Loader2, RefreshCw, Send, Clock, CheckCircle2, AlertCircle,
   ShieldAlert, Sparkles, Bot, UserCog, X, Search,
@@ -454,6 +455,7 @@ export default function AdminSupport() {
                     )}
                     <div className={`max-w-[85%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
                       {isAdmin && <AdminMessageAuthor adminId={m.admin_id} fallbackName={m.admin_name} />}
+                      {isUser && <UserMessageAuthor userId={selected.user_id} fallbackName={selected.user_name} />}
                       <div className={`rounded-2xl px-3.5 py-2.5 text-sm ${
                         isUser ? 'rounded-br-md text-white' : 'bg-card border border-border rounded-bl-md'
                       }`} style={isUser ? { background: '#0F172A' } : {}}>

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import NexusMarkdown from '@/components/support/NexusMarkdown';
+import AdminMessageAuthor from '@/components/support/AdminMessageAuthor';
 
 const CATEGORY_LABELS = {
   account: 'Compte', billing: 'Facturation', credits: 'Crédits', bug: 'Bug technique',
@@ -264,6 +265,7 @@ export default function SupportTicketPage() {
                   </div>
                 )}
                 <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
+                  {m.role === 'admin' && <AdminMessageAuthor adminId={m.admin_id} fallbackName={m.admin_name} />}
                   <div className={`rounded-2xl px-3.5 py-2.5 text-sm ${
                     isUser
                       ? 'rounded-br-md text-white'

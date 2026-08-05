@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Loader2, CheckCircle2, Clock, AlertCircle,
-  ArrowLeft, Bot, UserCog, Paperclip, FileText,
+  ArrowLeft, Bot, UserCog, X,
   ShieldAlert, Sparkles,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -21,6 +21,25 @@ const STATUS_META = {
   resolved: { label: 'Résolu', icon: CheckCircle2, cls: 'text-green-400 bg-green-400/10 border-green-400/20' },
   closed: { label: 'Fermé', icon: CheckCircle2, cls: 'text-muted-foreground bg-secondary border-border' },
 };
+
+function formatTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function timeAgo(iso) {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "à l'instant";
+  if (mins < 60) return `il y a ${mins} min`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `il y a ${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `il y a ${days} jour${days > 1 ? 's' : ''}`;
+  return new Date(iso).toLocaleDateString('fr-FR');
+}
 
 export default function SupportTicketPage() {
   const { id } = useParams();
@@ -103,89 +122,48 @@ export default function SupportTicketPage() {
   const isClosed = ['resolved', 'closed'].includes(ticket.status);
   const isLocked = !!ticket.user_locked;
   const isAiResolved = ticket.status === 'ai_resolved';
-  const nexusThinking = !sending && messages.length > 0 && !messages.some((m) => m.role === 'assistant' || m.role === 'admin');
-  const composerDisabled = isClosed || isLocked || nexusThinking || sending;
+  const isEscalated = ticket.status === 'awaiting_human';
+  const nexusThinking = sending || (!sending && messages.length > 0 && !messages.some((m) => m.role === 'assistant' || m.role === 'admin'));
+  const composerDisabled = isClosed || isLocked || sending;
 
   return (
     <div className="max-w-2xl mx-auto px-3 md:px-4 py-4 md:py-6 flex flex-col" style={{ minHeight: 'calc(100dvh - 4rem)' }}>
       {/* Header */}
       <div className="rounded-2xl bg-card border border-border overflow-hidden mb-3">
-        <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #F37322, #1DA890)' }} />
+        <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #F37322, #1DA890)' }} />
         <div className="p-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button onClick={() => navigate('/support/conversation')}
-              className="w-9 h-9 rounded-xl flex items-center justify-center bg-secondary border border-border hover:border-primary/40 transition-colors flex-shrink-0">
+              className="w-8 h-8 rounded-lg flex items-center justify-center bg-secondary border border-border hover:border-primary/40 transition-colors flex-shrink-0">
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div className="flex-1 min-w-0">
-              <h1 className="text-base md:text-lg font-grotesk font-bold truncate">{ticket.subject}</h1>
-              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border inline-flex items-center gap-1 ${meta.cls}`}>
+              <h1 className="text-sm md:text-base font-grotesk font-bold truncate leading-tight">{ticket.subject}</h1>
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap text-[10px] text-muted-foreground">
+                <span className="font-mono px-1.5 py-0.5 rounded border border-border bg-secondary">
+                  #{String(ticket.id).slice(-6)}
+                </span>
+                <span className="inline-flex items-center gap-0.5">
+                  <Clock className="w-2.5 h-2.5" /> {timeAgo(ticket.created_date)}
+                </span>
+                <span className={`inline-flex items-center gap-0.5 font-medium px-1.5 py-0.5 rounded-full border ${meta.cls}`}>
                   <SIcon className="w-2.5 h-2.5" /> {meta.label}
                 </span>
-                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-border bg-secondary text-muted-foreground">
-                  {CATEGORY_LABELS[ticket.category] || 'Autre'}
+                <span className="inline-flex items-center gap-0.5">
+                  <Sparkles className="w-2.5 h-2.5" /> {CATEGORY_LABELS[ticket.category] || 'Autre'}
                 </span>
-                {ticket.admin_label && (
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-violet-400/20 bg-violet-400/10 text-violet-300">
-                    {ticket.admin_label}
-                  </span>
-                )}
-                <span className="text-[10px] text-muted-foreground/60 ml-auto">#{String(ticket.id).slice(-6)}</span>
               </div>
             </div>
+            <button onClick={() => navigate('/support/conversation')}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex-shrink-0">
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Nexus context banner */}
-      <div className="rounded-2xl border border-primary/15 bg-primary/[0.04] p-3 mb-3 flex items-start gap-2.5">
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
-          <Sparkles className="w-4 h-4 text-white" />
-        </div>
-        <p className="text-xs text-muted-foreground leading-relaxed pt-0.5">
-          Nexus répond à vos questions et vous oriente. Pour toute action sur votre compte, l'équipe eza prend le relais.
-          {ticket.ai_summary ? <span className="text-foreground/80 block mt-0.5">Résumé : {ticket.ai_summary}</span> : null}
-        </p>
-      </div>
-
-      {/* Métadonnées : élément concerné + pièces jointes */}
-      {(ticket.related_item_type !== 'none' || ticket.file_urls?.length > 0) && (
-        <div className="rounded-2xl border border-border bg-secondary/30 p-3 mb-3 space-y-2.5">
-          {ticket.related_item_type !== 'none' && ticket.related_item_type !== 'conversation' && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="text-primary">●</span>
-              <span>Élément concerné : {ticket.related_item_label || ticket.related_item_id}</span>
-            </div>
-          )}
-          {ticket.related_item_type === 'conversation' && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="text-primary">●</span>
-              <span>Discussion : {ticket.related_item_label}</span>
-            </div>
-          )}
-          {ticket.file_urls?.length > 0 && (
-            <div className="flex items-start gap-2">
-              <Paperclip className="w-3.5 h-3.5 text-muted-foreground mt-0.5" />
-              <div className="flex flex-wrap gap-1.5">
-                {ticket.file_urls.map((u) => /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(u) ? (
-                  <a key={u} href={u} target="_blank" rel="noreferrer" className="w-14 h-14 rounded-lg overflow-hidden border border-border">
-                    <img src={u} alt="" className="w-full h-full object-cover" />
-                  </a>
-                ) : (
-                  <a key={u} href={u} target="_blank" rel="noreferrer" className="w-14 h-14 rounded-lg border border-border bg-secondary flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-muted-foreground" />
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Conversation */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 pb-4 min-h-[240px] pr-1 -mr-1">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-4 pb-4 min-h-[240px] pr-1 -mr-1">
         {messages.length === 0 && (
           <div className="text-center py-12">
             <Bot className="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
@@ -193,41 +171,55 @@ export default function SupportTicketPage() {
           </div>
         )}
         <AnimatePresence>
-          {messages.map((m, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} gap-2.5`}>
-              {m.role !== 'user' && (
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
-                  {m.role === 'admin' ? <UserCog className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-white" />}
+          {messages.map((m, i) => {
+            const isUser = m.role === 'user';
+            const isAssistant = m.role === 'assistant';
+            return (
+              <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                className={`flex ${isUser ? 'justify-end' : 'justify-start'} gap-2`}>
+                {!isUser && (
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-3"
+                    style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
+                    {m.role === 'admin' ? <UserCog className="w-3.5 h-3.5 text-white" /> : <Bot className="w-3.5 h-3.5 text-white" />}
+                  </div>
+                )}
+                <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
+                  <div className={`rounded-2xl px-3.5 py-2.5 text-sm ${
+                    isUser
+                      ? 'rounded-br-md text-white'
+                      : 'bg-card border border-border rounded-bl-md'
+                  }`}
+                    style={isUser ? { background: '#0F172A' } : {}}>
+                    {!isUser ? (
+                      <NexusMarkdown>{m.content}</NexusMarkdown>
+                    ) : <p style={{ whiteSpace: 'pre-wrap' }} className="leading-relaxed">{m.content}</p>}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground/60 mt-1 px-1">
+                    {formatTime(m.at)}
+                  </span>
                 </div>
-              )}
-              <div className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm ${
-                m.role === 'user'
-                  ? 'rounded-tr-md text-white'
-                  : m.role === 'admin'
-                    ? 'bg-blue-500/15 border border-blue-400/20 rounded-tl-md'
-                    : 'bg-card border border-border rounded-tl-md'
-              }`}
-                style={m.role === 'user' ? { background: '#0F172A' } : {}}>
-                {m.role !== 'user' ? (
-                  <NexusMarkdown>{m.content}</NexusMarkdown>
-                ) : <p style={{ whiteSpace: 'pre-wrap' }} className="leading-relaxed">{m.content}</p>}
-              </div>
-            </motion.div>
-          ))}
+                {isUser && (
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-3 bg-secondary border border-border">
+                    <span className="text-[10px] font-bold text-muted-foreground">
+                      {(ticket.user_name || ticket.user_email || 'U').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
-        {(sending || nexusThinking) && (
-          <div className="flex justify-start gap-2.5 items-start">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+        {nexusThinking && (
+          <div className="flex justify-start gap-2 items-start">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-3"
               style={{ background: 'linear-gradient(135deg, #F37322, #1DA890)' }}>
-              <Bot className="w-4 h-4 text-white" />
+              <Bot className="w-3.5 h-3.5 text-white" />
             </div>
-            <div className="bg-card border border-border rounded-2xl rounded-tl-md px-4 py-3 max-w-[82%]">
+            <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
               <div className="flex items-center gap-1.5">
                 {[0, 1, 2].map((i) => (
-                  <motion.div key={i} className="w-2 h-2 rounded-full bg-primary/50"
-                    animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
+                  <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/50"
+                    animate={{ y: [0, -4, 0], opacity: [0.5, 1, 0.5] }}
                     transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }} />
                 ))}
               </div>
@@ -235,28 +227,39 @@ export default function SupportTicketPage() {
           </div>
         )}
         {ticket.escalation_reason && (
-          <div className="flex items-start gap-2 text-xs text-orange-300/90 pl-10 pt-1">
+          <div className="flex items-start gap-2 text-xs text-orange-300/90 pl-9">
             <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
             <span>Escaladé : {ticket.escalation_reason}</span>
           </div>
         )}
       </div>
 
-      {/* Composer + états */}
+      {/* Status footer */}
+      {isClosed && !isLocked && (
+        <div className="rounded-2xl border border-border bg-secondary/40 p-4 text-center sticky bottom-0">
+          <CheckCircle2 className="w-5 h-5 mx-auto mb-1.5 text-green-400" />
+          <p className="text-sm font-semibold">Ce ticket a été résolu</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Veuillez créer un nouveau ticket pour une assistance supplémentaire.</p>
+          <Link to="/support/conversation" className="inline-flex items-center gap-1 text-xs text-primary font-medium mt-2 hover:underline">
+            Créer un nouveau ticket →
+          </Link>
+        </div>
+      )}
       {isLocked && (
         <div className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-3 flex items-center gap-2.5 sticky bottom-0">
           <ShieldAlert className="w-4 h-4 text-amber-300 flex-shrink-0" />
           <p className="text-xs text-amber-200/90">Cette conversation est verrouillée.</p>
         </div>
       )}
-      {isAiResolved && !isLocked && (
-        <div className="rounded-2xl border border-primary/15 bg-primary/[0.05] p-2.5 text-center text-xs text-muted-foreground sticky bottom-0">
+      {isAiResolved && !isLocked && !isClosed && (
+        <div className="rounded-xl border border-primary/15 bg-primary/[0.05] p-2.5 text-center text-xs text-muted-foreground sticky bottom-0">
           Nexus a marqué ce ticket comme résolu · répondez si ce n'est pas réglé.
         </div>
       )}
-      {isClosed && !isLocked && (
-        <div className="rounded-2xl border border-border bg-card p-3 text-center text-xs text-muted-foreground sticky bottom-0">
-          Ce ticket est fermé. <Link to="/support/conversation" className="text-primary hover:underline">Ouvrir un nouveau ticket</Link>
+      {isEscalated && !isClosed && !isLocked && (
+        <div className="rounded-xl border border-orange-400/20 bg-orange-400/[0.05] p-2.5 flex items-center gap-2 sticky bottom-0">
+          <ShieldAlert className="w-4 h-4 text-orange-400 flex-shrink-0" />
+          <p className="text-xs text-orange-300/90">Pris en charge par un spécialiste du support — réponse sous 24-48h.</p>
         </div>
       )}
       {!composerDisabled && (
@@ -266,7 +269,7 @@ export default function SupportTicketPage() {
               value={reply}
               onChange={(e) => setReply(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
-              placeholder="Répondre à Nexus…"
+              placeholder="Écrivez votre message…"
               rows={2}
               className="flex-1 bg-secondary/50 border border-border rounded-xl px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/40 resize-none placeholder:text-muted-foreground/60"
             />

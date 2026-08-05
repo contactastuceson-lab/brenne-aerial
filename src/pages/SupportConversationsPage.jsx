@@ -14,7 +14,7 @@ const STATUS_META = {
   ai_resolved: { label: 'Résolu IA', icon: CheckCircle2, cls: 'text-green-400 bg-green-400/10 border-green-400/20' },
   awaiting_human: { label: 'Escaladé', icon: AlertCircle, cls: 'text-orange-400 bg-orange-400/10 border-orange-400/20' },
   resolved: { label: 'Résolu', icon: CheckCircle2, cls: 'text-green-400 bg-green-400/10 border-green-400/20' },
-  closed: { label: 'Fermé', icon: CheckCircle2, cls: 'text-muted-foreground bg-secondary border-border' },
+  closed: { label: 'Fermé', icon: CheckCircle2, cls: 'text-green-400 bg-green-400/10 border-green-400/20' },
 };
 
 const CATEGORY_LABELS = {
@@ -29,6 +29,7 @@ export default function SupportConversationsPage() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNew, setShowNew] = useState(false);
+  const [filter, setFilter] = useState('open');
 
   useEffect(() => { applySeoMeta({ title: 'Mes conversations — Support eza', description: 'Vos tickets de support eza.' }); }, []);
 
@@ -58,10 +59,15 @@ export default function SupportConversationsPage() {
     if (ticket?.id) navigate(`/support/conversation/${ticket.id}`);
   };
 
+  const OPEN_STATUSES = ['open', 'ai_resolved', 'awaiting_human'];
+  const CLOSED_STATUSES = ['resolved', 'closed'];
+  const filteredTickets = tickets.filter((t) =>
+    filter === 'open' ? OPEN_STATUSES.includes(t.status) : CLOSED_STATUSES.includes(t.status)
+  );
+
   const stats = {
-    open: tickets.filter((t) => t.status === 'open').length,
-    resolved: tickets.filter((t) => ['ai_resolved', 'resolved'].includes(t.status)).length,
-    escalated: tickets.filter((t) => t.status === 'awaiting_human').length,
+    open: tickets.filter((t) => OPEN_STATUSES.includes(t.status)).length,
+    closed: tickets.filter((t) => CLOSED_STATUSES.includes(t.status)).length,
   };
 
   return (
@@ -86,41 +92,39 @@ export default function SupportConversationsPage() {
         Retrouvez l'ensemble de vos tickets et vos échanges avec Nexus IA.
       </p>
 
-      <div className="grid grid-cols-3 gap-2 mb-5">
-        <div className="rounded-xl border border-border bg-card p-3 text-center">
-          <p className="text-xl font-grotesk font-bold text-amber-400">{stats.open}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Ouverts</p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-3 text-center">
-          <p className="text-xl font-grotesk font-bold text-green-400">{stats.resolved}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Résolus</p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-3 text-center">
-          <p className="text-xl font-grotesk font-bold text-orange-400">{stats.escalated}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Escaladés</p>
-        </div>
+      <div className="flex items-center gap-1.5 mb-5 p-1 rounded-xl border border-border bg-card w-fit">
+        <button onClick={() => setFilter('open')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${filter === 'open' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+          Ouverts ({stats.open})
+        </button>
+        <button onClick={() => setFilter('closed')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${filter === 'closed' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+          Fermés ({stats.closed})
+        </button>
       </div>
 
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">
           <Loader2 className="w-5 h-5 mx-auto mb-2 animate-spin" /> Chargement…
         </div>
-      ) : tickets.length === 0 ? (
+      ) : filteredTickets.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border p-10 text-center">
           <Ticket className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
-          <p className="text-sm font-medium mb-1">Aucune conversation</p>
+          <p className="text-sm font-medium mb-1">{filter === 'open' ? 'Aucun ticket ouvert' : 'Aucun ticket fermé'}</p>
           <p className="text-xs text-muted-foreground mb-4 max-w-sm mx-auto">
-            Un problème ? Ouvrez un ticket, Nexus IA répond en direct et vous accompagne à chaque étape.
+            {filter === 'open' ? "Un problème ? Ouvrez un ticket, Nexus IA répond en direct et vous accompagne à chaque étape." : 'Vos tickets fermés apparaîtront ici.'}
           </p>
-          <button onClick={() => setShowNew(true)}
-            className="h-9 px-4 rounded-lg font-semibold text-xs text-white inline-flex items-center gap-1.5"
-            style={{ background: 'linear-gradient(135deg, #F37321, #1DA890)' }}>
-            <Plus className="w-3.5 h-3.5" /> Ouvrir un ticket
-          </button>
+          {filter === 'open' && (
+            <button onClick={() => setShowNew(true)}
+              className="h-9 px-4 rounded-lg font-semibold text-xs text-white inline-flex items-center gap-1.5"
+              style={{ background: 'linear-gradient(135deg, #F37321, #1DA890)' }}>
+              <Plus className="w-3.5 h-3.5" /> Ouvrir un ticket
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-2">
-          {tickets.map((t) => {
+          {filteredTickets.map((t) => {
             const meta = STATUS_META[t.status] || STATUS_META.open;
             const SIcon = meta.icon;
             return (

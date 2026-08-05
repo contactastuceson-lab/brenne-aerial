@@ -180,7 +180,7 @@ export default function SupportTicketPage() {
   const meta = STATUS_META[ticket.status] || STATUS_META.open;
   const SIcon = meta.icon;
   const messages = ticket.messages || [];
-  const isClosed = ['resolved', 'closed', 'awaiting_human'].includes(ticket.status);
+  const isClosed = ['resolved', 'closed'].includes(ticket.status);
   const isLocked = !!ticket.user_locked;
   const isAiResolved = ticket.status === 'ai_resolved';
   const isEscalated = ticket.status === 'awaiting_human';

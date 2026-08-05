@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import NexusMarkdown from '@/components/support/NexusMarkdown';
+import AdminMessageAuthor from '@/components/support/AdminMessageAuthor';
 import {
   Loader2, RefreshCw, Send, Clock, CheckCircle2, AlertCircle,
   ShieldAlert, Sparkles, Bot, UserCog, X, Search,
@@ -122,7 +123,7 @@ export default function AdminSupport() {
     const msg = reply.trim();
     if (!msg || !selected || sending) return;
     setSending(true);
-    const optimistic = { role: 'admin', content: msg, at: new Date().toISOString() };
+    const optimistic = { role: 'admin', content: msg, at: new Date().toISOString(), admin_id: user?.id, admin_name: user?.full_name };
     setSelected((prev) => prev ? { ...prev, messages: [...(prev.messages || []), optimistic] } : prev);
     setReply('');
     try {
@@ -458,6 +459,7 @@ export default function AdminSupport() {
                       </div>
                     )}
                     <div className={`max-w-[85%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+                      {isAdmin && <AdminMessageAuthor adminId={m.admin_id} fallbackName={m.admin_name} />}
                       <div className={`rounded-2xl px-3.5 py-2.5 text-sm ${
                         isUser ? 'rounded-br-md text-white' : 'bg-card border border-border rounded-bl-md'
                       }`} style={isUser ? { background: '#0F172A' } : {}}>

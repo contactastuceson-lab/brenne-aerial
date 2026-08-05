@@ -29,34 +29,34 @@ const TABS = [
 
 const PAGE_SETTINGS = [
   // Pages principales
-  { key: 'page_homepage_enabled', label: 'Page Accueil', icon: Home, description: 'Page d\'accueil principale', default: 'true' },
-  { key: 'page_services_enabled', label: 'Page Services', icon: Zap, description: 'Présentation des services', default: 'true' },
-  { key: 'page_portfolio_enabled', label: 'Page Portfolio', icon: Star, description: 'Galerie de projets', default: 'true' },
+  { key: 'page_homepage_enabled', label: 'Page Accueil', icon: Home, description: 'Fil d\'actualité principal', default: 'true' },
   { key: 'page_blog_enabled', label: 'Page Blog', icon: BookOpen, description: 'Blog & actualités', default: 'true' },
-  { key: 'page_contact_enabled', label: 'Page Contact', icon: Globe, description: 'Formulaire de contact', default: 'true' },
-  { key: 'page_quote_enabled', label: 'Page Devis', icon: FileText, description: 'Demandes de devis', default: 'true' },
-  { key: 'page_planning_enabled', label: 'Page Planning', icon: Calendar, description: 'Calendrier & rendez-vous', default: 'true' },
-  // Communauté & espace client
+  { key: 'page_portfolio_enabled', label: 'Page Portfolio', icon: Star, description: 'Galerie de projets', default: 'true' },
+  // Communauté & réseau social
   { key: 'page_discover_enabled', label: 'Page Découvrir', icon: Compass, description: 'Répertoire social des membres', default: 'true' },
   { key: 'page_messages_enabled', label: 'Page Messages', icon: MessageCircle, description: 'Messagerie entre membres', default: 'true' },
-  { key: 'page_spaces_enabled', label: 'Spaces Audio (Live)', icon: Radio, description: 'Salons audio en direct sur l\'accueil', default: 'true' },
-  { key: 'page_espace_client_enabled', label: 'Espace Client', icon: Users, description: 'Portail fichiers clients', default: 'true' },
-  { key: 'page_partenaires_enabled', label: 'Page Partenaires', icon: Building2, description: 'Annuaire des partenaires', default: 'true' },
+  { key: 'page_spaces_enabled', label: 'Spaces Audio (Live)', icon: Radio, description: 'Salons audio en direct', default: 'true' },
+  { key: 'page_forum_enabled', label: 'Page Forum', icon: MessageCircle, description: 'Discussions communautaires', default: 'true' },
+  { key: 'page_communities_enabled', label: 'Page Communautés', icon: Users, description: 'Groupes communautaires', default: 'true' },
+  { key: 'page_events_enabled', label: 'Page Événements', icon: Calendar, description: 'Événements et inscriptions', default: 'true' },
+  // Économie & Boutique
+  { key: 'page_boutique_enabled', label: 'Page Boutique', icon: Star, description: 'Boutique de récompenses & abonnements', default: 'true' },
+  { key: 'page_banque_enabled', label: 'Page Banque', icon: Calculator, description: 'Portefeuilles & transferts de crédits', default: 'true' },
+  { key: 'page_business_enabled', label: 'Espace Business', icon: Building2, description: 'Espace entreprises & publicités', default: 'true' },
+  // Outils utilisateur
+  { key: 'page_bookmarks_enabled', label: 'Page Bookmarks', icon: BookOpen, description: 'Favoris sauvegardés', default: 'true' },
+  { key: 'page_lists_enabled', label: 'Page Listes', icon: Users, description: 'Listes personnalisées', default: 'true' },
+  { key: 'page_search_enabled', label: 'Page Recherche', icon: ZoomIn, description: 'Recherche utilisateurs & hashtags', default: 'true' },
+  { key: 'page_notifications_enabled', label: 'Page Notifications', icon: BellRing, description: 'Centre de notifications', default: 'true' },
+  { key: 'page_espace_enabled', label: 'Espace Utilisateur', icon: LayoutDashboard, description: 'Tableau de bord utilisateur', default: 'true' },
+  { key: 'page_support_enabled', label: 'Page Support', icon: Shield, description: 'Tickets & assistance IA', default: 'true' },
+  // Programmes
   { key: 'page_parrainage_enabled', label: 'Page Parrainage', icon: Users, description: 'Programme de parrainage', default: 'true' },
-  { key: 'page_avant_apres_enabled', label: 'Page Avant/Après', icon: ZoomIn, description: 'Galerie comparaisons', default: 'true' },
   { key: 'page_certification_enabled', label: 'Page Certification', icon: Shield, description: 'Système de certification', default: 'true' },
   { key: 'page_donation_enabled', label: 'Page Donation', icon: Star, description: 'Plateforme de dons', default: 'true' },
-  // Outils
-  { key: 'page_garage_enabled', label: 'Page Garage', icon: Warehouse, description: 'Fiches techniques drones', default: 'true' },
-  { key: 'page_calculator_enabled', label: 'Calculateur de devis', icon: Calculator, description: 'Estimateur de prix', default: 'true' },
-  { key: 'page_reglementation_enabled', label: 'Réglementation', icon: Shield, description: 'Guide réglementaire drone', default: 'true' },
-  { key: 'page_simulateur_enabled', label: 'Simulateur de Vue', icon: Building2, description: 'Outil immobilier étages', default: 'true' },
-  { key: 'page_comparateur_enabled', label: 'Comparateur de Résolution', icon: ZoomIn, description: 'Comparaison qualité photo', default: 'true' },
-  { key: 'page_flash_enabled', label: 'Flash Delivery', icon: QrCode, description: 'Portail livraison rapide', default: 'true' },
   // Paramètres globaux
   { key: 'registration_open', label: 'Inscriptions ouvertes', icon: Users, description: 'Autoriser les nouvelles inscriptions', default: 'true' },
   { key: 'messaging_enabled', label: 'Messagerie inter-membres', icon: MessageCircle, description: 'Chat entre utilisateurs', default: 'true' },
-  { key: 'weather_widget_enabled', label: 'Widget Météo Drone', icon: Globe, description: 'Météo en temps réel sur l\'accueil', default: 'true' },
 ];
 
 const TEXT_FIELDS = {
@@ -118,7 +118,7 @@ const TEXT_FIELDS = {
   ],
 };
 
-const APP_URL = 'https://brenneaerial.fr';
+const APP_URL = 'https://eza.group';
 
 const MONITORING_CATEGORIES = [
   {
@@ -131,37 +131,47 @@ const MONITORING_CATEGORIES = [
   {
     category: 'Pages principales',
     links: [
-      { label: 'Accueil', url: `${APP_URL}/api/functions/statusCheck?module=homepage`, desc: 'Page d\'accueil principale.' },
-      { label: 'Services', url: `${APP_URL}/api/functions/statusCheck?module=services`, desc: 'Page des services drone.' },
-      { label: 'Portfolio', url: `${APP_URL}/api/functions/statusCheck?module=portfolio`, desc: 'Galerie de projets.' },
+      { label: 'Accueil', url: `${APP_URL}/api/functions/statusCheck?module=homepage`, desc: 'Fil d\'actualité principal.' },
       { label: 'Blog', url: `${APP_URL}/api/functions/statusCheck?module=blog`, desc: 'Blog & actualités.' },
-      { label: 'Contact', url: `${APP_URL}/api/functions/statusCheck?module=contact`, desc: 'Formulaire de contact.' },
-      { label: 'Devis', url: `${APP_URL}/api/functions/statusCheck?module=quote`, desc: 'Demandes de devis.' },
-      { label: 'Planning', url: `${APP_URL}/api/functions/statusCheck?module=planning`, desc: 'Calendrier & rendez-vous.' },
+      { label: 'Portfolio', url: `${APP_URL}/api/functions/statusCheck?module=portfolio`, desc: 'Galerie de projets.' },
     ],
   },
   {
-    category: 'Communauté & Espace client',
+    category: 'Communauté & Réseau social',
     links: [
       { label: 'Découvrir', url: `${APP_URL}/api/functions/statusCheck?module=discover`, desc: 'Répertoire social des membres.' },
       { label: 'Messagerie', url: `${APP_URL}/api/functions/statusCheck?module=messagerie`, desc: 'Messagerie entre membres.' },
-      { label: 'Espace Client', url: `${APP_URL}/api/functions/statusCheck?module=espace_client`, desc: 'Portail fichiers clients.' },
-      { label: 'Partenaires', url: `${APP_URL}/api/functions/statusCheck?module=partenaires`, desc: 'Annuaire des partenaires.' },
-      { label: 'Parrainage', url: `${APP_URL}/api/functions/statusCheck?module=parrainage`, desc: 'Programme de parrainage.' },
-      { label: 'Avant / Après', url: `${APP_URL}/api/functions/statusCheck?module=avant_apres`, desc: 'Galerie comparaisons.' },
-      { label: 'Certification', url: `${APP_URL}/api/functions/statusCheck?module=certification`, desc: 'Système de certification.' },
-      { label: 'Donation', url: `${APP_URL}/api/functions/statusCheck?module=donation`, desc: 'Plateforme de dons.' },
+      { label: 'Spaces Audio', url: `${APP_URL}/api/functions/statusCheck?module=spaces`, desc: 'Salons audio en direct.' },
+      { label: 'Forum', url: `${APP_URL}/api/functions/statusCheck?module=forum`, desc: 'Discussions communautaires.' },
+      { label: 'Communautés', url: `${APP_URL}/api/functions/statusCheck?module=communities`, desc: 'Groupes communautaires.' },
+      { label: 'Événements', url: `${APP_URL}/api/functions/statusCheck?module=events`, desc: 'Événements et inscriptions.' },
     ],
   },
   {
-    category: 'Outils',
+    category: 'Économie & Business',
     links: [
-      { label: 'Garage', url: `${APP_URL}/api/functions/statusCheck?module=garage`, desc: 'Fiches techniques drones.' },
-      { label: 'Calculateur', url: `${APP_URL}/api/functions/statusCheck?module=calculateur`, desc: 'Estimateur de prix.' },
-      { label: 'Réglementation', url: `${APP_URL}/api/functions/statusCheck?module=reglementation`, desc: 'Guide réglementaire drone.' },
-      { label: 'Simulateur de Vue', url: `${APP_URL}/api/functions/statusCheck?module=simulateur`, desc: 'Outil immobilier étages.' },
-      { label: 'Comparateur Résolution', url: `${APP_URL}/api/functions/statusCheck?module=comparateur`, desc: 'Comparaison qualité photo.' },
-      { label: 'Flash Delivery', url: `${APP_URL}/api/functions/statusCheck?module=flash`, desc: 'Portail livraison rapide.' },
+      { label: 'Boutique', url: `${APP_URL}/api/functions/statusCheck?module=boutique`, desc: 'Boutique de récompenses & abonnements.' },
+      { label: 'Banque', url: `${APP_URL}/api/functions/statusCheck?module=banque`, desc: 'Portefeuilles & transferts de crédits.' },
+      { label: 'Espace Business', url: `${APP_URL}/api/functions/statusCheck?module=business`, desc: 'Espace entreprises & publicités.' },
+    ],
+  },
+  {
+    category: 'Outils utilisateur',
+    links: [
+      { label: 'Bookmarks', url: `${APP_URL}/api/functions/statusCheck?module=bookmarks`, desc: 'Favoris sauvegardés.' },
+      { label: 'Listes', url: `${APP_URL}/api/functions/statusCheck?module=lists`, desc: 'Listes personnalisées.' },
+      { label: 'Recherche', url: `${APP_URL}/api/functions/statusCheck?module=search`, desc: 'Recherche utilisateurs & hashtags.' },
+      { label: 'Notifications', url: `${APP_URL}/api/functions/statusCheck?module=notifications`, desc: 'Centre de notifications.' },
+      { label: 'Espace Utilisateur', url: `${APP_URL}/api/functions/statusCheck?module=espace`, desc: 'Tableau de bord utilisateur.' },
+      { label: 'Support', url: `${APP_URL}/api/functions/statusCheck?module=support`, desc: 'Tickets & assistance IA.' },
+    ],
+  },
+  {
+    category: 'Programmes',
+    links: [
+      { label: 'Parrainage', url: `${APP_URL}/api/functions/statusCheck?module=parrainage`, desc: 'Programme de parrainage.' },
+      { label: 'Certification', url: `${APP_URL}/api/functions/statusCheck?module=certification`, desc: 'Système de certification.' },
+      { label: 'Donation', url: `${APP_URL}/api/functions/statusCheck?module=donation`, desc: 'Plateforme de dons.' },
     ],
   },
 ];
@@ -207,9 +217,9 @@ function MonitoringAPISection() {
             Un code <span className="font-mono text-green-400 bg-green-400/10 px-1 rounded">200</span> indique un service actif,
             un code <span className="font-mono text-destructive bg-destructive/10 px-1 rounded">503</span> indique qu'il est désactivé.
           </p>
-          <a href="https://status.brenneaerial.fr" target="_blank" rel="noopener noreferrer"
+          <a href="https://status.eza.group" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 mt-2 font-inter text-xs text-primary hover:underline">
-            <ExternalLink className="w-3 h-3" /> Tableau de bord Better Stack
+            <ExternalLink className="w-3 h-3" /> Tableau de bord status.eza.group
           </a>
         </div>
       </div>

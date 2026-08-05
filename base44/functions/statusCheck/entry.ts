@@ -1,28 +1,28 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// Map: module name → AppSettings key
+// Map: module name → AppSettings key — plateforme eza
 const MODULE_TO_SETTING = {
   'homepage':      'page_homepage_enabled',
-  'services':      'page_services_enabled',
-  'portfolio':     'page_portfolio_enabled',
   'blog':          'page_blog_enabled',
-  'contact':       'page_contact_enabled',
-  'quote':         'page_quote_enabled',
-  'planning':      'page_planning_enabled',
+  'portfolio':     'page_portfolio_enabled',
   'discover':      'page_discover_enabled',
   'messagerie':    'page_messages_enabled',
-  'espace_client': 'page_espace_client_enabled',
-  'partenaires':   'page_partenaires_enabled',
+  'spaces':        'page_spaces_enabled',
+  'forum':         'page_forum_enabled',
+  'communities':   'page_communities_enabled',
+  'events':        'page_events_enabled',
+  'boutique':      'page_boutique_enabled',
+  'banque':        'page_banque_enabled',
+  'bookmarks':     'page_bookmarks_enabled',
+  'lists':         'page_lists_enabled',
+  'search':        'page_search_enabled',
+  'notifications': 'page_notifications_enabled',
+  'support':       'page_support_enabled',
+  'business':      'page_business_enabled',
+  'espace':        'page_espace_enabled',
   'parrainage':    'page_parrainage_enabled',
-  'avant_apres':   'page_avant_apres_enabled',
   'certification': 'page_certification_enabled',
   'donation':      'page_donation_enabled',
-  'garage':        'page_garage_enabled',
-  'calculateur':   'page_calculator_enabled',
-  'reglementation':'page_reglementation_enabled',
-  'simulateur':    'page_simulateur_enabled',
-  'comparateur':   'page_comparateur_enabled',
-  'flash':         'page_flash_enabled',
 };
 
 Deno.serve(async (req) => {
@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
     if (isSiteOffline) {
       const module = moduleName || 'all';
       return Response.json(
-        { ok: false, module, status: 'offline', message: 'Site Brenne Aerial hors ligne' },
+        { ok: false, module, status: 'offline', message: 'Site eza hors ligne' },
         { status: 503 }
       );
     }
@@ -49,12 +49,12 @@ Deno.serve(async (req) => {
       const isInMaintenance = sMap['maintenance_mode'] === 'true';
       if (isInMaintenance) {
         return Response.json(
-          { ok: false, module: 'site', status: 'maintenance', message: 'Site Brenne Aerial en maintenance' },
+          { ok: false, module: 'site', status: 'maintenance', message: 'Site eza en maintenance' },
           { status: 503 }
         );
       }
       return Response.json(
-        { ok: true, module: 'site', status: 'operational', message: 'Site Brenne Aerial opérationnel' },
+        { ok: true, module: 'site', status: 'operational', message: 'Site eza opérationnel' },
         { status: 200 }
       );
     }

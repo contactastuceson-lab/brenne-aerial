@@ -36,10 +36,17 @@
       "enum": [
         "feed_banner",
         "between_posts",
-        "sidebar"
+        "sidebar",
+        "sticky_mobile",
+        "profile",
+        "notifications",
+        "events",
+        "communities",
+        "messages",
+        "interstitial"
       ],
       "default": "feed_banner",
-      "description": "Emplacement de l'annonce dans l'app"
+      "description": "Emplacement de l'annonce : feed_banner (fil), between_posts (entre posts), sidebar (barre lat\u00e9rale), sticky_mobile (bandeau collant mobile), profile (profils), notifications, events, communities, messages, interstitial (plein \u00e9cran)"
     },
     "target_hashtags": {
       "type": "array",

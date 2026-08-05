@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import AdSlot from "@/components/feed/AdSlot";
 
 const CATEGORIES = [
   { key: "all", label: "Tous", icon: Tag, color: "text-foreground" },
@@ -342,6 +343,9 @@ export default function EventsPage() {
             })}
           </div>
         </div>
+
+        {/* Pub */}
+        <div className="px-1"><AdSlot placement="events" /></div>
 
         {/* Results */}
         {loading ? (

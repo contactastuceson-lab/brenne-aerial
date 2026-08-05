@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PageTransition from '@/components/layout/PageTransition';
 import MainSkeleton from '@/components/layout/MainSkeleton';
 import HomeLeftSidebar from '@/components/home/HomeLeftSidebar';
+import StickyAdBanner from '@/components/feed/StickyAdBanner';
 import { base44 } from '@/api/base44Client';
 import { ShieldAlert, X } from 'lucide-react';
 import { isRestricted, isSuspended, RESTRICTION_LABELS } from '@/lib/accountStatus';
@@ -138,6 +139,7 @@ export default function SidebarLayout() {
         <React.Suspense fallback={<MainSkeleton />}>
           <PageTransition />
         </React.Suspense>
+        {user && <StickyAdBanner />}
       </main>
     </div>
   );

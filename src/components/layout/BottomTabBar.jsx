@@ -59,7 +59,7 @@ const NAV_SECTIONS = [
     title: 'Ressources',
     items: [
       { to: '/support',        icon: LifeBuoy,         label: 'Support',        color: 'text-cyan-400' },
-      { to: '/documentation', icon: BookOpen,        label: 'Documentation',  color: 'text-blue-300' },
+      { href: 'https://docs.ezagroup.org/', icon: BookOpen, label: 'Documentation', color: 'text-blue-300' },
       { to: '/blog',          icon: Newspaper,        label: 'Blog',           color: 'text-indigo-400' },
       { to: '/about',         icon: Info,             label: 'À propos',       color: 'text-slate-300' },
       { to: '/donation',      icon: Heart,            label: 'Soutenir',       color: 'text-red-400' },
@@ -211,17 +211,28 @@ export default function BottomTabBar() {
                     <div className="grid grid-cols-3 gap-2">
                       {section.items.map((item) => {
                         const Icon = item.icon;
-                        return (
-                          <Link key={item.to} to={item.to} onClick={() => setShowMore(false)}
-                            className={`relative flex flex-col items-center gap-2 p-3 rounded-2xl transition-all border ${
-                              isActive(item.to) ? 'border-primary/30 bg-primary/10' : 'border-white/6 bg-white/3 hover:bg-white/6'
-                            }`}
-                          >
+                        const cls = `relative flex flex-col items-center gap-2 p-3 rounded-2xl transition-all border ${
+                          isActive(item.to) ? 'border-primary/30 bg-primary/10' : 'border-white/6 bg-white/3 hover:bg-white/6'
+                        }`;
+                        const inner = (
+                          <>
                             <Icon className={item.color} style={{ width: 18, height: 18 }} />
                             {item.cartBadge && cartCount > 0 && (
                               <span className="absolute top-1.5 right-2 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-mono flex items-center justify-center">{cartCount > 9 ? '9+' : cartCount}</span>
                             )}
                             <span className="font-inter text-[10px] text-muted-foreground text-center leading-tight">{item.label}</span>
+                          </>
+                        );
+                        if (item.href) {
+                          return (
+                            <a key={item.href} href={item.href} target="_blank" rel="noopener noreferrer" onClick={() => setShowMore(false)} className={cls}>
+                              {inner}
+                            </a>
+                          );
+                        }
+                        return (
+                          <Link key={item.to} to={item.to} onClick={() => setShowMore(false)} className={cls}>
+                            {inner}
                           </Link>
                         );
                       })}

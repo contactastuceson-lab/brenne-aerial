@@ -273,8 +273,12 @@ export default function HomeRightSidebar() {
       {/* Footer */}
       <div className="px-2 pb-6 mt-2">
         <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-muted-foreground/25">
-          {[['À propos', '/about'], ['Blog', '/blog'], ['Portfolio', '/portfolio'], ['Docs', '/documentation'], ['Forum', '/forum'], ['Confidentialité', '/legal/privacy'], ['CGU', '/legal/terms']].map(([l, to]) => (
-            <Link key={l} to={to} className="hover:text-muted-foreground/50 transition-colors">{l}</Link>
+          {[['À propos', '/about'], ['Blog', '/blog'], ['Portfolio', '/portfolio'], ['Docs', 'https://docs.ezagroup.org/'], ['Forum', '/forum'], ['Confidentialité', '/legal/privacy'], ['CGU', '/legal/terms']].map(([l, to]) => (
+            to.startsWith('http') ? (
+              <a key={l} href={to} target="_blank" rel="noopener noreferrer" className="hover:text-muted-foreground/50 transition-colors">{l}</a>
+            ) : (
+              <Link key={l} to={to} className="hover:text-muted-foreground/50 transition-colors">{l}</Link>
+            )
           ))}
         </div>
         <p className="text-[10px] font-mono text-muted-foreground/15 mt-1.5">© 2026 EZA by EZA Group</p>

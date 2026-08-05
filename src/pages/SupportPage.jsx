@@ -18,7 +18,7 @@ export default function SupportPage() {
       title: 'Documentation',
       desc: 'Explorez des guides complets, des tutoriels, des FAQ et les meilleures pratiques pour utiliser eza.',
       action: 'Commencer',
-      to: '/support/documentation',
+      href: 'https://docs.ezagroup.org/',
     },
     {
       icon: Users, color: '#1DA890',
@@ -68,6 +68,8 @@ export default function SupportPage() {
           );
           return r.onClick ? (
             <button key={r.title} onClick={r.onClick} className="text-left">{inner}</button>
+          ) : r.href ? (
+            <a key={r.title} href={r.href} target="_blank" rel="noopener noreferrer">{inner}</a>
           ) : (
             <Link key={r.title} to={r.to}>{inner}</Link>
           );

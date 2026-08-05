@@ -100,9 +100,7 @@ import CreatePostPage from "@/pages/CreatePostPage";
 import SearchPage from "@/pages/SearchPage";
 import SampleProfilePage from "@/pages/SampleProfilePage";
 import PortfolioPage from "@/pages/PortfolioPage";
-import DocumentationPage from "@/pages/DocumentationPage";
-import DocumentationArticlePage from "@/pages/DocumentationArticlePage";
-import BadgesDocPage from "@/pages/BadgesDocPage";
+
 import UserSpacePage from "@/pages/UserSpacePage";
 import BookmarksPage from "@/pages/BookmarksPage";
 import ListsPage from "@/pages/ListsPage";
@@ -203,14 +201,14 @@ const AuthenticatedApp = () => {
           <Route path="/events/:id" element={<EventDetailPage />} />
           <Route path="/panier" element={<CartPage />} />
           <Route path="/support" element={<SupportPage />} />
-          <Route path="/support/documentation" element={<DocumentationPage />} />
-          <Route path="/support/documentation/:slug" element={<DocumentationArticlePage />} />
+          <Route path="/support/documentation" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />
+          <Route path="/support/documentation/:slug" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />
           <Route path="/support/conversation" element={<SupportConversationsPage />} />
           <Route path="/support/:id" element={<SupportTicketPage />} />
           <Route path="/s/:username" element={<SampleProfilePage />} />
-          <Route path="/documentation" element={<DocumentationPage />} />
-          <Route path="/documentation/:slug" element={<DocumentationArticlePage />} />
-          <Route path="/documentation/badges" element={<BadgesDocPage />} />
+          <Route path="/documentation" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />
+          <Route path="/documentation/:slug" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />
+          <Route path="/documentation/badges" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />
           {/* Profile catch-all route for /@username - must be last in public routes */}
           <Route path="/:pathUsername" element={<PublicProfilePage />} />
         </Route>

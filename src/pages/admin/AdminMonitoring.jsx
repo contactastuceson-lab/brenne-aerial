@@ -19,16 +19,25 @@ const STATUS_CONFIG = {
 };
 
 const SERVICE_ICONS = {
-  aria_llm: Brain,
   nexus_agent: Brain,
-  planning_scheduler: MessageSquare,
-  quote_pdf: FileText,
+  nexus_support: Brain,
+  llm_core: Brain,
+  stripe_webhook: Activity,
+  credits_transfer: Database,
+  cart_checkout: Database,
+  post_moderation: AlertCircle,
+  community_posts: MessageSquare,
+  post_likes: MessageSquare,
+  event_registration: Bell,
+  space_management: Activity,
+  referral_processing: Database,
+  badge_attribution: Bell,
   email_service: Bell,
   push_notifications: Bell,
-  stripe_webhook: Activity,
-  database_quotes: Database,
+  database_posts: Database,
   database_notifications: Database,
-  database_appointments: Database,
+  database_wallets: Database,
+  database_events: Database,
 };
 
 function StatusDot({ status }) {
@@ -217,9 +226,9 @@ export default function AdminMonitoring() {
 
   const handleSimulate = async (status) => {
     const services = [
-      { name: 'aria_llm', label: 'IA ARIA (Chatbot)' },
-      { name: 'database_quotes', label: 'Base de données - Devis' },
-      { name: 'email_service', label: 'Service Email (Notifications)' },
+      { name: 'nexus_agent', label: 'Agent Nexus (PDG AI)' },
+      { name: 'database_posts', label: 'Base de données - Posts' },
+      { name: 'email_service', label: 'Service Email' },
     ];
     const pick = services[Math.floor(Math.random() * services.length)];
     await base44.entities.MonitoringLog.create({
@@ -378,16 +387,22 @@ function CopyButton({ text }) {
 
 function EndpointsPanel() {
   const [open, setOpen] = useState(false);
-  const BASE = 'https://brenneaerial.base44.app/api/functions';
+  const BASE = 'https://eza.group/api/functions';
 
   const endpoints = [
-    { label: 'Monitoring global', fn: 'runMonitoring', desc: 'Déclenche tous les checks (BetterStack / cron externe)', icon: Activity },
+    { label: 'Monitoring global', fn: 'runMonitoring', desc: 'Déclenche tous les checks (cron externe)', icon: Activity },
     { label: 'Check statut modules', fn: 'statusCheck', desc: 'Vérifie l\'état des modules publics', icon: CheckCircle2 },
-    { label: 'Génération PDF Devis', fn: 'generateQuotePDF', desc: 'Service PDF (POST + quoteId)', icon: FileText },
+    { label: 'Agent PDG (Nexus)', fn: 'pdgAIAgent', desc: 'IA conversationnelle PDG', icon: Brain },
+    { label: 'Support IA (Tickets)', fn: 'autoHandleSupportTicket', desc: 'Traitement automatique des tickets', icon: Brain },
+    { label: 'Transfert de Crédits', fn: 'transferCredits', desc: 'Banque — transferts P2P', icon: Database },
+    { label: 'Checkout Panier', fn: 'checkoutCart', desc: 'Boutique — validation panier', icon: Database },
+    { label: 'Inscription Événement', fn: 'registerForEvent', desc: 'Events — inscription utilisateur', icon: Bell },
+    { label: 'Création Space', fn: 'createSpace', desc: 'Spaces — room LiveKit', icon: Activity },
+    { label: 'Parrainage', fn: 'processReferral', desc: 'Traitement code de parrainage', icon: Database },
+    { label: 'Modération Post', fn: 'moderateNewPost', desc: 'Modération IA des publications', icon: AlertCircle },
     { label: 'Service Email', fn: 'emailNotification', desc: 'Envoi de notifications email', icon: Bell },
     { label: 'Push Notifications', fn: 'pushNotification', desc: 'Envoi de notifications push', icon: Bell },
     { label: 'Webhook Stripe', fn: 'handleStripeWebhook', desc: 'Réception des événements Stripe', icon: Activity },
-    { label: 'Agent PDG (Nexus)', fn: 'pdgAIAgent', desc: 'IA conversationnelle PDG', icon: Brain },
   ];
 
   return (

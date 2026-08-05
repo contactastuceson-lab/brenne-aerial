@@ -9,14 +9,15 @@ export default function PageTransition({ context }) {
   const isBackNavigation = navigationType === 'POP';
   const enterOffset = isBackNavigation ? -36 : 36;
   const exitOffset = isBackNavigation ? 36 : -36;
+  const isSupportDrawer = location.pathname.startsWith('/support/conversation');
 
   return (
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
-        key={location.pathname}
-        initial={{ x: enterOffset, opacity: 0.01 }}
+        key={isSupportDrawer ? 'support-conversation' : location.pathname}
+        initial={isSupportDrawer ? false : { x: enterOffset, opacity: 0.01 }}
         animate={{ x: 0, opacity: 1 }}
-        exit={{ x: exitOffset, opacity: 0.01 }}
+        exit={isSupportDrawer ? { opacity: 1 } : { x: exitOffset, opacity: 0.01 }}
         transition={{ type: 'tween', ease: 'easeOut', duration: 0.22 }}
         className="min-h-[720px] w-full"
         style={{ willChange: 'transform, opacity' }}

@@ -13,21 +13,39 @@
       "type": "string",
       "enum": [
         "user",
-        "message"
+        "message",
+        "post",
+        "discussion",
+        "discussion_reply",
+        "forum_topic",
+        "forum_post",
+        "community",
+        "space",
+        "story",
+        "event",
+        "review"
       ],
       "description": "Type de cible signal\u00e9e"
     },
     "target_id": {
       "type": "string",
-      "description": "ID de la cible (user id ou message id)"
+      "description": "ID de la cible (user id, post id, message id, etc.)"
     },
     "target_email": {
       "type": "string",
-      "description": "Email de l'utilisateur signal\u00e9"
+      "description": "Email de l'auteur du contenu signal\u00e9 (si applicable)"
     },
     "target_name": {
       "type": "string",
-      "description": "Nom de l'utilisateur signal\u00e9"
+      "description": "Nom de l'auteur du contenu signal\u00e9"
+    },
+    "target_content_preview": {
+      "type": "string",
+      "description": "Aper\u00e7u du contenu signal\u00e9 (snapshot texte)"
+    },
+    "target_url": {
+      "type": "string",
+      "description": "Lien vers le contenu signal\u00e9 (si applicable)"
     },
     "reason": {
       "type": "string",
@@ -36,6 +54,10 @@
         "harcelement",
         "contenu_inapproprie",
         "usurpation",
+        "discours_haineux",
+        "violence",
+        "mise_en_danger",
+        "illegal",
         "autre"
       ],
       "description": "Raison du signalement"
@@ -46,7 +68,7 @@
     },
     "message_content": {
       "type": "string",
-      "description": "Contenu du message signal\u00e9 (si applicable)"
+      "description": "Contenu du message signal\u00e9 (snapshot complet, si applicable)"
     },
     "status": {
       "type": "string",

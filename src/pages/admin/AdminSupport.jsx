@@ -6,6 +6,7 @@ import {
   Loader2, RefreshCw, Send, Clock, CheckCircle2, AlertCircle,
   ShieldAlert, Sparkles, Bot, UserCog, X, Search,
   Paperclip, MessageCircle, Filter, ChevronDown,
+  Trash2, Flag, StickyNote, Tag, UserSquare, ExternalLink,
 } from 'lucide-react';
 
 const CATEGORY_LABELS = {
@@ -60,6 +61,8 @@ export default function AdminSupport() {
   const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [adminNotes, setAdminNotes] = useState('');
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
   const scrollRef = useRef(null);
 
   const load = useCallback(async () => {
@@ -88,6 +91,10 @@ export default function AdminSupport() {
       }
     });
     return unsub;
+  }, [selected?.id]);
+
+  useEffect(() => {
+    if (selected) setAdminNotes(selected.admin_notes || '');
   }, [selected?.id]);
 
   useEffect(() => {
@@ -158,6 +165,72 @@ export default function AdminSupport() {
       const updated = await base44.entities.SupportTicket.update(selected.id, { status: 'closed', assignee: 'human' });
       setSelected(updated);
       setTickets((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    } catch {}
+    setActionLoading(false);
+  };
+
+  const changePriority = async (priority) => {
+    if (!selected || actionLoading) return;
+    setActionLoading(true);
+    try {
+      const updated = await base44.entities.SupportTicket.update(selected.id, { priority });
+      setSelected(updated);
+      setTickets((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    } catch {}
+    setActionLoading(false);
+  };
+
+  const changeCategory = async (category) => {
+    if (!selected || actionLoading) return;
+    setActionLoading(true);
+    try {
+      const updated = await base44.entities.SupportTicket.update(selected.id, { category });
+      setSelected(updated);
+      setTickets((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    } catch {}
+    setActionLoading(false);
+  };
+
+  const changeAssignee = async (assignee) => {
+    if (!selected || actionLoading) return;
+    setActionLoading(true);
+    try {
+      const updated = await base44.entities.SupportTicket.update(selected.id, { assignee });
+      setSelected(updated);
+      setTickets((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    } catch {}
+    setActionLoading(false);
+  };
+
+  const saveAdminNotes = async () => {
+    if (!selected || actionLoading) return;
+    setActionLoading(true);
+    try {
+      const updated = await base44.entities.SupportTicket.update(selected.id, { admin_notes: adminNotes });
+      setSelected(updated);
+      setTickets((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    } catch {}
+    setActionLoading(false);
+  };
+
+  const setAdminLabel = async (label) => {
+    if (!selected || actionLoading) return;
+    setActionLoading(true);
+    try {
+      const updated = await base44.entities.SupportTicket.update(selected.id, { admin_label: label });
+      setSelected(updated);
+      setTickets((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    } catch {}
+    setActionLoading(false);
+  };
+
+  const deleteTicket = async () => {
+    if (!selected || actionLoading) return;
+    setActionLoading(true);
+    try {
+      await base44.entities.SupportTicket.delete(selected.id);
+      setTickets((prev) => prev.filter((t) => t.id !== selected.id));
+      setSelected(null);
     } catch {}
     setActionLoading(false);
   };
@@ -410,7 +483,12 @@ export default function AdminSupport() {
 
             {/* Actions + composer */}
             <div className="border-t border-border bg-card p-2.5 space-y-2">
+              {/* Gestion rapide */}
               <div className="flex items-center gap-1.5 flex-wrap">
+                <button onClick={() => setShowAdminPanel(!showAdminPanel)}
+                  className={`h-7 px-2 rounded-lg text-[11px] font-medium border transition-colors flex items-center gap-1 ${showAdminPanel ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground hover:text-foreground'}`}>
+                  <Tag className="w-3 h-3" /> Gestion
+                </button>
                 <button onClick={() => changeStatus('awaiting_human')} disabled={actionLoading}
                   className="h-7 px-2 rounded-lg text-[11px] font-medium border border-orange-400/30 bg-orange-400/10 text-orange-300 hover:bg-orange-400/20 transition-colors disabled:opacity-40 flex items-center gap-1">
                   {actionLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldAlert className="w-3 h-3" />}
@@ -424,7 +502,100 @@ export default function AdminSupport() {
                   className="h-7 px-2 rounded-lg text-[11px] font-medium border border-border bg-secondary text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 flex items-center gap-1">
                   <X className="w-3 h-3" /> Fermer
                 </button>
+                <button onClick={deleteTicket} disabled={actionLoading}
+                  className="h-7 px-2 rounded-lg text-[11px] font-medium border border-red-400/30 bg-red-400/10 text-red-400 hover:bg-red-400/20 transition-colors disabled:opacity-40 flex items-center gap-1 ml-auto">
+                  {actionLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                  Supprimer
+                </button>
               </div>
+
+              {/* Panneau de gestion étendu */}
+              {showAdminPanel && (
+                <div className="rounded-xl border border-border bg-secondary/30 p-3 space-y-2.5">
+                  {/* Priorité */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0">Priorité</span>
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {Object.entries(PRIORITY_LABELS).map(([key, label]) => (
+                        <button key={key} onClick={() => changePriority(key)} disabled={actionLoading}
+                          className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${selected.priority === key ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border text-muted-foreground hover:text-foreground'}`}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Catégorie */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0">Catégorie</span>
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                        <button key={key} onClick={() => changeCategory(key)} disabled={actionLoading}
+                          className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${selected.category === key ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border text-muted-foreground hover:text-foreground'}`}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Assigné à */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0">Assigné</span>
+                    <div className="flex items-center gap-1">
+                      {['ai', 'human', 'unassigned'].map((a) => (
+                        <button key={a} onClick={() => changeAssignee(a)} disabled={actionLoading}
+                          className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${selected.assignee === a ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border text-muted-foreground hover:text-foreground'}`}>
+                          {a === 'ai' ? 'Nexus IA' : a === 'human' ? 'Humain' : 'Non assigné'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Label admin */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide w-16 flex-shrink-0">Label</span>
+                    <input
+                      value={selected.admin_label || ''}
+                      onChange={(e) => setSelected((prev) => prev ? { ...prev, admin_label: e.target.value } : prev)}
+                      onBlur={(e) => setAdminLabel(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                      placeholder="VIP, litige, suivi…"
+                      className="flex-1 bg-background border border-border rounded-lg px-2 py-1 text-[11px] outline-none focus:ring-1 focus:ring-primary/40"
+                    />
+                  </div>
+
+                  {/* Notes admin */}
+                  <div>
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wide mb-1 flex items-center gap-1">
+                      <StickyNote className="w-2.5 h-2.5" /> Notes internes
+                    </span>
+                    <textarea
+                      value={adminNotes}
+                      onChange={(e) => setAdminNotes(e.target.value)}
+                      placeholder="Notes administratives (non visibles par l'utilisateur)…"
+                      rows={2}
+                      className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-[11px] outline-none focus:ring-1 focus:ring-primary/40 resize-none"
+                    />
+                    <button onClick={saveAdminNotes} disabled={actionLoading}
+                      className="mt-1 text-[10px] px-2 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors disabled:opacity-40 flex items-center gap-1">
+                      {actionLoading ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <CheckCircle2 className="w-2.5 h-2.5" />}
+                      Enregistrer les notes
+                    </button>
+                  </div>
+
+                  {/* Infos utilisateur */}
+                  <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+                    <UserSquare className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground truncate">{selected.user_email}</span>
+                    <a href={`/@${selected.user_name || ''}`} target="_blank" rel="noreferrer"
+                      className="text-[10px] text-primary hover:underline flex items-center gap-0.5 ml-auto">
+                      Voir profil <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Composer */}
               <div className="flex items-end gap-2">
                 <textarea
                   value={reply}

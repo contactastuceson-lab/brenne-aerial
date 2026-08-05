@@ -22,6 +22,7 @@ import AffiliationModal from '@/components/ui/AffiliationModal';
 import RepostDialog from '@/components/post/RepostDialog';
 import RepostEmbed from '@/components/post/RepostEmbed';
 import StoryAvatar from '@/components/stories/StoryAvatar';
+import ReportButton from '@/components/shared/ReportButton';
 
 const TRUNCATE_LIMIT = 560;
 
@@ -283,48 +284,59 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
           </div>
 
           {/* Menu */}
-          {isOwner && (
-            <div className="relative flex-shrink-0" ref={menuRef} onClick={e => e.stopPropagation()}>
-              <button
-                onClick={e => { e.stopPropagation(); setMenuOpen(o => !o); }}
-                className="p-1.5 rounded-full text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-foreground hover:bg-white/8 transition-all"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
-              {menuOpen && (
-                <div className="absolute right-0 top-7 z-50 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-visible [&>button:first-child]:rounded-t-xl [&>button:last-child]:rounded-b-xl">
-                  {!post.reply_to_id && (
+          <div className="relative flex-shrink-0" ref={menuRef} onClick={e => e.stopPropagation()}>
+            <button
+              onClick={e => { e.stopPropagation(); setMenuOpen(o => !o); }}
+              className="p-1.5 rounded-full text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-foreground hover:bg-white/8 transition-all"
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-7 z-50 w-44 bg-card border border-border rounded-xl shadow-2xl overflow-visible [&>button:first-child]:rounded-t-xl [&>button:last-child]:rounded-b-xl">
+                {isOwner ? (
+                  <>
+                    {!post.reply_to_id && (
+                      <button
+                        onClick={e => { e.stopPropagation(); setMenuOpen(false); handleTogglePin(e); }}
+                        className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-foreground hover:bg-white/6 transition-colors"
+                      >
+                        <Pin className="w-3.5 h-3.5 text-amber-400" /> {pinned ? 'Désépingler' : 'Épingler sur le profil'}
+                      </button>
+                    )}
+                    {!post.reply_to_id && (
+                      <button
+                        onClick={e => { e.stopPropagation(); setMenuOpen(false); handleToggleHighlight(e); }}
+                        className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-foreground hover:bg-white/6 transition-colors"
+                      >
+                        <Star className="w-3.5 h-3.5 text-cyan-400" /> {highlighted ? 'Retirer de la une' : 'Mettre à la une'}
+                      </button>
+                    )}
                     <button
-                      onClick={e => { e.stopPropagation(); setMenuOpen(false); handleTogglePin(e); }}
+                      onClick={e => { e.stopPropagation(); setMenuOpen(false); setEditing(true); setEditContent(post.content || ''); }}
                       className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-foreground hover:bg-white/6 transition-colors"
                     >
-                      <Pin className="w-3.5 h-3.5 text-amber-400" /> {pinned ? 'Désépingler' : 'Épingler sur le profil'}
+                      <Pencil className="w-3.5 h-3.5 text-primary" /> Modifier
                     </button>
-                  )}
-                  {!post.reply_to_id && (
                     <button
-                      onClick={e => { e.stopPropagation(); setMenuOpen(false); handleToggleHighlight(e); }}
-                      className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-foreground hover:bg-white/6 transition-colors"
+                      onClick={e => { e.stopPropagation(); setMenuOpen(false); setConfirmDelete(true); }}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                     >
-                      <Star className="w-3.5 h-3.5 text-cyan-400" /> {highlighted ? 'Retirer de la une' : 'Mettre à la une'}
+                      <Trash2 className="w-3.5 h-3.5" /> Supprimer
                     </button>
-                  )}
-                  <button
-                    onClick={e => { e.stopPropagation(); setMenuOpen(false); setEditing(true); setEditContent(post.content || ''); }}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-foreground hover:bg-white/6 transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5 text-primary" /> Modifier
-                  </button>
-                  <button
-                    onClick={e => { e.stopPropagation(); setMenuOpen(false); setConfirmDelete(true); }}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" /> Supprimer
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+                  </>
+                ) : (
+                  <ReportButton
+                    targetType="post"
+                    targetId={post.id}
+                    targetName={authorName}
+                    targetEmail={liveUser?.email || ''}
+                    targetContent={post.content || ''}
+                    targetUrl={`/post/${post.id}`}
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Reply context */}

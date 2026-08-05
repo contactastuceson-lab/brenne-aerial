@@ -11,6 +11,7 @@ import PostAuthorHeader from '@/components/shared/PostAuthorHeader';
 import usePublicUser from '@/hooks/usePublicUser';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import ReportButton from '@/components/shared/ReportButton';
 
 function AvatarColumn({ authorId, authorAvatar, authorDisplayName, profileLink }) {
   const liveUser = usePublicUser(authorId);
@@ -161,9 +162,13 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
                 <LinkIcon className="w-3.5 h-3.5" /> Copier le lien
               </button>
               <div className="my-1 mx-3 h-px bg-border/40" />
-              <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-rose-400 hover:bg-rose-400/10 transition-colors text-left">
-                <Flag className="w-3.5 h-3.5" /> Signaler
-              </button>
+              <ReportButton
+                targetType="post"
+                targetId={post.id}
+                targetName={post.author_display_name || post.author_name || ''}
+                targetContent={post.content || ''}
+                targetUrl={`/post/${post.id}`}
+              />
             </motion.div>
           )}
         </AnimatePresence>

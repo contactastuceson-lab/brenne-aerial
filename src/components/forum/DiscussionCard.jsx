@@ -1,12 +1,13 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MessageCircle, Eye, Pin, Lock, Star } from 'lucide-react';
+import { MessageCircle, Eye, Pin, Lock, Star, Flag } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import AffiliationBadges from '@/components/shared/AffiliationBadges';
 import usePublicUser from '@/hooks/usePublicUser';
 import { parseEntityDate } from '@/lib/entityDate';
 import { handleIdentityClick } from '@/lib/identityClick';
+import ReportButton from '@/components/shared/ReportButton';
 
 // Strip markdown to plain text for preview
 function stripMarkdown(text = '') {
@@ -90,6 +91,18 @@ export default function DiscussionCard({ discussion }) {
           <div className="flex items-center gap-3 flex-shrink-0">
             <div className="flex items-center gap-1"><MessageCircle size={13} />{discussion.replies_count || 0}</div>
             <div className="flex items-center gap-1"><Eye size={13} />{discussion.views_count || 0}</div>
+            <div onClick={e => { e.preventDefault(); e.stopPropagation(); }}>
+              <ReportButton
+                targetType="discussion"
+                targetId={discussion.id}
+                targetName={authorName}
+                targetContent={discussion.title || plainContent}
+                targetUrl={`/forum/${discussion.id}`}
+                variant="icon"
+                icon={Flag}
+                label="Signaler la discussion"
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -8,51 +8,81 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
 
 const REASONS = [
   { value: 'spam', label: '🚫 Spam', color: 'text-blue-400' },
   { value: 'harcelement', label: '⚠️ Harcèlement', color: 'text-orange-400' },
   { value: 'contenu_inapproprie', label: '🔞 Contenu inapproprié', color: 'text-red-400' },
   { value: 'usurpation', label: '🎭 Usurpation d\'identité', color: 'text-purple-400' },
+  { value: 'discours_haineux', label: '💬 Discours haineux', color: 'text-pink-400' },
+  { value: 'violence', label: '⚔️ Violence / menace', color: 'text-red-500' },
+  { value: 'mise_en_danger', label: '🚨 Mise en danger', color: 'text-amber-400' },
+  { value: 'illegal', label: '⚖️ Contenu illégal', color: 'text-red-600' },
   { value: 'autre', label: '❓ Autre', color: 'text-gray-400' },
 ];
 
-export default function ReportModal({ open, onClose, user, targetType, targetId, targetEmail, targetName, messageContent }) {
+const TARGET_LABELS = {
+  user: 'Utilisateur',
+  message: 'Message',
+  post: 'Publication',
+  discussion: 'Discussion',
+  discussion_reply: 'Réponse',
+  forum_topic: 'Sujet forum',
+  forum_post: 'Message forum',
+  community: 'Communauté',
+  space: 'Space audio',
+  story: 'Story',
+  event: 'Événement',
+  review: 'Avis',
+};
+
+export default function ReportModal({
+  open,
+  onClose,
+  targetType,
+  targetId,
+  targetEmail,
+  targetName,
+  targetContent,
+  targetUrl,
+}) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [reason, setReason] = useState('');
   const [details, setDetails] = useState('');
   const [reportId, setReportId] = useState(null);
 
   const reportMutation = useMutation({
-    mutationFn: async (newReportId) => {
+    mutationFn: async () => {
       const report = await base44.entities.Report.create({
         reporter_email: user.email,
         reporter_name: user.full_name,
         target_type: targetType,
         target_id: targetId,
-        target_email: targetEmail,
-        target_name: targetName,
+        target_email: targetEmail || '',
+        target_name: targetName || '',
+        target_content_preview: (targetContent || '').slice(0, 500),
+        target_url: targetUrl || '',
         reason,
         details,
-        message_content: messageContent || '',
+        message_content: targetContent || '',
         status: 'pending',
       });
-      
-      // Notify admins
+
       await base44.functions.invoke('notifyAdminNewReport', {
         reportId: report.id,
         reporterName: user.full_name,
-        targetName: targetName || targetEmail,
+        targetName: targetName || targetEmail || TARGET_LABELS[targetType] || 'Contenu',
         targetType,
         reason: REASONS.find(r => r.value === reason)?.label || reason,
       }).catch(() => {});
 
-      // Send acknowledgment email to the reporter (non-blocking)
       await base44.functions.invoke('sendReportAcknowledgment', {
         reportId: report.id,
         reporterEmail: user.email,
         reporterName: user.full_name,
-        targetName: targetName || targetEmail,
+        targetName: targetName || targetEmail || TARGET_LABELS[targetType] || 'Contenu',
         targetType,
         reason,
       }).catch(() => {});
@@ -76,9 +106,16 @@ export default function ReportModal({ open, onClose, user, targetType, targetId,
     navigate('/espace?tab=reports');
   };
 
+  const handleClose = () => {
+    setReportId(null);
+    setReason('');
+    setDetails('');
+    onClose();
+  };
+
   if (reportId) {
     return (
-      <Dialog open={open} onOpenChange={onClose}>
+      <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="bg-card border border-border/50 max-w-md shadow-2xl">
           <div className="flex flex-col items-center text-center space-y-5 py-4">
             <div className="w-12 h-12 rounded-full bg-green-400/20 flex items-center justify-center">
@@ -101,7 +138,7 @@ export default function ReportModal({ open, onClose, user, targetType, targetId,
               <Button
                 variant="outline"
                 className="w-full border-border/50"
-                onClick={onClose}
+                onClick={handleClose}
               >
                 Fermer
               </Button>
@@ -113,7 +150,7 @@ export default function ReportModal({ open, onClose, user, targetType, targetId,
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="bg-card border border-border/50 max-w-md shadow-2xl">
         <DialogHeader className="border-b border-border/50 pb-4">
           <DialogTitle className="font-grotesk font-bold text-lg flex items-center gap-2">
@@ -127,15 +164,15 @@ export default function ReportModal({ open, onClose, user, targetType, targetId,
         <div className="space-y-4">
           <div className="bg-primary/5 border border-primary/20 rounded-xl px-3.5 py-2.5">
             <p className="font-inter text-xs text-muted-foreground mb-1">
-              {targetType === 'user' ? 'Utilisateur signalé' : 'Contenu signalé'}
+              {TARGET_LABELS[targetType] || 'Contenu'} signalé{targetName ? ' · ' : ''}
+              {targetName && <span className="text-foreground font-medium">{targetName}</span>}
             </p>
-            <p className="font-inter text-sm font-medium">{targetName || targetEmail}</p>
           </div>
 
-          {messageContent && (
+          {targetContent && (
             <div className="bg-secondary/40 rounded-lg p-3 border border-border/50">
-              <p className="font-mono text-[9px] text-muted-foreground mb-2 uppercase opacity-70">Message signalé</p>
-              <p className="font-inter text-xs text-foreground italic">"{messageContent}"</p>
+              <p className="font-mono text-[9px] text-muted-foreground mb-2 uppercase opacity-70">Contenu signalé</p>
+              <p className="font-inter text-xs text-foreground italic line-clamp-4">"{targetContent}"</p>
             </div>
           )}
 
@@ -168,7 +205,7 @@ export default function ReportModal({ open, onClose, user, targetType, targetId,
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 border-border/50" onClick={onClose}>
+            <Button variant="outline" className="flex-1 border-border/50" onClick={handleClose}>
               Annuler
             </Button>
             <Button

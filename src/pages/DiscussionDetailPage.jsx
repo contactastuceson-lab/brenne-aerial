@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Eye, Heart, Check } from 'lucide-react';
+import { ArrowLeft, Eye, Heart, Check, Flag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -17,6 +17,7 @@ import usePublicUser from '@/hooks/usePublicUser';
 import ExternalLinkModal from '@/components/forum/ExternalLinkModal.jsx';
 import { applySeoMeta, getForumSeoData } from '@/lib/seo';
 import { handleIdentityClick } from '@/lib/identityClick';
+import ReportButton from '@/components/shared/ReportButton';
 
 // Composant isolé pour chaque réponse — hook usePublicUser au niveau du composant
 function ReplyCard({ reply, discussion, id }) {
@@ -63,10 +64,20 @@ function ReplyCard({ reply, discussion, id }) {
         )}
       </div>
       <div className="mb-3"><DiscordMarkdown content={reply.content} allowMarkdown={true} /></div>
-      <div className="flex gap-2">
+      <div className="flex items-center justify-between gap-2">
         <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
           <Heart size={14} className="mr-1" />{reply.likes_count || 0}
         </Button>
+        <ReportButton
+          targetType="discussion_reply"
+          targetId={reply.id}
+          targetName={name}
+          targetContent={reply.content || ''}
+          targetUrl={`/forum/${discussion?.id || id}#reply-${reply.id}`}
+          variant="button"
+          icon={Flag}
+          label="Signaler"
+        />
       </div>
     </div>
   );
@@ -209,6 +220,16 @@ export default function DiscussionDetailPage() {
               <Eye size={12} />
               {discussion.views_count || 0} vues
             </div>
+            <ReportButton
+              targetType="discussion"
+              targetId={discussion.id}
+              targetName={discussion.author_display_name || discussion.author_name || ''}
+              targetContent={discussion.title || ''}
+              targetUrl={`/forum/${discussion.id}`}
+              variant="button"
+              icon={Flag}
+              label="Signaler"
+            />
           </div>
         </div>
 

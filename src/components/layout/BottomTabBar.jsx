@@ -294,11 +294,7 @@ export default function BottomTabBar() {
                 onClick={() => setShowMore(false)}
                 className="native-press flex flex-col items-center gap-1 flex-1 py-2 rounded-2xl relative active:opacity-60 transition-opacity duration-100"
               >
-                {tab.to === '/messages' && unreadCount > 0 && user && (
-                  <span className="absolute top-1.5 right-[calc(50%-10px)] w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-mono flex items-center justify-center z-10 border border-background">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
+
                 <div className={`w-8 h-8 flex items-center justify-center rounded-xl transition-colors duration-150 ${active ? 'bg-primary/20' : ''}`}>
                   <Icon className={`w-5 h-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
                 </div>

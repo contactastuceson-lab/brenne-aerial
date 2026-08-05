@@ -4,37 +4,16 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Bell, Heart, MessageCircle, UserPlus, CheckCircle, AtSign, CheckCheck, Trash2, Volume2 } from 'lucide-react';
+import { Bell, CheckCheck, Trash2, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 import AdSlot from '@/components/feed/AdSlot';
-
-const TYPE_CONFIG = {
-  LIKE: {
-    icon: <Heart className="w-5 h-5 text-rose-400 fill-rose-400" />,
-    bg: 'bg-rose-400/10',
-  },
-  REPLY: {
-    icon: <MessageCircle className="w-5 h-5 text-blue-400" />,
-    bg: 'bg-blue-400/10',
-  },
-  FOLLOW: {
-    icon: <UserPlus className="w-5 h-5 text-primary" />,
-    bg: 'bg-primary/10',
-  },
-  VERIFICATION: {
-    icon: <CheckCircle className="w-5 h-5 text-sky-400" />,
-    bg: 'bg-sky-400/10',
-  },
-  MENTION: {
-    icon: <AtSign className="w-5 h-5 text-purple-400" />,
-    bg: 'bg-purple-400/10',
-  },
-};
+import { getNotifConfig } from '@/lib/notificationConfig';
 
 function NotifCard({ notif, onRead }) {
   const navigate = useNavigate();
-  const config = TYPE_CONFIG[notif.type];
+  const config = getNotifConfig(notif.type);
+  const TypeIcon = config.icon;
   const timeAgo = notif.created_date
     ? formatDistanceToNow(new Date(notif.created_date), { addSuffix: true, locale: fr })
     : '';
@@ -56,30 +35,41 @@ function NotifCard({ notif, onRead }) {
       </div>
 
       {/* Type icon */}
-      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${config ? config.bg : 'bg-muted'}`}>
-        {config ? config.icon : <Bell className="w-5 h-5 text-muted-foreground" />}
+      <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border ${config.bg} ${config.border}`}>
+        <TypeIcon className={`w-5 h-5 ${config.color}`} />
       </div>
 
       {/* Body */}
       <div className="flex-1 min-w-0">
-        {/* Sender avatar + title */}
+        {/* Sender avatar + type label + title */}
         <div className="flex items-center gap-2 mb-1 flex-wrap">
           {notif.sender_avatar && (
             <img src={notif.sender_avatar} alt="" className="w-6 h-6 rounded-full object-cover border border-white/10 flex-shrink-0" />
           )}
-          <span className={`text-sm leading-snug ${!notif.is_read ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
-            {notif.title}
-          </span>
+          {notif.sender_name && (
+            <span className="text-xs font-semibold text-foreground/70 truncate max-w-[140px]">{notif.sender_name}</span>
+          )}
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${config.bg} ${config.color}`}>{config.label}</span>
+          {!notif.is_read && <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />}
         </div>
 
-        {/* Post excerpt */}
+        <span className={`text-sm leading-snug block ${!notif.is_read ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
+          {notif.title}
+        </span>
+
+        {/* Content / post excerpt */}
+        {notif.content && (
+          <p className="text-sm text-muted-foreground/60 line-clamp-2 mt-0.5 border-l-2 border-border/60 pl-2 italic">
+            {notif.content}
+          </p>
+        )}
         {notif.post_excerpt && notif.type !== 'FOLLOW' && notif.type !== 'VERIFICATION' && (
-          <p className="text-sm text-muted-foreground/60 line-clamp-2 mb-1 border-l-2 border-border/60 pl-2 italic">
+          <p className="text-sm text-muted-foreground/60 line-clamp-2 mt-0.5 border-l-2 border-border/60 pl-2 italic">
             {notif.post_excerpt}
           </p>
         )}
 
-        <span className="text-xs text-muted-foreground/40 font-mono">{timeAgo}</span>
+        <span className="text-xs text-muted-foreground/40 font-mono mt-0.5 block">{timeAgo}</span>
       </div>
     </div>
   );

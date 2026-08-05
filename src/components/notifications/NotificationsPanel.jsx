@@ -7,17 +7,7 @@ import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
-
-const TYPE_COLORS = {
-  quote_accepted: 'bg-green-400/10 border-green-400/30 text-green-400',
-  quote_refused: 'bg-destructive/10 border-destructive/30 text-destructive',
-  quote_pending: 'bg-primary/10 border-primary/30 text-primary',
-  new_message: 'bg-accent/10 border-accent/30 text-accent',
-  appointment: 'bg-chart-5/10 border-chart-5/30 text-chart-5',
-  system: 'bg-muted border-border text-muted-foreground',
-  badge: 'bg-purple-400/10 border-purple-400/30 text-purple-400',
-  blog: 'bg-blue-400/10 border-blue-400/30 text-blue-400',
-};
+import { getNotifConfig } from '@/lib/notificationConfig';
 
 export default function NotificationsPanel({ user, open, onClose }) {
   const navigate = useNavigate();
@@ -135,7 +125,10 @@ export default function NotificationsPanel({ user, open, onClose }) {
                 </div>
               ) : (
                 <div className="divide-y divide-border/50">
-                  {notifs.map(n => (
+                  {notifs.map(n => {
+                    const cfg = getNotifConfig(n.type);
+                    const TypeIcon = cfg.icon;
+                    return (
                     <div
                       key={n.id}
                       onClick={() => {
@@ -148,13 +141,20 @@ export default function NotificationsPanel({ user, open, onClose }) {
                       className={`px-4 py-3 cursor-pointer transition-all hover:bg-secondary/40 ${!n.is_read ? 'bg-primary/5' : ''} ${n.action_url ? 'group' : ''}`}
                     >
                       <div className="flex items-start gap-3">
-                        <div className={`mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${!n.is_read ? 'bg-primary' : 'bg-transparent'}`} />
+                        {/* Type icon */}
+                        <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center border ${cfg.bg} ${cfg.border}`}>
+                          <TypeIcon className={`w-4 h-4 ${cfg.color}`} />
+                        </div>
                         <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${cfg.bg} ${cfg.color}`}>{cfg.label}</span>
+                            {!n.is_read && <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />}
+                          </div>
                           <p className={`font-inter text-sm ${!n.is_read ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
                             {n.title}
                           </p>
-                          {n.message && (
-                            <p className="font-inter text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
+                          {n.content && (
+                            <p className="font-inter text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.content}</p>
                           )}
                           <p className="font-mono text-[10px] text-muted-foreground/60 mt-1">
                             {n.created_date ? format(new Date(n.created_date), "d MMM 'à' HH:mm", { locale: fr }) : ''}
@@ -164,7 +164,8 @@ export default function NotificationsPanel({ user, open, onClose }) {
                         {n.action_url && <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/60 group-hover:text-primary flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

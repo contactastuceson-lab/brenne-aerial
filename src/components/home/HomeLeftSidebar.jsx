@@ -14,9 +14,9 @@ import { useQuery } from '@tanstack/react-query';
 const NAV = [
   { icon: Home,          label: 'Accueil',       to: '/' },
   { icon: Compass,       label: 'Explorer',       to: '/discover' },
-  { icon: Bell,          label: 'Notifications',  to: '/notifications' },
+  { icon: Bell,          label: 'Notifications',  to: '/notifications', badge: true },
   { icon: UserCircle,    label: 'Mon espace',     to: '/espace' },
-  { icon: MessageCircle, label: 'Messages',       to: '/messages', badge: true },
+  { icon: MessageCircle, label: 'Messages',       to: '/messages' },
   { icon: Radio,        label: 'Spaces',          to: '/spaces' },
   { icon: Calendar,     label: 'Événements',     to: '/events' },
   { icon: Bookmark,      label: 'Signets',        to: '/bookmarks' },

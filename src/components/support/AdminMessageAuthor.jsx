@@ -15,7 +15,7 @@ export default function AdminMessageAuthor({ adminId, fallbackName }) {
     <div className="flex items-center gap-1.5 mb-1 px-1">
       <span className="text-xs font-semibold text-foreground/90 truncate">{displayName}</span>
       {adminId && (
-        <VerificationIcons verifications={verifications} size="sm" user={profile ? { id: adminId, email: profile.email } : null} markSize="sm" />
+        <VerificationIcons verifications={verifications} size="sm" user={profile ? { id: adminId, email: profile.email } : null} />
       )}
     </div>
   );

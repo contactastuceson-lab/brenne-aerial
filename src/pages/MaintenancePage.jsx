@@ -69,8 +69,9 @@ export default function MaintenancePage({ message: propMessage }) {
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent scan-line pointer-events-none" />
 
       {/* Corner decorations */}
-      <div className="absolute top-6 left-6 font-mono text-[10px] text-primary/40 tracking-widest">
-        EZA — SYS_MAINTENANCE
+      <div className="absolute top-6 left-6 flex items-center gap-2">
+        <img src="https://media.base44.com/images/public/69c5c081406b9e20deaed582/53f8e6b37_1782606023373.png" alt="EZA" className="w-7 h-7 rounded-lg object-cover" />
+        <span className="font-mono text-[10px] text-primary/40 tracking-widest">EZA — SYS_MAINTENANCE</span>
       </div>
       <div className="absolute top-6 right-6 font-mono text-[10px] text-primary/40 tabular-nums">
         {time.toLocaleTimeString('fr-FR')}

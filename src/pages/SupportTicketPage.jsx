@@ -157,8 +157,8 @@ export default function SupportTicketPage() {
   if (loading) {
     return (
       <>
-        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden md:block" onClick={() => navigate('/support/conversation')} />
-        <div className="fixed top-0 right-0 z-50 h-full w-full md:w-1/2 bg-background border-l border-border flex items-center justify-center">
+        <div className="fixed top-0 left-0 z-40 w-full h-[100dvh] bg-black/40 backdrop-blur-sm hidden md:block" onClick={() => navigate('/support/conversation')} />
+        <div className="fixed top-0 right-0 z-50 h-[100dvh] w-full md:w-1/2 bg-background border-l border-border flex items-center justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       </>
@@ -168,8 +168,8 @@ export default function SupportTicketPage() {
   if (error || !ticket) {
     return (
       <>
-        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden md:block" onClick={() => navigate('/support/conversation')} />
-        <div className="fixed top-0 right-0 z-50 h-full w-full md:w-1/2 bg-background border-l border-border flex flex-col items-center justify-center gap-3 px-4">
+        <div className="fixed top-0 left-0 z-40 w-full h-[100dvh] bg-black/40 backdrop-blur-sm hidden md:block" onClick={() => navigate('/support/conversation')} />
+        <div className="fixed top-0 right-0 z-50 h-[100dvh] w-full md:w-1/2 bg-background border-l border-border flex flex-col items-center justify-center gap-3 px-4">
           <AlertCircle className="w-8 h-8 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground text-center">{error || 'Ticket introuvable'}</p>
           <Link to="/support/conversation" className="text-primary text-sm hover:underline">← Retour aux conversations</Link>
@@ -191,8 +191,8 @@ export default function SupportTicketPage() {
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden md:block" onClick={() => navigate('/support/conversation')} />
-      <div className="fixed top-0 right-0 z-50 h-full w-full md:w-1/2 bg-background border-l border-border flex flex-col p-3 md:p-4">
+      <div className="fixed top-0 left-0 z-40 w-full h-[100dvh] bg-black/40 backdrop-blur-sm hidden md:block" onClick={() => navigate('/support/conversation')} />
+      <div className="fixed top-0 right-0 z-50 h-[100dvh] w-full md:w-1/2 bg-background border-l border-border flex flex-col p-3 md:p-4">
       {/* Header */}
       <div className="rounded-2xl bg-card border border-border overflow-hidden mb-3">
         <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #F37322, #1DA890)' }} />

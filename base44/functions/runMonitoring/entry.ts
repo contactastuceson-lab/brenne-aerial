@@ -1,10 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const APP_URL = Deno.env.get('APP_URL') || 'https://eza.group';
+const APP_URL = Deno.env.get('APP_URL') || 'https://brenneaerial.base44.app';
 
-// Services à surveiller avec leurs checks — plateforme eza
+// Services à surveiller avec leurs checks
 const SERVICES = [
-  // ── IA & Support ──
+  {
+    name: 'aria_llm',
+    label: 'IA ARIA (Chatbot)',
+    type: 'llm_invoke',
+    prompt: 'Réponds juste "OK" en un mot.',
+    timeout: 15000,
+  },
   {
     name: 'nexus_agent',
     label: 'Agent Nexus (PDG AI)',
@@ -14,20 +20,26 @@ const SERVICES = [
     timeout: 10000,
   },
   {
-    name: 'nexus_support',
-    label: 'Support IA (Tickets)',
+    name: 'quote_pdf',
+    label: 'Génération PDF Devis',
     type: 'function_reachable',
-    function: 'autoHandleSupportTicket',
+    function: 'generateQuotePDF',
     timeout: 5000,
   },
   {
-    name: 'llm_core',
-    label: 'Moteur LLM (InvokeLLM)',
+    name: 'email_service',
+    label: 'Service Email (Notifications)',
+    type: 'function_reachable',
+    function: 'emailNotification',
+    timeout: 5000,
+  },
+  {
+    name: 'planning_scheduler',
+    label: 'Planificateur IA (Scheduler Chat)',
     type: 'llm_invoke',
-    prompt: 'Réponds juste "OK" en un mot.',
+    prompt: 'Réponds juste "PONG".',
     timeout: 15000,
   },
-  // ── Paiements & Crédits ──
   {
     name: 'stripe_webhook',
     label: 'Webhook Stripe (Paiements)',
@@ -36,92 +48,10 @@ const SERVICES = [
     timeout: 5000,
   },
   {
-    name: 'credits_transfer',
-    label: 'Transfert de Crédits (Banque)',
-    type: 'function_reachable',
-    function: 'transferCredits',
-    timeout: 5000,
-  },
-  {
-    name: 'cart_checkout',
-    label: 'Checkout Panier (Boutique)',
-    type: 'function_reachable',
-    function: 'checkoutCart',
-    timeout: 5000,
-  },
-  // ── Réseau social ──
-  {
-    name: 'post_moderation',
-    label: 'Modération de Posts (IA)',
-    type: 'function_reachable',
-    function: 'moderateNewPost',
-    timeout: 5000,
-  },
-  {
-    name: 'community_posts',
-    label: 'Publications Communautaires',
-    type: 'function_reachable',
-    function: 'getCommunityPosts',
-    timeout: 5000,
-  },
-  {
-    name: 'post_likes',
-    label: 'Système de Likes',
-    type: 'function_reachable',
-    function: 'togglePostLike',
-    timeout: 5000,
-  },
-  // ── Événements & Spaces ──
-  {
-    name: 'event_registration',
-    label: 'Inscription Événements',
-    type: 'function_reachable',
-    function: 'registerForEvent',
-    timeout: 5000,
-  },
-  {
-    name: 'space_management',
-    label: 'Spaces (LiveKit Audio)',
-    type: 'function_reachable',
-    function: 'createSpace',
-    timeout: 5000,
-  },
-  // ── Parrainage & Récompenses ──
-  {
-    name: 'referral_processing',
-    label: 'Traitement Parrainage',
-    type: 'function_reachable',
-    function: 'processReferral',
-    timeout: 5000,
-  },
-  {
-    name: 'badge_attribution',
-    label: 'Attribution de Badges',
-    type: 'function_reachable',
-    function: 'runBadgeAttribution',
-    timeout: 5000,
-  },
-  // ── Email & Push ──
-  {
-    name: 'email_service',
-    label: 'Service Email',
-    type: 'function_reachable',
-    function: 'emailNotification',
-    timeout: 5000,
-  },
-  {
-    name: 'push_notifications',
-    label: 'Notifications Push',
-    type: 'function_reachable',
-    function: 'pushNotification',
-    timeout: 5000,
-  },
-  // ── Bases de données critiques ──
-  {
-    name: 'database_posts',
-    label: 'Base de données - Posts',
+    name: 'database_quotes',
+    label: 'Base de données - Devis',
     type: 'entity_check',
-    entity: 'Post',
+    entity: 'Quote',
     timeout: 5000,
   },
   {
@@ -132,17 +62,17 @@ const SERVICES = [
     timeout: 5000,
   },
   {
-    name: 'database_wallets',
-    label: 'Base de données - Portefeuilles',
+    name: 'database_appointments',
+    label: 'Base de données - Rendez-vous',
     type: 'entity_check',
-    entity: 'Wallet',
+    entity: 'Appointment',
     timeout: 5000,
   },
   {
-    name: 'database_events',
-    label: 'Base de données - Événements',
-    type: 'entity_check',
-    entity: 'Event',
+    name: 'push_notifications',
+    label: 'Notifications Push',
+    type: 'function_reachable',
+    function: 'pushNotification',
     timeout: 5000,
   },
 ];
@@ -229,7 +159,7 @@ async function getAIDiagnosis(base44, results) {
   ).join('\n');
 
   const diagnosis = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt: `Tu es un expert DevOps/SRE pour la plateforme eza (réseau social communautaire/professionnel). Voici les services en anomalie détectés lors d'un check automatique:
+    prompt: `Tu es un expert DevOps/SRE pour une plateforme drone (Brenne Aerial). Voici les services en anomalie détectés lors d'un check automatique:
 
 ${summary}
 

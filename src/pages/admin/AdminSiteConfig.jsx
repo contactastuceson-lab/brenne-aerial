@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
@@ -304,6 +304,10 @@ export default function AdminSiteConfig() {
     queryFn: () => base44.entities.AppSettings.list(),
   });
 
+  // Ref toujours à jour pour éviter le stale closure lors d'un double-toggle rapide
+  const dbSettingsRef = useRef([]);
+  useEffect(() => { dbSettingsRef.current = dbSettings; }, [dbSettings]);
+
   useEffect(() => {
     if (dbSettings.length > 0) {
       const map = {};
@@ -314,15 +318,23 @@ export default function AdminSiteConfig() {
 
   const saveSetting = async (key, value, def = null) => {
     setSavingKeys(prev => new Set(prev).add(key));
-    const existing = dbSettings.find(s => s.key === key);
-    if (existing) {
-      await base44.entities.AppSettings.update(existing.id, { value: String(value) });
-    } else {
-      await base44.entities.AppSettings.create({ key, label: key, type: typeof value === 'boolean' ? 'boolean' : 'string', value: String(value) });
+    try {
+      const latest = dbSettingsRef.current;
+      const existing = latest.find(s => s.key === key);
+      if (existing) {
+        await base44.entities.AppSettings.update(existing.id, { value: String(value) });
+      } else {
+        await base44.entities.AppSettings.create({ key, label: key, type: typeof value === 'boolean' ? 'boolean' : 'string', value: String(value) });
+      }
+      qc.invalidateQueries({ queryKey: ['app-settings'] });
+      toast.success('Sauvegardé');
+    } catch (err) {
+      toast.error(`Erreur sauvegarde: ${err.message}`);
+      // Refetch pour synchroniser l'état réel (rollback optimiste)
+      qc.invalidateQueries({ queryKey: ['app-settings'] });
+    } finally {
+      setSavingKeys(prev => { const s = new Set(prev); s.delete(key); return s; });
     }
-    qc.invalidateQueries({ queryKey: ['app-settings'] });
-    setSavingKeys(prev => { const s = new Set(prev); s.delete(key); return s; });
-    toast.success('Sauvegardé');
   };
 
   const [sendingAlert, setSendingAlert] = useState(false);

@@ -45,7 +45,7 @@ function VideoThumb({ url, onClick }) {
         className={`w-full h-auto max-h-[510px] object-cover transition-opacity duration-200 ${thumbReady ? 'opacity-100' : 'opacity-0'}`}
       />
       {/* Fallback dark bg while loading */}
-      {!thumbReady && <div className="w-full bg-white/5" style={{ aspectRatio: '16/9' }} />}
+      {!thumbReady && <div className="w-full bg-white/[0.03]" style={{ aspectRatio: '16/9' }} />}
       {/* Play overlay */}
       <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/35 transition-colors">
         <div className="w-14 h-14 rounded-full bg-black/55 flex items-center justify-center">
@@ -75,9 +75,9 @@ function LazyImage({ src, alt, className }) {
   }, []);
 
   return (
-    <div ref={ref} className="relative w-full bg-white/5">
-      {!loaded && (
-        <div className="absolute inset-0 animate-pulse bg-white/8 rounded-inherit" style={{ minHeight: 120 }} />
+    <div ref={ref} className="relative w-full">
+      {!loaded && inView && (
+        <div className="absolute inset-0 animate-pulse bg-white/[0.03] rounded-inherit" style={{ minHeight: 120 }} />
       )}
       {inView && (
         <img
@@ -111,7 +111,7 @@ export default function LazyMedia({ urls = [], className = '', post = null, curr
     <>
       <div className={`grid gap-1 rounded-2xl overflow-hidden border border-border ${single ? 'grid-cols-1' : 'grid-cols-2'} ${className}`}>
         {urls.slice(0, 4).filter(Boolean).map((url, i) => (
-          <div key={i} className="relative overflow-hidden bg-white/5">
+          <div key={i} className="relative overflow-hidden">
             {url.match(/\.(mp4|webm|ogg)$/i) ? (
               <VideoThumb url={url} onClick={() => openVideo(url)} />
             ) : (

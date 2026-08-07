@@ -458,7 +458,7 @@ export default function PublicProfilePage() {
                   </span>
                 )}
                 <span className={`font-mono text-[10px] border px-2 py-1 rounded-full ${statusColors[user.account_status || 'active']}`}>
-                  {user.account_status === 'active' ? 'Actif' : 'Inactif'}
+                  {({ active: 'Actif', restricted: 'Restreint', suspended: 'Suspendu', banned: 'Banni', closed: 'Fermé' })[user.account_status || 'active'] || 'Actif'}
                 </span>
               </div>
             </div>

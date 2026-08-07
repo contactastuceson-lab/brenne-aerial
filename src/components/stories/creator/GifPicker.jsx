@@ -13,7 +13,8 @@ export default function GifPicker({ onPick }) {
     setLoading(true);
     try {
       const res = await base44.functions.invoke('searchGifs', { query });
-      setGifs(res?.data || []);
+      const data = res?.data ?? res;
+      setGifs(Array.isArray(data) ? data : []);
     } catch { setGifs([]); }
     setLoading(false);
   };

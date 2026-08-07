@@ -15,7 +15,8 @@ export default function GifPicker({ onSelect, onClose }) {
     setError(false);
     try {
       const res = await base44.functions.invoke('searchGifs', { query: q });
-      setGifs(res.data?.data || []);
+      const data = res?.data ?? res;
+      setGifs(Array.isArray(data) ? data : []);
     } catch {
       setError(true);
       setGifs([]);

@@ -5,7 +5,7 @@ import {
   Bell, User, LogOut, LayoutDashboard, Bookmark,
   Users, FileText, Calendar, Settings, Heart, Shield,
   Building2, Star, Award, Plus, Camera, List, Radio,
-  ShoppingBag, Wallet, Gift, BookOpen, Newspaper, Info, ShoppingCart, LifeBuoy
+  ShoppingBag, Wallet, Gift, BookOpen, Newspaper, Info, ShoppingCart, LifeBuoy, Plug
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -58,6 +58,7 @@ const NAV_SECTIONS = [
   {
     title: 'Ressources',
     items: [
+      { to: '/connect',        icon: Plug,             label: 'Connecter IA',   color: 'text-violet-400' },
       { to: '/support',        icon: LifeBuoy,         label: 'Support',        color: 'text-cyan-400' },
       { href: 'https://docs.ezagroup.org/', icon: BookOpen, label: 'Documentation', color: 'text-blue-300' },
       { to: '/blog',          icon: Newspaper,        label: 'Blog',           color: 'text-indigo-400' },

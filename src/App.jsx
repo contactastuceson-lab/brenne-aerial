@@ -109,6 +109,7 @@ import CommunityDetailPage from "@/pages/CommunityDetailPage";
 import SpaceRoomPage from "@/pages/SpaceRoomPage";
 import SpacesPage from "@/pages/SpacesPage";
 import WifiPortalPage from "@/pages/WifiPortalPage";
+import ConnectPage from "@/pages/Connect";
 import ReferralPage from "@/pages/ReferralPage";
 import BoutiquePage from "@/pages/BoutiquePage";
 import BanquePage from "@/pages/BanquePage";
@@ -207,6 +208,7 @@ const AuthenticatedApp = () => {
             <Route path=":id" element={<SupportTicketPage />} />
           </Route>
           <Route path="/s/:username" element={<SampleProfilePage />} />
+          <Route path="/connect" element={<ConnectPage />} />
           <Route path="/documentation" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />
           <Route path="/documentation/:slug" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />
           <Route path="/documentation/badges" element={<ExternalRedirect to="https://docs.ezagroup.org/" />} />

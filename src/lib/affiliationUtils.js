@@ -103,6 +103,12 @@ export function getOrganizationBadge(user = {}) {
   return null;
 }
 
+export function getAvatarRoundedClass(verifications = []) {
+  const badge = getHighestVerificationBadge(verifications);
+  if (badge === 'certified' || badge === 'official') return 'rounded-xl';
+  return 'rounded-full';
+}
+
 export function getHighestBadgeLevel(user = {}) {
   const verifications = Array.isArray(user?.verifications) ? user.verifications : [];
   const badges = Array.isArray(user?.badges) ? user.badges : [];

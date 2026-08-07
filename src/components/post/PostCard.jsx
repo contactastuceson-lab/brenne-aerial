@@ -18,6 +18,7 @@ import { extractHashtags } from '@/lib/hashtags';
 import { parseEntityDate } from '@/lib/entityDate';
 import { formatPostTime } from '@/lib/postTime';
 import { handleIdentityClick } from '@/lib/identityClick';
+import { getAvatarRoundedClass } from '@/lib/affiliationUtils';
 import AffiliationModal from '@/components/ui/AffiliationModal';
 import RepostDialog from '@/components/post/RepostDialog';
 import RepostEmbed from '@/components/post/RepostEmbed';
@@ -81,6 +82,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
   });
 
   const timeAgo = post.created_date ? formatPostTime(parseEntityDate(post.created_date)) : '';
+  const avatarRoundedClass = getAvatarRoundedClass(liveUser?.verifications || post.author_verifications || []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -249,7 +251,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
     >
       {/* Left column: avatar + thread line */}
       <div className="flex flex-col items-center flex-shrink-0" style={{ width: 48 }}>
-        <StoryAvatar authorId={post.author_id} src={avatarSrc} name={authorName} sizeClass="w-12 h-12" roundedClass="rounded-xl" onIdentityClick={handleIdentity} />
+        <StoryAvatar authorId={post.author_id} src={avatarSrc} name={authorName} sizeClass="w-12 h-12" roundedClass={avatarRoundedClass} onIdentityClick={handleIdentity} />
         {/* Thread line — shown when part of a thread (isThread) */}
         {isThread && (
           <div className="flex-1 w-0.5 bg-zinc-700/50 my-1 rounded-full" style={{ minHeight: 16 }} />

@@ -1,6 +1,20 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 const APP_URL = Deno.env.get('APP_URL') || 'https://eza.social';
+const BRAND_LOGO_URL = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/ec45d104f_Gemini_Generated_Image_giywz2giywz2giyw-ezgifcom-crop-removebg-preview-a5779c5f-135e-4533-ab49-24592b212751.png';
+
+// ── Palette EZA GROUP (cuivre / rose gold métallisé sur noir) ──────────────────
+const COPPER = {
+  rim: '#E88E52',       // rim light orange-cuivre
+  surface: '#B89C8F',   // surface mate
+  highlight: '#D4B4A0', // highlights haut-gloss
+  deep: '#8B6F5C',      // cuivre profond
+  dark: '#4A4038',      // fond footer
+  glow: 'rgba(232,142,82,0.08)',
+  softGlow: 'rgba(232,142,82,0.06)',
+  borderSoft: 'rgba(232,142,82,0.15)',
+  borderMid: 'rgba(232,142,82,0.3)',
+};
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function escapeHtml(value) {
@@ -64,80 +78,86 @@ const TYPE_CONFIG = {
   },
 };
 
-// ── Template email ───────────────────────────────────────────────────────────
+// ── Template email premium — EZA GROUP (cuivre métallisé sur noir) ────────────
 function buildSocialEmail({ notification, config, recipientName, senderAvatar, postExcerpt, link }) {
-  const accent = config.accent;
-  const accentSoft = config.accentSoft;
   const senderName = escapeHtml(notification.sender_name || 'Quelqu’un');
   const senderUsername = notification.sender_username ? `@${escapeHtml(notification.sender_username)}` : '';
   const safeRecipient = escapeHtml(recipientName || '');
   const safeExcerpt = escapeHtml(truncate(postExcerpt, 220));
   const ctaLink = link || `${APP_URL}`;
-  const ctaLabel = notification.type === 'FOLLOW' ? 'Voir le profil →' : 'Voir sur eza →';
+  const ctaLabel = notification.type === 'FOLLOW' ? 'Voir le profil' : 'Voir sur eza';
+  const actionLabel = escapeHtml(config.label);
 
-  // Avatar : image réelle ou fallback initiale
+  // Avatar : image réelle ou fallback initiale — anneau cuivre
   const avatarHtml = senderAvatar
-    ? `<img src="${escapeHtml(senderAvatar)}" alt="${senderName}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid ${accent};display:block;" />`
-    : `<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#1a3a5c,#0f2a44);border:2px solid ${accent};text-align:center;line-height:56px;font-size:24px;font-weight:700;color:${accent};">${(notification.sender_name || '?').charAt(0).toUpperCase()}</div>`;
+    ? `<img src="${escapeHtml(senderAvatar)}" alt="${senderName}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid ${COPPER.rim};display:block;box-shadow:0 0 16px ${COPPER.glow};" />`
+    : `<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1a1410,#2a1f18);border:2px solid ${COPPER.rim};text-align:center;line-height:64px;font-size:28px;font-weight:800;color:${COPPER.highlight};box-shadow:0 0 16px ${COPPER.glow};">${(notification.sender_name || '?').charAt(0).toUpperCase()}</div>`;
 
-  // Bloc excerpt du post (si applicable)
+  // Bloc excerpt du post (si applicable) — style premium cuivre
   const excerptHtml = safeExcerpt
     ? `
-        <div style="background:${accentSoft};border:1px solid ${accent}33;border-left:3px solid ${accent};border-radius:10px;padding:18px 20px;margin-bottom:28px;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${accent};opacity:0.7;margin-bottom:10px;">PUBLICATION CONCERNÉE</div>
-          <p style="margin:0;font-size:14px;line-height:1.7;color:#c8d8e8;font-style:italic;">"${safeExcerpt}"</p>
+        <div style="background:${COPPER.softGlow};border:1px solid ${COPPER.borderSoft};border-left:3px solid ${COPPER.rim};border-radius:12px;padding:20px 22px;margin-bottom:32px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${COPPER.rim};margin-bottom:12px;">✦ Publication concernée</div>
+          <p style="margin:0;font-size:15px;line-height:1.7;color:#C8B8A8;font-style:italic;">"${safeExcerpt}"</p>
         </div>`
     : '';
 
   return `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${escapeHtml(config.subject(notification))}</title></head>
-<body style="margin:0;padding:0;background:#060e1a;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#060e1a;padding:40px 16px;">
+<body style="margin:0;padding:0;background:#000000;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#000000;padding:48px 16px;">
 <tr><td align="center">
-<table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
-  <!-- Brand header -->
-  <tr><td style="padding-bottom:24px;text-align:center;">
-    <span style="font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${accent};opacity:0.85;">eza</span>
+  <!-- Brand header — logo EZA GROUP -->
+  <tr><td style="padding-bottom:36px;text-align:center;">
+    <img src="${BRAND_LOGO_URL}" alt="EZA GROUP" style="height:52px;width:auto;display:inline-block;" />
   </td></tr>
 
-  <!-- Main card -->
-  <tr><td style="background:linear-gradient(145deg,#0c1a30,#0f2040);border:1px solid ${accent}33;border-radius:16px;overflow:hidden;">
+  <!-- Main card — noir avec bordure cuivre subtile -->
+  <tr><td style="background:linear-gradient(160deg,#0a0a0a 0%,#121010 50%,#0a0a0a 100%);border:1px solid #2a2520;border-radius:20px;overflow:hidden;box-shadow:0 0 50px ${COPPER.glow};">
     <table width="100%" cellpadding="0" cellspacing="0">
-      <tr><td style="height:3px;background:linear-gradient(90deg,${accent},${accent}aa,${accent});"></td></tr>
-      <tr><td style="padding:36px 40px;">
 
-        <!-- Sender row with avatar -->
-        <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:28px;">
+      <!-- Ligne d'accent cuivre en haut -->
+      <tr><td style="height:2px;background:linear-gradient(90deg,transparent 0%,${COPPER.rim} 30%,${COPPER.highlight} 50%,${COPPER.rim} 70%,transparent 100%);"></td></tr>
+
+      <!-- Contenu -->
+      <tr><td style="padding:44px 48px;">
+
+        <!-- Badge type centré -->
+        <div style="text-align:center;margin-bottom:36px;">
+          <span style="display:inline-block;background:linear-gradient(135deg,${COPPER.softGlow},${COPPER.glow});border:1px solid ${COPPER.borderMid};border-radius:50px;padding:10px 24px;font-size:12px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:${COPPER.rim};">
+            ${config.icon}&nbsp;&nbsp;${actionLabel}
+          </span>
+        </div>
+
+        <!-- Ligne expéditeur avec avatar -->
+        <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:32px;">
           <tr>
-            <td width="64" style="vertical-align:middle;">
+            <td width="72" style="vertical-align:middle;">
               ${avatarHtml}
             </td>
-            <td style="vertical-align:middle;padding-left:16px;">
-              <div style="font-size:16px;font-weight:700;color:#e8edf5;">${senderName}</div>
-              <div style="font-size:12px;color:#5a7a9a;margin-top:3px;">${senderUsername}</div>
-            </td>
-            <td style="vertical-align:middle;text-align:right;">
-              <span style="background:${accentSoft};border:1px solid ${accent}44;border-radius:20px;padding:6px 14px;font-size:18px;">${config.icon}</span>
+            <td style="vertical-align:middle;padding-left:20px;">
+              <div style="font-size:18px;font-weight:700;color:#E8DDD0;letter-spacing:0.3px;">${senderName}</div>
+              <div style="font-size:13px;color:${COPPER.deep};margin-top:5px;letter-spacing:0.5px;">${senderUsername}</div>
             </td>
           </tr>
         </table>
 
-        <!-- Title -->
-        <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#e8edf5;line-height:1.3;">
-          ${config.icon} ${escapeHtml(config.label)}
-        </h1>
-        <p style="margin:0 0 24px;font-size:14px;color:#6a8aaa;line-height:1.6;">
-          ${safeRecipient ? `Bonjour <strong style="color:#a0c0d8;">${safeRecipient}</strong>,` : 'Bonjour,'} <strong style="color:#a0c0d8;">${senderName}</strong> ${escapeHtml(config.label)} sur eza.
+        <!-- Message -->
+        <p style="margin:0 0 28px;font-size:15px;color:#A0958A;line-height:1.75;letter-spacing:0.2px;">
+          ${safeRecipient ? `Bonjour <strong style="color:${COPPER.highlight};font-weight:700;">${safeRecipient}</strong>,` : 'Bonjour,'} <strong style="color:${COPPER.highlight};font-weight:700;">${senderName}</strong> ${actionLabel} sur eza.
         </p>
 
         ${excerptHtml}
 
-        <!-- CTA -->
-        <table cellpadding="0" cellspacing="0">
-          <tr><td style="border-radius:10px;background:linear-gradient(135deg,${accent},${accent}cc);">
-            <a href="${escapeHtml(ctaLink)}" style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#fff;text-decoration:none;">${ctaLabel}</a>
+        <!-- Bouton CTA — dégradé cuivre métallisé -->
+        <table cellpadding="0" cellspacing="0" width="100%">
+          <tr><td align="center" style="padding-bottom:4px;">
+            <a href="${escapeHtml(ctaLink)}" style="display:inline-block;padding:16px 44px;font-size:15px;font-weight:700;color:#0a0a0a;text-decoration:none;border-radius:12px;background:linear-gradient(135deg,${COPPER.rim} 0%,${COPPER.highlight} 50%,${COPPER.rim} 100%);box-shadow:0 6px 24px rgba(232,142,82,0.35),inset 0 1px 0 rgba(255,255,255,0.3);letter-spacing:0.5px;text-transform:uppercase;">
+              ${ctaLabel} →
+            </a>
           </td></tr>
         </table>
 
@@ -145,11 +165,13 @@ function buildSocialEmail({ notification, config, recipientName, senderAvatar, p
     </table>
   </td></tr>
 
-  <!-- Footer -->
-  <tr><td style="padding-top:28px;text-align:center;">
-    <p style="font-size:12px;color:#2a4060;margin:0;">eza · <a href="${APP_URL}" style="color:${accent};text-decoration:none;">eza.social</a></p>
-    <p style="font-size:11px;color:#1e3050;margin:6px 0 0;">Vous recevez cet email car vous avez une nouvelle notification sur eza.</p>
-    <p style="font-size:11px;color:#1e3050;margin:4px 0 0;">Gérez vos préférences dans <a href="${APP_URL}/espace" style="color:${accent};text-decoration:none;">votre espace</a>.</p>
+  <!-- Footer premium -->
+  <tr><td style="padding-top:36px;text-align:center;">
+    <div style="height:1px;background:linear-gradient(90deg,transparent,${COPPER.deep},transparent);margin-bottom:24px;"></div>
+    <p style="font-size:12px;color:${COPPER.deep};margin:0;letter-spacing:1px;">eza · <a href="${APP_URL}" style="color:${COPPER.surface};text-decoration:none;font-weight:600;">eza.social</a></p>
+    <p style="font-size:11px;color:${COPPER.dark};margin:10px 0 0;line-height:1.6;">Vous recevez cet email car vous avez une nouvelle notification sur eza.</p>
+    <p style="font-size:11px;color:${COPPER.dark};margin:4px 0 0;line-height:1.6;">Gérez vos préférences dans <a href="${APP_URL}/espace" style="color:${COPPER.surface};text-decoration:none;">votre espace</a>.</p>
+    <p style="font-size:10px;color:#2A2520;margin:16px 0 0;letter-spacing:2px;text-transform:uppercase;">© 2026 EZA GROUP</p>
   </td></tr>
 
 </table>

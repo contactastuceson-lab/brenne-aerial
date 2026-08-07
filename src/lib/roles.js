@@ -204,3 +204,32 @@ export function getEmailSignature(user) {
 export function getRoleConfig(role) {
   return ROLE_CONFIG[role] || ROLE_CONFIG.user;
 }
+
+/**
+ * Couleurs d'accent (hex) pour distinguer visuellement les rôles staff
+ * sur les profils publics (ligne sous la bannière + anneau de l'avatar).
+ */
+export const STAFF_ACCENTS = {
+  owner: '#f59e0b',
+  pdg_adjoint: '#fbbf24',
+  conseil_admin: '#a78bfa',
+  admin: '#f87171',
+  directeur: '#60a5fa',
+  responsable: '#22d3ee',
+  event_manager: '#fb923c',
+};
+
+/**
+ * Vérifie si un user fait partie du staff (level >= 50).
+ */
+export function isStaffMember(user) {
+  return getUserLevel(user) >= 50;
+}
+
+/**
+ * Retourne la couleur d'accent du rôle staff, ou null si ce n'est pas un staff.
+ */
+export function getStaffAccent(user) {
+  if (!user || !isStaffMember(user)) return null;
+  return STAFF_ACCENTS[user.role] || null;
+}

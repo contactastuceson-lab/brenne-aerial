@@ -12,7 +12,7 @@ import { VERIFICATION_CONFIG } from '@/components/ui/VerificationChip';
 import BadgeChip from '@/components/ui/BadgeChip';
 import { getHighestVerificationBadge } from '@/lib/affiliationUtils';
 import { useOrganizationAffiliations, prefillUserCache, resolveAffiliatedProfiles } from '@/hooks/useOrganizationAffiliations';
-import { ROLE_CONFIG } from '@/lib/roles';
+import { ROLE_CONFIG, getStaffAccent } from '@/lib/roles';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
@@ -262,6 +262,7 @@ export default function PublicProfilePage() {
   const isSupreme = user?.verifications?.includes('supreme');
   const isPremiumProfile = isSupreme || user?.verifications?.includes('pro') || user?.verifications?.includes('certified');
   const roleCfg = ROLE_CONFIG[user?.role];
+  const staffAccent = getStaffAccent(user);
   const perkFx = getPerkEffects(user?.perks || {});
 
   const statusColors = {
@@ -395,6 +396,14 @@ export default function PublicProfilePage() {
           <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
         </div>
 
+        {/* Ligne de séparation colorée — signature visuelle des rôles staff */}
+        {staffAccent && !isSupreme && (
+          <div
+            className="w-full"
+            style={{ height: 3, background: staffAccent, boxShadow: `0 0 14px ${staffAccent}55` }}
+          />
+        )}
+
         <div className="w-full max-w-2xl mx-auto">
           <div className="relative px-4 -mt-16">
             <div className="flex items-end justify-between gap-4 mb-4">
@@ -441,7 +450,9 @@ export default function PublicProfilePage() {
                       ? { border: '3px solid #d97706', boxShadow: '0 0 0 2px rgba(245,158,11,0.2), 0 0 20px rgba(245,158,11,0.4)', background: '#1a0c00' }
                       : perkFx.accentRing
                         ? { border: `3px solid ${perkFx.accentRing}`, boxShadow: `0 0 0 2px ${perkFx.accentRing}33, 0 0 24px ${perkFx.accentRing}55`, background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
-                        : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
+                        : staffAccent
+                          ? { border: `3px solid ${staffAccent}`, boxShadow: `0 0 0 2px ${staffAccent}33, 0 0 18px ${staffAccent}44`, background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
+                          : { border: '4px solid hsl(var(--background))', background: user.avatar_url ? 'hsl(var(--secondary))' : getAvatarGradient(user.full_name) }
                     }
                   >
                     {particles}

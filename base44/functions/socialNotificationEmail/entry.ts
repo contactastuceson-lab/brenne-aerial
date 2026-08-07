@@ -41,6 +41,13 @@ const TYPE_CONFIG = {
     accentSoft: 'rgba(16,185,129,0.12)',
     subject: (n) => `${n.sender_name} vous suit désormais`,
   },
+  NEW_POST: {
+    icon: '✍️',
+    label: 'a publié un nouveau post',
+    accent: '#38aadc',
+    accentSoft: 'rgba(56,170,220,0.12)',
+    subject: (n) => `${n.sender_name} vient de publier un nouveau post`,
+  },
   MENTION: {
     icon: '📣',
     label: 'vous a mentionné',

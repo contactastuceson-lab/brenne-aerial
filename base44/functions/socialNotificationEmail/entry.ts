@@ -247,6 +247,11 @@ export default async function(req) {
       }
     }
 
+    // Assurer un lien absolu (les notifications stockent parfois /post/... relatif)
+    if (link && !link.startsWith('http')) {
+      link = `${APP_URL}${link.startsWith('/') ? '' : '/'}${link}`;
+    }
+
     const recipientName = recipientUser?.display_name || recipientUser?.full_name || '';
 
     const subject = config.subject(notification);

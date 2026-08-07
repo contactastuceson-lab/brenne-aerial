@@ -221,15 +221,6 @@ export default async function(req) {
       return Response.json({ skipped: `${prefKey}_disabled` });
     }
 
-    // Si le destinataire est actif récemment (3 min), pas besoin d'email
-    if (recipientUser?.last_seen) {
-      const lastSeen = new Date(recipientUser.last_seen);
-      const minutesSinceActive = (Date.now() - lastSeen.getTime()) / 1000 / 60;
-      if (minutesSinceActive < 3) {
-        return Response.json({ skipped: 'recipient_is_online' });
-      }
-    }
-
     // Récupérer l'avatar de l'expéditeur si pas déjà dans la notification
     let senderAvatar = notification.sender_avatar || null;
     let postExcerpt = notification.post_excerpt || '';

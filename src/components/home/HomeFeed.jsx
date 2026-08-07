@@ -194,6 +194,16 @@ export default function HomeFeed({ user }) {
       const sessionSeed = parseInt(sessionStorage.getItem('feed_seed') || String(Math.floor(Math.random() * 10000)));
       sessionStorage.setItem('feed_seed', String(sessionSeed));
 
+      // Affinité sociale : boost massif pour les posts d'auteurs suivis
+      const authorEmail = (p) => emailById[p.author_id] || '';
+      const isFollowingAuthor = (p) => followingEmails.has(authorEmail(p));
+
+      // Autorité : boost modéré pour les comptes vérifiés/pro
+      const isAuthorVerified = (p) => {
+        const v = p.author_verifications || [];
+        return v.includes('verified') || v.includes('certified') || v.includes('pro') || v.includes('official') || v.includes('supreme');
+      };
+
       result = result
         .map((p, i) => {
           const ageHours = (now - new Date(p.created_date).getTime()) / 3600000;
@@ -208,17 +218,21 @@ export default function HomeFeed({ user }) {
           const mediaBoost = (p.media_urls?.length > 0) ? 8 : 0;
           // Boost de publication (récompense boutique) — priorité massive dans le feed
           const highlightBoost = (p.is_highlight) ? 120 : 0;
+          // Affinité sociale : +40 si l'auteur est suivi par l'utilisateur
+          const followingBoost = isFollowingAuthor(p) ? 40 : 0;
+          // Autorité : +12 si l'auteur est vérifié/certifié/pro
+          const authorityBoost = isAuthorVerified(p) ? 12 : 0;
           // Variabilité stable par session (évite l'ordre identique pour tous)
           const seededRandom = ((sessionSeed * (i + 1) * 9301 + 49297) % 233280) / 233280;
           const randomBoost = seededRandom * 6;
 
-          return { ...p, algoScore: engagementScore + recencyScore + mediaBoost + highlightBoost + randomBoost };
+          return { ...p, algoScore: engagementScore + recencyScore + mediaBoost + highlightBoost + followingBoost + authorityBoost + randomBoost };
         })
         .sort((a, b) => b.algoScore - a.algoScore);
     }
 
     return result;
-  }, [posts, urlTag, filter]);
+  }, [posts, urlTag, filter, followingEmails, emailById]);
 
   return (
     <main className="w-full max-w-[680px] min-w-0 md:border-r md:border-zinc-800/60">

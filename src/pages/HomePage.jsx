@@ -18,7 +18,7 @@ export default function HomePage() {
 
       {/* Sidebar droite — sticky, scrollable indépendamment */}
       <div className="hidden xl:flex flex-col w-[360px] flex-shrink-0 sticky top-0 h-screen overflow-y-scroll py-4 px-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
-        <HomeRightSidebar />
+        <HomeRightSidebar user={user} />
       </div>
     </div>
   );

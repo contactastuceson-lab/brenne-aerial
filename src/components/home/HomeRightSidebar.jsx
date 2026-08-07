@@ -9,6 +9,7 @@ import VerificationIcons from '@/components/ui/VerificationIcon';
 import { extractHashtags } from '@/lib/hashtags';
 import CreditPill from '@/components/boutique/CreditPill';
 import AdSlot from '@/components/feed/AdSlot';
+import PeopleYouMayKnow from '@/components/home/PeopleYouMayKnow';
 
 const TRENDING = [
   { tag: 'communauté',    count: 284, rise: '+18%' },
@@ -212,7 +213,7 @@ function TrendingSection({ trendingTags }) {
   );
 }
 
-export default function HomeRightSidebar() {
+export default function HomeRightSidebar({ user }) {
   const { data: allUsers = [] } = useQuery({
     queryKey: ['sidebar-all-users'],
     queryFn: async () => {
@@ -263,6 +264,7 @@ export default function HomeRightSidebar() {
         <span className="font-grotesk font-bold text-xs text-foreground truncate">Crédits Eza</span>
         <CreditPill />
       </div>
+      {user && <PeopleYouMayKnow user={user} />}
       <SuggestedUsers users={suggestedUsers} />
       {/* Pub intrusive dans le sidebar */}
       <div className="mb-4"><AdSlot placement="sidebar" /></div>

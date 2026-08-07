@@ -221,6 +221,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing id or data' }, { status: 400 });
     }
 
+    // Sécurité — empêche l'élévation de privilèges : seul le propriétaire (owner)
+    // ou le PDG authentifié peut modifier le rôle d'un utilisateur.
+    const canAssignRoles = user.role === 'owner' || PDG_EMAILS.includes(user.email);
+    if (!canAssignRoles && 'role' in data) {
+      return Response.json({ error: 'Forbidden: Seul le propriétaire peut modifier le rôle d\'un utilisateur' }, { status: 403 });
+    }
+
     let targetUser = null;
     try { targetUser = await base44.asServiceRole.entities.User.get(id); } catch(_) {}
 

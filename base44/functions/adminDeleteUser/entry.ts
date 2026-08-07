@@ -2,6 +2,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const LOGO_URL = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/6de51adde_1775602844308.png';
 
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function emailTemplate({ title, preheader, bodyHtml }) {
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -142,16 +151,18 @@ Deno.serve(async (req) => {
   if (userEmail) {
     try {
       const isAdminInitiated = !hadRequest;
+      const safeName = escapeHtml(userName || '');
+      const safeReason = escapeHtml(reason || '');
       const bodyHtml = isAdminInitiated ? `
-        <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Bonjour <strong style="color:#e8f4fc;">${userName || ''}</strong>,</p>
+        <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Bonjour <strong style="color:#e8f4fc;">${safeName}</strong>,</p>
         <div style="background:#0a1120;border-left:3px solid #e55555;border-radius:8px;padding:16px 20px;margin:0 0 20px;">
           <p style="margin:0;color:#e55555;font-size:13px;font-weight:700;">🔴 Votre compte a été supprimé par un administrateur</p>
-          ${reason ? `<p style="margin:6px 0 0;color:#8aaec8;font-size:13px;"><strong style="color:#e8f4fc;">Raison :</strong> ${reason}</p>` : ''}
+          ${safeReason ? `<p style="margin:6px 0 0;color:#8aaec8;font-size:13px;"><strong style="color:#e8f4fc;">Raison :</strong> ${safeReason}</p>` : ''}
         </div>
         <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Toutes vos données personnelles ont été <strong style="color:#e8f4fc;">définitivement effacées</strong> de notre plateforme.</p>
         <p style="color:#8aaec8;font-size:14px;line-height:1.7;margin:0;">Si vous pensez qu'il s'agit d'une erreur, contactez-nous à <a href="mailto:contact@brenneaerial.fr" style="color:#3ab0dc;">contact@brenneaerial.fr</a></p>
       ` : `
-        <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Bonjour <strong style="color:#e8f4fc;">${userName || ''}</strong>,</p>
+        <p style="color:#8aaec8;font-size:15px;line-height:1.7;margin:0 0 16px;">Bonjour <strong style="color:#e8f4fc;">${safeName}</strong>,</p>
         <div style="background:#0a1120;border-left:3px solid #22c55e;border-radius:8px;padding:16px 20px;margin:0 0 20px;">
           <p style="margin:0;color:#22c55e;font-size:13px;font-weight:700;">✅ Suppression effectuée</p>
           <p style="margin:6px 0 0;color:#8aaec8;font-size:13px;">Votre compte a bien été supprimé conformément à votre demande.</p>

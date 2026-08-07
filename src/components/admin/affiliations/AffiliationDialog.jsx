@@ -64,7 +64,7 @@ export default function AffiliationDialog({ open, onOpenChange, users, affiliate
     if (editing) {
       onSubmit({ affiliationId: editing.id, patch: { role, status, visibility, message } });
     } else {
-      const org = users.find(u => u.id === organizationId);
+      const org = (affiliateUsers || users).find(u => u.id === organizationId);
       onSubmit({
         affiliation: {
           organizationId,
@@ -92,8 +92,8 @@ export default function AffiliationDialog({ open, onOpenChange, users, affiliate
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <UserPicker label="Organisation" users={users} value={organizationId}
-            onChange={setOrganizationId} placeholder="Choisir l'organisation"
+          <UserPicker label="Organisation" users={affiliateUsers || users} value={organizationId}
+            onChange={setOrganizationId} placeholder="Choisir l'organisation (ou un profil suggéré)"
           />
           <UserPicker label="Utilisateur affilié" users={affiliateUsers || users} value={userId}
             onChange={setUserId} placeholder="Choisir l'utilisateur (ou un profil suggéré)"

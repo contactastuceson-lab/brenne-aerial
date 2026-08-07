@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import OnboardingModal from '@/components/shared/OnboardingModal';
-import EmailVerificationModal from '@/components/shared/EmailVerificationModal';
 import { Outlet, useLocation } from 'react-router-dom';
 import BottomTabBar from './BottomTabBar';
 import Navbar from './Navbar';
@@ -80,14 +79,6 @@ export default function PublicLayout() {
   }, [user?.email]);
 
   if (loading) return <NavigationSkeleton />;
-
-  // Email verification — before onboarding
-  if (user && !user.email_verified) {
-    return <EmailVerificationModal user={user} onVerified={async () => {
-      const me = await base44.auth.me();
-      setUser(me);
-    }} />;
-  }
 
   // Show onboarding if user hasn't completed it
   if (user && !user.onboarding_completed) {

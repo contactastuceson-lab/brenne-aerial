@@ -8,6 +8,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { notify } from '@/lib/notificationHelper';
 import VerificationIcons from '@/components/ui/VerificationIcon';
 import BadgePopup from '@/components/ui/BadgePopup';
 import { Link, useNavigate } from 'react-router-dom';
@@ -167,6 +168,13 @@ export default function DiscoverPage() {
       queryClient.invalidateQueries({ queryKey: ['my-follows'] });
       toast.success('Vous suivez maintenant cette personne');
       awardCredits('follow_user', { target_email: targetUser?.email });
+      notify({
+        type: 'FOLLOW',
+        sender: user,
+        receiverEmail: targetUser?.email,
+        receiverId: targetUser?.id,
+        link: `/@${user.username || user.email}`,
+      });
     },
   });
 

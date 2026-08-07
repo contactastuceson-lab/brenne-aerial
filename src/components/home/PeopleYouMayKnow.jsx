@@ -4,6 +4,7 @@ import { UserPlus, X } from 'lucide-react';
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import { notify } from '@/lib/notificationHelper';
 import { toast } from 'sonner';
 
 export default function PeopleYouMayKnow({ user }) {
@@ -32,6 +33,13 @@ export default function PeopleYouMayKnow({ user }) {
         following_name: suggestion.display_name,
       });
       toast.success(`Vous suivez maintenant ${suggestion.display_name}`);
+      notify({
+        type: 'FOLLOW',
+        sender: user,
+        receiverEmail: suggestion.email,
+        receiverId: suggestion.id,
+        link: `/@${user.username || user.email}`,
+      });
       setDismissed(prev => new Set([...prev, suggestion.id]));
       queryClient.invalidateQueries({ queryKey: ['people-you-may-know', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['my-following-feed', user?.email] });

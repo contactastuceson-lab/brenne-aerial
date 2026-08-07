@@ -224,9 +224,23 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
       const created = await base44.entities.Post.create(postData);
       toast.success(scheduleAt ? 'Publication programmée' : 'Post publié');
 
-      // Envoyer une notification MENTION pour chaque @username mentionné
+      // Notification REPLY pour l'auteur du post parent + MENTION pour chaque @username
+      const allUsers = await base44.entities.User.list('-created_date', 200).catch(() => []);
+      if (replyTo && replyTo.author_id && replyTo.author_id !== user.id) {
+        const parentAuthor = allUsers.find(u => u.id === replyTo.author_id);
+        if (parentAuthor?.email) {
+          notify({
+            type: 'REPLY',
+            sender: user,
+            receiverEmail: parentAuthor.email,
+            receiverId: replyTo.author_id,
+            postId: created?.id,
+            postExcerpt: content,
+            link: `/post/${created?.id}`,
+          });
+        }
+      }
       if (mentions.length > 0) {
-        const allUsers = await base44.entities.User.list('-created_date', 200).catch(() => []);
         for (const username of mentions) {
           const target = allUsers.find(u => u.username?.toLowerCase() === username.toLowerCase());
           if (target && target.id !== user.id && target.email) {

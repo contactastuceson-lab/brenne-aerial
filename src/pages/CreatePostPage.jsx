@@ -6,6 +6,7 @@ import { X, Image, Globe, Users, BarChart3, Loader2, BadgeCheck, ShieldCheck, Ca
 import { toast } from 'sonner';
 import { extractHashtags, extractMentions } from '@/lib/hashtags';
 import { compressImage } from '@/lib/imageUtils';
+import { notify } from '@/lib/notificationHelper';
 import GifPicker from '@/components/post/GifPicker';
 import PollCreator from '@/components/post/PollCreator';
 import { isPerkActive, getCustomization, applyWatermark } from '@/lib/perkCustomization';
@@ -157,8 +158,26 @@ export default function CreatePostPage() {
         postData.scheduled_at = new Date(scheduleAt).toISOString();
         postData.is_draft = true;
       }
-      await base44.entities.Post.create(postData);
+      const created = await base44.entities.Post.create(postData);
       toast.success(scheduleAt ? 'Publication programmée' : 'Post publié');
+      // Notifications MENTION pour chaque @username mentionné
+      if (mentions.length > 0) {
+        const allUsers = await base44.entities.User.list('-created_date', 200).catch(() => []);
+        for (const username of mentions) {
+          const target = allUsers.find(u => u.username?.toLowerCase() === username.toLowerCase());
+          if (target && target.id !== user.id && target.email) {
+            notify({
+              type: 'MENTION',
+              sender: user,
+              receiverEmail: target.email,
+              receiverId: target.id,
+              postId: created?.id,
+              postExcerpt: content,
+              link: `/post/${created?.id}`,
+            });
+          }
+        }
+      }
       navigate('/');
     } catch {
       toast.error('Erreur lors de la publication');

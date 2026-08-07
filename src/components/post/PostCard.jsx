@@ -385,7 +385,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
           </div>
         ) : (
           <>
-            <div className="text-[23px] leading-[1.4] text-foreground/90 mb-1">
+            <div className="text-[25px] leading-[1.4] text-foreground/90 mb-1">
               <DiscordMarkdown content={displayContent} allowMarkdown={false} />
             </div>
             {isLong && !expanded && (
@@ -414,7 +414,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
         {/* Action bar — X style */}
         <div className="flex items-center justify-between mt-1 -mx-2" onClick={e => e.stopPropagation()}>
           <ActionBtn
-            icon={<MessageCircle className="w-[17px] h-[17px]" />}
+            icon={<MessageCircle className="w-[20px] h-[20px]" />}
             count={post.replies_count}
             color="blue"
             onClick={(e) => {
@@ -424,29 +424,29 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
             }}
           />
           <ActionBtn
-            icon={<Repeat2 className="w-[17px] h-[17px]" />}
+            icon={<Repeat2 className="w-[20px] h-[20px]" />}
             count={(post.reposts_count || 0) + (post.quotes_count || 0)}
             color="green"
             onClick={(e) => { e.stopPropagation(); setRepostOpen(true); }}
           />
           <ActionBtn
-            icon={<Heart className={`w-[17px] h-[17px] ${liked ? 'fill-current' : ''}`} />}
+            icon={<Heart className={`w-[20px] h-[20px] ${liked ? 'fill-current' : ''}`} />}
             count={likesCount}
             active={liked}
             color="rose"
             onClick={handleLike}
           />
           <div className="flex items-center gap-1 text-muted-foreground/30 px-2">
-            <Eye className="w-[16px] h-[16px]" />
-            {post.views_count > 0 && <span className="text-[13px] font-mono">{post.views_count}</span>}
+            <Eye className="w-[19px] h-[19px]" />
+            {post.views_count > 0 && <span className="text-[15px] font-mono">{post.views_count}</span>}
           </div>
           <ActionBtn
-            icon={<Upload className="w-[17px] h-[17px]" />}
+            icon={<Upload className="w-[20px] h-[20px]" />}
             color="blue"
             onClick={handleShare}
           />
           <ActionBtn
-            icon={<Bookmark className={`w-[17px] h-[17px] ${bookmarked ? 'fill-current' : ''}`} />}
+            icon={<Bookmark className={`w-[20px] h-[20px] ${bookmarked ? 'fill-current' : ''}`} />}
             active={bookmarked}
             color="amber"
             onClick={handleBookmark}
@@ -515,11 +515,11 @@ const ActionBtn = memo(function ActionBtn({ icon, count, onClick, active = false
       className={`group/a flex items-center gap-1 active:scale-90 ${active ? c.text : 'text-muted-foreground/40'}`}
       style={{ transition: 'transform 0.1s ease' }}
     >
-      <span className={`p-2 rounded-full transition-colors duration-150 ${c.bg} ${c.hover}`}>
+      <span className={`p-2.5 rounded-full transition-colors duration-150 ${c.bg} ${c.hover}`}>
         {icon}
       </span>
       {count > 0 && (
-        <span className={`text-[13px] font-inter -ml-1 ${c.hover} ${active ? c.text : ''}`}>
+        <span className={`text-[15px] font-inter -ml-1 ${c.hover} ${active ? c.text : ''}`}>
           {count}
         </span>
       )}

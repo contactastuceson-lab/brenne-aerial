@@ -265,7 +265,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
             {/* Ligne unique : nom + badge + @username · temps */}
             <div className="flex items-center gap-0 min-w-0 leading-snug">
               <button type="button" onClick={handleIdentity}
-                className="flex-shrink-0 font-inter font-bold text-[15px] text-foreground hover:underline mr-0.5">
+                className="flex-shrink-0 font-inter font-bold text-[16px] text-foreground hover:underline mr-0.5">
                 {authorName}
               </button>
               {post.author_id && (
@@ -277,9 +277,9 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
                   />
                 </span>
               )}
-              <span className="min-w-0 max-w-[11rem] sm:max-w-[16rem] font-inter text-[14px] text-muted-foreground/55 truncate">@{authorUsername || authorName}</span>
-              <span className="text-muted-foreground/35 text-[13px] mx-1 flex-shrink-0">·</span>
-              <span className="font-inter text-[14px] text-muted-foreground/55 whitespace-nowrap flex-shrink-0">{timeAgo}</span>
+              <span className="min-w-0 max-w-[11rem] sm:max-w-[16rem] font-inter text-[15px] text-muted-foreground/70 truncate">@{authorUsername || authorName}</span>
+              <span className="text-muted-foreground/50 text-[15px] mx-1 flex-shrink-0">·</span>
+              <span className="font-inter text-[15px] text-muted-foreground/70 whitespace-nowrap flex-shrink-0">{timeAgo}</span>
             </div>
           </div>
 
@@ -341,7 +341,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
 
         {/* Reply context */}
         {post.reply_to_author_username && (
-          <p className="text-[13px] text-muted-foreground/45 mb-1">
+          <p className="text-[15px] text-muted-foreground/60 mb-1">
             En réponse à <span className="text-primary hover:underline cursor-pointer">@{post.reply_to_author_username}</span>
           </p>
         )}
@@ -367,7 +367,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
         {editing ? (
           <div onClick={e => e.stopPropagation()} className="mb-2">
             <textarea
-              className="w-full bg-secondary/50 border border-border rounded-xl px-3 py-2 text-[15px] text-foreground resize-none focus:outline-none focus:border-primary/50 min-h-[80px] leading-relaxed"
+              className="w-full bg-secondary/50 border border-border rounded-xl px-3 py-2 text-[16px] text-foreground resize-none focus:outline-none focus:border-primary/50 min-h-[80px] leading-[1.4]"
               value={editContent}
               onChange={e => setEditContent(e.target.value)}
               autoFocus
@@ -385,12 +385,12 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
           </div>
         ) : (
           <>
-            <div className="text-[15px] leading-[1.5] text-foreground/90 mb-1">
+            <div className="text-[16px] leading-[1.4] text-foreground/90 mb-1">
               <DiscordMarkdown content={displayContent} allowMarkdown={false} />
             </div>
             {isLong && !expanded && (
               <button onClick={e => { e.stopPropagation(); setExpanded(true); }}
-                className="text-[14px] text-primary hover:underline mb-1 block font-medium">
+                className="text-[15px] text-primary hover:underline mb-1 block font-medium">
                 Voir plus
               </button>
             )}

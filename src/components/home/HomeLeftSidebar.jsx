@@ -44,9 +44,9 @@ function NavItem({ icon: Icon, label, to, active, badge, premium }) {
           }`}
           style={{ boxShadow: active ? '0 0 12px rgba(34,211,238,0.2)' : undefined }}
         >
-          <Icon style={{ width: 19, height: 19, strokeWidth: active ? 2.25 : 1.75 }} />
+          <Icon style={{ width: 21, height: 21, strokeWidth: active ? 2.25 : 1.75 }} />
         </div>
-        <span className="font-grotesk font-bold text-[16px] text-cyan-400 hidden xl:block">{label}</span>
+        <span className="font-grotesk font-bold text-[17px] text-cyan-400 hidden xl:block">{label}</span>
       </Link>
     );
   }
@@ -61,14 +61,14 @@ function NavItem({ icon: Icon, label, to, active, badge, premium }) {
             : 'bg-white/5 border-white/8 text-muted-foreground group-hover:bg-white/8 group-hover:border-white/14 group-hover:text-foreground'
         }`}
       >
-        <Icon style={{ width: 19, height: 19, strokeWidth: active ? 2.25 : 1.75 }} />
+        <Icon style={{ width: 21, height: 21, strokeWidth: active ? 2.25 : 1.75 }} />
         {badge > 0 && (
           <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
             {badge > 9 ? '9+' : badge}
           </span>
         )}
       </div>
-      <span className={`font-inter text-[16px] hidden xl:block ${active ? 'font-bold text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>{label}</span>
+      <span className={`font-inter text-[17px] hidden xl:block ${active ? 'font-bold text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>{label}</span>
     </Link>
   );
 }

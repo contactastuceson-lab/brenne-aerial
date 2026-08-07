@@ -265,7 +265,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
             {/* Ligne unique : nom + badge + @username · temps */}
             <div className="flex items-center gap-0 min-w-0 leading-snug">
               <button type="button" onClick={handleIdentity}
-                className="flex-shrink-0 font-inter font-bold text-[16px] text-foreground hover:underline mr-0.5">
+                className="flex-shrink-0 font-inter font-bold text-[17px] text-foreground hover:underline mr-0.5">
                 {authorName}
               </button>
               {post.author_id && (
@@ -385,7 +385,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
           </div>
         ) : (
           <>
-            <div className="text-[16px] leading-[1.4] text-foreground/90 mb-1">
+            <div className="text-[17px] leading-[1.4] text-foreground/90 mb-1">
               <DiscordMarkdown content={displayContent} allowMarkdown={false} />
             </div>
             {isLong && !expanded && (

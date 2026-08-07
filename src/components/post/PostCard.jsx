@@ -248,8 +248,8 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
       onClick={openPost}
     >
       {/* Left column: avatar + thread line */}
-      <div className="flex flex-col items-center flex-shrink-0" style={{ width: 40 }}>
-        <StoryAvatar authorId={post.author_id} src={avatarSrc} name={authorName} sizeClass="w-10 h-10" roundedClass="rounded-lg" onIdentityClick={handleIdentity} />
+      <div className="flex flex-col items-center flex-shrink-0" style={{ width: 48 }}>
+        <StoryAvatar authorId={post.author_id} src={avatarSrc} name={authorName} sizeClass="w-12 h-12" roundedClass="rounded-xl" onIdentityClick={handleIdentity} />
         {/* Thread line — shown when part of a thread (isThread) */}
         {isThread && (
           <div className="flex-1 w-0.5 bg-zinc-700/50 my-1 rounded-full" style={{ minHeight: 16 }} />

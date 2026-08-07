@@ -42,12 +42,12 @@ function VideoThumb({ url, onClick }) {
       {/* Thumbnail canvas */}
       <canvas
         ref={canvasRef}
-        className={`w-full h-auto max-h-[512px] object-contain rounded-2xl transition-opacity duration-200 ${thumbReady ? 'opacity-100' : 'opacity-0'}`}
+        className={`w-full h-auto max-h-[510px] object-cover transition-opacity duration-200 ${thumbReady ? 'opacity-100' : 'opacity-0'}`}
       />
       {/* Fallback dark bg while loading */}
-      {!thumbReady && <div className="w-full bg-white/5 rounded-2xl" style={{ aspectRatio: '16/9' }} />}
+      {!thumbReady && <div className="w-full bg-white/5" style={{ aspectRatio: '16/9' }} />}
       {/* Play overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/35 transition-colors rounded-2xl">
+      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/35 transition-colors">
         <div className="w-14 h-14 rounded-full bg-black/55 flex items-center justify-center">
           <svg className="w-7 h-7 text-white fill-white ml-1" viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z" />
@@ -109,16 +109,16 @@ export default function LazyMedia({ urls = [], className = '', post = null, curr
 
   return (
     <>
-      <div className={`grid gap-1 rounded-2xl overflow-hidden ${single ? 'grid-cols-1' : 'grid-cols-2'} ${className}`}>
+      <div className={`grid gap-1 rounded-2xl overflow-hidden border border-border ${single ? 'grid-cols-1' : 'grid-cols-2'} ${className}`}>
         {urls.slice(0, 4).filter(Boolean).map((url, i) => (
-          <div key={i} className="relative overflow-hidden rounded-2xl bg-white/5">
+          <div key={i} className="relative overflow-hidden bg-white/5">
             {url.match(/\.(mp4|webm|ogg)$/i) ? (
               <VideoThumb url={url} onClick={() => openVideo(url)} />
             ) : (
               <LazyImage
                 src={url}
                 alt=""
-                className={`w-full h-auto ${single ? 'object-contain' : 'max-h-48 object-cover'}`}
+                className={single ? 'w-full h-auto max-h-[510px] object-cover' : 'w-full h-auto max-h-56 object-cover'}
               />
             )}
             {i === 3 && urls.length > 4 && (

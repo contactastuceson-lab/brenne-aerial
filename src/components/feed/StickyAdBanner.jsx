@@ -80,11 +80,16 @@ const StickyAdBanner = memo(function StickyAdBanner({ placement = 'sticky_mobile
 
   const handleClick = () => {
     if (!ad) return;
-    const isHouse = !ad.owner_id;
-    if (isHouse) {
+    // Si la pub a un cta_url défini, on redirige vers ce lien
+    // (interne ou externe). Fallback Boutique pour les pubs maison sans cta_url.
+    if (ad.cta_url) {
+      if (ad.cta_url.startsWith('/')) {
+        window.location.href = ad.cta_url;
+      } else {
+        window.open(ad.cta_url, '_blank', 'noopener,noreferrer');
+      }
+    } else {
       window.location.href = '/boutique';
-    } else if (ad.cta_url) {
-      window.open(ad.cta_url, '_blank', 'noopener,noreferrer');
     }
     base44.entities.AdCampaign.update(ad.id, {
       clicks: (ad.clicks || 0) + 1,

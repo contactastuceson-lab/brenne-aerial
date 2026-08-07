@@ -79,6 +79,10 @@ function EditDialog({ open, onOpenChange, editing, onSave }) {
             <label className="text-xs text-muted-foreground">Avatar URL</label>
             <Input value={form.avatar_url || ''} onChange={e => set('avatar_url', e.target.value)} />
           </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Bannière URL</label>
+            <Input value={form.cover_url || ''} onChange={e => set('cover_url', e.target.value)} placeholder="https://..." />
+          </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="text-xs text-muted-foreground">Abonnés</label>

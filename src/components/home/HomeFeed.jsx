@@ -8,6 +8,7 @@ import { RefreshCw, Rss, Sparkles, ArrowUp, Users, TrendingUp, Zap, ArrowRight, 
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { extractHashtags } from '@/lib/hashtags';
 import { hasAdminAccess } from '@/lib/roles';
+import { buildForYouFeed } from '@/lib/feedScoring';
 import { getOrFetchUser } from '@/hooks/usePublicUser';
 import { readFeedCache, saveFeedCache } from '@/lib/feedCache';
 import AdSlot from '@/components/feed/AdSlot';
@@ -187,48 +188,18 @@ export default function HomeFeed({ user }) {
       });
     }
 
-    // Algorithmic sort for "Pour vous"
+    // Algorithmic sort for "Pour vous" — pipeline façon X (Home Mixer)
     if (filter === 'foryou') {
-      const now = Date.now();
-      // Seed stable par session pour que l'ordre ne change pas à chaque render
       const sessionSeed = parseInt(sessionStorage.getItem('feed_seed') || String(Math.floor(Math.random() * 10000)));
       sessionStorage.setItem('feed_seed', String(sessionSeed));
 
-      // Affinité sociale : boost massif pour les posts d'auteurs suivis
-      const authorEmail = (p) => emailById[p.author_id] || '';
-      const isFollowingAuthor = (p) => followingEmails.has(authorEmail(p));
-
-      // Autorité : boost modéré pour les comptes vérifiés/pro
-      const isAuthorVerified = (p) => {
-        const v = p.author_verifications || [];
-        return v.includes('verified') || v.includes('certified') || v.includes('pro') || v.includes('official') || v.includes('supreme');
-      };
-
-      result = result
-        .map((p, i) => {
-          const ageHours = (now - new Date(p.created_date).getTime()) / 3600000;
-          // Fraîcheur : forte pondération dans les 6 premières heures, décroit sur 72h
-          const recencyScore = ageHours < 1 ? 50
-            : ageHours < 6 ? 30
-            : ageHours < 24 ? 15
-            : Math.max(0, 72 - ageHours) * 0.2;
-          // Engagement
-          const engagementScore = (p.likes_count || 0) * 4 + (p.replies_count || 0) * 8 + (p.views_count || 0) * 0.05;
-          // Médias
-          const mediaBoost = (p.media_urls?.length > 0) ? 8 : 0;
-          // Boost de publication (récompense boutique) — priorité massive dans le feed
-          const highlightBoost = (p.is_highlight) ? 120 : 0;
-          // Affinité sociale : +40 si l'auteur est suivi par l'utilisateur
-          const followingBoost = isFollowingAuthor(p) ? 40 : 0;
-          // Autorité : +12 si l'auteur est vérifié/certifié/pro
-          const authorityBoost = isAuthorVerified(p) ? 12 : 0;
-          // Variabilité stable par session (évite l'ordre identique pour tous)
-          const seededRandom = ((sessionSeed * (i + 1) * 9301 + 49297) % 233280) / 233280;
-          const randomBoost = seededRandom * 6;
-
-          return { ...p, algoScore: engagementScore + recencyScore + mediaBoost + highlightBoost + followingBoost + authorityBoost + randomBoost };
-        })
-        .sort((a, b) => b.algoScore - a.algoScore);
+      result = buildForYouFeed({
+        posts: result,
+        followingEmails,
+        emailById,
+        sessionSeed,
+        k: 100,
+      });
     }
 
     return result;

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { MessageCircle, ChevronDown, ChevronUp, CornerDownRight } from 'lucide-react';
-import HomePostCard from '@/components/home/HomePostCard';
+import ReplyCard from '@/components/post/ReplyCard';
 import CreatePost from '@/components/post/CreatePost';
 
 export default function ReplyItem({ reply, currentUser, depth = 0 }) {
@@ -43,7 +43,7 @@ export default function ReplyItem({ reply, currentUser, depth = 0 }) {
 
       {/* The reply itself */}
       <div className={depth > 0 ? 'pl-2 md:pl-4' : ''}>
-        <HomePostCard post={reply} currentUser={currentUser} />
+        <ReplyCard post={reply} currentUser={currentUser} />
       </div>
 
       {/* Reply action bar */}

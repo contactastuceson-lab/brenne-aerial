@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import VerificationIcons from '@/components/ui/VerificationIcon';
 import { notify } from '@/lib/notificationHelper';
 
 // ─── Single video slide ──────────────────────────────────────────────────────
@@ -148,6 +149,8 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
     }
   };
 
+  const authorName = post.author_display_name || post.author_name || post.author_username || 'Utilisateur';
+
   const handleShare = async () => {
     const url = `${window.location.origin}/post/${post.id}`;
     if (navigator.share) {
@@ -200,11 +203,27 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
         )}
       </AnimatePresence>
 
-      {/* Bottom info — caption + progress only (no author name/username) */}
+      {/* Bottom info — display name + badges + caption + progress */}
       <div
         className="absolute bottom-0 left-0 right-0 px-4 pt-16 pb-6 pointer-events-none"
         style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)' }}
       >
+        {/* Author row — display name + badges only (no @username) */}
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/30 flex-shrink-0">
+            {post.author_avatar
+              ? <img src={post.author_avatar} alt="" className="w-full h-full object-cover" />
+              : <div className="w-full h-full bg-primary/30 flex items-center justify-center text-xs font-bold text-primary">{(authorName[0] || 'U').toUpperCase()}</div>
+            }
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="font-grotesk font-bold text-white text-sm">{authorName}</span>
+            {post.author_verifications?.length > 0 && (
+              <VerificationIcons verifications={post.author_verifications} size="sm" user={{ id: post.author_id }} />
+            )}
+          </div>
+        </div>
+
         {post.content && (
           <p className="text-white/90 text-sm leading-snug line-clamp-2 mb-3">{post.content}</p>
         )}

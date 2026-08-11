@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import PostCard from '@/components/post/PostCard';
 import HomePostCard from '@/components/home/HomePostCard';
 import CreatePost from '@/components/post/CreatePost';
+import ReplyItem from '@/components/post/ReplyItem';
 import HomeRightSidebar from '@/components/home/HomeRightSidebar';
 import AdSlot from '@/components/feed/AdSlot';
 import { applySeoMeta, getPostSeoData } from '@/lib/seo';
@@ -107,7 +108,7 @@ export default function PostDetailPage() {
               </div>
             ) : (
               replies.map(reply => (
-                <HomePostCard key={reply.id} post={reply} currentUser={currentUser} />
+                <ReplyItem key={reply.id} reply={reply} currentUser={currentUser} depth={0} />
               ))
             )}
           </div>

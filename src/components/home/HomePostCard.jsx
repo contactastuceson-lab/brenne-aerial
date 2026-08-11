@@ -223,7 +223,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
           <Link to={`/post/${post.id}`}>
             <button className="flex items-center gap-1.5 p-2 rounded-full text-muted-foreground/60 hover:text-blue-400 hover:bg-blue-400/10 transition-all text-sm">
               <MessageCircle className="w-4 h-4" />
-              {post.replies_count > 0 && <span className="text-xs tabular-nums">{post.replies_count}</span>}
+              <span className="text-xs tabular-nums">{post.replies_count || 0}</span>
             </button>
           </Link>
           <button onClick={() => setReposted(v => !v)}

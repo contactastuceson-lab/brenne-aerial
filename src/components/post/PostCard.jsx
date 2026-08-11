@@ -268,7 +268,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
             {/* Ligne unique : nom + badge + @username · temps */}
             <div className="flex items-center gap-0 min-w-0 leading-snug">
               <button type="button" onClick={handleIdentity}
-                className="flex-shrink-0 font-inter font-bold text-[19px] md:text-[22px] text-foreground hover:underline mr-0.5">
+                className="flex-shrink-0 font-inter font-bold text-[16px] md:text-[19px] text-foreground hover:underline mr-0.5">
                 {authorName}
               </button>
               {post.author_id && (

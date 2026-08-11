@@ -25,7 +25,7 @@ export default function AdminWhatsNew() {
   const load = async () => {
     setLoading(true);
     try {
-      const all = await base44.entities.WhatsNew.list('-order,-published_at', 100);
+      const all = await base44.entities.WhatsNew.list('-published_at', 100);
       setItems(all);
     } catch { toast.error('Erreur de chargement'); }
     finally { setLoading(false); }

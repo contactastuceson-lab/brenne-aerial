@@ -102,7 +102,14 @@ export default function WhatsNewModal({ announcement, open, onClose, preview = f
                       </div>
                       <h3 className="text-sm font-bold text-foreground leading-snug">{section.title}</h3>
                       {section.description && (
-                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{section.description}</p>
+                        <ul className="mt-1.5 space-y-1">
+                          {section.description.split(/\s*·\s*|\n/).filter(Boolean).map((point, j) => (
+                            <li key={j} className="flex items-start gap-1.5 text-xs text-muted-foreground leading-relaxed">
+                              <span className="mt-1 w-1 h-1 rounded-full flex-shrink-0" style={{ background: cfg.color }} />
+                              <span>{point}</span>
+                            </li>
+                          ))}
+                        </ul>
                       )}
                     </div>
                   </div>

@@ -35,11 +35,12 @@ export default function WhatsNewAutoShow({ user }) {
           return true;
         });
 
-        // Find most recent not seen (or force_display)
-        const toShow = eligible.find((a) => a.force_display || !seen.includes(a.id));
+        // Find most recent not yet seen — force_display only affects priority, not re-showing
+        const sorted = [...eligible].sort((a, b) => (b.force_display ? 1 : 0) - (a.force_display ? 1 : 0));
+        const toShow = sorted.find((a) => !seen.includes(a.id));
         if (toShow && !cancelled) {
           setActive(toShow);
-          // Increment view count
+          // Increment view count (admin-only update — silently fails for regular users)
           base44.entities.WhatsNew.update(toShow.id, { view_count: (toShow.view_count || 0) + 1 }).catch(() => {});
         }
       } catch {}

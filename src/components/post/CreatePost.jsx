@@ -5,6 +5,7 @@ import { Image, X, Loader2, Globe, Users, BarChart3, BadgeCheck, ShieldCheck, Ca
 import { toast } from 'sonner';
 import { extractHashtags, extractMentions } from '@/lib/hashtags';
 import { compressImage } from '@/lib/imageUtils';
+import { compressVideo } from '@/lib/videoUtils';
 import GifPicker from '@/components/post/GifPicker';
 import PollCreator from '@/components/post/PollCreator';
 import MentionAutocomplete, { useMentionAutocomplete } from '@/components/post/MentionAutocomplete';
@@ -56,6 +57,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
   // mediaItems: { kind: 'file'|'url', file?, preview, url? }
   const [mediaItems, setMediaItems] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(null); // null = pas en cours, 0-100 = %
+  const [uploadLabel, setUploadLabel] = useState('Upload en cours…');
   const [posting, setPosting] = useState(false);
   const [visibility, setVisibility] = useState('public');
   const [focused, setFocused] = useState(false);
@@ -130,24 +132,39 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
     setUploadProgress(0);
     for (let i = 0; i < filesToUpload.length; i++) {
       const baseProgress = Math.round((i / filesToUpload.length) * 100);
-      setUploadProgress(baseProgress + 5);
-      const compressed = await compressImage(filesToUpload[i].file);
       const isVideo = filesToUpload[i].file.type.startsWith('video/');
-      const step = isVideo ? 1 : 4;
+      let compressed = filesToUpload[i].file;
+
+      if (isVideo) {
+        // Compression vidéo côté client (canvas + MediaRecorder) — réduit drastiquement la taille
+        setUploadLabel('Compression vidéo…');
+        compressed = await compressVideo(filesToUpload[i].file, {
+          onProgress: (p) => setUploadProgress(baseProgress + Math.round(p * 45)),
+        });
+      } else {
+        compressed = await compressImage(filesToUpload[i].file);
+      }
+
+      setUploadLabel('Upload…');
+      const startProgress = baseProgress + (isVideo ? 45 : 5);
+      setUploadProgress(startProgress);
+      const endProgress = Math.round(((i + 1) / filesToUpload.length) * 100);
+      const step = 1;
       const delay = isVideo ? 80 : 150;
-      let sim = baseProgress + 5;
+      let sim = startProgress;
       const interval = setInterval(() => {
-        sim = Math.min(sim + step, baseProgress + 88);
+        sim = Math.min(sim + step, endProgress - 2);
         setUploadProgress(sim);
       }, delay);
       const result = await base44.integrations.Core.UploadFile({ file: compressed });
       clearInterval(interval);
-      setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
+      setUploadProgress(endProgress);
       if (result?.file_url) finalUrls.push(result.file_url);
     }
     // Ajoute les URLs déjà hébergées (GIFs)
     for (const m of mediaItems) if (m.kind === 'url') finalUrls.push(m.url);
     setUploadProgress(null);
+    setUploadLabel('Upload en cours…');
     return finalUrls;
   };
 
@@ -443,7 +460,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
           {uploadProgress !== null && (
             <div className="mb-2">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-primary font-medium">Upload en cours…</span>
+                <span className="text-xs text-primary font-medium">{uploadLabel}</span>
                 <span className="text-xs text-muted-foreground font-mono">{uploadProgress}%</span>
               </div>
               <div className="h-1 w-full bg-white/8 rounded-full overflow-hidden">

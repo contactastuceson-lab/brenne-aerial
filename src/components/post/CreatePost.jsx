@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { extractHashtags, extractMentions } from '@/lib/hashtags';
 import { compressImage } from '@/lib/imageUtils';
 import { compressVideo } from '@/lib/videoUtils';
+import { uploadFileWithProgress, formatSpeed, formatEta } from '@/lib/uploadWithProgress';
 import GifPicker from '@/components/post/GifPicker';
 import PollCreator from '@/components/post/PollCreator';
 import MentionAutocomplete, { useMentionAutocomplete } from '@/components/post/MentionAutocomplete';
@@ -58,6 +59,8 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
   const [mediaItems, setMediaItems] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(null); // null = pas en cours, 0-100 = %
   const [uploadLabel, setUploadLabel] = useState('Upload en cours…');
+  const [uploadEta, setUploadEta] = useState('');
+  const [uploadSpeed, setUploadSpeed] = useState('');
   const [posting, setPosting] = useState(false);
   const [visibility, setVisibility] = useState('public');
   const [focused, setFocused] = useState(false);
@@ -130,41 +133,58 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
     const filesToUpload = mediaItems.filter(m => m.kind === 'file');
     if (filesToUpload.length === 0) return mediaItems.map(m => m.url);
     setUploadProgress(0);
+    setUploadEta('');
+    setUploadSpeed('');
     for (let i = 0; i < filesToUpload.length; i++) {
       const baseProgress = Math.round((i / filesToUpload.length) * 100);
+      const slotSize = Math.round(100 / filesToUpload.length);
       const isVideo = filesToUpload[i].file.type.startsWith('video/');
       let compressed = filesToUpload[i].file;
 
       if (isVideo) {
-        // Compression vidéo côté client (canvas + MediaRecorder) — réduit drastiquement la taille
+        // Compression vidéo côté client — progression réelle basée sur currentTime/duration
         setUploadLabel('Compression vidéo…');
+        setUploadEta('');
+        setUploadSpeed('');
+        const compressStart = Date.now();
         compressed = await compressVideo(filesToUpload[i].file, {
-          onProgress: (p) => setUploadProgress(baseProgress + Math.round(p * 45)),
+          onProgress: (p) => {
+            setUploadProgress(baseProgress + Math.round(p * (slotSize * 0.45)));
+            // ETA compression
+            const elapsed = (Date.now() - compressStart) / 1000;
+            if (p > 0.05 && elapsed > 0) {
+              const totalEst = elapsed / p;
+              setUploadEta(formatEta(totalEst - elapsed));
+            }
+          },
         });
       } else {
         compressed = await compressImage(filesToUpload[i].file);
       }
 
+      // Upload avec progression réelle (XHR upload.onprogress)
       setUploadLabel('Upload…');
-      const startProgress = baseProgress + (isVideo ? 45 : 5);
-      setUploadProgress(startProgress);
-      const endProgress = Math.round(((i + 1) / filesToUpload.length) * 100);
-      const step = 1;
-      const delay = isVideo ? 80 : 150;
-      let sim = startProgress;
-      const interval = setInterval(() => {
-        sim = Math.min(sim + step, endProgress - 2);
-        setUploadProgress(sim);
-      }, delay);
-      const result = await base44.integrations.Core.UploadFile({ file: compressed });
-      clearInterval(interval);
-      setUploadProgress(endProgress);
+      setUploadEta('');
+      setUploadSpeed('');
+      const uploadStartProgress = baseProgress + (isVideo ? Math.round(slotSize * 0.45) : 0);
+      const uploadEndProgress = baseProgress + slotSize;
+      const uploadRange = uploadEndProgress - uploadStartProgress;
+      const result = await uploadFileWithProgress(compressed, {
+        onProgress: ({ percent, speed, eta }) => {
+          setUploadProgress(uploadStartProgress + Math.round((percent / 100) * uploadRange));
+          setUploadSpeed(formatSpeed(speed));
+          setUploadEta(formatEta(eta));
+        },
+      });
+      setUploadProgress(uploadEndProgress);
       if (result?.file_url) finalUrls.push(result.file_url);
     }
     // Ajoute les URLs déjà hébergées (GIFs)
     for (const m of mediaItems) if (m.kind === 'url') finalUrls.push(m.url);
     setUploadProgress(null);
     setUploadLabel('Upload en cours…');
+    setUploadEta('');
+    setUploadSpeed('');
     return finalUrls;
   };
 
@@ -465,10 +485,16 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
               </div>
               <div className="h-1 w-full bg-white/8 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary rounded-full transition-all duration-200"
+                  className="h-full bg-primary rounded-full transition-all duration-150"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
+              {(uploadEta || uploadSpeed) && (
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[10px] text-muted-foreground/60">{uploadSpeed}</span>
+                  <span className="text-[10px] text-muted-foreground/60">{uploadEta}</span>
+                </div>
+              )}
             </div>
           )}
 

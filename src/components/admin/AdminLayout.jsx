@@ -69,6 +69,7 @@ const NAV_GROUPS = [
     items: [
       { path: '/admin/portfolio', icon: Image, label: 'Portfolio', minLevel: 60 },
       { path: '/admin/map', icon: Map, label: 'Carte Interactive', minLevel: 60 },
+      { path: '/admin/posts', icon: FileText, label: 'Gestion du Feed', minLevel: 70 },
       { path: '/admin/blog', icon: BookOpen, label: 'Blog', minLevel: 60 },
       { path: '/admin/partners', icon: Building2, label: 'Partenaires', minLevel: 60 },
       { path: '/admin/drones', icon: Zap, label: 'Drones', minLevel: 60 },

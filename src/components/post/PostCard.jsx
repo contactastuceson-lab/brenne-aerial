@@ -386,7 +386,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
           </div>
         ) : (
           <>
-            <div className="text-[25px] md:text-[40px] lg:text-[46px] xl:text-[52px] leading-[1.22] font-medium text-foreground mb-1">
+            <div className="text-[25px] md:text-[40px] lg:text-[46px] xl:text-[52px] leading-[1.22] font-bold text-foreground mb-1">
               <DiscordMarkdown content={displayContent} allowMarkdown={false} />
             </div>
             {isLong && !expanded && (

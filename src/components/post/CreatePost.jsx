@@ -51,7 +51,8 @@ function GifIcon({ className }) {
 
 export default function CreatePost({ user, onPost, replyTo = null }) {
   const [content, setContent] = useState('');
-  const [mediaUrls, setMediaUrls] = useState([]);
+  // mediaItems: { kind: 'file'|'url', file?, preview, url? }
+  const [mediaItems, setMediaItems] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(null); // null = pas en cours, 0-100 = %
   const [posting, setPosting] = useState(false);
   const [visibility, setVisibility] = useState('public');
@@ -96,66 +97,75 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
 
   const canPost = content.trim().length > 0 && !posting && remaining >= 0 && (!scheduleAt || !scheduleBlocked);
 
-  const handleMediaUpload = async (e) => {
+  const handleMediaUpload = (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
     if (isActionBlocked(user, 'media')) { toast.error(RESTRICTED_TOAST); return; }
     if (poll) { toast.error("Impossible d'ajouter des médias avec un sondage"); return; }
-    setUploadProgress(0);
-    try {
-      const toUpload = files.slice(0, 4 - mediaUrls.length);
-      const urls = [];
-      for (let i = 0; i < toUpload.length; i++) {
-        // Progression simulée : monte jusqu'à 90% pendant la compression + upload
-        const baseProgress = Math.round((i / toUpload.length) * 100);
-        setUploadProgress(baseProgress + 5);
-
-        const compressed = await compressImage(toUpload[i]);
-
-        // Simulation de progression — plus rapide pour les vidéos
-        const isVideo = toUpload[i].type.startsWith('video/');
-        const step = isVideo ? 1 : 4;
-        const delay = isVideo ? 80 : 150;
-        let sim = baseProgress + 5;
-        const interval = setInterval(() => {
-          sim = Math.min(sim + step, baseProgress + 88);
-          setUploadProgress(sim);
-        }, delay);
-
-        const result = await base44.integrations.Core.UploadFile({ file: compressed });
-        clearInterval(interval);
-
-        setUploadProgress(Math.round(((i + 1) / toUpload.length) * 100));
-        if (result?.file_url) urls.push(result.file_url);
-      }
-      setMediaUrls(prev => [...prev, ...urls].slice(0, 4));
-    } catch {
-      toast.error("Erreur lors de l'upload");
-    } finally {
-      setUploadProgress(null);
-      e.target.value = '';
-    }
+    // Aperçu local immédiat — l'upload réel se fait à la publication
+    const slots = 4 - mediaItems.length;
+    const toAdd = files.slice(0, slots).map(file => ({
+      kind: 'file',
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    setMediaItems(prev => [...prev, ...toAdd].slice(0, 4));
+    e.target.value = '';
   };
 
   const handleGifSelect = (url) => {
     if (isActionBlocked(user, 'media')) { toast.error(RESTRICTED_TOAST); return; }
     if (poll) { toast.error("Impossible d'ajouter des médias avec un sondage"); return; }
-    setMediaUrls(prev => [...prev, url].slice(0, 4));
+    setMediaItems(prev => [...prev, { kind: 'url', url }].slice(0, 4));
     setShowGif(false);
+  };
+
+  // Upload les fichiers locaux et retourne la liste finale d'URLs hébergées
+  const uploadAllMedia = async () => {
+    const finalUrls = [];
+    const filesToUpload = mediaItems.filter(m => m.kind === 'file');
+    if (filesToUpload.length === 0) return mediaItems.map(m => m.url);
+    setUploadProgress(0);
+    for (let i = 0; i < filesToUpload.length; i++) {
+      const baseProgress = Math.round((i / filesToUpload.length) * 100);
+      setUploadProgress(baseProgress + 5);
+      const compressed = await compressImage(filesToUpload[i].file);
+      const isVideo = filesToUpload[i].file.type.startsWith('video/');
+      const step = isVideo ? 1 : 4;
+      const delay = isVideo ? 80 : 150;
+      let sim = baseProgress + 5;
+      const interval = setInterval(() => {
+        sim = Math.min(sim + step, baseProgress + 88);
+        setUploadProgress(sim);
+      }, delay);
+      const result = await base44.integrations.Core.UploadFile({ file: compressed });
+      clearInterval(interval);
+      setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
+      if (result?.file_url) finalUrls.push(result.file_url);
+    }
+    // Ajoute les URLs déjà hébergées (GIFs)
+    for (const m of mediaItems) if (m.kind === 'url') finalUrls.push(m.url);
+    setUploadProgress(null);
+    return finalUrls;
   };
 
   const togglePoll = () => {
     if (poll) { setPoll(null); return; }
     if (isActionBlocked(user, 'poll')) { toast.error(RESTRICTED_TOAST); return; }
-    if (mediaUrls.length > 0) { toast.error('Supprimez les médias avant d\'ajouter un sondage'); return; }
+    if (mediaItems.length > 0) { toast.error('Supprimez les médias avant d\'ajouter un sondage'); return; }
     setPoll(makePoll());
     setFocused(true);
   };
 
+  const cleanupMedia = () => {
+    for (const m of mediaItems) if (m.kind === 'file' && m.preview) URL.revokeObjectURL(m.preview);
+  };
+
   const handleSaveDraft = async () => {
-    if (!content.trim() && mediaUrls.length === 0 && !poll) { toast.error('Rédigez quelque chose'); return; }
+    if (!content.trim() && mediaItems.length === 0 && !poll) { toast.error('Rédigez quelque chose'); return; }
     setPosting(true);
     try {
+      const uploadedUrls = await uploadAllMedia();
       const hashtags = extractHashtags(content);
       const postData = {
         content: content.trim(),
@@ -165,7 +175,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
         author_username: user.username,
         author_avatar: user.avatar_url,
         author_verifications: user.verifications || [],
-        media_urls: mediaUrls,
+        media_urls: uploadedUrls,
         hashtags,
         mentions: extractMentions(content),
         likes_count: 0, liked_by: [], replies_count: 0, views_count: 0,
@@ -175,7 +185,8 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
       if (scheduleAt) postData.scheduled_at = new Date(scheduleAt).toISOString();
       await base44.entities.Post.create(postData);
       toast.success('Brouillon enregistré');
-      setContent(''); setMediaUrls([]); setPoll(null); setFocused(false); setScheduleAt(''); setShowSchedule(false);
+      cleanupMedia();
+      setContent(''); setMediaItems([]); setPoll(null); setFocused(false); setScheduleAt(''); setShowSchedule(false);
       onPost?.();
     } catch {
       toast.error("Erreur lors de l'enregistrement");
@@ -189,6 +200,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
     if (isActionBlocked(user, 'post')) { toast.error(RESTRICTED_TOAST); return; }
     setPosting(true);
     try {
+      const uploadedUrls = await uploadAllMedia();
       const hashtags = extractHashtags(content);
       const mentions = extractMentions(content);
       const postData = {
@@ -199,7 +211,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
         author_username: user.username,
         author_avatar: user.avatar_url,
         author_verifications: user.verifications || [],
-        media_urls: mediaUrls,
+        media_urls: uploadedUrls,
         hashtags,
         mentions,
         likes_count: 0,
@@ -257,8 +269,9 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
         }
       }
 
+      cleanupMedia();
       setContent('');
-      setMediaUrls([]);
+      setMediaItems([]);
       setPoll(null);
       setFocused(false);
       setScheduleAt('');
@@ -383,22 +396,31 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
           )}
 
           {/* Media previews */}
-          {mediaUrls.length > 0 && (
-            <div className={`grid gap-1.5 mb-3 ${mediaUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-              {mediaUrls.map((url, i) => (
-                <div key={i} className="relative rounded-2xl overflow-hidden group">
-                  {url.match(/\.(mp4|webm|ogg)$/i)
-                    ? <video src={url} className="w-full max-h-52 object-cover" muted />
-                    : <img src={url} alt="" className="w-full max-h-52 object-cover" />
-                  }
-                  <button
-                    onClick={() => setMediaUrls(prev => prev.filter((_, idx) => idx !== i))}
-                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/75 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/90"
-                  >
-                    <X className="w-3.5 h-3.5 text-white" />
-                  </button>
-                </div>
-              ))}
+          {mediaItems.length > 0 && (
+            <div className={`grid gap-1.5 mb-3 ${mediaItems.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+              {mediaItems.map((item, i) => {
+                const src = item.kind === 'file' ? item.preview : item.url;
+                const isVideo = item.kind === 'file'
+                  ? item.file.type.startsWith('video/')
+                  : /\.(mp4|webm|ogg)$/i.test(src);
+                return (
+                  <div key={i} className="relative rounded-2xl overflow-hidden group">
+                    {isVideo
+                      ? <video src={src} className="w-full max-h-52 object-cover" muted />
+                      : <img src={src} alt="" className="w-full max-h-52 object-cover" />
+                    }
+                    <button
+                      onClick={() => {
+                        if (item.kind === 'file' && item.preview) URL.revokeObjectURL(item.preview);
+                        setMediaItems(prev => prev.filter((_, idx) => idx !== i));
+                      }}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/75 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/90"
+                    >
+                      <X className="w-3.5 h-3.5 text-white" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -431,7 +453,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
               {/* Photo/Video */}
               <button
                 onClick={() => fileRef.current?.click()}
-                disabled={uploading || mediaUrls.length >= 4 || !!poll}
+                disabled={uploading || mediaItems.length >= 4 || !!poll}
                 title="Photo / Vidéo"
                 className="w-9 h-9 rounded-full flex items-center justify-center text-foreground/70 bg-white/5 border border-white/8 hover:bg-white/10 hover:text-foreground hover:border-white/15 transition-all disabled:opacity-30"
               >
@@ -443,7 +465,7 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
               <div className="relative">
                 <button
                   onClick={() => setShowGif(v => !v)}
-                  disabled={mediaUrls.length >= 4 || !!poll}
+                  disabled={mediaItems.length >= 4 || !!poll}
                   title="GIF"
                   className={`w-9 h-9 rounded-full flex items-center justify-center transition-all disabled:opacity-30 ${
                     showGif

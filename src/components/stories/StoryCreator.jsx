@@ -25,6 +25,7 @@ export default function StoryCreator({ open, onClose, user, onCreated }) {
   const [mediaType, setMediaType] = useState('image');
   const [mediaPreview, setMediaPreview] = useState(null);
   const [mediaUrl, setMediaUrl] = useState('');
+  const [pendingFile, setPendingFile] = useState(null);
   const [filter, setFilter] = useState('none');
   const [gradient, setGradient] = useState(TEXT_GRADIENTS[0].key);
   const [text, setText] = useState('');
@@ -46,26 +47,22 @@ export default function StoryCreator({ open, onClose, user, onCreated }) {
 
   useEffect(() => {
     if (!open) {
-      setPhase('home'); setMode('media'); setMediaType('image'); setMediaPreview(null); setMediaUrl('');
+      setPhase('home'); setMode('media'); setMediaType('image'); setMediaPreview(null); setMediaUrl(''); setPendingFile(null);
       setFilter('none'); setGradient(TEXT_GRADIENTS[0].key); setText(''); setFont('grotesk');
       setColor('#ffffff'); setAlign('center'); setLayers([]); setSelectedId(null);
       setTool('filter'); setDrawColor('#ffffff'); setDrawSize(4); setStrokes([]); setBusy(false);
     }
   }, [open]);
 
-  const handleFile = async (file) => {
+  const handleFile = (file) => {
     if (!file) return;
     if (file.size > 25 * 1024 * 1024) { toast.error('Fichier trop volumineux (max 25 Mo)'); return; }
     const isVideo = file.type.startsWith('video/');
     setMediaType(isVideo ? 'video' : 'image');
     setMediaPreview(URL.createObjectURL(file));
+    setPendingFile(file);
+    setMediaUrl(''); // sera uploadé à la publication
     setPhase('edit'); setMode('media');
-    setBusy(true);
-    try {
-      const res = await base44.integrations.Core.UploadFile({ file });
-      setMediaUrl(res?.file_url || res?.data?.file_url || '');
-    } catch { toast.error('Upload échoué'); setPhase('home'); setMediaPreview(null); }
-    setBusy(false);
   };
 
   const startText = () => {
@@ -96,10 +93,17 @@ export default function StoryCreator({ open, onClose, user, onCreated }) {
 
   const submit = async () => {
     if (busy) return;
-    if (mode === 'media' && !mediaUrl) { toast.error('Importez un média'); return; }
+    if (mode === 'media' && !mediaPreview) { toast.error('Importez un média'); return; }
     if (mode === 'text' && !text.trim()) { toast.error('Saisissez un texte'); return; }
     setBusy(true);
     try {
+      // Upload du média uniquement à la publication
+      let finalMediaUrl = mediaUrl;
+      if (mode === 'media' && pendingFile) {
+        const res = await base44.integrations.Core.UploadFile({ file: pendingFile });
+        finalMediaUrl = res?.file_url || res?.data?.file_url || '';
+        if (!finalMediaUrl) throw new Error('Upload échoué');
+      }
       const expiresAt = new Date(Date.now() + STORY_EXPIRY_MS).toISOString();
       const payload = {
         author_id: user?.id, author_email: user?.email || '', author_name: user?.full_name || '',
@@ -113,7 +117,7 @@ export default function StoryCreator({ open, onClose, user, onCreated }) {
         payload.font = font; payload.text_color = color; payload.text_align = align;
       } else {
         payload.media_type = mediaType;
-        payload.media_url = mediaUrl;
+        payload.media_url = finalMediaUrl;
         payload.filter = filter;
         // Calques (texte/emoji/gif) + traits de dessin regroupés dans stickers
         payload.stickers = [
@@ -163,7 +167,7 @@ export default function StoryCreator({ open, onClose, user, onCreated }) {
       {/* Barre haute */}
       <div className="flex items-center justify-between px-4 py-3 z-50">
         <button
-          onClick={() => (phase === 'edit' ? (setPhase('home'), setMediaPreview(null), setMediaUrl(''), setLayers([]), setStrokes([])) : onClose())}
+          onClick={() => (phase === 'edit' ? (setPhase('home'), setMediaPreview(null), setMediaUrl(''), setPendingFile(null), setLayers([]), setStrokes([])) : onClose())}
           className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
         >
           {phase === 'edit' ? <ArrowLeft className="w-5 h-5 text-white" /> : <X className="w-5 h-5 text-white" />}

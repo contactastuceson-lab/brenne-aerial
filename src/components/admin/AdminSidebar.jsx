@@ -29,7 +29,6 @@ const navSections = [
       { key: 'sample_profiles', icon: Users, path: '/admin/sample-profiles', label: 'Profils suggérés' },
       { key: 'conversations', icon: MessageSquare, path: '/admin/conversations', label: 'Conversations' },
       { key: 'messaging', icon: MessageCircle, path: '/admin/messaging', label: 'Messagerie' },
-      { key: 'posts', icon: FileText, path: '/admin/posts', label: 'Feed Posts' },
       { key: 'forum', icon: MessageCircle, path: '/admin/forum', label: 'Forum' },
       { key: 'spaces', icon: Radio, path: '/admin/spaces', label: 'Spaces Audio' },
       { key: 'events', icon: Calendar, path: '/admin/events', label: 'Événements' },
@@ -42,6 +41,7 @@ const navSections = [
   {
     label: 'Contenu du site',
     items: [
+      { key: 'posts', icon: FileText, path: '/admin/posts', label: 'Feed Posts' },
       { key: 'blog', icon: FileText, path: '/admin/blog', label: 'Blog' },
       { key: 'pages', icon: FileText, path: '/admin/pages', label: 'Pages' },
       { key: 'portfolio', icon: Map, path: '/admin/portfolio', label: 'Portfolio' },

@@ -9,6 +9,7 @@ import AnnouncementPopup from '@/components/shared/AnnouncementPopup';
 import DonationFloatingButton from '@/components/DonationFloatingButton';
 import UpdatesFloatingButton from '@/components/shared/UpdatesFloatingButton';
 import CookieBanner from '@/components/shared/CookieBanner';
+import WhatsNewAutoShow from '@/components/whatsnew/WhatsNewAutoShow';
 import NavigationSkeleton from './NavigationSkeleton';
 
 import MaintenancePage from '@/pages/MaintenancePage';
@@ -136,6 +137,9 @@ export default function PublicLayout() {
       </div>
 
       <CookieBanner />
+
+      {/* Auto-show What's New modal for published announcements */}
+      <WhatsNewAutoShow user={user} />
     </div>
   );
 }

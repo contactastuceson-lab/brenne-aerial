@@ -1,0 +1,147 @@
+{
+  "name": "WhatsNew",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre de l'annonce de nouveaut\u00e9s"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version ou p\u00e9riode (ex: v2.4, Ao\u00fbt 2026)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "archived"
+      ],
+      "default": "draft",
+      "description": "Statut : draft = brouillon, published = publi\u00e9e (visible), archived = archiv\u00e9e"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de publication"
+    },
+    "header_image_url": {
+      "type": "string",
+      "description": "Image d'en-t\u00eate optionnelle"
+    },
+    "accent_color": {
+      "type": "string",
+      "default": "#38aadc",
+      "description": "Couleur d'accent (hex)"
+    },
+    "intro": {
+      "type": "string",
+      "description": "Texte d'introduction affich\u00e9 sous le titre"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Emoji ou nom d'ic\u00f4ne lucide"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "feature",
+              "improvement",
+              "fix",
+              "announcement"
+            ],
+            "default": "feature"
+          }
+        }
+      },
+      "default": [],
+      "description": "Liste des nouveaut\u00e9s (sections)"
+    },
+    "target_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "R\u00f4les cibl\u00e9s (vide = tous les utilisateurs)"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de d\u00e9but d'affichage"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de fin d'affichage"
+    },
+    "custom_button_text": {
+      "type": "string",
+      "description": "Texte du bouton personnalis\u00e9 (optionnel)"
+    },
+    "custom_button_url": {
+      "type": "string",
+      "description": "URL du bouton personnalis\u00e9 (optionnel)"
+    },
+    "force_display": {
+      "type": "boolean",
+      "default": false,
+      "description": "Forcer l'affichage m\u00eame si l'utilisateur l'a d\u00e9j\u00e0 vu"
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "description": "Ordre d'affichage"
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de vues"
+    },
+    "dismiss_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de fermetures"
+    },
+    "created_by_name": {
+      "type": "string",
+      "description": "Nom du cr\u00e9ateur (snapshot)"
+    }
+  },
+  "required": [
+    "title",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

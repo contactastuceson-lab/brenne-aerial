@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
-import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown, CreditCard, Network, Radio, Coins, Megaphone, Landmark, Bot, LifeBuoy } from 'lucide-react';
+import { BarChart3, FileText, Calendar, Users, MessageSquare, Settings, ArrowLeft, Mail, DollarSign, UserCog, Award, MonitorSmartphone, Activity, MessageCircle, Image, Map, FileCode, Gift, Lock, Shield, Zap, Server, AlertCircle, Briefcase, ChevronDown, CreditCard, Network, Radio, Coins, Megaphone, Landmark, Bot, LifeBuoy, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 const navSections = [
@@ -51,6 +51,7 @@ const navSections = [
     label: 'Communication',
     items: [
       { key: 'announcements', icon: MessageSquare, path: '/admin/announcements', label: 'Annonces' },
+      { key: 'whats_new', icon: Sparkles, path: '/admin/whats-new', label: 'Nouveautés' },
       { key: 'emailing', icon: Mail, path: '/admin/emailing', label: 'Emailing' },
     ]
   },

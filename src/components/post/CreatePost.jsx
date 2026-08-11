@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Image, X, Loader2, Globe, Users, BarChart3, BadgeCheck, ShieldCheck, CalendarClock, FileEdit, Megaphone } from 'lucide-react';
 import { toast } from 'sonner';
@@ -50,6 +51,7 @@ function GifIcon({ className }) {
 }
 
 export default function CreatePost({ user, onPost, replyTo = null }) {
+  const queryClient = useQueryClient();
   const [content, setContent] = useState('');
   // mediaItems: { kind: 'file'|'url', file?, preview, url? }
   const [mediaItems, setMediaItems] = useState([]);
@@ -235,6 +237,16 @@ export default function CreatePost({ user, onPost, replyTo = null }) {
       }
       const created = await base44.entities.Post.create(postData);
       toast.success(scheduleAt ? 'Publication programmée' : 'Post publié');
+
+      // Incrémente le compteur de réponses du post parent (service role — RLS)
+      if (replyTo && replyTo.id && !scheduleAt) {
+        base44.functions.invoke('incrementRepliesCount', { parent_id: replyTo.id }).catch(() => {});
+        // Met à jour le cache du feed immédiatement
+        queryClient.setQueriesData({ queryKey: ['home-feed-posts'] }, (old) => {
+          if (!Array.isArray(old)) return old;
+          return old.map(p => p.id === replyTo.id ? { ...p, replies_count: (p.replies_count || 0) + 1 } : p);
+        });
+      }
 
       // Notification REPLY pour l'auteur du post parent + MENTION pour chaque @username
       const allUsers = await base44.entities.User.list('-created_date', 200).catch(() => []);

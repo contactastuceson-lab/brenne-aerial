@@ -98,13 +98,8 @@ export default function ReplyCard({ post, currentUser }) {
           </div>
         )}
 
-        {/* Simplified footer: comment count (left) + like (right) */}
-        <div className="flex items-center justify-between mt-2.5 -mx-1">
-          <Link to={`/post/${post.id}`} className="flex items-center gap-1.5 px-2 py-1 rounded-full text-muted-foreground/50 hover:text-blue-400 hover:bg-blue-400/10 transition-all text-sm">
-            <MessageCircle className="w-4 h-4" />
-            <span className="text-xs tabular-nums">{post.replies_count || 0}</span>
-          </Link>
-
+        {/* Simplified footer: like button (right only) */}
+        <div className="flex items-center justify-end mt-2.5 -mx-1">
           <button onClick={handleLike} disabled={likeLoading}
             className={`flex items-center gap-1.5 px-2 py-1 rounded-full transition-all text-sm ${liked ? 'text-rose-500' : 'text-muted-foreground/50 hover:text-rose-500 hover:bg-rose-500/10'}`}
           >

@@ -439,13 +439,6 @@ export default function VideoPlayer({ initialPost, initialUrl, onClose, currentU
         <X className="w-5 h-5" />
       </button>
 
-      {/* Counter */}
-      {queue.length > 1 && (
-        <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-black/50 text-white/70 text-xs font-mono">
-          {index + 1} / {queue.length}
-        </div>
-      )}
-
       {/* Scroll dots */}
       {queue.length > 1 && (
         <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1.5 pointer-events-none">

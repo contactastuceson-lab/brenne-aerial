@@ -29,6 +29,7 @@ const navSections = [
       { key: 'sample_profiles', icon: Users, path: '/admin/sample-profiles', label: 'Profils suggérés' },
       { key: 'conversations', icon: MessageSquare, path: '/admin/conversations', label: 'Conversations' },
       { key: 'messaging', icon: MessageCircle, path: '/admin/messaging', label: 'Messagerie' },
+      { key: 'posts', icon: FileText, path: '/admin/posts', label: 'Feed Posts' },
       { key: 'forum', icon: MessageCircle, path: '/admin/forum', label: 'Forum' },
       { key: 'spaces', icon: Radio, path: '/admin/spaces', label: 'Spaces Audio' },
       { key: 'events', icon: Calendar, path: '/admin/events', label: 'Événements' },

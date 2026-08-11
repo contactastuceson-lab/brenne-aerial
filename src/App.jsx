@@ -74,6 +74,7 @@ import AdminSpaces from "@/pages/admin/AdminSpaces";
 import AdminPortfolio from "@/pages/admin/AdminPortfolio";
 import AdminAffiliations from "@/pages/admin/AdminAffiliations";
 import AdminSupport from "@/pages/admin/AdminSupport";
+import AdminPosts from "@/pages/admin/AdminPosts";
 import SupportPage from "@/pages/SupportPage";
 import SupportConversationsPage from "@/pages/SupportConversationsPage";
 import SupportTicketPage from "@/pages/SupportTicketPage";
@@ -261,6 +262,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/scan-tickets" element={<AdminScanTickets />} />
         <Route path="/admin/qr-generator" element={<AdminQrGenerator />} />
         <Route path="/admin/support" element={<AdminSupport />} />
+        <Route path="/admin/posts" element={<AdminPosts />} />
 
       </Route>
 

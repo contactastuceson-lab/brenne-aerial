@@ -216,10 +216,16 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
               : <div className="w-full h-full bg-primary/30 flex items-center justify-center text-xs font-bold text-primary">{(authorName[0] || 'U').toUpperCase()}</div>
             }
           </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-grotesk font-bold text-white text-sm">{authorName}</span>
+          <div className="flex items-center gap-0.5 flex-wrap pointer-events-auto">
+            <button
+              type="button"
+              onClick={() => { onClose?.(); navigate(post.author_username ? `/@${post.author_username}` : `/post/${post.id}`); }}
+              className="font-grotesk font-bold text-white text-sm hover:underline"
+            >
+              {authorName}
+            </button>
             {post.author_verifications?.length > 0 && (
-              <VerificationIcons verifications={post.author_verifications} size="sm" user={{ id: post.author_id }} />
+              <VerificationIcons verifications={post.author_verifications} size="sm" markSize="0.95em" user={{ id: post.author_id }} />
             )}
           </div>
         </div>

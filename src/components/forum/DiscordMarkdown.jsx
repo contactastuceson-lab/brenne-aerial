@@ -152,7 +152,7 @@ export default function DiscordMarkdown({ content, className = '', allowMarkdown
   if (!allowMarkdown) {
     const lines = (content || '').split('\n');
     return (
-      <div className={`discord-md text-[15px] leading-relaxed text-foreground/90 ${className}`}>
+      <div className={`discord-md text-inherit text-foreground/90 ${className}`}>
         {lines.map((line, i) => (
           <p key={i} className={i < lines.length - 1 ? 'mb-1' : ''}>
             {renderWithTags(linkifyContent(line), navigate)}

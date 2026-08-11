@@ -3,18 +3,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   FileText, Search, Trash2, Pin, Star, Megaphone, Eye, EyeOff,
-  Loader2, X, Filter, Users, Heart, MessageCircle, Repeat2,
-  ExternalLink, AlertTriangle, Check, Image as ImageIcon,
+  Loader2, X, Users, Heart, MessageCircle, Repeat2,
+  ExternalLink, Image as ImageIcon, ArrowUpDown, CheckSquare, Square,
+  XCircle, Copy, Link2, TrendingUp, Clock, Layers,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import PostDetailPanel from '@/components/admin/posts/PostDetailPanel';
 
 const VISIBILITY_META = {
-  public: { label: 'Public', cls: 'text-green-400 bg-green-400/10 border-green-400/20' },
-  followers: { label: 'Abonnés', cls: 'text-blue-400 bg-blue-400/10 border-blue-400/20' },
-  certified: { label: 'Certifiés', cls: 'text-purple-400 bg-purple-400/10 border-purple-400/20' },
-  eza_circle: { label: 'Cercle EZA', cls: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
+  public: { label: 'Public', cls: 'text-green-400 bg-green-400/10 border-green-400/20', dot: 'bg-green-400' },
+  followers: { label: 'Abonnés', cls: 'text-blue-400 bg-blue-400/10 border-blue-400/20', dot: 'bg-blue-400' },
+  certified: { label: 'Certifiés', cls: 'text-purple-400 bg-purple-400/10 border-purple-400/20', dot: 'bg-purple-400' },
+  eza_circle: { label: 'Cercle EZA', cls: 'text-amber-400 bg-amber-400/10 border-amber-400/20', dot: 'bg-amber-400' },
 };
 
 function timeAgo(iso) {
@@ -30,45 +32,42 @@ function timeAgo(iso) {
   return format(new Date(iso), 'd MMM yyyy', { locale: fr });
 }
 
+const SORT_OPTIONS = [
+  { key: 'recent', label: 'Plus récents', icon: Clock },
+  { key: 'old', label: 'Plus anciens', icon: Clock },
+  { key: 'likes', label: 'Plus aimés', icon: Heart },
+  { key: 'views', label: 'Plus vus', icon: Eye },
+  { key: 'replies', label: 'Plus discutés', icon: MessageCircle },
+];
+
 export default function AdminPosts() {
   const qc = useQueryClient();
   const [selected, setSelected] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterVis, setFilterVis] = useState('all');
-  const [filterFlag, setFilterFlag] = useState('all'); // pinned | highlight | sponsored | draft | all
+  const [filterFlag, setFilterFlag] = useState('all');
   const [showMediaOnly, setShowMediaOnly] = useState(false);
+  const [sortBy, setSortBy] = useState('recent');
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['admin-posts'],
     queryFn: () => base44.entities.Post.list('-created_date', 200),
   });
 
-  const logAction = async (action, entityId, changes) => {
-    try {
-      await base44.functions.invoke('logAuditAction', { action, entity_type: 'Post', entity_id: entityId, changes });
-    } catch {}
-  };
-
-  const updatePost = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Post.update(id, data),
-    onSuccess: (_, { id, data }) => {
-      qc.invalidateQueries({ queryKey: ['admin-posts'] });
-      qc.invalidateQueries({ queryKey: ['home-feed-posts'] });
-      logAction('update', id, data);
-      setSelected(prev => prev ? { ...prev, ...data } : prev);
-      toast.success('✓ Post mis à jour');
+  const bulkDelete = useMutation({
+    mutationFn: async (ids) => {
+      for (const id of ids) {
+        await base44.entities.Post.delete(id);
+      }
     },
-    onError: () => toast.error('Erreur lors de la mise à jour'),
-  });
-
-  const deletePost = useMutation({
-    mutationFn: (id) => base44.entities.Post.delete(id),
-    onSuccess: (_, id) => {
+    onSuccess: (_, ids) => {
       qc.invalidateQueries({ queryKey: ['admin-posts'] });
       qc.invalidateQueries({ queryKey: ['home-feed-posts'] });
-      logAction('delete', id, {});
-      setSelected(null);
-      toast.success('✓ Post supprimé');
+      toast.success(`✓ ${ids.length} post(s) supprimé(s)`);
+      setSelectedIds(new Set());
+      setBulkMode(false);
     },
   });
 
@@ -89,8 +88,15 @@ export default function AdminPosts() {
         p.hashtags?.some(h => h.toLowerCase().includes(q))
       );
     }
-    return result;
-  }, [posts, filterVis, filterFlag, showMediaOnly, searchQuery]);
+    // Sort
+    const sorted = [...result];
+    if (sortBy === 'recent') sorted.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+    else if (sortBy === 'old') sorted.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+    else if (sortBy === 'likes') sorted.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0));
+    else if (sortBy === 'views') sorted.sort((a, b) => (b.views_count || 0) - (a.views_count || 0));
+    else if (sortBy === 'replies') sorted.sort((a, b) => (b.replies_count || 0) - (a.replies_count || 0));
+    return sorted;
+  }, [posts, filterVis, filterFlag, showMediaOnly, searchQuery, sortBy]);
 
   const stats = {
     total: posts.length,
@@ -99,14 +105,32 @@ export default function AdminPosts() {
     sponsored: posts.filter(p => p.is_sponsored).length,
     drafts: posts.filter(p => p.is_draft).length,
     withMedia: posts.filter(p => p.media_urls?.length > 0).length,
+    totalLikes: posts.reduce((s, p) => s + (p.likes_count || 0), 0),
+    totalViews: posts.reduce((s, p) => s + (p.views_count || 0), 0),
   };
 
-  const toggleFlag = (post, field) => {
-    updatePost.mutate({ id: post.id, data: { [field]: !post[field] } });
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   };
 
-  const changeVisibility = (post, vis) => {
-    updatePost.mutate({ id: post.id, data: { visibility: vis } });
+  const selectAll = () => setSelectedIds(new Set(filtered.map(p => p.id)));
+  const deselectAll = () => setSelectedIds(new Set());
+
+  const handleBulkDelete = () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    if (confirm(`Supprimer ${ids.length} post(s) définitivement ?`)) {
+      bulkDelete.mutate(ids);
+    }
+  };
+
+  const copyAllLinks = () => {
+    const links = filtered.map(p => `${window.location.origin}/post/${p.id}`).join('\n');
+    navigator.clipboard.writeText(links).then(() => toast.success(`${filtered.length} lien(s) copié(s)`));
   };
 
   return (
@@ -114,15 +138,49 @@ export default function AdminPosts() {
       {/* Liste */}
       <div className={`${selected ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-1/2 min-w-0 border-r border-border bg-background`}>
         {/* Header */}
-        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary" />
-            <h1 className="text-base font-grotesk font-bold">Gestion du Feed</h1>
+        <div className="px-4 py-3.5 border-b border-border flex-shrink-0" style={{ background: 'linear-gradient(135deg, hsl(var(--card)), hsl(var(--background)))' }}>
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
+                <FileText className="w-4.5 h-4.5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-base font-grotesk font-bold leading-tight">Gestion du Feed</h1>
+                <p className="text-[10px] text-muted-foreground font-mono">{stats.total} posts · {stats.totalLikes} likes · {stats.totalViews} vues</p>
+              </div>
+            </div>
+            <button onClick={() => { setBulkMode(!bulkMode); setSelectedIds(new Set()); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 ${bulkMode ? 'bg-primary/15 border-primary/30 text-primary' : 'bg-secondary/50 border-border text-muted-foreground hover:text-foreground'}`}>
+              {bulkMode ? <CheckSquare className="w-3.5 h-3.5" /> : <Layers className="w-3.5 h-3.5" />}
+              {bulkMode ? 'Sélection' : 'Multi'}
+            </button>
           </div>
-          <span className="text-xs text-muted-foreground">{stats.total} posts</span>
+
+          {/* KPI pills */}
+          <div className="grid grid-cols-4 gap-1.5">
+            {[
+              { label: 'Total', value: stats.total, icon: FileText, color: 'text-primary', bg: 'bg-primary/10' },
+              { label: 'Épinglés', value: stats.pinned, icon: Pin, color: 'text-amber-400', bg: 'bg-amber-400/10' },
+              { label: 'À la une', value: stats.highlighted, icon: Star, color: 'text-cyan-400', bg: 'bg-cyan-400/10' },
+              { label: 'Brouillons', value: stats.drafts, icon: EyeOff, color: 'text-muted-foreground', bg: 'bg-muted/30' },
+            ].map((k, i) => {
+              const KIcon = k.icon;
+              return (
+                <div key={i} className="rounded-lg bg-secondary/30 border border-border p-2 flex items-center gap-1.5">
+                  <div className={`w-6 h-6 rounded-md ${k.bg} flex items-center justify-center flex-shrink-0`}>
+                    <KIcon className={`w-3 h-3 ${k.color}`} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold leading-none">{k.value}</p>
+                    <p className="text-[8px] text-muted-foreground truncate">{k.label}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Stats bar */}
+        {/* Filter tabs */}
         <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border flex-shrink-0 flex-wrap">
           {[
             { key: 'all', label: 'Tous', count: stats.total, cls: '' },
@@ -132,13 +190,13 @@ export default function AdminPosts() {
             { key: 'draft', label: 'Brouillons', count: stats.drafts, cls: 'text-muted-foreground' },
           ].map(s => (
             <button key={s.key} onClick={() => setFilterFlag(s.key)}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${filterFlag === s.key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
-              {s.label} <span className={filterFlag === s.key ? '' : s.cls}>{s.count}</span>
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${filterFlag === s.key ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+              {s.label} <span className={filterFlag === s.key ? 'opacity-70' : s.cls}>{s.count}</span>
             </button>
           ))}
         </div>
 
-        {/* Filters bar */}
+        {/* Search + filters */}
         <div className="flex items-center gap-2 px-3 py-2 border-b border-border flex-shrink-0 flex-wrap">
           <div className="relative flex-1 min-w-[120px]">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
@@ -154,11 +212,34 @@ export default function AdminPosts() {
             <option value="all">Toutes visibilités</option>
             {Object.entries(VISIBILITY_META).map(([k, m]) => <option key={k} value={k}>{m.label}</option>)}
           </select>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+            className="bg-secondary/50 border border-border rounded-lg px-2.5 py-1.5 text-xs outline-none cursor-pointer focus:ring-1 focus:ring-primary/40">
+            {SORT_OPTIONS.map(o => <option key={o.key} value={o.key}>{o.label}</option>)}
+          </select>
           <button onClick={() => setShowMediaOnly(v => !v)}
             className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1 ${showMediaOnly ? 'bg-primary/15 border-primary/30 text-primary' : 'bg-secondary/50 border-border text-muted-foreground hover:text-foreground'}`}>
             <ImageIcon className="w-3.5 h-3.5" /> Média
           </button>
         </div>
+
+        {/* Bulk action bar */}
+        {bulkMode && (
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-primary/20 bg-primary/5 flex-shrink-0">
+            <span className="text-xs font-medium text-primary">{selectedIds.size} sélectionné(s)</span>
+            <button onClick={selectAll} className="text-[10px] text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-secondary transition-colors">Tout</button>
+            <button onClick={deselectAll} className="text-[10px] text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-secondary transition-colors">Aucun</button>
+            <div className="flex-1" />
+            <button onClick={copyAllLinks}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-secondary border border-border text-muted-foreground hover:text-foreground transition-colors">
+              <Link2 className="w-3 h-3" /> Copier liens
+            </button>
+            <button onClick={handleBulkDelete} disabled={selectedIds.size === 0 || bulkDelete.isPending}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive/20 transition-colors disabled:opacity-40">
+              {bulkDelete.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+              Supprimer
+            </button>
+          </div>
+        )}
 
         {/* List */}
         <div className="flex-1 overflow-y-auto">
@@ -176,10 +257,17 @@ export default function AdminPosts() {
               {filtered.map(p => {
                 const vMeta = VISIBILITY_META[p.visibility] || VISIBILITY_META.public;
                 const isActive = selected?.id === p.id;
+                const isSelected = selectedIds.has(p.id);
                 const preview = p.content || '';
                 return (
-                  <button key={p.id} onClick={() => setSelected(p)}
-                    className={`w-full text-left px-3 py-3 flex items-start gap-2.5 transition-colors ${isActive ? 'bg-primary/5 border-l-2 border-l-primary' : 'hover:bg-secondary/40 border-l-2 border-l-transparent'}`}>
+                  <div key={p.id}
+                    className={`w-full text-left px-3 py-3 flex items-start gap-2.5 transition-colors cursor-pointer ${isActive ? 'bg-primary/5 border-l-2 border-l-primary' : 'hover:bg-secondary/40 border-l-2 border-l-transparent'}`}
+                    onClick={() => bulkMode ? toggleSelect(p.id) : setSelected(p)}>
+                    {bulkMode && (
+                      <div className="mt-0.5 flex-shrink-0">
+                        {isSelected ? <CheckSquare className="w-4 h-4 text-primary" /> : <Square className="w-4 h-4 text-muted-foreground/50" />}
+                      </div>
+                    )}
                     <div className="w-8 h-8 rounded-lg bg-secondary border border-border flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {p.author_avatar ? (
                         <img src={p.author_avatar} alt="" className="w-full h-full object-cover" />
@@ -214,7 +302,7 @@ export default function AdminPosts() {
                         <span>{timeAgo(p.created_date)}</span>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -225,179 +313,16 @@ export default function AdminPosts() {
       {/* Detail */}
       {!selected ? (
         <div className="hidden md:flex flex-col w-1/2 items-center justify-center bg-background">
-          <div className="w-14 h-14 rounded-2xl bg-secondary/50 border border-border flex items-center justify-center mb-3">
-            <FileText className="w-6 h-6 text-muted-foreground/50" />
+          <div className="w-16 h-16 rounded-2xl bg-secondary/50 border border-border flex items-center justify-center mb-3">
+            <FileText className="w-7 h-7 text-muted-foreground/40" />
           </div>
           <p className="text-sm text-muted-foreground font-medium">Sélectionnez un post</p>
-          <p className="text-xs text-muted-foreground/60 mt-0.5">Gérez, modérez et éditez les publications du feed.</p>
+          <p className="text-xs text-muted-foreground/60 mt-0.5 text-center max-w-[200px]">
+            Gérez, modérez et éditez les publications du feed. Mode multi-sélection disponible.
+          </p>
         </div>
       ) : (
-        <div className="fixed md:relative inset-0 z-50 md:z-auto flex flex-col w-full md:w-1/2 min-w-0 bg-background border-l border-border">
-          <div className="md:hidden absolute inset-0 bg-black/40" onClick={() => setSelected(null)} />
-          <div className="relative flex flex-col h-full min-w-0 bg-background">
-            {/* Header */}
-            <div className="border-b border-border bg-card flex-shrink-0">
-              <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #38aadc, #0ea5e9)' }} />
-              <div className="p-3 md:p-4">
-                <div className="flex items-center gap-2.5">
-                  <button onClick={() => setSelected(null)}
-                    className="md:hidden w-8 h-8 rounded-lg flex items-center justify-center bg-secondary border border-border flex-shrink-0">
-                    <X className="w-4 h-4" />
-                  </button>
-                  <div className="w-9 h-9 rounded-lg bg-secondary border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {selected.author_avatar ? (
-                      <img src={selected.author_avatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xs font-bold text-muted-foreground">
-                        {(selected.author_name || 'U').charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h1 className="text-sm font-grotesk font-bold truncate">{selected.author_name || 'Anonyme'}</h1>
-                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap text-[10px] text-muted-foreground">
-                      {selected.author_username && <span>@{selected.author_username}</span>}
-                      <span>· {timeAgo(selected.created_date)}</span>
-                      <span className="font-mono px-1.5 py-0.5 rounded border border-border bg-secondary">#{String(selected.id).slice(-6)}</span>
-                    </div>
-                  </div>
-                  <button onClick={() => setSelected(null)}
-                    className="hidden md:flex w-8 h-8 rounded-lg items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary flex-shrink-0">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 p-3 md:p-4 space-y-3">
-              {/* Content */}
-              {selected.content ? (
-                <div className="rounded-xl bg-secondary/30 border border-border p-3 min-w-0">
-                  <p className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-1.5">Contenu</p>
-                  <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words">{selected.content}</p>
-                </div>
-              ) : (
-                <div className="rounded-xl bg-secondary/30 border border-border p-3 text-center">
-                  <p className="text-xs text-muted-foreground italic">Aucun contenu textuel</p>
-                </div>
-              )}
-
-              {/* Media */}
-              {selected.media_urls?.length > 0 && (
-                <div className="rounded-xl bg-secondary/30 border border-border p-3 min-w-0">
-                  <p className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-2">Médias ({selected.media_urls.length})</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {selected.media_urls.map((url, i) => (
-                      <a key={i} href={url} target="_blank" rel="noreferrer" className="block rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-colors">
-                        <img src={url} alt="" className="w-full h-24 object-cover" />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Hashtags & mentions */}
-              {(selected.hashtags?.length > 0 || selected.mentions?.length > 0) && (
-                <div className="rounded-xl bg-secondary/30 border border-border p-3 min-w-0 space-y-1.5">
-                  {selected.hashtags?.length > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[10px] font-mono text-muted-foreground/60 uppercase">Hashtags</span>
-                      {selected.hashtags.map((h, i) => (
-                        <span key={i} className="text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">#{h}</span>
-                      ))}
-                    </div>
-                  )}
-                  {selected.mentions?.length > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[10px] font-mono text-muted-foreground/60 uppercase">Mentions</span>
-                      {selected.mentions.map((m, i) => (
-                        <span key={i} className="text-[10px] text-accent bg-accent/10 px-1.5 py-0.5 rounded">@{m}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Stats */}
-              <div className="grid grid-cols-4 gap-2">
-                {[
-                  { icon: Heart, label: 'Likes', value: selected.likes_count || 0, color: 'text-rose-400' },
-                  { icon: MessageCircle, label: 'Réponses', value: selected.replies_count || 0, color: 'text-blue-400' },
-                  { icon: Repeat2, label: 'Reposts', value: (selected.reposts_count || 0) + (selected.quotes_count || 0), color: 'text-green-400' },
-                  { icon: Eye, label: 'Vues', value: selected.views_count || 0, color: 'text-muted-foreground' },
-                ].map((s, i) => {
-                  const SIcon = s.icon;
-                  return (
-                    <div key={i} className="rounded-xl bg-secondary/30 border border-border p-2.5 text-center">
-                      <SIcon className={`w-3.5 h-3.5 mx-auto mb-1 ${s.color}`} />
-                      <p className="text-sm font-bold">{s.value}</p>
-                      <p className="text-[9px] text-muted-foreground">{s.label}</p>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Flags */}
-              <div className="rounded-xl bg-secondary/30 border border-border p-3 min-w-0 space-y-2">
-                <p className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider">État du post</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => toggleFlag(selected, 'is_pinned')}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${selected.is_pinned ? 'bg-amber-400/15 border-amber-400/30 text-amber-400' : 'bg-secondary border-border text-muted-foreground hover:text-foreground'}`}>
-                    <Pin className="w-3.5 h-3.5" /> {selected.is_pinned ? 'Épinglé' : 'Épingler'}
-                  </button>
-                  <button onClick={() => toggleFlag(selected, 'is_highlight')}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${selected.is_highlight ? 'bg-cyan-400/15 border-cyan-400/30 text-cyan-400' : 'bg-secondary border-border text-muted-foreground hover:text-foreground'}`}>
-                    <Star className="w-3.5 h-3.5" /> {selected.is_highlight ? 'À la une' : 'Mettre à la une'}
-                  </button>
-                  <button onClick={() => toggleFlag(selected, 'is_sponsored')}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${selected.is_sponsored ? 'bg-orange-400/15 border-orange-400/30 text-orange-400' : 'bg-secondary border-border text-muted-foreground hover:text-foreground'}`}>
-                    <Megaphone className="w-3.5 h-3.5" /> {selected.is_sponsored ? 'Sponsorisé' : 'Sponsoriser'}
-                  </button>
-                  <button onClick={() => toggleFlag(selected, 'is_draft')}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${selected.is_draft ? 'bg-muted/30 border-border text-muted-foreground' : 'bg-secondary border-border text-muted-foreground hover:text-foreground'}`}>
-                    {selected.is_draft ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                    {selected.is_draft ? 'Brouillon' : 'Masquer (draft)'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Visibility */}
-              <div className="rounded-xl bg-secondary/30 border border-border p-3 min-w-0">
-                <p className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-2">Visibilité</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(VISIBILITY_META).map(([k, m]) => (
-                    <button key={k} onClick={() => changeVisibility(selected, k)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${selected.visibility === k ? `border ${m.cls}` : 'bg-secondary border-border text-muted-foreground hover:text-foreground'}`}>
-                      {selected.visibility === k ? <Check className="w-3 h-3" /> : null}
-                      {m.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Link */}
-              <a href={`/post/${selected.id}`} target="_blank" rel="noreferrer"
-                className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-colors text-xs font-semibold min-w-0 overflow-hidden">
-                <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-                <span className="flex-shrink-0">Voir le post en ligne</span>
-              </a>
-            </div>
-
-            {/* Actions bar */}
-            <div className="border-t border-border bg-card p-2.5 flex items-center gap-1.5 flex-shrink-0">
-              <button
-                onClick={() => {
-                  if (confirm('Supprimer ce post définitivement ?')) deletePost.mutate(selected.id);
-                }}
-                disabled={deletePost.isPending}
-                className="h-8 px-3 rounded-lg text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40 flex items-center gap-1.5 ml-auto">
-                {deletePost.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                <span className="hidden sm:inline">Supprimer le post</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <PostDetailPanel post={selected} onClose={() => setSelected(null)} />
       )}
     </div>
   );

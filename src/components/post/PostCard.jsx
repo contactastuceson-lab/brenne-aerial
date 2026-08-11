@@ -520,11 +520,9 @@ const ActionBtn = memo(function ActionBtn({ icon, count, onClick, active = false
       <span className={`p-2.5 rounded-full transition-colors duration-150 ${c.bg} ${c.hover}`}>
         {icon}
       </span>
-      {count > 0 && (
-        <span className={`text-[15px] font-inter -ml-1 ${c.hover} ${active ? c.text : ''}`}>
-          {count}
-        </span>
-      )}
+      <span className={`text-[15px] font-inter -ml-1 ${c.hover} ${active ? c.text : ''}`}>
+        {count || 0}
+      </span>
     </button>
   );
 });

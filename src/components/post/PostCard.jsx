@@ -268,7 +268,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
             {/* Ligne unique : nom + badge + @username · temps */}
             <div className="flex items-center gap-0 min-w-0 leading-snug">
               <button type="button" onClick={handleIdentity}
-                className="flex-shrink-0 font-inter font-bold text-[16px] md:text-[19px] text-foreground hover:underline mr-0.5">
+                className="flex-shrink-0 font-inter font-bold text-[15px] md:text-[17px] text-foreground hover:underline mr-0.5">
                 {authorName}
               </button>
               {post.author_id && (
@@ -280,9 +280,9 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
                   />
                 </span>
               )}
-              <span className="min-w-0 max-w-[11rem] sm:max-w-[16rem] font-inter text-[15px] md:text-[19px] text-muted-foreground/70 truncate">@{authorUsername || authorName}</span>
-              <span className="text-muted-foreground/50 text-[15px] md:text-[19px] mx-1 flex-shrink-0">·</span>
-              <span className="font-inter text-[15px] md:text-[19px] text-muted-foreground/70 whitespace-nowrap flex-shrink-0">{timeAgo}</span>
+              <span className="min-w-0 max-w-[11rem] sm:max-w-[16rem] font-inter text-[14px] md:text-[15px] text-muted-foreground/70 truncate">@{authorUsername || authorName}</span>
+              <span className="text-muted-foreground/50 text-[14px] md:text-[15px] mx-1 flex-shrink-0">·</span>
+              <span className="font-inter text-[14px] md:text-[15px] text-muted-foreground/70 whitespace-nowrap flex-shrink-0">{timeAgo}</span>
             </div>
           </div>
 
@@ -386,7 +386,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
           </div>
         ) : (
           <>
-            <div className="text-[17px] md:text-[19px] lg:text-[20px] xl:text-[21px] leading-[1.35] font-normal text-foreground mb-1">
+            <div className="text-[16px] md:text-[17px] lg:text-[18px] xl:text-[18px] leading-[1.35] font-normal text-foreground mb-1">
               <DiscordMarkdown content={displayContent} allowMarkdown={false} />
             </div>
             {isLong && !expanded && (

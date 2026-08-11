@@ -46,6 +46,7 @@ export default function AdminPosts() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterVis, setFilterVis] = useState('all');
   const [filterFlag, setFilterFlag] = useState('all');
+  const [contentType, setContentType] = useState('posts'); // 'posts' | 'comments' | 'all'
   const [showMediaOnly, setShowMediaOnly] = useState(false);
   const [sortBy, setSortBy] = useState('recent');
   const [bulkMode, setBulkMode] = useState(false);
@@ -73,6 +74,9 @@ export default function AdminPosts() {
 
   const filtered = useMemo(() => {
     let result = posts;
+    // Filtre type de contenu : posts (sans reply_to_id) vs commentaires (avec reply_to_id)
+    if (contentType === 'posts') result = result.filter(p => !p.reply_to_id);
+    else if (contentType === 'comments') result = result.filter(p => !!p.reply_to_id);
     if (filterVis !== 'all') result = result.filter(p => p.visibility === filterVis);
     if (filterFlag === 'pinned') result = result.filter(p => p.is_pinned);
     else if (filterFlag === 'highlight') result = result.filter(p => p.is_highlight);
@@ -96,10 +100,12 @@ export default function AdminPosts() {
     else if (sortBy === 'views') sorted.sort((a, b) => (b.views_count || 0) - (a.views_count || 0));
     else if (sortBy === 'replies') sorted.sort((a, b) => (b.replies_count || 0) - (a.replies_count || 0));
     return sorted;
-  }, [posts, filterVis, filterFlag, showMediaOnly, searchQuery, sortBy]);
+  }, [posts, contentType, filterVis, filterFlag, showMediaOnly, searchQuery, sortBy]);
 
   const stats = {
     total: posts.length,
+    postsCount: posts.filter(p => !p.reply_to_id).length,
+    commentsCount: posts.filter(p => !!p.reply_to_id).length,
     pinned: posts.filter(p => p.is_pinned).length,
     highlighted: posts.filter(p => p.is_highlight).length,
     sponsored: posts.filter(p => p.is_sponsored).length,
@@ -146,7 +152,7 @@ export default function AdminPosts() {
               </div>
               <div>
                 <h1 className="text-base font-grotesk font-bold leading-tight">Gestion du Feed</h1>
-                <p className="text-[10px] text-muted-foreground font-mono">{stats.total} posts · {stats.totalLikes} likes · {stats.totalViews} vues</p>
+                <p className="text-[10px] text-muted-foreground font-mono">{contentType === 'comments' ? `${stats.commentsCount} commentaires` : contentType === 'posts' ? `${stats.postsCount} posts` : `${stats.total} contenus`} · {stats.totalLikes} likes · {stats.totalViews} vues</p>
               </div>
             </div>
             <button onClick={() => { setBulkMode(!bulkMode); setSelectedIds(new Set()); }}
@@ -178,6 +184,25 @@ export default function AdminPosts() {
               );
             })}
           </div>
+        </div>
+
+        {/* Content type toggle: Posts vs Comments */}
+        <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border flex-shrink-0">
+          {[
+            { key: 'posts', label: 'Publications', count: stats.postsCount, icon: FileText },
+            { key: 'comments', label: 'Commentaires', count: stats.commentsCount, icon: MessageCircle },
+            { key: 'all', label: 'Tout', count: stats.total, icon: Layers },
+          ].map(t => {
+            const TIcon = t.icon;
+            return (
+              <button key={t.key} onClick={() => setContentType(t.key)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${contentType === t.key ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+                <TIcon className="w-3 h-3" />
+                {t.label}
+                <span className={contentType === t.key ? 'opacity-70' : 'text-muted-foreground/60'}>{t.count}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Filter tabs */}
@@ -250,7 +275,7 @@ export default function AdminPosts() {
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 px-4">
               <FileText className="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">Aucun post trouvé</p>
+              <p className="text-sm text-muted-foreground">Aucun {contentType === 'comments' ? 'commentaire' : 'post'} trouvé</p>
             </div>
           ) : (
             <div className="divide-y divide-border">

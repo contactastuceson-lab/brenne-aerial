@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Heart, MessageCircle, MoreHorizontal, Eye, Trash2, Pencil, X, Check, Repeat2, Upload, Bookmark, Pin, Star } from 'lucide-react';
+import { Heart, MessageCircle, MoreHorizontal, Eye, Trash2, Pencil, X, Check, Repeat2, Upload, Bookmark, Pin, Star, Flag } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -23,7 +23,7 @@ import AffiliationModal from '@/components/ui/AffiliationModal';
 import RepostDialog from '@/components/post/RepostDialog';
 import RepostEmbed from '@/components/post/RepostEmbed';
 import StoryAvatar from '@/components/stories/StoryAvatar';
-import ReportButton from '@/components/shared/ReportButton';
+import ReportModal from '@/components/shared/ReportModal';
 
 const TRUNCATE_LIMIT = 560;
 
@@ -61,6 +61,7 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [pinned, setPinned] = useState(!!post.is_pinned);
   const [highlighted, setHighlighted] = useState(!!post.is_highlight);
+  const [reportOpen, setReportOpen] = useState(false);
   const menuRef = useRef(null);
   // Refs pour éviter les race conditions — source de vérité locale
   const likedByRef = useRef(post.liked_by || []);
@@ -327,14 +328,12 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
                     </button>
                   </>
                 ) : (
-                  <ReportButton
-                    targetType="post"
-                    targetId={post.id}
-                    targetName={authorName}
-                    targetEmail={liveUser?.email || ''}
-                    targetContent={post.content || ''}
-                    targetUrl={`/post/${post.id}`}
-                  />
+                  <button
+                    onClick={e => { e.stopPropagation(); setMenuOpen(false); setReportOpen(true); }}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-3 text-sm text-rose-400 hover:bg-rose-400/10 transition-colors text-left"
+                  >
+                    <Flag className="w-3.5 h-3.5" /> Signaler
+                  </button>
                 )}
               </div>
             )}
@@ -458,6 +457,16 @@ function PostCard({ post, currentUser, onReply, compact = false, onDeleted, onEd
 
       <RepostDialog open={repostOpen} onClose={() => setRepostOpen(false)} post={post} currentUser={currentUser} />
       <AffiliationModal user={identityUser} open={identityModalOpen} onOpenChange={setIdentityModalOpen} />
+      <ReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        targetType="post"
+        targetId={post.id}
+        targetName={authorName}
+        targetEmail={liveUser?.email || ''}
+        targetContent={post.content || ''}
+        targetUrl={`/post/${post.id}`}
+      />
 
       {/* Delete confirm */}
       <AnimatePresence>

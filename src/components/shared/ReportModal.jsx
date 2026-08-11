@@ -116,7 +116,7 @@ export default function ReportModal({
   if (reportId) {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="bg-card border border-border/50 max-w-md shadow-2xl">
+        <DialogContent className="bg-card border border-border/50 max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()} onInteractOutside={(e) => { const t = e.target; if (t?.closest?.('[data-radix-popper-content-wrapper]') || t?.closest?.('[role="dialog"]')) e.preventDefault(); }}>
           <div className="flex flex-col items-center text-center space-y-5 py-4">
             <div className="w-12 h-12 rounded-full bg-green-400/20 flex items-center justify-center">
               <CheckCircle className="w-6 h-6 text-green-400" />
@@ -151,7 +151,7 @@ export default function ReportModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-card border border-border/50 max-w-md shadow-2xl">
+      <DialogContent className="bg-card border border-border/50 max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()} onInteractOutside={(e) => { const t = e.target; if (t?.closest?.('[data-radix-popper-content-wrapper]') || t?.closest?.('[role="dialog"]')) e.preventDefault(); }}>
         <DialogHeader className="border-b border-border/50 pb-4">
           <DialogTitle className="font-grotesk font-bold text-lg flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-destructive/20 flex items-center justify-center">

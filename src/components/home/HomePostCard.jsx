@@ -11,7 +11,7 @@ import PostAuthorHeader from '@/components/shared/PostAuthorHeader';
 import usePublicUser from '@/hooks/usePublicUser';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import ReportButton from '@/components/shared/ReportButton';
+import ReportModal from '@/components/shared/ReportModal';
 
 function AvatarColumn({ authorId, authorAvatar, authorDisplayName, profileLink }) {
   const liveUser = usePublicUser(authorId);
@@ -68,6 +68,7 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
   const [reposted, setReposted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
+  const [reportOpen, setReportOpen] = useState(false);
 
   // Refs pour éviter les race conditions
   const likedByRef = useRef(post.liked_by || []);
@@ -162,13 +163,12 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
                 <LinkIcon className="w-3.5 h-3.5" /> Copier le lien
               </button>
               <div className="my-1 mx-3 h-px bg-border/40" />
-              <ReportButton
-                targetType="post"
-                targetId={post.id}
-                targetName={post.author_display_name || post.author_name || ''}
-                targetContent={post.content || ''}
-                targetUrl={`/post/${post.id}`}
-              />
+              <button
+                onClick={e => { e.stopPropagation(); setMenuOpen(false); setReportOpen(true); }}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-inter text-rose-400 hover:bg-rose-400/10 transition-colors text-left"
+              >
+                <Flag className="w-3.5 h-3.5" /> Signaler
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -255,6 +255,15 @@ export default function HomePostCard({ post, currentUser, index = 0 }) {
           </div>
         </div>
       </div>
+      <ReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        targetType="post"
+        targetId={post.id}
+        targetName={post.author_display_name || post.author_name || ''}
+        targetContent={post.content || ''}
+        targetUrl={`/post/${post.id}`}
+      />
     </article>
   );
 }

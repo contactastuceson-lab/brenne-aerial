@@ -2,16 +2,13 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Heart, MessageCircle, Share2, Volume2, VolumeX, Play, Pause, UserPlus, UserMinus, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { AnimatePresence, motion } from 'framer-motion';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { motion, useMotionValue, useTransform, animate, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import VerificationIcons from '@/components/ui/VerificationIcon';
 import { notify } from '@/lib/notificationHelper';
 
 // ─── Single video slide ──────────────────────────────────────────────────────
-function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser, onLikeUpdate, onClose }) {
+function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser, onClose }) {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -34,7 +31,6 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
 
   const isOwn = currentUser?.id === post.author_id;
 
-  // Fetch author email + check follow status
   useEffect(() => {
     if (!currentUser || isOwn || !post.author_id) return;
     base44.entities.User.filter({ id: post.author_id })
@@ -112,7 +108,6 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
           notify({ type: 'LIKE', sender: currentUser, receiverEmail: users[0].email, receiverId: post.author_id, postId: post.id, postExcerpt: post.content, link: `/post/${post.id}` });
         }
       }
-      onLikeUpdate?.(post.id, !wasLiked);
     } catch {
       setLiked(wasLiked);
       setLikesCount(prevCount);
@@ -153,15 +148,24 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const url = `${window.location.origin}/post/${post.id}`;
-    navigator.clipboard.writeText(url).then(() => toast.success('Lien copié !'));
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          url,
+          title: 'Eza',
+          text: (post.content || '').slice(0, 120),
+        });
+      } catch (e) {
+        if (e?.name !== 'AbortError') {
+          navigator.clipboard?.writeText(url).then(() => toast.success('Lien copié !')).catch(() => {});
+        }
+      }
+    } else {
+      navigator.clipboard?.writeText(url).then(() => toast.success('Lien copié !')).catch(() => {});
+    }
   };
-
-  const authorName = post.author_display_name || post.author_name || post.author_username || 'Utilisateur';
-  const timeAgo = post.created_date
-    ? formatDistanceToNow(new Date(post.created_date), { addSuffix: true, locale: fr })
-    : '';
 
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center select-none">
@@ -174,7 +178,6 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
         muted={muted}
         preload="auto"
         onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={() => {}}
         onClick={togglePlay}
         className="w-full h-full object-contain cursor-pointer"
         style={{ maxHeight: '100vh' }}
@@ -197,36 +200,17 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
         )}
       </AnimatePresence>
 
-      {/* Bottom info */}
+      {/* Bottom info — caption + progress only (no author name/username) */}
       <div
-        className="absolute bottom-0 left-0 right-0 px-4 pt-16 pb-6"
-        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)' }}
+        className="absolute bottom-0 left-0 right-0 px-4 pt-16 pb-6 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)' }}
       >
-        {/* Author row */}
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/30 flex-shrink-0">
-            {post.author_avatar
-              ? <img src={post.author_avatar} alt={authorName} className="w-full h-full object-cover" />
-              : <div className="w-full h-full bg-primary/30 flex items-center justify-center text-xs font-bold text-primary">{(authorName[0] || 'U').toUpperCase()}</div>
-            }
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-grotesk font-bold text-white text-sm">@{post.author_username || authorName}</span>
-            {post.author_verifications?.length > 0 && (
-              <VerificationIcons verifications={post.author_verifications} size="sm" user={{ id: post.author_id }} />
-            )}
-          </div>
-          <span className="text-white/40 text-xs">· {timeAgo}</span>
-        </div>
-
-        {/* Caption */}
         {post.content && (
           <p className="text-white/90 text-sm leading-snug line-clamp-2 mb-3">{post.content}</p>
         )}
-
         {/* Progress bar */}
         <div className="h-0.5 w-full bg-white/20 rounded-full overflow-hidden">
-          <div className="h-full bg-white rounded-full transition-all duration-100" style={{ width: `${progress * 100}%` }} />
+          <div className="h-full bg-white rounded-full" style={{ width: `${progress * 100}%` }} />
         </div>
       </div>
 
@@ -248,7 +232,7 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
           <span className="text-xs text-white/80 font-mono">{post.replies_count > 0 ? post.replies_count : ''}</span>
         </button>
 
-        {/* Share */}
+        {/* Share — native */}
         <button onClick={handleShare} className="flex flex-col items-center gap-1 text-white active:scale-90 transition-transform">
           <div className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center">
             <Share2 className="w-6 h-6" />
@@ -281,16 +265,30 @@ function VideoSlide({ post, videoUrl, isActive, muted, onToggleMute, currentUser
   );
 }
 
-// ─── Main immersive player ────────────────────────────────────────────────────
+// ─── Main immersive player — drag-to-pan, finger-following ───────────────────
 export default function VideoPlayer({ initialPost, initialUrl, onClose, currentUser }) {
   const [queue, setQueue] = useState([{ post: initialPost, url: initialUrl }]);
   const [index, setIndex] = useState(0);
   const [muted, setMuted] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const containerRef = useRef(null);
+  const hRef = useRef(typeof window !== 'undefined' ? window.innerHeight : 800);
   const touchStartY = useRef(null);
-  const isDragging = useRef(false);
+  const wheelCooldown = useRef(false);
+
+  // Motion values for finger-following drag (no React re-render during drag)
+  const dragY = useMotionValue(0);
+  const currentY = useTransform(dragY, (y) => -y);
+  const nextY = useTransform(dragY, (y) => hRef.current - y);
+  const prevY = useTransform(dragY, (y) => -hRef.current - y);
+
+  // Track container height
+  useEffect(() => {
+    const update = () => { hRef.current = window.innerHeight; };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   // Lock body scroll
   useEffect(() => {
@@ -316,52 +314,93 @@ export default function VideoPlayer({ initialPost, initialUrl, onClose, currentU
         setQueue([{ post: initialPost, url: initialUrl }, ...items]);
       } catch {
         // keep initial only
-      } finally {
-        setLoading(false);
       }
     };
     load();
   }, []);
 
-  const goNext = useCallback(() => setIndex(i => Math.min(i + 1, queue.length - 1)), [queue.length]);
-  const goPrev = useCallback(() => setIndex(i => Math.max(i - 1, 0)), []);
+  const EASE = [0.32, 0.72, 0, 1];
+
+  const commitNext = useCallback(() => {
+    if (index >= queue.length - 1) {
+      animate(dragY, 0, { duration: 0.3, ease: EASE });
+      return;
+    }
+    animate(dragY, hRef.current, { duration: 0.32, ease: EASE }).then(() => {
+      setIndex(i => Math.min(i + 1, queue.length - 1));
+      dragY.set(0);
+    });
+  }, [index, queue.length, dragY]);
+
+  const commitPrev = useCallback(() => {
+    if (index <= 0) {
+      animate(dragY, 0, { duration: 0.3, ease: EASE });
+      return;
+    }
+    animate(dragY, -hRef.current, { duration: 0.32, ease: EASE }).then(() => {
+      setIndex(i => Math.max(i - 1, 0));
+      dragY.set(0);
+    });
+  }, [index, dragY]);
 
   // Keyboard
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowDown') goNext();
-      if (e.key === 'ArrowUp') goPrev();
+      if (e.key === 'ArrowDown') commitNext();
+      if (e.key === 'ArrowUp') commitPrev();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [goNext, goPrev, onClose]);
+  }, [commitNext, commitPrev, onClose]);
 
-  // Touch swipe
-  const onTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; isDragging.current = false; };
-  const onTouchMove = () => { isDragging.current = true; };
-  const onTouchEnd = (e) => {
-    if (!isDragging.current || touchStartY.current == null) return;
-    const delta = touchStartY.current - e.changedTouches[0].clientY;
-    if (delta > 60) goNext();
-    else if (delta < -60) goPrev();
+  // Touch — finger-following drag
+  const onTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const onTouchMove = (e) => {
+    if (touchStartY.current == null) return;
+    const delta = touchStartY.current - e.touches[0].clientY;
+    // Rubber-band resistance at edges
+    if ((delta > 0 && index >= queue.length - 1) || (delta < 0 && index <= 0)) {
+      dragY.set(delta * 0.35);
+    } else {
+      dragY.set(delta);
+    }
+  };
+  const onTouchEnd = () => {
+    if (touchStartY.current == null) return;
+    const threshold = hRef.current * 0.18;
+    const currentDrag = dragY.get();
+    if (currentDrag > threshold) commitNext();
+    else if (currentDrag < -threshold) commitPrev();
+    else animate(dragY, 0, { duration: 0.3, ease: EASE });
     touchStartY.current = null;
   };
 
-  // Wheel
-  const wheelCooldown = useRef(false);
+  // Wheel (desktop)
   const onWheel = (e) => {
     if (wheelCooldown.current) return;
-    wheelCooldown.current = true;
-    setTimeout(() => { wheelCooldown.current = false; }, 700);
-    if (e.deltaY > 0) goNext();
-    else goPrev();
+    if (e.deltaY > 0) {
+      wheelCooldown.current = true;
+      commitNext();
+      setTimeout(() => { wheelCooldown.current = false; }, 700);
+    } else if (e.deltaY < 0) {
+      wheelCooldown.current = true;
+      commitPrev();
+      setTimeout(() => { wheelCooldown.current = false; }, 700);
+    }
   };
+
+  const prevItem = queue[index - 1];
+  const currentItem = queue[index];
+  const nextItem = queue[index + 1];
 
   const modal = (
     <div
       ref={containerRef}
       className="fixed inset-0 z-[9999] bg-black flex flex-col"
+      style={{ touchAction: 'none' }}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -391,37 +430,51 @@ export default function VideoPlayer({ initialPost, initialUrl, onClose, currentU
         </div>
       )}
 
-      {/* Slides */}
+      {/* Slides — prev / current / next rendered simultaneously for direct video (no black flash) */}
       <div className="flex-1 relative overflow-hidden">
-        <AnimatePresence mode="wait">
-          {queue[index] && (
-            <motion.div
-              key={index}
-              initial={{ y: index > 0 ? '100%' : 0, opacity: index > 0 ? 0 : 1 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '-100%', opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-              className="absolute inset-0"
-            >
-              <VideoSlide
-                post={queue[index].post}
-                videoUrl={queue[index].url}
-                isActive={true}
-                muted={muted}
-                onToggleMute={() => setMuted(m => !m)}
-                currentUser={currentUser}
-                onClose={onClose}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {prevItem && (
+          <motion.div key="vp-slot-prev" style={{ y: prevY }} className="absolute inset-0">
+            <VideoSlide
+              key={prevItem.post.id}
+              post={prevItem.post}
+              videoUrl={prevItem.url}
+              isActive={false}
+              muted={muted}
+              onToggleMute={() => setMuted(m => !m)}
+              currentUser={currentUser}
+              onClose={onClose}
+            />
+          </motion.div>
+        )}
+        {currentItem && (
+          <motion.div key="vp-slot-current" style={{ y: currentY }} className="absolute inset-0">
+            <VideoSlide
+              key={currentItem.post.id}
+              post={currentItem.post}
+              videoUrl={currentItem.url}
+              isActive={true}
+              muted={muted}
+              onToggleMute={() => setMuted(m => !m)}
+              currentUser={currentUser}
+              onClose={onClose}
+            />
+          </motion.div>
+        )}
+        {nextItem && (
+          <motion.div key="vp-slot-next" style={{ y: nextY }} className="absolute inset-0">
+            <VideoSlide
+              key={nextItem.post.id}
+              post={nextItem.post}
+              videoUrl={nextItem.url}
+              isActive={false}
+              muted={muted}
+              onToggleMute={() => setMuted(m => !m)}
+              currentUser={currentUser}
+              onClose={onClose}
+            />
+          </motion.div>
+        )}
       </div>
-
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-white/30 text-sm animate-pulse">Chargement…</div>
-        </div>
-      )}
     </div>
   );
 

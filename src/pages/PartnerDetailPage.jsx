@@ -125,11 +125,6 @@ export default function PartnerDetailPage() {
             <div className="flex items-center gap-2 flex-wrap mt-1">
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full" style={{ color: lvl.color, background: `${lvl.color}15`, border: `1px solid ${lvl.color}30` }}>{lvl.label}</span>
               <PartnerBadges badges={partnerBadges} size="18px" />
-              {partnerBadges.map(b => (
-                <span key={b.id} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ color: b.color, background: `${b.color}10`, border: `1px solid ${b.color}20` }} title={b.description}>
-                  {b.name}
-                </span>
-              ))}
             </div>
           </div>
         </div>

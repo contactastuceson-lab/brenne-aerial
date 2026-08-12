@@ -49,6 +49,8 @@ export default function PartnersPage() {
   }, [partners, search, cityFilter, levelFilter]);
 
   const featured = filtered.filter(p => p.is_featured).slice(0, 3);
+  const featuredIds = new Set(featured.map(p => p.id));
+  const rest = filtered.filter(p => !featuredIds.has(p.id));
 
   return (
     <div className="min-h-screen pb-20 md:pb-6">
@@ -116,7 +118,7 @@ export default function PartnersPage() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filtered.map(p => <PartnerCard key={p.id} p={p} badgeMap={badgeMap} onClick={() => navigate(`/partenaires/${p.slug || p.id}`)} />)}
+            {rest.map(p => <PartnerCard key={p.id} p={p} badgeMap={badgeMap} onClick={() => navigate(`/partenaires/${p.slug || p.id}`)} />)}
           </div>
         )}
       </div>

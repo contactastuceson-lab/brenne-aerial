@@ -4,70 +4,212 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "Nom de l'entreprise"
+      "description": "Nom du partenaire ou de l'agence"
     },
-    "category": {
+    "slug": {
       "type": "string",
-      "enum": [
-        "couvreur",
-        "architecte",
-        "geometre",
-        "btp",
-        "immobilier",
-        "autre"
-      ],
-      "description": "Cat\u00e9gorie"
+      "description": "Slug URL (auto-g\u00e9n\u00e9r\u00e9 depuis le nom)"
     },
-    "description": {
+    "logo_url": {
       "type": "string",
-      "description": "Description"
+      "description": "Logo / avatar du partenaire"
+    },
+    "banner_url": {
+      "type": "string",
+      "description": "Banni\u00e8re de couverture (optionnel)"
+    },
+    "short_description": {
+      "type": "string",
+      "description": "Description courte affich\u00e9e sur les cartes"
+    },
+    "long_description": {
+      "type": "string",
+      "description": "Description longue affich\u00e9e sur le profil d\u00e9taill\u00e9"
     },
     "website": {
       "type": "string",
-      "description": "Site web"
-    },
-    "phone": {
-      "type": "string"
+      "description": "Site web officiel"
     },
     "email": {
-      "type": "string"
-    },
-    "location": {
       "type": "string",
-      "description": "Ville / R\u00e9gion"
+      "description": "Email de contact public"
     },
-    "logo_url": {
-      "type": "string"
+    "phone": {
+      "type": "string",
+      "description": "T\u00e9l\u00e9phone de contact"
+    },
+    "city": {
+      "type": "string",
+      "description": "Ville"
+    },
+    "country": {
+      "type": "string",
+      "default": "France",
+      "description": "Pays"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Sp\u00e9cialit\u00e9s / comp\u00e9tences (tags)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "suspended",
+        "refused"
+      ],
+      "default": "pending",
+      "description": "Statut du partenaire"
+    },
+    "partnership_level": {
+      "type": "string",
+      "enum": [
+        "partner",
+        "certified",
+        "premium",
+        "gold"
+      ],
+      "default": "partner",
+      "description": "Niveau de partenariat"
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "IDs des badges attribu\u00e9s"
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "description": "Ordre d'affichage (plus \u00e9lev\u00e9 = plus en avant)"
     },
     "is_featured": {
       "type": "boolean",
-      "default": false
+      "default": false,
+      "description": "Partenaire mis en avant (\u00e0 la une)"
     },
-    "is_active": {
+    "is_recommended": {
       "type": "boolean",
-      "default": true
+      "default": false,
+      "description": "Partenaire recommand\u00e9"
+    },
+    "starts_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de d\u00e9but du partenariat"
+    },
+    "ends_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de fin du partenariat (optionnel)"
+    },
+    "social_twitter": {
+      "type": "string"
+    },
+    "social_instagram": {
+      "type": "string"
+    },
+    "social_linkedin": {
+      "type": "string"
+    },
+    "social_facebook": {
+      "type": "string"
+    },
+    "rating_avg": {
+      "type": "number",
+      "default": 0,
+      "description": "Note moyenne (1-5)"
+    },
+    "rating_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre d'avis"
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de vues du profil"
+    },
+    "contact_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de contacts via le bouton"
+    },
+    "created_by_name": {
+      "type": "string",
+      "description": "Nom du cr\u00e9ateur (snapshot)"
     }
   },
   "required": [
     "name",
-    "category"
+    "status",
+    "partnership_level"
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
     },
     "read": null,
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
     }
   }
 }

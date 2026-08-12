@@ -1,0 +1,140 @@
+{
+  "name": "PartnerBadge",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nom du badge (ex: Top Partenaire, Expert S\u00e9curit\u00e9)"
+    },
+    "slug": {
+      "type": "string",
+      "description": "Slug URL unique"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description du badge"
+    },
+    "icon": {
+      "type": "string",
+      "default": "\ud83c\udfc6",
+      "description": "Emoji ou nom d'ic\u00f4ne lucide"
+    },
+    "color": {
+      "type": "string",
+      "default": "#38aadc",
+      "description": "Couleur du badge (hex)"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Image personnalis\u00e9e du badge (optionnel)"
+    },
+    "is_automatic": {
+      "type": "boolean",
+      "default": false,
+      "description": "Badge automatique attribu\u00e9 selon des r\u00e8gles"
+    },
+    "auto_rule": {
+      "type": "object",
+      "description": "R\u00e8gle d'attribution automatique: { field, operator, value }",
+      "properties": {
+        "field": {
+          "type": "string",
+          "enum": [
+            "rating_avg",
+            "view_count",
+            "contact_count",
+            "order"
+          ],
+          "description": "Champ \u00e9valu\u00e9"
+        },
+        "operator": {
+          "type": "string",
+          "enum": [
+            "gte",
+            "lte",
+            "eq",
+            "gt",
+            "lt"
+          ],
+          "description": "Op\u00e9rateur de comparaison"
+        },
+        "value": {
+          "type": "number",
+          "description": "Valeur de comparaison"
+        }
+      }
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "description": "Ordre d'affichage"
+    },
+    "created_by_name": {
+      "type": "string",
+      "description": "Nom du cr\u00e9ateur (snapshot)"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
+    }
+  }
+}

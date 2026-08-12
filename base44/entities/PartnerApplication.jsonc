@@ -1,0 +1,150 @@
+{
+  "name": "PartnerApplication",
+  "type": "object",
+  "properties": {
+    "applicant_name": {
+      "type": "string",
+      "description": "Nom du candidat"
+    },
+    "applicant_email": {
+      "type": "string",
+      "description": "Email du candidat"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Nom de l'entreprise / agence"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string",
+      "default": "France"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Sp\u00e9cialit\u00e9s d\u00e9clar\u00e9es"
+    },
+    "description": {
+      "type": "string",
+      "description": "Pr\u00e9sentation / motivation"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Logo fourni (optionnel)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "refused"
+      ],
+      "default": "pending",
+      "description": "Statut de la candidature"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Notes internes admin"
+    },
+    "partner_id": {
+      "type": "string",
+      "description": "ID du partenaire cr\u00e9\u00e9 si approuv\u00e9"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de soumission"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de d\u00e9cision"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Email de l'admin ayant trait\u00e9"
+    }
+  },
+  "required": [
+    "applicant_name",
+    "applicant_email",
+    "status"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "$or": [
+        {
+          "data.applicant_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.applicant_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
+    }
+  }
+}

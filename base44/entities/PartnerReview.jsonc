@@ -1,0 +1,103 @@
+{
+  "name": "PartnerReview",
+  "type": "object",
+  "properties": {
+    "partner_id": {
+      "type": "string",
+      "description": "ID du partenaire concern\u00e9"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID de l'utilisateur qui a laiss\u00e9 l'avis"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur (snapshot)"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nom de l'utilisateur (snapshot)"
+    },
+    "user_avatar": {
+      "type": "string",
+      "description": "Avatar de l'utilisateur (snapshot)"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Note de 1 \u00e0 5"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Commentaire de l'avis"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "visible",
+        "hidden"
+      ],
+      "default": "visible",
+      "description": "Statut de mod\u00e9ration"
+    },
+    "is_flagged": {
+      "type": "boolean",
+      "default": false,
+      "description": "Avis signal\u00e9"
+    }
+  },
+  "required": [
+    "partner_id",
+    "user_id",
+    "rating"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "pdg_adjoint"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { X, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
+import PartnerBadgeMark from '@/components/ui/PartnerBadgeMark';
 
 const COLORS = ['#38aadc', '#22c55e', '#f59e0b', '#ef4444', '#a855f7', '#ec4899', '#6366f1', '#14b8a6'];
 const FIELDS = [
@@ -67,6 +68,15 @@ export default function BadgeEditDialog({ open, badge, onClose, onSaved }) {
           <div>
             <Label className="text-xs">Description</Label>
             <Textarea value={form.description} onChange={e => update('description', e.target.value)} rows={2} className="mt-1" />
+          </div>
+
+          {/* Live preview */}
+          <div className="flex items-center gap-3 rounded-xl border border-border p-3 bg-secondary/20">
+            <PartnerBadgeMark badge={form} size="32px" showIcon={true} marginLeft={0} />
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground">Aperçu</p>
+              <p className="text-sm font-medium text-foreground">{form.name || 'Nom du badge'}</p>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

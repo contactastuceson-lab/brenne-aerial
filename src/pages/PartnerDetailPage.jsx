@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { PartnerBadges } from '@/components/ui/PartnerBadgeMark';
 
 const LEVEL_CONFIG = {
   partner: { label: 'Partenaire', color: '#38aadc' },
@@ -123,9 +124,10 @@ export default function PartnerDetailPage() {
             <h1 className="font-grotesk font-bold text-2xl md:text-3xl text-foreground">{partner.name}</h1>
             <div className="flex items-center gap-2 flex-wrap mt-1">
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full" style={{ color: lvl.color, background: `${lvl.color}15`, border: `1px solid ${lvl.color}30` }}>{lvl.label}</span>
+              <PartnerBadges badges={partnerBadges} size="18px" />
               {partnerBadges.map(b => (
                 <span key={b.id} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ color: b.color, background: `${b.color}10`, border: `1px solid ${b.color}20` }} title={b.description}>
-                  <span>{b.icon || '🏆'}</span> {b.name}
+                  {b.name}
                 </span>
               ))}
             </div>

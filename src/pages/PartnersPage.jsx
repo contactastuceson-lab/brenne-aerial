@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { PartnerBadges } from '@/components/ui/PartnerBadgeMark';
 
 const LEVEL_CONFIG = {
   partner: { label: 'Partenaire', color: '#38aadc' },
@@ -144,7 +145,7 @@ function PartnerCard({ p, badgeMap, onClick }) {
           <h3 className="font-grotesk font-bold text-foreground group-hover:text-primary transition-colors truncate">{p.name}</h3>
           <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ color: lvl.color, background: `${lvl.color}15`, border: `1px solid ${lvl.color}30` }}>{lvl.label}</span>
-            {p.badges?.map(bid => { const b = badgeMap[bid]; return b ? <span key={bid} className="text-sm" title={b.name} style={{ color: b.color }}>{b.icon || '🏆'}</span> : null; })}
+            <PartnerBadges badgeIds={p.badges} badgeMap={badgeMap} size="16px" />
           </div>
         </div>
       </div>

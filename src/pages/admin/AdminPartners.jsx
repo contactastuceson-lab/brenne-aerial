@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import PartnerEditDialog from '@/components/admin/partners/PartnerEditDialog';
 import BadgeEditDialog from '@/components/admin/partners/BadgeEditDialog';
 import ApplicationDialog from '@/components/admin/partners/ApplicationDialog';
+import { PartnerBadges } from '@/components/ui/PartnerBadgeMark';
+import PartnerBadgeMark from '@/components/ui/PartnerBadgeMark';
 
 const STATUS_CONFIG = {
   pending: { label: 'En attente', className: 'bg-amber-500/15 text-amber-400 border border-amber-500/30' },
@@ -170,13 +172,7 @@ export default function AdminPartners() {
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: lvl.color, background: `${lvl.color}15`, border: `1px solid ${lvl.color}30` }}>{lvl.label}</span>
                       {p.is_featured && <Badge className="bg-amber-500/15 text-amber-400"><Star className="w-3 h-3 mr-1" /> À la une</Badge>}
                       {p.badges?.length > 0 && (
-                        <div className="flex items-center gap-1">
-                          {p.badges.map(bid => {
-                            const b = badgeMap[bid];
-                            if (!b) return null;
-                            return <span key={bid} className="text-sm" title={b.name} style={{ color: b.color }}>{b.icon || '🏆'}</span>;
-                          })}
-                        </div>
+                        <PartnerBadges badgeIds={p.badges} badgeMap={badgeMap} size="16px" />
                       )}
                     </div>
                     {p.short_description && <p className="text-sm text-muted-foreground line-clamp-1 mb-1">{p.short_description}</p>}
@@ -202,7 +198,7 @@ export default function AdminPartners() {
         <div className="grid gap-3">
           {badges.map(b => (
             <div key={b.id} className="rounded-xl border border-border bg-card p-4 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0" style={{ background: `${b.color}20`, border: `1px solid ${b.color}40`, color: b.color }}>{b.icon || '🏆'}</div>
+              <div className="w-10 h-10 flex items-center justify-center flex-shrink-0"><PartnerBadgeMark badge={b} size="32px" showIcon={true} marginLeft={0} /></div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-foreground">{b.name}</h3>

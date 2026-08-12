@@ -12,6 +12,7 @@ import BadgeEditDialog from '@/components/admin/partners/BadgeEditDialog';
 import ApplicationDialog from '@/components/admin/partners/ApplicationDialog';
 import { PartnerBadges } from '@/components/ui/PartnerBadgeMark';
 import PartnerBadgeMark from '@/components/ui/PartnerBadgeMark';
+import PartnerLevelMark from '@/components/ui/PartnerLevelMark';
 
 const STATUS_CONFIG = {
   pending: { label: 'En attente', className: 'bg-amber-500/15 text-amber-400 border border-amber-500/30' },
@@ -169,7 +170,7 @@ export default function AdminPartners() {
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <h3 className="font-semibold text-foreground">{p.name}</h3>
                       <Badge className={st.className}>{st.label}</Badge>
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: lvl.color, background: `${lvl.color}15`, border: `1px solid ${lvl.color}30` }}>{lvl.label}</span>
+                      <PartnerLevelMark level={p.partnership_level} size="16px" marginLeft={0} />
                       {p.is_featured && <Badge className="bg-amber-500/15 text-amber-400"><Star className="w-3 h-3 mr-1" /> À la une</Badge>}
                       {p.badges?.length > 0 && (
                         <PartnerBadges badgeIds={p.badges} badgeMap={badgeMap} size="16px" />

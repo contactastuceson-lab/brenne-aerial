@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { X, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
+import PartnerLevelMark from '@/components/ui/PartnerLevelMark';
+import PartnerBadgeMark from '@/components/ui/PartnerBadgeMark';
 
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'En attente' },
@@ -176,6 +178,20 @@ export default function PartnerEditDialog({ open, partner, badges = [], onClose,
             </div>
           </div>
 
+          {/* Aperçu niveau + badges */}
+          <div className="flex items-center gap-3 rounded-xl border border-border p-3 bg-secondary/20">
+            <PartnerLevelMark level={form.partnership_level} size="32px" marginLeft={0} />
+            {form.badges.length > 0 ? (
+              form.badges.map(bid => {
+                const b = badges.find(x => x.id === bid);
+                return b ? <PartnerBadgeMark key={bid} badge={b} size="28px" marginLeft={0} /> : null;
+              })
+            ) : (
+              <span className="text-xs text-muted-foreground">Aucun badge sélectionné</span>
+            )}
+            <span className="text-xs text-muted-foreground ml-auto">Aperçu</span>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="text-xs">Ordre</Label>
@@ -194,7 +210,7 @@ export default function PartnerEditDialog({ open, partner, badges = [], onClose,
               {badges.map(b => (
                 <button key={b.id} onClick={() => toggleBadge(b.id)}
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border transition-colors ${form.badges.includes(b.id) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-muted'}`}>
-                  <span>{b.icon || '🏆'}</span> {b.name}
+                  <PartnerBadgeMark badge={b} size="14px" showIcon={true} marginLeft={0} /> {b.name}
                 </button>
               ))}
             </div>

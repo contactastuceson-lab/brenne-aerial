@@ -10,13 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { PartnerBadges } from '@/components/ui/PartnerBadgeMark';
-
-const LEVEL_CONFIG = {
-  partner: { label: 'Partenaire', color: '#38aadc' },
-  certified: { label: 'Certifié', color: '#22c55e' },
-  premium: { label: 'Premium', color: '#a855f7' },
-  gold: { label: 'Gold', color: '#f59e0b' },
-};
+import PartnerLevelMark, { LEVEL_CONFIG } from '@/components/ui/PartnerLevelMark';
 
 export default function PartnersPage() {
   const navigate = useNavigate();
@@ -144,7 +138,7 @@ function PartnerCard({ p, badgeMap, onClick }) {
         <div className="flex-1 min-w-0">
           <h3 className="font-grotesk font-bold text-foreground group-hover:text-primary transition-colors truncate">{p.name}</h3>
           <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ color: lvl.color, background: `${lvl.color}15`, border: `1px solid ${lvl.color}30` }}>{lvl.label}</span>
+            <PartnerLevelMark level={p.partnership_level} size="16px" />
             <PartnerBadges badgeIds={p.badges} badgeMap={badgeMap} size="16px" />
           </div>
         </div>

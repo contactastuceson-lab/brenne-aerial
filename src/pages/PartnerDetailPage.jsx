@@ -8,13 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { PartnerBadges } from '@/components/ui/PartnerBadgeMark';
-
-const LEVEL_CONFIG = {
-  partner: { label: 'Partenaire', color: '#38aadc' },
-  certified: { label: 'Certifié', color: '#22c55e' },
-  premium: { label: 'Premium', color: '#a855f7' },
-  gold: { label: 'Gold', color: '#f59e0b' },
-};
+import PartnerLevelMark, { LEVEL_CONFIG } from '@/components/ui/PartnerLevelMark';
 
 export default function PartnerDetailPage() {
   const { id } = useParams();
@@ -123,7 +117,7 @@ export default function PartnerDetailPage() {
           <div className="flex-1 min-w-0 pb-1">
             <h1 className="font-grotesk font-bold text-2xl md:text-3xl text-foreground">{partner.name}</h1>
             <div className="flex items-center gap-2 flex-wrap mt-1">
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full" style={{ color: lvl.color, background: `${lvl.color}15`, border: `1px solid ${lvl.color}30` }}>{lvl.label}</span>
+              <PartnerLevelMark level={partner.partnership_level} size="20px" />
               <PartnerBadges badges={partnerBadges} size="18px" />
             </div>
           </div>

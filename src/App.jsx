@@ -76,6 +76,9 @@ import AdminAffiliations from "@/pages/admin/AdminAffiliations";
 import AdminSupport from "@/pages/admin/AdminSupport";
 import AdminPosts from "@/pages/admin/AdminPosts";
 import AdminWhatsNew from "@/pages/admin/AdminWhatsNew";
+import AdminPartners from "@/pages/admin/AdminPartners";
+import PartnersPage from "@/pages/PartnersPage";
+import PartnerDetailPage from "@/pages/PartnerDetailPage";
 import SupportPage from "@/pages/SupportPage";
 import SupportConversationsPage from "@/pages/SupportConversationsPage";
 import SupportTicketPage from "@/pages/SupportTicketPage";
@@ -198,6 +201,8 @@ const AuthenticatedApp = () => {
           <Route path="/space/:id" element={<SpaceRoomPage />} />
           <Route path="/spaces" element={<SpacesPage />} />
           <Route path="/parrainage" element={<ReferralPage />} />
+          <Route path="/partenaires" element={<PartnersPage />} />
+          <Route path="/partenaires/:id" element={<PartnerDetailPage />} />
           <Route path="/boutique" element={<BoutiquePage />} />
           <Route path="/banque" element={<BanquePage />} />
           <Route path="/events" element={<EventsPage />} />
@@ -265,6 +270,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/support" element={<AdminSupport />} />
         <Route path="/admin/posts" element={<AdminPosts />} />
         <Route path="/admin/whats-new" element={<AdminWhatsNew />} />
+        <Route path="/admin/partners" element={<AdminPartners />} />
 
       </Route>
 

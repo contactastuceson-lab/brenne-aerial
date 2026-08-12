@@ -4,7 +4,7 @@ import {
   Home, Compass, MessageCircle, MoreHorizontal, X, Search,
   Bell, User, LogOut, LayoutDashboard, Bookmark,
   Users, FileText, Calendar, Settings, Heart, Shield,
-  Building2, Star, Award, Plus, Camera, List, Radio,
+  Building2, Star, Award, Plus, Camera, List, Radio, Handshake,
   ShoppingBag, Wallet, Gift, BookOpen, Newspaper, Info, ShoppingCart, LifeBuoy, Plug
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -48,6 +48,7 @@ const NAV_SECTIONS = [
       { to: '/ecosysteme',    icon: Star,            label: 'Écosystème',     color: 'text-orange-400' },
       { to: '/enor',          icon: Award,           label: 'Enor',           color: 'text-amber-300' },
       { to: '/portfolio',     icon: Camera,          label: 'Portfolio',      color: 'text-purple-400' },
+      { to: '/partenaires',   icon: Handshake,        label: 'Partenaires',    color: 'text-teal-400' },
       { to: '/business',      icon: Building2,       label: 'Business',       color: 'text-cyan-400' },
       { to: '/boutique',      icon: ShoppingBag,      label: 'Boutique',       color: 'text-pink-400' },
       { to: '/panier',        icon: ShoppingCart,     label: 'Panier',         color: 'text-amber-400', cartBadge: true },

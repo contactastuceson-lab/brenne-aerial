@@ -273,39 +273,86 @@ function BecomePartnerDialog({ open, onClose }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-card border-border">
-        <DialogHeader><DialogTitle className="flex items-center gap-2"><Handshake className="w-5 h-5 text-primary" /> Devenir Partenaire</DialogTitle></DialogHeader>
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Remplissez ce formulaire, notre équipe étudiera votre candidature.</p>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label className="text-xs">Votre nom *</Label><Input value={form.applicant_name} onChange={e => update('applicant_name', e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Email *</Label><Input value={form.applicant_email} onChange={e => update('applicant_email', e.target.value)} className="mt-1" /></div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label className="text-xs">Entreprise / Agence</Label><Input value={form.company_name} onChange={e => update('company_name', e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Téléphone</Label><Input value={form.phone} onChange={e => update('phone', e.target.value)} className="mt-1" /></div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label className="text-xs">Site web</Label><Input value={form.website} onChange={e => update('website', e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Ville</Label><Input value={form.city} onChange={e => update('city', e.target.value)} className="mt-1" /></div>
-          </div>
-          <div>
-            <Label className="text-xs">Spécialités</Label>
-            <div className="flex gap-2 mt-1">
-              <Input value={specialtyInput} onChange={e => setSpecialtyInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSpecialty(); } }} placeholder="Entrée pour ajouter" />
-              <Button variant="outline" onClick={addSpecialty}>+</Button>
-            </div>
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {form.specialties.map(s => <span key={s} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary border border-primary/20">{s}<button onClick={() => update('specialties', form.specialties.filter(x => x !== s))}><X className="w-3 h-3" /></button></span>)}
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-card border-border p-0">
+        {/* Header with gradient */}
+        <div className="relative overflow-hidden px-6 pt-6 pb-5 border-b border-border">
+          <div className="absolute inset-0 grid-bg opacity-30" />
+          <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, hsl(205 90% 58%) 0%, transparent 70%)' }} />
+          <div className="relative">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, hsl(205 90% 58%) 0%, hsl(195 80% 50%) 100%)', boxShadow: '0 8px 24px hsl(205 90% 58% / 0.3)' }}>
+                <Handshake className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <DialogTitle className="font-grotesk font-bold text-lg">Devenir Partenaire</DialogTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">Rejoignez le programme officiel EZA</p>
+              </div>
             </div>
           </div>
-          <div><Label className="text-xs">Présentation / Motivation</Label><Textarea value={form.description} onChange={e => update('description', e.target.value)} rows={3} className="mt-1" /></div>
         </div>
-        <div className="flex justify-end gap-2 pt-2 border-t border-border">
-          <Button variant="outline" onClick={onClose}>Annuler</Button>
-          <Button onClick={submit} disabled={saving}><Send className="w-3.5 h-3.5 mr-1.5" /> {saving ? 'Envoi...' : 'Envoyer'}</Button>
+
+        {/* Body */}
+        <div className="px-6 py-5 space-y-4">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            Notre équipe étudiera votre candidature sous 48h.
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-2">Informations personnelles</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Votre nom *"><Input value={form.applicant_name} onChange={e => update('applicant_name', e.target.value)} className="rounded-xl" /></Field>
+                <Field label="Email *"><Input value={form.applicant_email} onChange={e => update('applicant_email', e.target.value)} type="email" className="rounded-xl" /></Field>
+              </div>
+            </div>
+
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-2">Entreprise</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Entreprise / Agence"><Input value={form.company_name} onChange={e => update('company_name', e.target.value)} className="rounded-xl" /></Field>
+                <Field label="Téléphone"><Input value={form.phone} onChange={e => update('phone', e.target.value)} className="rounded-xl" /></Field>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <Field label="Site web"><Input value={form.website} onChange={e => update('website', e.target.value)} placeholder="https://" className="rounded-xl" /></Field>
+                <Field label="Ville"><Input value={form.city} onChange={e => update('city', e.target.value)} className="rounded-xl" /></Field>
+              </div>
+            </div>
+
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-2">Spécialités</p>
+              <div className="flex gap-2">
+                <Input value={specialtyInput} onChange={e => setSpecialtyInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSpecialty(); } }} placeholder="Appuyez sur Entrée pour ajouter" className="rounded-xl" />
+                <Button variant="outline" onClick={addSpecialty} className="rounded-xl px-3">+</Button>
+              </div>
+              {form.specialties.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2.5">
+                  {form.specialties.map(s => <span key={s} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-primary/10 text-primary border border-primary/20 font-medium">{s}<button onClick={() => update('specialties', form.specialties.filter(x => x !== s))} className="hover:text-primary/70"><X className="w-3 h-3" /></button></span>)}
+                </div>
+              )}
+            </div>
+
+            <Field label="Présentation / Motivation">
+              <Textarea value={form.description} onChange={e => update('description', e.target.value)} rows={3} className="rounded-xl" placeholder="Décrivez votre activité et pourquoi vous souhaitez devenir partenaire..." />
+            </Field>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-2 px-6 py-4 border-t border-border bg-muted/20">
+          <Button variant="outline" onClick={onClose} className="rounded-full">Annuler</Button>
+          <Button onClick={submit} disabled={saving} className="rounded-full"><Send className="w-3.5 h-3.5 mr-1.5" /> {saving ? 'Envoi...' : 'Envoyer ma candidature'}</Button>
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <div>
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <div className="mt-1">{children}</div>
+    </div>
   );
 }

@@ -136,11 +136,11 @@ function PartnerCard({ p, badgeMap, onClick }) {
           {p.logo_url ? <img src={p.logo_url} alt="" className="w-full h-full object-cover" /> : <span className="font-grotesk font-bold text-xl text-primary">{(p.name || '?')[0]}</span>}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-grotesk font-bold text-foreground group-hover:text-primary transition-colors truncate">{p.name}</h3>
-          <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+          <h3 className="font-grotesk font-bold text-foreground group-hover:text-primary transition-colors truncate flex items-center gap-1.5">
+            {p.name}
             <PartnerLevelMark level={p.partnership_level} size="16px" />
             <PartnerBadges badgeIds={p.badges} badgeMap={badgeMap} size="16px" />
-          </div>
+          </h3>
         </div>
       </div>
       {p.short_description && <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{p.short_description}</p>}

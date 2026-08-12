@@ -168,9 +168,8 @@ export default function AdminPartners() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <h3 className="font-semibold text-foreground">{p.name}</h3>
+                      <h3 className="font-semibold text-foreground flex items-center gap-1.5">{p.name}<PartnerLevelMark level={p.partnership_level} size="16px" marginLeft={0} /></h3>
                       <Badge className={st.className}>{st.label}</Badge>
-                      <PartnerLevelMark level={p.partnership_level} size="16px" marginLeft={0} />
                       {p.is_featured && <Badge className="bg-amber-500/15 text-amber-400"><Star className="w-3 h-3 mr-1" /> À la une</Badge>}
                       {p.badges?.length > 0 && (
                         <PartnerBadges badgeIds={p.badges} badgeMap={badgeMap} size="16px" />

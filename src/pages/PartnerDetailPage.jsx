@@ -115,11 +115,11 @@ export default function PartnerDetailPage() {
             {partner.logo_url ? <img src={partner.logo_url} alt="" className="w-full h-full object-cover" /> : <span className="font-grotesk font-bold text-3xl text-primary">{(partner.name || '?')[0]}</span>}
           </div>
           <div className="flex-1 min-w-0 pb-1">
-            <h1 className="font-grotesk font-bold text-2xl md:text-3xl text-foreground">{partner.name}</h1>
-            <div className="flex items-center gap-2 flex-wrap mt-1">
-              <PartnerLevelMark level={partner.partnership_level} size="20px" />
-              <PartnerBadges badges={partnerBadges} size="18px" />
-            </div>
+            <h1 className="font-grotesk font-bold text-2xl md:text-3xl text-foreground flex items-center gap-2 flex-wrap">
+              {partner.name}
+              <PartnerLevelMark level={partner.partnership_level} size="24px" />
+              <PartnerBadges badges={partnerBadges} size="20px" />
+            </h1>
           </div>
         </div>
 

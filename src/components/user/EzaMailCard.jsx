@@ -14,10 +14,8 @@ export default function EzaMailCard({ user, onProvisioned }) {
       const res = await base44.functions.invoke('provisionEzaMail', {});
       const mail = res?.data?.eza_mail;
       if (mail) {
-        // Persist locally on the user token profile so it shows immediately
         try { await base44.auth.updateMe({ eza_mail: mail }); } catch {}
-        toast.success(`Votre adresse EZA Mail est prête : ${mail}`);
-        onProvisioned?.(mail);
+        window.location.href = `https://mail.ezagroup.fr/onboarding?address=${encodeURIComponent(mail)}`;
       } else {
         toast.error('Impossible de provisioning votre adresse EZA Mail');
       }

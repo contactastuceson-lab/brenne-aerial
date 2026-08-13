@@ -24,6 +24,10 @@
       "type": "string",
       "description": "Username unique et public (lowercase)"
     },
+    "eza_mail": {
+      "type": "string",
+      "description": "Adresse email officielle EZA Mail g\u00e9n\u00e9r\u00e9e automatiquement (pseudo@ezagroup.fr)"
+    },
     "display_name": {
       "type": "string",
       "description": "Nom d'affichage du profil"

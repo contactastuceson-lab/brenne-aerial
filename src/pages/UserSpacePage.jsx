@@ -24,6 +24,7 @@ import { hasAdvancedAnalytics } from '@/lib/subscriptionGating';
 import SubscriptionTierBanner from '@/components/boutique/SubscriptionTierBanner';
 import { awardDailyLogin } from '@/lib/rewardActions';
 import WalletSummary from '@/components/banque/WalletSummary';
+import EzaMailCard from '@/components/user/EzaMailCard';
 
 const TABS = [
   { id: 'rewards',     label: 'Récompenses',  icon: Gift },
@@ -339,6 +340,8 @@ export default function UserSpacePage() {
           </div>
           <div className="ml-auto"><CreditPill credits={user?.referral_credits} /></div>
         </motion.div>
+
+        <EzaMailCard user={user} onProvisioned={() => refreshUser()} />
 
         {/* Tabs */}
         <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-2 mb-5 -mx-4 px-4 md:mx-0 md:px-0">

@@ -101,7 +101,7 @@ export default function AppLauncher() {
                       <img
                         src={app.logo}
                         alt=""
-                        className={app.light ? 'w-full h-full object-contain p-2' : 'w-full h-full object-contain p-1'}
+                        className={app.light ? 'w-full h-full object-cover object-top' : 'w-full h-full object-contain p-1'}
                       />
                     </div>
                     <div className="min-w-0 flex-1">

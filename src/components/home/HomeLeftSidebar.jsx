@@ -6,6 +6,7 @@ import {
     Heart, Star, MoreHorizontal, LogOut, Sparkles, UserCircle, List, Radio, Wallet, LifeBuoy, Plug
     } from 'lucide-react';
 import VerificationIcons from '@/components/ui/VerificationIcon';
+import AppLauncher from '@/components/layout/AppLauncher';
 import { hasAdminAccess } from '@/lib/roles';
 import { canManageAffiliations } from '@/lib/affiliationUtils';
 import { base44 } from '@/api/base44Client';
@@ -135,6 +136,11 @@ export default function HomeLeftSidebar({ user }) {
             </Link>
           </div>
         )}
+
+        {/* App Launcher — épinglé au-dessus du profil */}
+        <div className="flex-shrink-0 mb-1">
+          <AppLauncher />
+        </div>
 
         {/* User profile bottom — épinglé, style X */}
         {user && (

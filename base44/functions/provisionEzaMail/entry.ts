@@ -41,7 +41,7 @@ export default async function(req) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(mailKey ? { 'Authorization': `Bearer ${mailKey}` } : {}),
+        ...(mailKey ? { 'x-api-key': mailKey } : {}),
       },
       body: JSON.stringify({
         pseudo,

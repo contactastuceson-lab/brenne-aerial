@@ -20,8 +20,30 @@ export default async function(req) {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Idempotent: if the user already has an EZA Mail, return it
+    // If the user already has an EZA Mail, verify it still exists on the mail side
+    // (handles retroactive deletions that happened before the syncEzaMailDeletion webhook existed)
     if (user.eza_mail) {
+      const verifyUrl = secrets.get('EZA_MAIL_VERIFY_URL');
+      if (verifyUrl) {
+        const mailKey = secrets.get('EZA_MAIL_API_KEY');
+        try {
+          const vRes = await fetch(verifyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...(mailKey ? { 'x-api-key': mailKey } : {}) },
+            body: JSON.stringify({ email: user.eza_mail }),
+          });
+          if (vRes.ok) {
+            const vData = await vRes.json().catch(() => ({}));
+            if (vData && vData.exists === false) {
+              // Mailbox was deleted on the mail side — clear the local field
+              try { await base44.asServiceRole.entities.User.update(user.id, { eza_mail: '' }); } catch (e) {}
+              return Response.json({ eza_mail: null, deleted: true });
+            }
+          }
+        } catch (e) {
+          // Verify endpoint unavailable — keep existing address
+        }
+      }
       return Response.json({ eza_mail: user.eza_mail, already_provisioned: true });
     }
 

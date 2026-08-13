@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Loader2, CheckCircle2, Sparkles, ArrowUpRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -6,7 +6,26 @@ import { toast } from 'sonner';
 
 export default function EzaMailCard({ user, onProvisioned }) {
   const [loading, setLoading] = useState(false);
-  const ezaMail = user?.eza_mail;
+  const [localMail, setLocalMail] = useState(user?.eza_mail);
+
+  // Verify on mount that the mailbox still exists on the mail side (catches retroactive deletions)
+  useEffect(() => {
+    const ezaMail = user?.eza_mail;
+    if (!ezaMail) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await base44.functions.invoke('provisionEzaMail', {});
+        if (cancelled) return;
+        const data = res?.data;
+        if (data?.deleted) {
+          setLocalMail(null);
+          try { await base44.auth.updateMe({ eza_mail: '' }); } catch {}
+        }
+      } catch (e) {}
+    })();
+    return () => { cancelled = true; };
+  }, [user?.eza_mail]);
 
   const provision = async () => {
     setLoading(true);
@@ -37,13 +56,13 @@ export default function EzaMailCard({ user, onProvisioned }) {
           <Mail className="w-5 h-5 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          {ezaMail ? (
+          {localMail ? (
             <>
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-green-400">Adresse officielle prête</p>
               </div>
-              <p className="font-grotesk font-bold text-base md:text-lg text-foreground truncate mt-0.5">{ezaMail}</p>
+              <p className="font-grotesk font-bold text-base md:text-lg text-foreground truncate mt-0.5">{localMail}</p>
               <p className="text-xs text-muted-foreground mt-0.5">Votre boîte EZA Mail est active — connexion unique (SSO).</p>
             </>
           ) : (
@@ -57,7 +76,7 @@ export default function EzaMailCard({ user, onProvisioned }) {
             </>
           )}
         </div>
-        {!ezaMail && (
+        {!localMail && (
           <button
             onClick={provision}
             disabled={loading}

@@ -30,15 +30,21 @@ export default async function(req) {
     const data = await res.json().catch(() => ({}));
     const raw = Array.isArray(data?.emails) ? data.emails : (Array.isArray(data) ? data : []);
 
-    const emails = raw.map((m) => ({
-      id: String(m.id || m.uid || m.message_id || ''),
-      from: m.from || m.sender || m.from_address || '',
-      from_name: m.from_name || m.sender_name || '',
-      subject: m.subject || '(sans objet)',
-      date: m.date || m.received_at || m.created_date || '',
-      snippet: (m.snippet || m.preview || (m.body || '')).toString().slice(0, 240),
-      read: m.read ?? m.is_read ?? false,
-    }));
+    const emails = raw.map((m) => {
+      const fullBody = (m.body || m.text || m.html || m.content || '').toString();
+      return {
+        id: String(m.id || m.uid || m.message_id || ''),
+        from: m.from || m.sender || m.from_address || '',
+        from_name: m.from_name || m.sender_name || '',
+        to: m.to || m.recipient || '',
+        subject: m.subject || '(sans objet)',
+        date: m.date || m.received_at || m.created_date || '',
+        snippet: (m.snippet || m.preview || fullBody).toString().slice(0, 240),
+        body: fullBody.slice(0, 8000),
+        read: m.read ?? m.is_read ?? false,
+        has_attachments: !!(m.attachments && m.attachments.length),
+      };
+    });
 
     return Response.json({ emails, address });
   } catch (error) {

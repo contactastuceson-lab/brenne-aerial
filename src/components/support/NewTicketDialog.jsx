@@ -10,6 +10,7 @@ import {
   Ticket, Award, ShoppingCart, LifeBuoy, MessageCircle, BookOpen, Star,
   BadgeCheck, Heart, List, Megaphone, ChevronDown,
 } from 'lucide-react';
+import EzaMailPicker from '@/components/support/EzaMailPicker';
 
 const MAX_FILES = 5;
 const MAX_DESC = 500;
@@ -73,13 +74,14 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
   const [showElementPicker, setShowElementPicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [createdTicket, setCreatedTicket] = useState(null);
+  const [selectedEmails, setSelectedEmails] = useState([]);
 
   const reset = useCallback(() => {
     setStep(1); setDescription(''); setFileUrls([]); setSuggestions([]);
     setSelectedSuggestion(null); setSelectedCategory(null); setShowCatPicker(false);
     setElementType(null); setItems([]); setItemsLoading(false);
     setSelectedItem(null); setConvLabel(''); setShowElementPicker(false);
-    setCreatedTicket(null); setSubmitting(false);
+    setCreatedTicket(null); setSubmitting(false); setSelectedEmails([]);
   }, []);
 
   const handleClose = () => { reset(); onClose(); };
@@ -243,6 +245,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
         subject,
         description: description.trim(),
         file_urls: fileUrls,
+        attached_emails: selectedEmails,
         category: selectedCategory || sugg.category,
         related_item_id: ri.id,
         related_item_type: ri.type,
@@ -255,7 +258,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
         messages: [{ role: 'user', content: description.trim(), at: new Date().toISOString(), attachments: fileUrls }],
       });
       setCreatedTicket(ticket);
-      setStep(5);
+      setStep(6);
       onCreated?.(ticket);
     } catch (e) {
       toast.error(e?.response?.data?.error || 'Création du ticket échouée');
@@ -271,7 +274,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
           <p className="text-[11px] text-muted-foreground mb-1">Soumettre un ticket de support</p>
 
           <div className="flex items-center gap-1.5 mb-5">
-            {[1, 2, 3, 4].map((s) => (
+            {[1, 2, 3, 4, 5].map((s) => (
               <div key={s} className={`h-1 flex-1 rounded-full transition-colors ${step >= s ? 'bg-primary' : 'bg-secondary'}`} />
             ))}
           </div>
@@ -373,8 +376,30 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
             </div>
           )}
 
-          {/* STEP 4 — Élément proposé directement par l'IA */}
+          {/* STEP 4 — Joindre des emails EZA Mail */}
           {step === 4 && selectedSuggestion && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="font-grotesk font-bold text-lg mb-1">Joindre des emails</h2>
+                <p className="text-xs text-muted-foreground">Sélectionnez un ou plusieurs emails de votre boîte EZA Mail pour donner du contexte à Nexus. <span className="text-muted-foreground/60">(optionnel)</span></p>
+              </div>
+              <EzaMailPicker selectedEmails={selectedEmails} setSelectedEmails={setSelectedEmails} />
+              <div className="flex gap-2">
+                <button onClick={() => setStep(3)}
+                  className="flex-1 h-10 rounded-xl border border-border bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
+                  Retour
+                </button>
+                <button onClick={() => setStep(5)}
+                  className="flex-1 h-10 rounded-xl text-sm font-semibold text-white inline-flex items-center justify-center gap-1.5 transition-transform active:scale-95"
+                  style={{ background: '#0F172A' }}>
+                  Continuer <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5 — Élément proposé directement par l'IA */}
+          {step === 5 && selectedSuggestion && (
             <div className="space-y-4">
               <div>
                 <h2 className="font-grotesk font-bold text-lg mb-1">Élément concerné</h2>
@@ -478,7 +503,7 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
               )}
 
               <div className="flex gap-2">
-                <button onClick={() => setStep(3)}
+                <button onClick={() => setStep(4)}
                   className="flex-1 h-10 rounded-xl border border-border bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
                   Retour
                 </button>
@@ -491,8 +516,8 @@ export default function NewTicketDialog({ open, onClose, onCreated }) {
             </div>
           )}
 
-          {/* STEP 5 — Succès */}
-          {step === 5 && createdTicket && (
+          {/* STEP 6 — Succès */}
+          {step === 6 && createdTicket && (
             <div className="py-6 text-center space-y-3">
               <div className="w-14 h-14 rounded-2xl bg-green-400/10 border border-green-400/30 flex items-center justify-center mx-auto">
                 <Check className="w-7 h-7 text-green-400" />

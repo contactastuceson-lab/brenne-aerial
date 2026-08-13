@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // `current` designe l'application qui heberge ce composant (Eza Social)
 const APPS = [
   { id: 'eza_social', name: 'Eza Social', emoji: '🌐', kind: 'internal', to: '/' },
-  { id: 'eza_mail', name: 'EZA Mail', emoji: '📧', kind: 'external', href: 'https://mail.ezagroup.fr' },
+  { id: 'eza_mail', name: 'EZA Mail', logo: 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/f97899ec7_1786611292034_1.png', kind: 'external', href: 'https://mail.ezagroup.fr' },
   { id: 'eza_support', name: 'EZA Support', emoji: '🎧', kind: 'internal', to: '/support/conversation' },
 ];
 
@@ -73,8 +73,10 @@ export default function AppLauncher() {
                 const active = app.id === currentId;
                 const inner = (
                   <div className={`flex items-center gap-3 rounded-xl px-2.5 py-2.5 transition-colors ${active ? 'bg-primary/10 ring-1 ring-primary/30' : 'hover:bg-white/6'}`}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                      {app.emoji}
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 overflow-hidden" style={{ background: app.logo ? '#F7F7F7' : 'rgba(255,255,255,0.06)' }}>
+                      {app.logo
+                        ? <img src={app.logo} alt="" className="w-full h-full object-contain p-1" />
+                        : app.emoji}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-grotesk font-bold text-sm text-foreground truncate">{app.name}</p>

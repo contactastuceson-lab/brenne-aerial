@@ -8,7 +8,7 @@ const MUSEEZA_LOGO = 'https://media.base44.com/images/public/69c5c081406b9e20dea
 
 const APPS = [
   { id: 'eza_social', name: 'Eza Social', logo: EZA_LOGO, kind: 'internal', to: '/' },
-  { id: 'eza_mail', name: 'EZA Mail', logo: MAIL_LOGO, kind: 'external', href: 'https://mail.ezagroup.fr', light: true },
+  { id: 'eza_mail', name: 'EZA Mail', logo: MAIL_LOGO, kind: 'external', href: 'https://mail.ezagroup.fr', light: true, logoPos: 'center 22%' },
   { id: 'eza_support', name: 'EZA Support', logo: EZA_LOGO, kind: 'internal', to: '/support/conversation' },
   { id: 'museeza', name: 'MuseEza', logo: MUSEEZA_LOGO, kind: 'external', href: 'https://museeza.site' },
 ];
@@ -104,6 +104,7 @@ export default function AppLauncher() {
                         src={app.logo}
                         alt=""
                         className={app.light ? 'w-full h-full object-cover object-top' : 'w-full h-full object-contain p-1'}
+                        style={app.light && app.logoPos ? { objectPosition: app.logoPos } : undefined}
                       />
                     </div>
                     <div className="min-w-0 flex-1">

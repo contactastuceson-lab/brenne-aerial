@@ -4,11 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const EZA_LOGO = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/13fcf0be0_1782606023373.png';
 const MAIL_LOGO = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/751754f8b_1786611292034_1.png';
+const MUSEEZA_LOGO = 'https://media.base44.com/images/public/69c5c081406b9e20deaed582/8e6671b4b_9d49a3327_logo.png';
 
 const APPS = [
   { id: 'eza_social', name: 'Eza Social', logo: EZA_LOGO, kind: 'internal', to: '/' },
   { id: 'eza_mail', name: 'EZA Mail', logo: MAIL_LOGO, kind: 'external', href: 'https://mail.ezagroup.fr', light: true },
   { id: 'eza_support', name: 'EZA Support', logo: EZA_LOGO, kind: 'internal', to: '/support/conversation' },
+  { id: 'museeza', name: 'MuseEza', logo: MUSEEZA_LOGO, kind: 'external', href: 'https://museeza.site' },
 ];
 
 function WaffleIcon({ className }) {

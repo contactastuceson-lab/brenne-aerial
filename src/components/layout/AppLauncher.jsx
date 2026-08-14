@@ -8,7 +8,7 @@ const MUSEEZA_LOGO = 'https://media.base44.com/images/public/69c5c081406b9e20dea
 
 const APPS = [
   { id: 'eza_social', name: 'Eza Social', logo: EZA_LOGO, kind: 'internal', to: '/' },
-  { id: 'eza_mail', name: 'EZA Mail', logo: MAIL_LOGO, kind: 'external', href: 'https://mail.ezagroup.fr', light: true, logoPos: 'center 22%' },
+  { id: 'eza_mail', name: 'EZA Mail', logo: MAIL_LOGO, kind: 'external', href: 'https://mail.ezagroup.fr', light: true, logoPos: 'center 38%' },
   { id: 'eza_support', name: 'EZA Support', logo: EZA_LOGO, kind: 'internal', to: '/support/conversation' },
   { id: 'museeza', name: 'MuseEza', logo: MUSEEZA_LOGO, kind: 'external', href: 'https://museeza.site' },
 ];
